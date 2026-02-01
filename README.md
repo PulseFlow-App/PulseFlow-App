@@ -21,7 +21,7 @@ Pulse helps users make sense of daily inputs:
 
 ## Premium Access
 
-Premium features are unlocked by **holding and staking Pulse tokens ($PULSE)**.
+Premium features are unlocked by **holding and staking Pulse tokens ($PULSE)**. The token exists on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump) — no token contract to create.
 
 **Premium includes:**
 
@@ -69,11 +69,22 @@ It is an **everyday system** for understanding your own rhythm, reducing noise, 
 | [**Token Utility**](docs/token-utility.md) | How $PULSE staking unlocks Premium |
 | [**AI Stack**](docs/ai-stack.md) | Recommended AI architecture: inputs, reasoning, Pulse score, baselines |
 | [**FAQ**](docs/faq.md) | Common questions on product, Premium, privacy, and technical |
+| [**Frontend & testing**](docs/frontend-and-testing.md) | Do we have a frontend? How to test the mobile app. Wallet connector compatibility. |
+| [**Move repo to org**](docs/move-repo-to-org.md) | Steps to transfer this repo and the Pulse landing page to the PulseFlow-App organization. |
 
 **Other references:**
 
 - [Data model & privacy](data-model/privacy.md) — Data ownership and consent rules
-- [Contracts](contracts/README.md) — Pulse token and staking logic
+- [Contracts](contracts/README.md) — Staking logic (token lives on Pump.fun; no contract to deploy)
+- [**Frontend & testing**](docs/frontend-and-testing.md) — Do we have a frontend? How to test the mobile app. Wallet connector compatibility (Solana / Phantom).
+
+---
+
+## Frontend & testing
+
+- **Do we have a frontend?** No full UI yet. There is a **runnable Expo mobile scaffold** in `apps/mobile/` you can open in the simulator or on a device.
+- **How to test the mobile app:** `cd apps/mobile && npm install && npx expo start` — then use Expo Go (scan QR) or press `i` / `a` for iOS / Android simulator.
+- **Wallet compatible?** Yes. The mobile app is designed to work with **Solana** wallets (e.g. **Phantom**) for $PULSE (Pump.fun). Use a **development build** for Phantom’s React Native SDK; see [Frontend & testing](docs/frontend-and-testing.md).
 
 ---
 
@@ -82,7 +93,12 @@ It is an **everyday system** for understanding your own rhythm, reducing noise, 
 ```
 pulse/
 ├── apps/
-│   ├── web/                    # Main user-facing app (pulseflow.site)
+│   ├── mobile/                 # Pulse mobile app (Expo / React Native) — runnable scaffold
+│   │   ├── App.tsx
+│   │   ├── app.json
+│   │   ├── assets/
+│   │   └── README.md
+│   ├── web/                    # Web app (pulseflow.site) — placeholder
 │   │   ├── public/
 │   │   │   └── assets/         # Icons, images, fonts
 │   │   ├── src/
@@ -120,8 +136,7 @@ pulse/
 │   ├── config/                # App-wide configs
 │   └── utils/                 # Shared utilities
 │
-├── contracts/                 # Pulse token logic
-│   ├── PulseToken.sol
+├── contracts/                 # Staking logic (token on Pump.fun; no token contract)
 │   ├── staking/
 │   └── README.md
 │
@@ -175,3 +190,32 @@ This repo uses **Spec Kit** for spec-driven development. Specifications, plans, 
 - [`.specify/specs/001-pulse-platform/`](.specify/specs/001-pulse-platform/) — Spec, plan, data model, contracts, tasks
 
 ---
+
+## Create GitHub repo
+
+From the project root:
+
+```bash
+git init
+git add .
+git commit -m "chore: initial Pulse structure, docs, and SDD specs"
+gh auth login   # if not already
+gh repo create pulse --source=. --public --push
+```
+
+Or to use an existing GitHub repo:
+
+```bash
+git init
+git remote add origin https://github.com/PulseFlow-App/PulseFlow-App.git
+git add .
+git commit -m "chore: initial Pulse structure, docs, and SDD specs"
+git branch -M main
+git push -u origin main
+```
+
+---
+
+## License
+
+Proprietary. All rights reserved.

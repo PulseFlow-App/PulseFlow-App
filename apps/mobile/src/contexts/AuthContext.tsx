@@ -1,0 +1,160 @@
+/**
+ * Auth — email sign-in to use the app (no wallet required).
+ * Session stored in AsyncStorage; replace with SecureStore + backend JWT for production.
+ */
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const AUTH_STORAGE_KEY = '@pulse/auth_session';
+
+export type User = {
+  userId: string;
+  email: string;
+};
+
+type AuthState =
+  | { status: 'guest' }
+  | { status: 'loading' }
+  | { status: 'signedIn'; user: User };
+
+type AuthContextValue = {
+  auth: AuthState;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  getAccessToken: () => Promise<string | null>;
+};
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+function generateUserId(): string {
+  return `user_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+}
+
+function getApiUrl(): string | undefined {
+  return typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_URL
+    ? String(process.env.EXPO_PUBLIC_API_URL).replace(/\/$/, '')
+    : undefined;
+}
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [auth, setAuth] = useState<AuthState>({ status: 'loading' });
+
+  const restoreSession = useCallback(async () => {
+    try {
+      const raw = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+      if (raw) {
+        const session = JSON.parse(raw) as { user: User; token?: string };
+        if (session?.user?.userId && session?.user?.email) {
+          setAuth({ status: 'signedIn', user: session.user });
+          return;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    setAuth({ status: 'guest' });
+  }, []);
+
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
+
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const apiUrl = getApiUrl();
+      const trimmedEmail = email.trim().toLowerCase();
+      if (!trimmedEmail) throw new Error('Email is required');
+
+      if (apiUrl) {
+        const res = await fetch(`${apiUrl}/auth/sign-in`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: trimmedEmail, password }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error((err as { message?: string }).message || 'Sign in failed');
+        }
+        const data = (await res.json()) as { user: User; accessToken: string };
+        const session = { user: data.user, token: data.accessToken };
+        await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+        setAuth({ status: 'signedIn', user: data.user });
+        return;
+      }
+
+      // No backend: mock sign-in (store locally for MVP)
+      const user: User = { userId: generateUserId(), email: trimmedEmail };
+      const session = { user };
+      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+      setAuth({ status: 'signedIn', user });
+    },
+    []
+  );
+
+  const signUp = useCallback(
+    async (email: string, password: string) => {
+      const apiUrl = getApiUrl();
+      const trimmedEmail = email.trim().toLowerCase();
+      if (!trimmedEmail) throw new Error('Email is required');
+
+      if (apiUrl) {
+        const res = await fetch(`${apiUrl}/auth/sign-up`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: trimmedEmail, password }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error((err as { message?: string }).message || 'Sign up failed');
+        }
+        const data = (await res.json()) as { user: User; accessToken: string };
+        const session = { user: data.user, token: data.accessToken };
+        await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+        setAuth({ status: 'signedIn', user: data.user });
+        return;
+      }
+
+      // No backend: mock sign-up (same as sign-in for MVP)
+      const user: User = { userId: generateUserId(), email: trimmedEmail };
+      const session = { user };
+      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+      setAuth({ status: 'signedIn', user });
+    },
+    []
+  );
+
+  const signOut = useCallback(async () => {
+    await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+    setAuth({ status: 'guest' });
+  }, []);
+
+  const getAccessToken = useCallback(async (): Promise<string | null> => {
+    try {
+      const raw = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+      if (raw) {
+        const session = JSON.parse(raw) as { token?: string };
+        return session?.token ?? null;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  }, []);
+
+  const value: AuthContextValue = {
+    auth,
+    signIn,
+    signUp,
+    signOut,
+    getAccessToken,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
+}

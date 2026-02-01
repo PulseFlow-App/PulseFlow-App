@@ -29,7 +29,7 @@ You upload a photo of your fridge. Pulse detects ingredients, then suggests meal
 
 ### How do I get Premium?
 
-By holding and staking **Pulse tokens ($PULSE)**. Premium is unlocked when you stake the required amount.
+By holding and staking **Pulse tokens ($PULSE)**. The token lives on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump). Premium is unlocked when you stake the required amount.
 
 ### What does Premium include?
 

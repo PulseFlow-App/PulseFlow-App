@@ -87,20 +87,18 @@
 - Single provider: Fallback ensures reliability for critical Daily Pulse feature
 - Specialized computer vision APIs: GPT-4 Vision provides sufficient accuracy (80%+) for ingredient detection while maintaining single AI provider simplicity
 
-### Token/Blockchain: Web3.js with Ethereum/Polygon
+### Token/Blockchain: $PULSE on Pump.fun (Solana)
 
-**Decision**: Use Web3.js library for token staking on Ethereum or Polygon network.
+**Decision**: **$PULSE token already exists** on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump). We do **not** create or deploy a token contract. Integration is read-only (balance / staking checks) via Solana RPC.
 
 **Rationale**:
-- Web3.js provides direct blockchain interaction (minimal abstractions)
-- Ethereum/Polygon support ERC-20 tokens for staking
-- Polygon offers lower gas fees (important for mobile users)
-- Modular design: Token service can be swapped if blockchain changes
+- Token is live on Pump.fun; no token contract to write or deploy
+- Solana/Pump.fun integration for wallet checks and staking status
+- Modular design: Token service only reads chain state
 - Clear separation: Blockchain logic isolated in token-service module
 
 **Alternatives considered**:
-- Custom token system: Blockchain provides trustless, decentralized premium access
-- Other chains: Ethereum/Polygon have largest ecosystem and tooling
+- Creating a new token: Not needed — $PULSE already exists on Pump.fun
 
 ### Image Processing: Sharp (Node.js)
 

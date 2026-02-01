@@ -140,7 +140,7 @@ Critical for long-term scalability.
 - Token balance / staking status checked **before** AI calls
 - Request limits enforced at gateway level
 
-**Stack:** On-chain check (read-only), off-chain cache (Redis), rate limiter (IP + wallet)
+**Stack:** On-chain check (read-only) for $PULSE on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump), off-chain cache (Redis), rate limiter (IP + wallet). No token contract to deploy.
 
 ---
 

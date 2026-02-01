@@ -1,11 +1,10 @@
 # Pulse Contracts
 
-This directory holds **Pulse token logic** and related smart contracts (when applicable).
+This directory holds **staking and integration logic** for the Pulse token. The **$PULSE token already exists** on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump) — we do **not** create or deploy a token contract.
 
 ## Contents
 
-- `PulseToken.sol` — ERC-20 or equivalent token contract
-- `staking/` — Staking logic for Premium access
+- `staking/` — Staking logic for Premium access (read-only chain interaction with existing $PULSE)
 
 ## Token Utility
 

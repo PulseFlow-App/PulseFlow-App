@@ -1,5 +1,9 @@
 # Pulse Token Utility
 
+## Token
+
+**$PULSE** exists on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump). We do **not** need to create a token contract — integration is read-only (balance / staking checks).
+
 ## Overview
 
 Premium features are unlocked by **holding and staking Pulse tokens ($PULSE)**.
@@ -43,4 +47,4 @@ Staking unlocks:
 
 ---
 
-📖 See also: [Product](./product.md) | [Roadmap](./roadmap.md) | [Contracts](../contracts/README.md)
+📖 See also: [Product](./product.md) | [Roadmap](./roadmap.md) | [Contracts](../contracts/README.md) | [PULSE on Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump)

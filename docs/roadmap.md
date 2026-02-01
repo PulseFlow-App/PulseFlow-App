@@ -38,6 +38,7 @@ Deliver a simple, valuable daily experience that turns raw inputs into a clear s
 
 ### Token Utility (MVP 1)
 
+- **$PULSE** exists on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump) — no token contract to create
 - Token-gated **Premium Tier**
 - Premium unlocks:
   - Higher daily request limits
