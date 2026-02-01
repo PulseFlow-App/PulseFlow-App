@@ -10,6 +10,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@magic-ext/solana": "^30.2.0",
+    "@magic-sdk/react-native-expo": "^34.1.0",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@expo-google-fonts/inter": "^0.2.0",
     "@expo-google-fonts/pt-serif": "^0.2.0",

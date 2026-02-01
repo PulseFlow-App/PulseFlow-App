@@ -1,15 +1,18 @@
 /**
- * Auth — email sign-in to use the app (no wallet required).
- * Session stored in AsyncStorage; replace with SecureStore + backend JWT for production.
+ * Auth — Magic (email OTP + Solana wallet) and/or API email/password.
+ * Session stored in AsyncStorage.
  */
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMagic } from './MagicContext';
 
 const AUTH_STORAGE_KEY = '@pulse/auth_session';
 
 export type User = {
   userId: string;
   email: string;
+  /** Set when user signed in with Magic (Solana wallet) */
+  walletAddress?: string | null;
 };
 
 type AuthState =
@@ -21,8 +24,10 @@ type AuthContextValue = {
   auth: AuthState;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
+  signInWithMagic: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
   getAccessToken: () => Promise<string | null>;
+  isMagicEnabled: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -38,13 +43,14 @@ function getApiUrl(): string | undefined {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { magic, isMagicEnabled } = useMagic();
   const [auth, setAuth] = useState<AuthState>({ status: 'loading' });
 
   const restoreSession = useCallback(async () => {
     try {
       const raw = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
       if (raw) {
-        const session = JSON.parse(raw) as { user: User; token?: string };
+        const session = JSON.parse(raw) as { user: User; token?: string; provider?: string };
         if (session?.user?.userId && session?.user?.email) {
           setAuth({ status: 'signedIn', user: session.user });
           return;
@@ -59,6 +65,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     restoreSession();
   }, [restoreSession]);
+
+  const signInWithMagic = useCallback(
+    async (email: string) => {
+      if (!magic) throw new Error('Magic is not configured');
+      const trimmedEmail = email.trim().toLowerCase();
+      if (!trimmedEmail) throw new Error('Email is required');
+
+      await magic.auth.loginWithEmailOTP({ email: trimmedEmail });
+      const info = await magic.user.getInfo();
+      const emailFromMagic = (info as { email?: string }).email ?? trimmedEmail;
+      const wallets = (info as { wallets?: { solana?: { publicAddress?: string } } }).wallets;
+      const walletAddress = wallets?.solana?.publicAddress ?? null;
+      const issuer = (info as { issuer?: string }).issuer ?? '';
+      const userId = issuer ? `magic_${issuer.replace(/^did:[^:]+:/, '').slice(0, 20)}` : generateUserId();
+
+      const user: User = { userId, email: emailFromMagic, walletAddress };
+      const session = { user, provider: 'magic' };
+      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+      setAuth({ status: 'signedIn', user });
+    },
+    [magic]
+  );
 
   const signIn = useCallback(
     async (email: string, password: string) => {
@@ -83,7 +111,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // No backend: mock sign-in (store locally for MVP)
       const user: User = { userId: generateUserId(), email: trimmedEmail };
       const session = { user };
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
@@ -115,7 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // No backend: mock sign-up (same as sign-in for MVP)
       const user: User = { userId: generateUserId(), email: trimmedEmail };
       const session = { user };
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
@@ -125,9 +151,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    try {
+      const raw = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+      if (raw) {
+        const session = JSON.parse(raw) as { provider?: string };
+        if (session?.provider === 'magic' && magic) {
+          await magic.user.logout();
+        }
+      }
+    } catch {
+      // ignore
+    }
     await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
     setAuth({ status: 'guest' });
-  }, []);
+  }, [magic]);
 
   const getAccessToken = useCallback(async (): Promise<string | null> => {
     try {
@@ -146,8 +183,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     auth,
     signIn,
     signUp,
+    signInWithMagic,
     signOut,
     getAccessToken,
+    isMagicEnabled,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

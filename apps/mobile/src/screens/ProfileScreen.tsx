@@ -19,10 +19,24 @@ export function ProfileScreen({ navigation }: Props) {
     isConnecting,
     error,
     connectWallet,
+    setWalletAddress,
+    checkPremiumStatus,
+    setPremiumUnlocked,
     clearError,
   } = usePremium();
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const prevPremium = useRef(false);
+
+  // Sync Magic wallet to Premium when user signed in with Magic
+  useEffect(() => {
+    const user = auth.status === 'signedIn' ? auth.user : null;
+    if (user?.walletAddress) {
+      setWalletAddress(user.walletAddress);
+      checkPremiumStatus(user.walletAddress).then((premium) => {
+        if (premium) setPremiumUnlocked(true);
+      });
+    }
+  }, [auth.status, auth.status === 'signedIn' ? auth.user?.walletAddress : null, setWalletAddress, checkPremiumStatus, setPremiumUnlocked]);
 
   useEffect(() => {
     if (isPremium && !prevPremium.current) {
@@ -41,6 +55,12 @@ export function ProfileScreen({ navigation }: Props) {
           <View style={styles.card}>
             <Text style={styles.label}>Email</Text>
             <Text style={styles.value}>{user.email}</Text>
+            {user.walletAddress ? (
+              <>
+                <Text style={[styles.label, { marginTop: 12 }]}>Wallet (Magic)</Text>
+                <Text style={styles.value} numberOfLines={1}>{user.walletAddress}</Text>
+              </>
+            ) : null}
           </View>
         ) : null}
         <Pressable

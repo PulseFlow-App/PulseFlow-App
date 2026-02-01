@@ -18,6 +18,7 @@ export type PremiumState = {
 type PremiumContextValue = PremiumState & {
   connectWallet: () => Promise<void>;
   checkPremiumStatus: (walletAddress: string) => Promise<boolean>;
+  setWalletAddress: (address: string | null) => void;
   openStakeScreen: () => void;
   clearError: () => void;
   setPremiumUnlocked: (unlocked: boolean) => void;
@@ -83,6 +84,10 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
     }
   }, [checkPremiumStatus]);
 
+  const setWalletAddress = useCallback((address: string | null) => {
+    setState((s) => ({ ...s, walletAddress: address, error: null }));
+  }, []);
+
   const openStakeScreen = useCallback(() => {
     Linking.openURL(STAKING_LINK).catch(() => {});
   }, []);
@@ -99,6 +104,7 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
     ...state,
     connectWallet,
     checkPremiumStatus,
+    setWalletAddress,
     openStakeScreen,
     clearError,
     setPremiumUnlocked,

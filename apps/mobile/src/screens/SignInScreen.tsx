@@ -15,14 +15,31 @@ import { fonts } from '../theme/fonts';
 import { useAuth } from '../contexts/AuthContext';
 
 export function SignInScreen() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithMagic, isMagicEnabled } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [usePassword, setUsePassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async () => {
+  const handleMagicSubmit = async () => {
+    setError(null);
+    if (!email.trim()) {
+      setError('Email is required');
+      return;
+    }
+    setLoading(true);
+    try {
+      await signInWithMagic(email.trim());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Magic sign-in failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordSubmit = async () => {
     setError(null);
     if (!email.trim()) {
       setError('Email is required');
@@ -53,7 +70,9 @@ export function SignInScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Pulse</Text>
           <Text style={styles.subtitle}>
-            Sign in with email to use the app. No wallet required.
+            {isMagicEnabled
+              ? 'Sign in with email — we’ll send a one-time code. No password. You get a Solana wallet for premium.'
+              : 'Sign in with email to use the app.'}
           </Text>
         </View>
 
@@ -62,7 +81,7 @@ export function SignInScreen() {
           <TextInput
             style={styles.input}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(t) => { setEmail(t); setError(null); }}
             placeholder="you@example.com"
             placeholderTextColor={colors.textDim}
             keyboardType="email-address"
@@ -70,37 +89,75 @@ export function SignInScreen() {
             autoCorrect={false}
             editable={!loading}
           />
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="••••••••"
-            placeholderTextColor={colors.textDim}
-            secureTextEntry
-            editable={!loading}
-          />
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Pressable
-            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed, loading && styles.buttonDisabled]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator size="small" color={colors.background} />
-            ) : (
-              <Text style={styles.buttonText}>{isSignUp ? 'Create account' : 'Sign in'}</Text>
-            )}
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [styles.switchButton, pressed && styles.switchPressed]}
-            onPress={() => { setIsSignUp(!isSignUp); setError(null); }}
-            disabled={loading}
-          >
-            <Text style={styles.switchText}>
-              {isSignUp ? 'Already have an account? Sign in' : 'No account? Create one'}
-            </Text>
-          </Pressable>
+
+          {isMagicEnabled && !usePassword && (
+            <>
+              {error ? <Text style={styles.error}>{error}</Text> : null}
+              <Pressable
+                style={({ pressed }) => [styles.button, pressed && styles.buttonPressed, loading && styles.buttonDisabled]}
+                onPress={handleMagicSubmit}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color={colors.background} />
+                ) : (
+                  <Text style={styles.buttonText}>Send magic code</Text>
+                )}
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.switchButton, pressed && styles.switchPressed]}
+                onPress={() => { setUsePassword(true); setError(null); }}
+                disabled={loading}
+              >
+                <Text style={styles.switchText}>Or sign in with email & password</Text>
+              </Pressable>
+            </>
+          )}
+
+          {(usePassword || !isMagicEnabled) && (
+            <>
+              <Text style={styles.label}>Password</Text>
+              <TextInput
+                style={styles.input}
+                value={password}
+                onChangeText={(t) => { setPassword(t); setError(null); }}
+                placeholder="••••••••"
+                placeholderTextColor={colors.textDim}
+                secureTextEntry
+                editable={!loading}
+              />
+              {error ? <Text style={styles.error}>{error}</Text> : null}
+              <Pressable
+                style={({ pressed }) => [styles.button, pressed && styles.buttonPressed, loading && styles.buttonDisabled]}
+                onPress={handlePasswordSubmit}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color={colors.background} />
+                ) : (
+                  <Text style={styles.buttonText}>{isSignUp ? 'Create account' : 'Sign in'}</Text>
+                )}
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.switchButton, pressed && styles.switchPressed]}
+                onPress={() => { setIsSignUp(!isSignUp); setError(null); }}
+                disabled={loading}
+              >
+                <Text style={styles.switchText}>
+                  {isSignUp ? 'Already have an account? Sign in' : 'No account? Create one'}
+                </Text>
+              </Pressable>
+              {isMagicEnabled && (
+                <Pressable
+                  style={({ pressed }) => [styles.switchButton, pressed && styles.switchPressed]}
+                  onPress={() => { setUsePassword(false); setError(null); }}
+                  disabled={loading}
+                >
+                  <Text style={styles.switchText}>Back to magic code</Text>
+                </Pressable>
+              )}
+            </>
+          )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

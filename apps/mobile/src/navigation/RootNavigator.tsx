@@ -2,6 +2,7 @@ import React from 'react';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { MagicProvider } from '../contexts/MagicContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { PremiumProvider } from '../contexts/PremiumContext';
 import { SignInScreen } from '../screens/SignInScreen';
@@ -118,8 +119,9 @@ const styles = StyleSheet.create({
 
 export function RootNavigator() {
   return (
-    <AuthProvider>
-      <PremiumProvider>
+    <MagicProvider>
+      <AuthProvider>
+        <PremiumProvider>
         <NavigationContainer
       theme={{
         dark: true,
@@ -141,7 +143,8 @@ export function RootNavigator() {
         >
           <AuthGate />
         </NavigationContainer>
-      </PremiumProvider>
-    </AuthProvider>
+        </PremiumProvider>
+      </AuthProvider>
+    </MagicProvider>
   );
 }
