@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { colors } from '../theme/colors';
 import styles from './Login.module.css';
 
 export function Login() {

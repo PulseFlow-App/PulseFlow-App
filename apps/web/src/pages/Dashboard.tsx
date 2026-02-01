@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { BlockCard } from '../components/BlockCard';
 import { BLOCKS } from '../blocks/registry';
