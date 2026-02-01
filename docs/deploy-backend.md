@@ -32,7 +32,76 @@ See [User Data Storage](./user-data-storage.md) for the full contract.
 
 ---
 
-## 3. Deploy steps (generic)
+## 3. Deploy the API on Vercel (step-by-step)
+
+The API in `apps/api` is an Express app. Vercel runs it as a single serverless function (zero config if the app is exported). Use a **separate Vercel project** for the API so you can give it its own URL (e.g. `https://api.pulseflow.site` or `pulse-api-xxx.vercel.app`).
+
+### 3.1 Create the project and connect the repo
+
+1. Go to [vercel.com/new](https://vercel.com/new).
+2. **Import** your Git repository (e.g. **PulseFlow-App/PulseFlow-App**).
+3. Before deploying, set the options below.
+
+### 3.2 Project settings (API only)
+
+| Setting | Value |
+|--------|--------|
+| **Root Directory** | `apps/api` — click **Edit**, set to `apps/api`, save. |
+| **Framework Preset** | **Other** (or leave as detected; Vercel may detect Express). |
+| **Build Command** | Leave empty (no build step). |
+| **Output Directory** | Leave empty. |
+| **Install Command** | `npm install` (default). |
+
+Vercel will look for the app in `apps/api` and will use `src/index.js` (or `src/app.js` / `src/server.js`) as the Express entry. The repo’s `apps/api/src/index.js` exports the Express app when `VERCEL` is set, so it works as a single serverless function.
+
+**If you see “No Output Directory named ‘public’ found”:** The API is not a static site; it doesn’t produce a `public` folder. The repo’s `apps/api/vercel.json` sets `buildCommand` to empty and `outputDirectory` to `.` so Vercel doesn’t expect one. Also in **Project Settings → Build & Development Settings**, set **Output Directory** to empty (clear the field) and **Build Command** to empty.
+
+### 3.3 Environment variables
+
+In the same project, open **Settings → Environment Variables** and add:
+
+| Name | Value | Notes |
+|------|--------|--------|
+| `JWT_SECRET` | (random string, e.g. `openssl rand -hex 32`) | Required for auth. |
+| `DATABASE_URL` | (optional) | Only if you add a DB later. |
+| `GOOGLE_AI_API_KEY` or `OPENAI_API_KEY` | (optional) | Only if the API generates insights. |
+
+Save. Redeploy so the new env vars are used.
+
+### 3.4 Deploy
+
+1. Click **Deploy** (or push to the connected branch; Vercel will deploy automatically).
+2. When the deploy finishes, open the **project URL** (e.g. `https://pulse-api-xxx.vercel.app`). You should see a 404 or your root route; test an endpoint, e.g. `GET /health` → `{ "ok": true }`.
+
+### 3.5 Custom domain (optional)
+
+To use **api.pulseflow.site**:
+
+1. In the project: **Settings → Domains → Add** → `api.pulseflow.site`.
+2. In your DNS (where **pulseflow.site** is managed): add a **CNAME** record: **Name** `api`, **Target** the value Vercel shows (e.g. `cname.vercel-dns.com`).
+3. Wait for Vercel to verify; HTTPS will be issued automatically.
+
+See [Custom domains](custom-domains.md) for more detail.
+
+### 3.6 Point the mobile app at the API
+
+In `apps/mobile/.env` set:
+
+```bash
+EXPO_PUBLIC_API_URL=https://pulse-api-xxx.vercel.app
+```
+
+or, if you added the custom domain:
+
+```bash
+EXPO_PUBLIC_API_URL=https://api.pulseflow.site
+```
+
+No trailing slash. Restart the app (`npx expo start`).
+
+---
+
+## 4. Deploy steps (generic, other platforms)
 
 1. **Build a small API** (e.g. in `apps/api`)  
    - Express or Fastify with routes for auth, body-logs, insights (optional), premium/status.  
@@ -58,7 +127,7 @@ See [User Data Storage](./user-data-storage.md) for the full contract.
 
 ---
 
-## 4. Env vars on the backend (summary)
+## 5. Env vars on the backend (summary)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -68,7 +137,7 @@ See [User Data Storage](./user-data-storage.md) for the full contract.
 
 ---
 
-## 5. After deploy
+## 6. After deploy
 
 - **Auth:** Mobile app will call `POST /auth/sign-in` and `POST /auth/sign-up`; users get a JWT and can use the app with data stored per user.
 - **CORS:** If the app is web or you use a browser, allow your app origin in CORS. For React Native / Expo, same-origin isn’t an issue for native HTTP.
@@ -76,7 +145,7 @@ See [User Data Storage](./user-data-storage.md) for the full contract.
 
 ---
 
-## 6. Minimal API in this repo
+## 7. Minimal API in this repo
 
 There is a minimal API in `apps/api` (Node + Express) you can deploy as-is:
 

@@ -113,6 +113,11 @@ app.get('/premium/status', (req, res) => {
 // Health
 app.get('/health', (req, res) => res.json({ ok: true }));
 
-app.listen(PORT, () => {
-  console.log(`Pulse API listening on port ${PORT}`);
-});
+// For Vercel: export the app (no listen). For local/Railway/Render: start server.
+if (process.env.VERCEL) {
+  module.exports = app;
+} else {
+  app.listen(PORT, () => {
+    console.log(`Pulse API listening on port ${PORT}`);
+  });
+}
