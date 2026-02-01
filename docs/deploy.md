@@ -52,9 +52,11 @@ You need to add **one DNS record** where **pulseflow.site** is managed (e.g. Clo
 
 ---
 
-## API project failing on Vercel?
+## API project failing on Vercel? (API project only)
 
-If the repo is already imported as the **API** project and the deployment fails (e.g. "Deployment failed with error" after "Running vercel build"):
+**This section is only for the project that deploys the backend** (Root Directory `apps/api`). Your **web/PWA project** is separate and should keep Root Directory = **`apps/web`**; do not change the web project to `apps/api`.
+
+If the **API** project (the one for the backend) fails (e.g. "cd apps/api: No such file or directory" or "Deployment failed with error"):
 
 1. **Set Root Directory to `apps/api`**  
    In the project: **Settings** → **General** → **Root Directory** → set to **`apps/api`** (so Vercel uses `apps/api/vercel.json` and runs install/build from that folder). Do **not** use a custom build command like `cd apps/api && npm run build` when root is already `apps/api`.
@@ -69,10 +71,11 @@ If the repo is already imported as the **API** project and the deployment fails 
    In **Settings** → **Environment Variables**, add `DATABASE_URL` and `JWT_SECRET` if you use Postgres and custom JWT.
 
 5. **If you see "cd apps/api: No such file or directory"**  
-   The failing deployment is using an old config (e.g. Install command `cd apps/api && npm install`). Fix it like this:
-   - **Root Directory:** On the same **Build and Deployment** page, scroll to **Root Directory**. Set it to **`apps/api`** (click Edit, enter `apps/api`, Save). That way the build runs from inside `apps/api` and Vercel uses plain `npm install` and `npm run build` there — no `cd` needed.
-   - **Production Overrides:** If you see "Configuration Settings in the current Production deployment differ from your current Project Settings", expand **Production Overrides**. If an old **Install** or **Build** command is shown there, the next deployment will use your **current** Project Settings (defaults) as long as you trigger a **new** deploy.
-   - **Redeploy:** Use **Redeploy** (e.g. from the deployment list or the toast) so the next build uses the current settings. After that, the API should build from `apps/api` with default install/build.
+   The project is still using an old Install command (`cd apps/api && npm install`). Override it explicitly so Vercel stops using the old value:
+   - **Root Directory:** **Build and Deployment** → scroll to **Root Directory** → set to **`apps/api`** (Edit → `apps/api` → Save).
+   - **Install Command:** Under **Framework Settings**, find **Install Command**. **Turn the Override toggle ON** and set the value to exactly **`npm install`** (no `cd`). Save.
+   - **Build Command:** Turn **Build Command** Override **ON** and set to **`npm run build`**. Save.
+   - **Redeploy:** Trigger a new deployment. The build will run from `apps/api` with `npm install` and `npm run build` only.
 
 ---
 
@@ -101,6 +104,48 @@ You can have **multiple projects** from the same repo. Keep your existing API pr
 - **Netlify:** **Add site** → **Import an existing project** → choose the same repo. This creates a second site; set base directory to `apps/web` and name it something like "Pulse Web".
 
 Each project gets its own URL and domain settings. API stays on one URL, PWA on another (or you point your main domain at the PWA and keep the API on a subdomain like `api.pulseflow.site`).
+
+---
+
+## Web project: succeed and copy logs
+
+**Goal:** Deploy the PWA (`apps/web`) and know what a successful build looks like (and where to copy logs from if it fails).
+
+### 1. Create / configure the web project (Vercel)
+
+- **New project:** **Add New** → **Project** → select **PulseFlow-App/PulseFlow-App** (same repo). Name it e.g. **pulse-web** (so it’s the PWA, not the API).
+- **Root Directory:** **Build and Deployment** → **Root Directory** → **Edit** → set to **`apps/web`** → Save. Do **not** set `apps/api` here; the web project must use `apps/web`.
+- **Framework / commands:** Leave **Framework Preset** as **Vite** (or Other). Leave **Build Command**, **Output Directory**, and **Install Command** as default (no override needed). Defaults are: Build `npm run build`, Output `dist`, Install `npm install`.
+- **Deploy:** Click **Deploy** (or push to `main` if the project is already connected).
+
+### 2. What a successful build looks like (logs you can copy)
+
+In **Deployments** → click the deployment → **Building** / **Build Logs**. A **successful** web build typically shows something like:
+
+```
+Cloning github.com/PulseFlow-App/PulseFlow-App (Branch: main, Commit: ...)
+Cloning completed: ...
+Running "install" command: `npm install`...
+... (npm output) ...
+added XXX packages
+Running "build" command: `npm run build`...
+vite v6.x.x building for production...
+... (Vite build output) ...
+Build Completed in /vercel/output/static
+```
+
+Then the deployment moves to **Ready** and you get a URL (e.g. `pulse-web-xxx.vercel.app`). If you see **Build Completed** and **Ready**, the web project deployed successfully.
+
+### 3. If the build fails: copy logs and what to check
+
+- **Where to copy logs:** **Deployments** → click the **failed** deployment → open **Build Logs**. Scroll to the bottom; the error is usually in the last 20–30 lines. Copy that whole block (or from “Running …” to the end) when asking for help or debugging.
+- **Web project must use Root `apps/web`.** If the logs show `cd apps/api` or “apps/api: No such file or directory”, you’re in the **API** project’s settings, or the project’s Root Directory is wrong. Open the **web** project (e.g. pulse-web) and set Root Directory to **`apps/web`** only.
+- **Install/Build:** For the web project, Install should be `npm install` and Build `npm run build` with no `cd`. If you had overrides from another project, set **Override** to **ON** and set Install to `npm install`, Build to `npm run build`, and Root to `apps/web`.
+- **Node / npm errors:** If the log shows a missing module or Node version error, it’s usually fixable in the repo (e.g. lockfile or engines). Copy the exact error line from the log.
+
+### 4. Point domain (e.g. app.pulseflow.site)
+
+After a successful deploy: **Settings** → **Domains** → **Add** → **`app.pulseflow.site`** → then add the **CNAME** at your DNS host (see “Deploy at https://app.pulseflow.site” above).
 
 ---
 
