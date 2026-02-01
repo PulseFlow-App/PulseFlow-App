@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlockCard } from '../components/shared/BlockCard';
 import { Footer } from '../components/shared/Footer';
+import { PoweredByPulse } from '../components/shared/PoweredByPulse';
 import { BLOCKS } from '../blocks/registry';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -63,6 +64,8 @@ export function BlockDashboard({ navigation }: Props) {
             <BlockCard key={block.id} block={block} />
           ))}
         </View>
+
+        <PoweredByPulse />
 
         <Footer />
       </ScrollView>

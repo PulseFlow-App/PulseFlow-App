@@ -156,4 +156,4 @@ You can replace stub routes with real DB and logic when ready.
 
 ---
 
-📖 See also: [User Data Storage](./user-data-storage.md) | [Frontend & Testing](./frontend-and-testing.md)
+📖 See also: [User Data Storage](./user-data-storage.md) | [Setup Database](./setup-database.md) | [Frontend & Testing](./frontend-and-testing.md)

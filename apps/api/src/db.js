@@ -1,0 +1,76 @@
+/**
+ * Postgres DB layer for Pulse API.
+ * When DATABASE_URL is set, uses pg Pool; otherwise the API uses in-memory storage.
+ */
+const { Pool } = require('pg');
+
+const connectionString = process.env.DATABASE_URL;
+const pool = connectionString
+  ? new Pool({
+      connectionString,
+      ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: true },
+    })
+  : null;
+
+function hasDb() {
+  return pool !== null;
+}
+
+async function getUserByEmail(email) {
+  if (!pool) return null;
+  const { rows } = await pool.query(
+    'SELECT id, email, password_hash FROM users WHERE email = $1',
+    [email]
+  );
+  return rows[0] ? { userId: rows[0].id, email: rows[0].email, passwordHash: rows[0].password_hash } : null;
+}
+
+async function createUser(id, email, passwordHash) {
+  if (!pool) return null;
+  await pool.query(
+    'INSERT INTO users (id, email, password_hash) VALUES ($1, $2, $3)',
+    [id, email, passwordHash]
+  );
+  return { userId: id, email };
+}
+
+async function getBodyLogs(userId, from, to) {
+  if (!pool) return [];
+  let query = 'SELECT id, user_id AS "userId", date, payload, created_at AS "createdAt" FROM body_logs WHERE user_id = $1';
+  const params = [userId];
+  if (from) {
+    params.push(from);
+    query += ` AND date >= $${params.length}`;
+  }
+  if (to) {
+    params.push(to);
+    query += ` AND date <= $${params.length}`;
+  }
+  query += ' ORDER BY date DESC, created_at DESC';
+  const { rows } = await pool.query(query, params);
+  return rows.map((r) => ({
+    id: r.id,
+    userId: r.userId,
+    date: r.date,
+    ...r.payload,
+    createdAt: r.createdAt,
+  }));
+}
+
+async function createBodyLog(log) {
+  if (!pool) return null;
+  const { id, userId, date, ...payload } = log;
+  await pool.query(
+    'INSERT INTO body_logs (id, user_id, date, payload) VALUES ($1, $2, $3, $4)',
+    [id, userId, date, JSON.stringify(payload)]
+  );
+  return log;
+}
+
+module.exports = {
+  hasDb,
+  getUserByEmail,
+  createUser,
+  getBodyLogs,
+  createBodyLog,
+};
