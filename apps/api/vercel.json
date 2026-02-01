@@ -1,5 +1,5 @@
 {
-  "buildCommand": "",
+  "buildCommand": "npm run build",
   "outputDirectory": "public",
   "installCommand": "npm install"
 }
