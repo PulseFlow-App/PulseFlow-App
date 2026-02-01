@@ -1,5 +1,5 @@
 /**
- * Magic — email OTP + Solana embedded wallet.
+ * Magic - email OTP + Solana embedded wallet.
  * When EXPO_PUBLIC_MAGIC_PUBLISHABLE_KEY is set, provides Magic instance and Relayer for login.
  */
 import React, { createContext, useMemo, useContext } from 'react';

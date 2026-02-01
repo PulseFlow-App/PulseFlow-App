@@ -1,5 +1,5 @@
 /**
- * Body Signals block — data shapes.
+ * Body Signals block - data shapes.
  * Block 01 MVP: daily signals, non-medical insights only.
  */
 export type BodyLogEntry = {

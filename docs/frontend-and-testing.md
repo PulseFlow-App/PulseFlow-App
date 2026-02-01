@@ -2,18 +2,14 @@
 
 ## Do we have a frontend?
 
-**Current state:** The repo has **no built UI yet**. We have:
+**Current state:**
 
-- **Placeholder structure** — `apps/web/` (empty), `apps/api/`, `apps/ai-engine/` (placeholders)
-- **Mobile app** — `apps/mobile/` is a minimal **Expo (React Native)** scaffold you can run locally (see below)
-- **Spec & plan** — Full mobile app spec in [`.specify/specs/001-pulse-platform/`](../.specify/specs/001-pulse-platform/) (React Native + Expo, iOS 14+, Android 8.0+)
+- **Mobile app** — `apps/mobile/` is the **Expo (React Native)** app: Body Signals, Work Routine, auth (Magic + Phantom), Premium (IAP). Run locally or share with testers (see below).
+- **Web (PWA)** — `apps/web/` is a PWA-ready React app (login, dashboard, block placeholders). Deploy to Vercel/Netlify; see [Deploy](./deploy.md).
+- **API** — `apps/api/` is the backend (auth, body logs, insights). Deploy with Root Directory `apps/api`; see [Deploy](./deploy.md).
+- **Spec** — [`.specify/specs/001-pulse-platform/`](../.specify/specs/001-pulse-platform/) holds the full spec and plan.
 
-**Planned surfaces:**
-
-1. **Mobile app (primary)** — React Native with Expo. Daily Pulse, data input, Premium via $PULSE staking. Target: App Store & Play Store.
-2. **Web (optional)** — `apps/web/` for landing/marketing or future web dashboard. Not implemented yet.
-
-So: **no production frontend yet**; you can run the **Expo mobile scaffold** in `apps/mobile/` to test the stack and add wallet connection.
+There is **no separate "expo folder"** in the repo; the mobile app lives in `apps/mobile`. When you run `npx expo start`, a `.expo/` cache folder is created (gitignored).
 
 ---
 
@@ -83,7 +79,13 @@ eas build --profile development --platform android
 
 Then install the built `.ipa` / `.apk` on device or simulator and test wallet connect there.
 
-### 5. E2E / automated tests
+### 5. Sharing with testers
+
+- **Remote (any network):** `cd apps/mobile && npx expo start --tunnel`. Share the QR code or `exp://` link; testers need **Expo Go** (iOS/Android). First time may prompt for `@expo/ngrok`.
+- **Same Wi‑Fi:** `npx expo start` → share the QR code from the terminal.
+- **Standalone (no Expo Go):** Use [EAS Build](https://docs.expo.dev/build/introduction/) (development or preview profile), then share the build link (e.g. TestFlight, download link).
+
+### 6. E2E / automated tests
 
 When you add tests (e.g. Detox, Maestro, or Jest + React Native Testing Library):
 
@@ -130,8 +132,9 @@ So:
 
 | Question | Answer |
 |----------|--------|
-| **Do we have a frontend?** | No full UI yet. We have a runnable **Expo mobile scaffold** in `apps/mobile/`. |
+| **Do we have a frontend?** | Yes. **Mobile** in `apps/mobile/` (Expo); **PWA** in `apps/web/`. No separate "expo folder"; `.expo/` is cache (gitignored). |
 | **How to test the mobile app?** | `cd apps/mobile && npm install && npx expo start` (Expo Go), or `npx expo run:ios` / `run:android` for simulators; use a **dev build** for wallet SDKs. |
+| **Share with testers?** | `npx expo start --tunnel` (remote) or same Wi‑Fi QR; or EAS Build for standalone. |
 | **Wallet compatible?** | Yes. Solana wallets (Phantom, etc.) via Phantom React Native SDK (dev build) and/or WalletConnect; read-only for $PULSE / Premium. |
 
 ---

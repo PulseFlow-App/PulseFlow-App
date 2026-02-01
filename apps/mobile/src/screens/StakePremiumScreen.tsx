@@ -1,7 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Pressable } from 'react-native';
 import { usePremium } from '../contexts/PremiumContext';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
@@ -28,7 +27,11 @@ export function StakePremiumScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
         <Text style={styles.title}>Stake $PULSE for Premium</Text>
         <Text style={styles.subtitle}>
           Premium unlocks advanced trend tracking, personal baseline modeling, and unlimited AI requests.
@@ -51,7 +54,7 @@ export function StakePremiumScreen({ navigation }: Props) {
       <View style={styles.card}>
         <Text style={styles.stepTitle}>2. Stake to reach premium level</Text>
         <Text style={styles.body}>
-          Stake the required amount of $PULSE on our platform. Once staked, connect your wallet in Profile to verify and unlock Premium.
+          Stake the required amount of $PULSE at our staking site (or Streamflow / another Solana staking service). Once staked, connect your wallet in Profile to verify and unlock Premium.
         </Text>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
@@ -74,12 +77,13 @@ export function StakePremiumScreen({ navigation }: Props) {
         </Pressable>
       </View>
 
-      <Pressable
-        style={({ pressed }) => [styles.demoButton, pressed && styles.linkPressed]}
-        onPress={handleIStaked}
-      >
-        <Text style={styles.demoText}>I've staked — unlock Premium (demo)</Text>
-      </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.demoButton, pressed && styles.linkPressed]}
+          onPress={handleIStaked}
+        >
+          <Text style={styles.demoText}>I've staked - unlock Premium (demo)</Text>
+        </Pressable>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -88,7 +92,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  scrollContent: {
     paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   header: {
     marginBottom: 24,

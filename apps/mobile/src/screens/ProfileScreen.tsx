@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Pressable } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { usePremium } from '../contexts/PremiumContext';
 import { PremiumSuccessModal } from '../components/shared/PremiumSuccessModal';
@@ -16,13 +15,10 @@ export function ProfileScreen({ navigation }: Props) {
   const { auth, signOut } = useAuth();
   const {
     isPremium,
-    isConnecting,
-    error,
-    connectWallet,
     setWalletAddress,
     checkPremiumStatus,
     setPremiumUnlocked,
-    clearError,
+    subscribeToPremium,
   } = usePremium();
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const prevPremium = useRef(false);
@@ -49,31 +45,60 @@ export function ProfileScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
-        {user ? (
-          <View style={styles.card}>
-            <Text style={styles.label}>Email</Text>
-            <Text style={styles.value}>{user.email}</Text>
-            {user.walletAddress ? (
-              <>
-                <Text style={[styles.label, { marginTop: 12 }]}>Wallet (Magic)</Text>
-                <Text style={styles.value} numberOfLines={1}>{user.walletAddress}</Text>
-              </>
-            ) : null}
-          </View>
-        ) : null}
-        <Pressable
-          style={({ pressed }) => [styles.buttonSecondary, pressed && styles.buttonPressed]}
-          onPress={() => signOut()}
-        >
-          <Text style={styles.buttonSecondaryText}>Sign out</Text>
-        </Pressable>
-      </View>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account</Text>
+          {user ? (
+            <View style={styles.card}>
+              {user.email.endsWith('@wallet.pulse') ? (
+                <>
+                  <Text style={styles.label}>Signed in with wallet</Text>
+                  {user.walletAddress ? (
+                    <>
+                      <Text style={styles.value} numberOfLines={1}>{user.walletAddress}</Text>
+                      <Pressable
+                        style={({ pressed }) => [styles.linkButton, pressed && styles.linkPressed, { marginTop: 12 }]}
+                        onPress={() => navigation.navigate('Wallet')}
+                      >
+                        <Text style={styles.linkText}>Wallet → copy address & deposit SOL</Text>
+                      </Pressable>
+                    </>
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  <Text style={styles.label}>Email</Text>
+                  <Text style={styles.value}>{user.email}</Text>
+                  {user.walletAddress ? (
+                    <>
+                      <Text style={[styles.label, { marginTop: 12 }]}>Wallet</Text>
+                      <Text style={styles.value} numberOfLines={1}>{user.walletAddress}</Text>
+                      <Pressable
+                        style={({ pressed }) => [styles.linkButton, pressed && styles.linkPressed, { marginTop: 12 }]}
+                        onPress={() => navigation.navigate('Wallet')}
+                      >
+                        <Text style={styles.linkText}>Wallet → copy address & deposit SOL</Text>
+                      </Pressable>
+                    </>
+                  ) : null}
+                </>
+              )}
+            </View>
+          ) : null}
+          <Pressable
+            style={({ pressed }) => [styles.buttonSecondary, pressed && styles.buttonPressed]}
+            onPress={() => signOut()}
+          >
+            <Text style={styles.buttonSecondaryText}>Sign out</Text>
+          </Pressable>
+        </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Premium</Text>
-        {isPremium ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Premium</Text>
+          {isPremium ? (
           <View style={styles.card}>
             <Text style={styles.premiumBadge}>Premium active</Text>
             <Text style={styles.hint}>Full features unlocked</Text>
@@ -81,37 +106,29 @@ export function ProfileScreen({ navigation }: Props) {
         ) : (
           <>
             <Text style={styles.hint}>
-              Connect your Solana wallet to show that you have staked $PULSE. Then you can unlock premium.
+              Unlock unlimited requests, long-term trends, and personalized insights. Subscribe inside the app.
             </Text>
-            {error ? (
-              <View style={styles.errorRow}>
-                <Text style={styles.errorText}>{error}</Text>
-                <Pressable onPress={clearError}><Text style={styles.dismiss}>Dismiss</Text></Pressable>
-              </View>
-            ) : null}
             <Pressable
-              style={({ pressed }) => [styles.button, pressed && styles.buttonPressed, isConnecting && styles.buttonDisabled]}
-              onPress={connectWallet}
-              disabled={isConnecting}
+              style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+              onPress={() => subscribeToPremium()}
             >
-              <Text style={styles.buttonText}>
-                {isConnecting ? 'Connecting…' : 'Connect wallet to show premium'}
-              </Text>
+              <Text style={styles.buttonText}>Subscribe to Premium</Text>
             </Pressable>
             <Pressable
               style={({ pressed }) => [styles.linkButton, pressed && styles.linkPressed]}
-              onPress={() => navigation.navigate('StakePremium')}
+              onPress={() => navigation.navigate('AboutPulse')}
             >
-              <Text style={styles.linkText}>Stake to reach premium →</Text>
+              <Text style={styles.linkText}>Learn about Pulse →</Text>
             </Pressable>
           </>
         )}
-      </View>
+        </View>
 
-      <PremiumSuccessModal
-        visible={showPremiumModal}
-        onClose={() => setShowPremiumModal(false)}
-      />
+        <PremiumSuccessModal
+          visible={showPremiumModal}
+          onClose={() => setShowPremiumModal(false)}
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -120,7 +137,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  scrollContent: {
     paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   section: {
     marginBottom: 32,

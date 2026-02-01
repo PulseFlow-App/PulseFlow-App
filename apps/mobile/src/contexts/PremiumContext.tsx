@@ -1,12 +1,19 @@
 /**
- * Premium — optional wallet connect to show staked $PULSE and unlock premium.
- * Read-only chain check; no in-app trading.
+ * Premium - subscription via IAP (store-safe). No token gating in-app.
+ * Protocol can allocate credits off-app; app only sees isPremium (from IAP or backend).
  */
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import { Linking } from 'react-native';
 
 const PULSE_PUMPFUN = 'https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump';
-const STAKING_LINK = PULSE_PUMPFUN; // Replace with your staking UI when available
+
+function getStakingUrl(): string {
+  const url =
+    typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_STAKING_URL
+      ? String(process.env.EXPO_PUBLIC_STAKING_URL).replace(/\/$/, '')
+      : '';
+  return url || PULSE_PUMPFUN;
+}
 
 export type PremiumState = {
   isPremium: boolean;
@@ -22,6 +29,8 @@ type PremiumContextValue = PremiumState & {
   openStakeScreen: () => void;
   clearError: () => void;
   setPremiumUnlocked: (unlocked: boolean) => void;
+  /** Opens IAP when implemented; for demo can set premium. Store-safe: no crypto. */
+  subscribeToPremium: () => void;
 };
 
 const PremiumContext = createContext<PremiumContextValue | null>(null);
@@ -73,7 +82,7 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
         ...s,
         isConnecting: false,
         walletAddress: null,
-        error: 'Wallet connect requires a development build. Open "Stake to reach premium" to learn more.',
+        error: 'Wallet connect requires a development build. Use Profile to subscribe to Premium.',
       }));
     } catch (e) {
       setState((s) => ({
@@ -89,7 +98,7 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const openStakeScreen = useCallback(() => {
-    Linking.openURL(STAKING_LINK).catch(() => {});
+    Linking.openURL(getStakingUrl()).catch(() => {});
   }, []);
 
   const clearError = useCallback(() => {
@@ -100,6 +109,12 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, isPremium: unlocked, error: null }));
   }, []);
 
+  const subscribeToPremium = useCallback(() => {
+    // TODO: open Apple/Google IAP; on success backend sets subscription and app calls setPremiumUnlocked(true)
+    // For demo: unlock premium. Replace with IAP flow when shipping.
+    setState((s) => ({ ...s, isPremium: true, error: null }));
+  }, []);
+
   const value: PremiumContextValue = {
     ...state,
     connectWallet,
@@ -108,6 +123,7 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
     openStakeScreen,
     clearError,
     setPremiumUnlocked,
+    subscribeToPremium,
   };
 
   return <PremiumContext.Provider value={value}>{children}</PremiumContext.Provider>;

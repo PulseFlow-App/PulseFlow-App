@@ -1,5 +1,5 @@
 /**
- * Pulse app — dark mode.
+ * Pulse app - dark mode.
  * Single slightly darker blue background; white/5 borders; blue/orange accents.
  */
 export const colors = {

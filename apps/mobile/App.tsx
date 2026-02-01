@@ -17,7 +17,7 @@ import { RootNavigator } from './src/navigation/RootNavigator';
 import { colors } from './src/theme/colors';
 
 /**
- * Pulse — block-based wellness app.
+ * Pulse - block-based wellness app.
  * Fonts: Inter (sans) + PT Serif (serif), matching the provided design.
  */
 export default function App() {

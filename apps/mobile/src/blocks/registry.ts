@@ -1,5 +1,5 @@
 /**
- * Block registry — each block is self-contained.
+ * Block registry - each block is self-contained.
  * Body Signals + Work Routine (native check-ins, no wallet) are active.
  */
 export type BlockStatus = 'active' | 'comingSoon';

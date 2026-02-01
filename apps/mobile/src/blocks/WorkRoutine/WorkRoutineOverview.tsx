@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pressable } from 'react-native';
 import { ScoreRing } from '../../components/shared/ScoreRing';
@@ -20,7 +20,11 @@ export function WorkRoutineOverview({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
         <Text style={styles.title}>Work Routine</Text>
         <Text style={styles.subtitle}>Check-ins & focus insights</Text>
       </View>
@@ -53,12 +57,13 @@ export function WorkRoutineOverview({ navigation }: Props) {
         <Text style={styles.buttonText}>Start Check-in</Text>
       </Pressable>
 
-      <Pressable
-        style={({ pressed }) => [styles.buttonSecondary, pressed && styles.buttonPressed]}
-        onPress={() => navigation.navigate('WorkRoutineInsights')}
-      >
-        <Text style={styles.buttonSecondaryText}>View Insights</Text>
-      </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.buttonSecondary, pressed && styles.buttonPressed]}
+          onPress={() => navigation.navigate('WorkRoutineInsights')}
+        >
+          <Text style={styles.buttonSecondaryText}>View Insights</Text>
+        </Pressable>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -67,7 +72,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  scrollContent: {
     paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   header: {
     paddingTop: 8,

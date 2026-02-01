@@ -1,5 +1,5 @@
 /**
- * Work Routine — in-app store. No wallet, no cooldown.
+ * Work Routine - in-app store. No wallet, no cooldown.
  */
 import type { CheckInEntry, CheckInAnalysis, QuestionResponse } from './types';
 import { WORK_ROUTINE_QUESTIONS } from './questions';
@@ -37,7 +37,7 @@ function ruleBasedAnalysis(responses: Record<string, QuestionResponse>): CheckIn
   let assessment: string;
   if (avg >= 3.5) assessment = 'Strong day overall. Keep the momentum.';
   else if (avg >= 2.5) assessment = 'Solid baseline. Small tweaks can lift your routine.';
-  else assessment = 'Focus on one area tomorrow—sleep or movement—and build from there.';
+  else assessment = 'Focus on one area tomorrow - sleep or movement - and build from there.';
 
   return { assessment, quickWins };
 }

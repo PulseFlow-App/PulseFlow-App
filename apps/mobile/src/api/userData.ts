@@ -1,5 +1,5 @@
 /**
- * User data API — sync body logs and routine check-ins to backend (per user).
+ * User data API - sync body logs and routine check-ins to backend (per user).
  * All requests use Authorization: Bearer <token>. Data stored securely per userId.
  * Callers pass token from useAuth().getAccessToken(). When EXPO_PUBLIC_API_URL is not set, no-op.
  */
@@ -53,5 +53,5 @@ export async function fetchBodyLogs(
   return data.logs ?? [];
 }
 
-// Work routine check-ins: same pattern — POST /users/me/work-check-ins, GET /users/me/work-check-ins
+// Work routine check-ins: same pattern - POST /users/me/work-check-ins, GET /users/me/work-check-ins
 // Baselines: GET /users/me/baselines when building AI or Pulse (backend computes from logs).

@@ -1,5 +1,5 @@
 /**
- * Work Routine block — daily check-in, no wallet.
+ * Work Routine block - daily check-in, no wallet.
  * Equivalent to WRA flow without Celo/$INSIGHT.
  */
 

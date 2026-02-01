@@ -4,11 +4,14 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MagicProvider } from '../contexts/MagicContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { WalletConnectProvider } from '../contexts/WalletConnectContext';
 import { PremiumProvider } from '../contexts/PremiumContext';
+import { WalletEmailModal } from '../components/shared/WalletEmailModal';
 import { SignInScreen } from '../screens/SignInScreen';
 import { BlockDashboard } from '../screens/BlockDashboard';
 import { ProfileScreen } from '../screens/ProfileScreen';
-import { StakePremiumScreen } from '../screens/StakePremiumScreen';
+import { AboutPulseScreen } from '../screens/AboutPulseScreen';
+import { WalletScreen } from '../screens/WalletScreen';
 import { BodySignalsOverview } from '../blocks/BodySignals/BodySignalsOverview';
 import { BodySignalsTrends } from '../blocks/BodySignals/BodySignalsTrends';
 import { BodySignalsLog } from '../blocks/BodySignals/BodySignalsLog';
@@ -23,7 +26,8 @@ export type RootStackParamList = {
   SignIn: undefined;
   BlockDashboard: undefined;
   Profile: undefined;
-  StakePremium: undefined;
+  AboutPulse: undefined;
+  Wallet: undefined;
   BodySignalsOverview: undefined;
   BodySignalsTrends: undefined;
   BodySignalsLog: undefined;
@@ -57,9 +61,14 @@ function MainStack() {
       />
       <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
       <Stack.Screen
-        name="StakePremium"
-        component={StakePremiumScreen}
-        options={{ title: 'Stake for Premium' }}
+        name="AboutPulse"
+        component={AboutPulseScreen}
+        options={{ title: 'About Pulse' }}
+      />
+      <Stack.Screen
+        name="Wallet"
+        component={WalletScreen}
+        options={{ title: 'Wallet' }}
       />
       <Stack.Screen
         name="BodySignalsOverview"
@@ -105,7 +114,12 @@ function AuthGate() {
     );
   }
   if (auth.status === 'guest') return <SignInScreen />;
-  return <MainStack />;
+  return (
+    <>
+      <MainStack />
+      <WalletEmailModal />
+    </>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -121,6 +135,7 @@ export function RootNavigator() {
   return (
     <MagicProvider>
       <AuthProvider>
+        <WalletConnectProvider>
         <PremiumProvider>
         <NavigationContainer
       theme={{
@@ -144,6 +159,7 @@ export function RootNavigator() {
           <AuthGate />
         </NavigationContainer>
         </PremiumProvider>
+        </WalletConnectProvider>
       </AuthProvider>
     </MagicProvider>
   );

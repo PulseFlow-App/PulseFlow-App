@@ -1,0 +1,65 @@
+.page {
+  min-height: 100dvh;
+  padding: 24px;
+  background-color: #0a0e14;
+  color: #fff;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.back {
+  font-size: 0.9375rem;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+.main {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+
+.desc {
+  font-size: 1rem;
+  color: #a3a3a3;
+  margin: 0 0 24px;
+  line-height: 1.4;
+}
+
+.placeholder {
+  font-size: 0.9375rem;
+  color: #737373;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.text {
+  margin: 0 0 16px;
+}
+
+.link {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

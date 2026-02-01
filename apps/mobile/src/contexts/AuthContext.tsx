@@ -1,5 +1,5 @@
 /**
- * Auth — Magic (email OTP + Solana wallet) and/or API email/password.
+ * Auth - Magic (email OTP + Solana wallet) and/or API email/password.
  * Session stored in AsyncStorage.
  */
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
@@ -25,6 +25,8 @@ type AuthContextValue = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signInWithMagic: (email: string) => Promise<void>;
+  signInWithWallet: (walletAddress: string) => Promise<void>;
+  updateWalletUserEmail: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
   getAccessToken: () => Promise<string | null>;
   isMagicEnabled: boolean;
@@ -66,6 +68,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     restoreSession();
   }, [restoreSession]);
 
+  // Refill Magic wallet address when session was restored without it (same wallet per user)
+  useEffect(() => {
+    if (auth.status !== 'signedIn' || !magic || auth.user.walletAddress) return;
+    const user = auth.user;
+    let cancelled = false;
+    (async () => {
+      try {
+        const info = await magic.user.getInfo();
+        const wallets = (info as { wallets?: { solana?: { publicAddress?: string } } }).wallets;
+        const walletAddress = wallets?.solana?.publicAddress ?? null;
+        if (cancelled || !walletAddress) return;
+        const updatedUser: User = { ...user, walletAddress };
+        const raw = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+        if (raw) {
+          const session = JSON.parse(raw) as { user: User; token?: string; provider?: string };
+          session.user = updatedUser;
+          await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+        }
+        setAuth({ status: 'signedIn', user: updatedUser });
+      } catch {
+        // not a Magic session or not logged in
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [auth.status, auth.status === 'signedIn' ? auth.user?.userId : null, magic]);
+
   const signInWithMagic = useCallback(
     async (email: string) => {
       if (!magic) throw new Error('Magic is not configured');
@@ -87,6 +115,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     [magic]
   );
+
+  const signInWithWallet = useCallback(async (walletAddress: string) => {
+    const trimmed = walletAddress.trim();
+    if (!trimmed) throw new Error('Wallet address is required');
+    // Solana addresses are base58, typically 32–44 chars
+    if (trimmed.length < 32 || trimmed.length > 44) {
+      throw new Error('Invalid Solana address length');
+    }
+    const userId = `wallet_${trimmed.slice(0, 8)}_${Date.now().toString(36)}`;
+    const email = `${trimmed.slice(0, 6)}…@wallet.pulse`;
+    const user: User = { userId, email, walletAddress: trimmed };
+    const session = { user, provider: 'wallet' };
+    await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+    setAuth({ status: 'signedIn', user });
+  }, []);
+
+  const updateWalletUserEmail = useCallback(async (email: string) => {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed) return;
+    try {
+      const raw = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+      if (!raw) return;
+      const session = JSON.parse(raw) as { user: User; provider?: string };
+      if (session?.provider !== 'wallet' || !session?.user) return;
+      const updatedUser: User = { ...session.user, email: trimmed };
+      session.user = updatedUser;
+      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+      setAuth((prev) =>
+        prev.status === 'signedIn' ? { status: 'signedIn', user: updatedUser } : prev
+      );
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const signIn = useCallback(
     async (email: string, password: string) => {
@@ -158,6 +220,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.provider === 'magic' && magic) {
           await magic.user.logout();
         }
+        // wallet provider: no external logout, just clear session
       }
     } catch {
       // ignore
@@ -184,6 +247,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signUp,
     signInWithMagic,
+    signInWithWallet,
+    updateWalletUserEmail,
     signOut,
     getAccessToken,
     isMagicEnabled,

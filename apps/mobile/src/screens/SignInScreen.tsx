@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -13,13 +14,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import { useAuth } from '../contexts/AuthContext';
+import { useWalletConnect } from '../contexts/WalletConnectContext';
 
 export function SignInScreen() {
-  const { signIn, signUp, signInWithMagic, isMagicEnabled } = useAuth();
+  const { signIn, signUp, signInWithMagic, signInWithWallet, isMagicEnabled } = useAuth();
+  const { openPhantomConnect, isConnecting: isWalletConnecting, error: walletError, clearError: clearWalletError } = useWalletConnect();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [walletAddress, setWalletAddress] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [usePassword, setUsePassword] = useState(false);
+  const [useWallet, setUseWallet] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,6 +65,28 @@ export function SignInScreen() {
     }
   };
 
+  const handleWalletSubmit = async () => {
+    setError(null);
+    const trimmed = walletAddress.trim();
+    if (!trimmed) {
+      setError('Paste your wallet address');
+      return;
+    }
+    setLoading(true);
+    try {
+      await signInWithWallet(trimmed);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Invalid wallet address');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnectPhantom = () => {
+    clearWalletError();
+    openPhantomConnect();
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
@@ -67,16 +94,21 @@ export function SignInScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={40}
       >
-        <View style={styles.header}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
           <Text style={styles.title}>Pulse</Text>
           <Text style={styles.subtitle}>
-            {isMagicEnabled
-              ? 'Sign in with email — we’ll send a one-time code. No password. You get a Solana wallet for premium.'
-              : 'Sign in with email to use the app.'}
+            Sign in with email or connect your Solana wallet (Phantom, Solflare, etc.).
           </Text>
         </View>
 
         <View style={styles.form}>
+          {!useWallet ? (
+            <>
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
@@ -148,17 +180,81 @@ export function SignInScreen() {
                 </Text>
               </Pressable>
               {isMagicEnabled && (
-                <Pressable
-                  style={({ pressed }) => [styles.switchButton, pressed && styles.switchPressed]}
-                  onPress={() => { setUsePassword(false); setError(null); }}
-                  disabled={loading}
-                >
-                  <Text style={styles.switchText}>Back to magic code</Text>
-                </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.switchButton, pressed && styles.switchPressed]}
+                onPress={() => { setUsePassword(false); setError(null); }}
+                disabled={loading}
+              >
+                <Text style={styles.switchText}>Back to magic code</Text>
+              </Pressable>
               )}
             </>
           )}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+          <Pressable
+            style={({ pressed }) => [styles.switchButton, pressed && styles.switchPressed]}
+            onPress={() => { setUseWallet(true); setError(null); setWalletAddress(''); }}
+            disabled={loading}
+          >
+            <Text style={styles.switchText}>Connect with Solana wallet</Text>
+          </Pressable>
+            </>
+          ) : (
+            <>
+          <Text style={styles.hintWallet}>
+            Open Phantom and tap Connect, or paste your wallet address below.
+          </Text>
+          <Pressable
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed, (loading || isWalletConnecting) && styles.buttonDisabled]}
+            onPress={handleConnectPhantom}
+            disabled={loading || isWalletConnecting}
+          >
+            {isWalletConnecting ? (
+              <ActivityIndicator size="small" color={colors.background} />
+            ) : (
+              <Text style={styles.buttonText}>Connect with Phantom</Text>
+            )}
+          </Pressable>
+          {walletError ? <Text style={styles.error}>{walletError}</Text> : null}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or paste address</Text>
+            <View style={styles.dividerLine} />
+          </View>
+          <Text style={styles.label}>Wallet address</Text>
+          <TextInput
+            style={[styles.input, styles.walletInput]}
+            value={walletAddress}
+            onChangeText={(t) => { setWalletAddress(t); setError(null); }}
+            placeholder="e.g. 7xKXtg2CW..."
+            placeholderTextColor={colors.textDim}
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!loading}
+          />
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+          <Pressable
+            style={({ pressed }) => [styles.buttonSecondary, pressed && styles.buttonPressed, loading && styles.buttonDisabled]}
+            onPress={handleWalletSubmit}
+            disabled={loading}
+          >
+            <Text style={styles.buttonSecondaryText}>Continue with pasted address</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [styles.switchButton, pressed && styles.switchPressed]}
+            onPress={() => { setUseWallet(false); setError(null); clearWalletError(); }}
+            disabled={loading}
+          >
+            <Text style={styles.switchText}>Back to email sign in</Text>
+          </Pressable>
+            </>
+          )}
         </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -171,8 +267,13 @@ const styles = StyleSheet.create({
   },
   keyboard: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
+    paddingBottom: 40,
     justifyContent: 'center',
+    minHeight: '100%',
   },
   header: {
     marginBottom: 32,
@@ -228,6 +329,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.background,
   },
+  buttonSecondary: {
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  buttonSecondaryText: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 16,
+    color: colors.text,
+  },
   switchButton: {
     alignItems: 'center',
     marginTop: 16,
@@ -235,6 +349,43 @@ const styles = StyleSheet.create({
   },
   switchPressed: { opacity: 0.8 },
   switchText: {
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    color: colors.blue,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+    gap: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    color: colors.textMuted,
+  },
+  hintWallet: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    color: colors.textMuted,
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  walletInput: {
+    fontFamily: fonts.sans,
+  },
+  linkButton: {
+    alignItems: 'center',
+    marginTop: 12,
+    paddingVertical: 8,
+  },
+  linkPressed: { opacity: 0.8 },
+  linkText: {
     fontFamily: fonts.sans,
     fontSize: 14,
     color: colors.blue,

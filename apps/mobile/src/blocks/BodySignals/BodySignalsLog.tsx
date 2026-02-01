@@ -174,7 +174,7 @@ export function BodySignalsLog({ navigation }: Props) {
             style={[styles.input, styles.textArea]}
             value={notes}
             onChangeText={setNotes}
-            placeholder="e.g. Travel day, poor sleep, deadline stress — not diagnosed"
+            placeholder="e.g. Travel day, poor sleep, deadline stress - not diagnosed"
             placeholderTextColor={colors.textMuted}
             multiline
             maxLength={500}
@@ -187,7 +187,7 @@ export function BodySignalsLog({ navigation }: Props) {
           <View style={styles.photoPlaceholder}>
             <Text style={styles.photoIcon}>📷</Text>
             <Text style={styles.photoTitle}>Add photo</Text>
-            <Text style={styles.photoSub}>Scale, meal, or how you feel — coming soon</Text>
+            <Text style={styles.photoSub}>Scale, meal, or how you feel - coming soon</Text>
           </View>
         </View>
 

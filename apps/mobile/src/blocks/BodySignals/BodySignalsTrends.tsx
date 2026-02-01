@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pressable } from 'react-native';
 import { LineChart } from '../../components/shared/LineChart';
@@ -54,7 +54,11 @@ export function BodySignalsTrends({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
         <Text style={styles.title}>Trends</Text>
         <Text style={styles.subtitle}>Body Signals over time</Text>
       </View>
@@ -99,12 +103,13 @@ export function BodySignalsTrends({ navigation }: Props) {
         <Text style={styles.hint}>{correlationHint}</Text>
       ) : null}
 
-      <Pressable
-        style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-        onPress={() => navigation.navigate('BodySignalsLog')}
-      >
-        <Text style={styles.buttonText}>Log Data</Text>
-      </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+          onPress={() => navigation.navigate('BodySignalsLog')}
+        >
+          <Text style={styles.buttonText}>Log Data</Text>
+        </Pressable>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -113,7 +118,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  scrollContent: {
     paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   header: {
     paddingTop: 8,

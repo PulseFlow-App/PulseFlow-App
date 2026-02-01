@@ -1,5 +1,0 @@
-{
-  "installCommand": "cd apps/api && npm install",
-  "buildCommand": "cd apps/api && npm run build",
-  "outputDirectory": "apps/api/public"
-}

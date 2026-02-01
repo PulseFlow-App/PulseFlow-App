@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pressable } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -30,7 +30,11 @@ export function BodySignalsOverview({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
         <Text style={styles.title}>Body Signals</Text>
         <Text style={styles.subtitle}>Your body pulse today</Text>
       </View>
@@ -68,12 +72,13 @@ export function BodySignalsOverview({ navigation }: Props) {
       >
         <Text style={styles.buttonText}>View Trends</Text>
       </Pressable>
-      <Pressable
-        style={({ pressed }) => [styles.buttonSecondary, pressed && styles.buttonPressed]}
-        onPress={() => navigation.navigate('BodySignalsLog')}
-      >
-        <Text style={styles.buttonSecondaryText}>Log Data</Text>
-      </Pressable>
+        <Pressable
+          style={({ pressed }) => [styles.buttonSecondary, pressed && styles.buttonPressed]}
+          onPress={() => navigation.navigate('BodySignalsLog')}
+        >
+          <Text style={styles.buttonSecondaryText}>Log Data</Text>
+        </Pressable>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -82,7 +87,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  scrollContent: {
     paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   header: {
     paddingTop: 8,

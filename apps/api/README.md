@@ -52,4 +52,4 @@ Server runs at `http://localhost:3000`. For the app to use it from a device/simu
 - `GET /premium/status?wallet=...` — stub; implement $PULSE staking check
 - `GET /health` — health check
 
-See [Deploy Backend](../../docs/deploy-backend.md) and [User Data Storage](../../docs/user-data-storage.md) for the full contract.
+See [Deploy](../../docs/deploy.md) and [User Data Storage](../../docs/user-data-storage.md) for the full contract.

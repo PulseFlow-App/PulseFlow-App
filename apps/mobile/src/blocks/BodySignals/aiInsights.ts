@@ -1,5 +1,5 @@
 /**
- * Body Signals — AI-powered insights for MVP.
+ * Body Signals - AI-powered insights for MVP.
  * Tries: 1) Backend API (API_URL), 2) Google AI / Gemini (EXPO_PUBLIC_GOOGLE_AI_API_KEY), 3) OpenAI (EXPO_PUBLIC_OPENAI_API_KEY), 4) null → rule-based fallback.
  * Pulse Score stays deterministic (never LLM-generated).
  */

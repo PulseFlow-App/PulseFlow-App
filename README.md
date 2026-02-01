@@ -69,22 +69,21 @@ It is an **everyday system** for understanding your own rhythm, reducing noise, 
 | [**Token Utility**](docs/token-utility.md) | How $PULSE staking unlocks Premium |
 | [**AI Stack**](docs/ai-stack.md) | Recommended AI architecture: inputs, reasoning, Pulse score, baselines |
 | [**FAQ**](docs/faq.md) | Common questions on product, Premium, privacy, and technical |
-| [**Frontend & testing**](docs/frontend-and-testing.md) | Do we have a frontend? How to test the mobile app. Wallet connector compatibility. |
-| [**Move repo to org**](docs/move-repo-to-org.md) | Steps to transfer this repo and the Pulse landing page to the PulseFlow-App organization. |
+| [**Frontend & testing**](docs/frontend-and-testing.md) | How to run and test the mobile app; sharing with testers; wallet connectors. |
+| [**Deploy**](docs/deploy.md) | Deploy PWA (`apps/web`) and API (`apps/api`) to Vercel/Netlify; env vars; custom domain. |
 
 **Other references:**
 
 - [Data model & privacy](data-model/privacy.md) — Data ownership and consent rules
 - [Contracts](contracts/README.md) — Staking logic (token lives on Pump.fun; no contract to deploy)
-- [**Frontend & testing**](docs/frontend-and-testing.md) — Do we have a frontend? How to test the mobile app. Wallet connector compatibility (Solana / Phantom).
 
 ---
 
-## Frontend & testing
+## Run the apps
 
-- **Do we have a frontend?** No full UI yet. There is a **runnable Expo mobile scaffold** in `apps/mobile/` you can open in the simulator or on a device.
-- **How to test the mobile app:** `cd apps/mobile && npm install && npx expo start` — then use Expo Go (scan QR) or press `i` / `a` for iOS / Android simulator.
-- **Wallet compatible?** Yes. The mobile app is designed to work with **Solana** wallets (e.g. **Phantom**) for $PULSE (Pump.fun). Use a **development build** for Phantom’s React Native SDK; see [Frontend & testing](docs/frontend-and-testing.md).
+- **Mobile:** `cd apps/mobile && npm install && npx expo start` — Expo Go (scan QR) or `i` / `a` for simulator. No separate "expo folder"; the app is in `apps/mobile`; `.expo/` is cache (gitignored).
+- **Web (PWA):** `cd apps/web && npm install && npm run dev` — see [Deploy](docs/deploy.md) to ship.
+- **API:** `cd apps/api && npm install && npm run dev` — see [Deploy](docs/deploy.md) for Vercel.
 
 ---
 
@@ -93,42 +92,16 @@ It is an **everyday system** for understanding your own rhythm, reducing noise, 
 ```
 pulse/
 ├── apps/
-│   ├── mobile/                 # Pulse mobile app (Expo / React Native) — runnable scaffold
-│   │   ├── App.tsx
-│   │   ├── app.json
-│   │   ├── assets/
-│   │   └── README.md
-│   ├── web/                    # Web app (pulseflow.site) — placeholder
-│   │   ├── public/
-│   │   │   └── assets/         # Icons, images, fonts
-│   │   ├── src/
-│   │   │   ├── app/            # App shell, routing, layout
-│   │   │   ├── pages/          # Landing, dashboard, profile
-│   │   │   ├── components/     # UI components (cards, charts, inputs)
-│   │   │   ├── features/       # Feature modules (meals, fitness, sleep)
-│   │   │   ├── hooks/          # Custom hooks (data sync, auth, AI calls)
-│   │   │   ├── styles/         # Design system & theme
-│   │   │   ├── utils/          # Helpers, validators
-│   │   │   └── main.tsx
-│   │   └── index.html
-│   │
-│   ├── api/                     # Backend / edge API
-│   │   └── src/
-│   │       ├── routes/        # REST / RPC endpoints
-│   │       ├── services/      # Business logic
-│   │       ├── ai/            # Prompt logic, reasoning pipelines
-│   │       ├── auth/          # Wallet / session auth
-│   │       ├── db/            # Database access layer
-│   │       ├── middleware/
-│   │       └── index.ts
-│   │
-│   └── ai-engine/             # Core intelligence (separable)
-│       ├── prompts/           # Prompt templates
-│       ├── reasoning/         # Multi-input reasoning logic
-│       ├── baselines/         # Personal baseline modeling
-│       ├── trend-analysis/    # Daily vs historical comparisons
-│       ├── recommendations/   # Meals, fitness, recovery, focus
-│       └── index.ts
+│   ├── mobile/                 # Pulse mobile app (Expo / React Native)
+│   │   ├── App.tsx, app.json, assets/
+│   │   └── src/                # screens, blocks (BodySignals, WorkRoutine), contexts, navigation
+│   ├── web/                    # PWA (Vite + React) — login, dashboard, block placeholders
+│   │   ├── public/icons/       # PWA icons (icon-192.png, icon-512.png)
+│   │   └── src/                # pages, components, contexts, blocks/registry
+│   ├── api/                    # Backend (Express, Postgres or in-memory)
+│   │   └── src/               # index.js, db.js, routes
+│   └── ai-engine/             # Prompts and reasoning
+│       └── prompts/
 │
 ├── packages/
 │   ├── ui/                    # Shared UI components

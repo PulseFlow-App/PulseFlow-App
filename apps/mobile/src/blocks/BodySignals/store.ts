@@ -1,5 +1,5 @@
 /**
- * Body Signals — Block 01.
+ * Body Signals - Block 01.
  * MVP uses AI for insight, explanation, and improvements (max 3).
  * Pulse Score stays deterministic (never AI-generated).
  * Fallback: rule-based generateInsights when AI is unavailable or fails.
@@ -129,13 +129,13 @@ export function generateInsights(
 
   // Build suggestions from friction points (max 3). Notes influence cautiously.
   if (state.frictionPoints.includes('sleep') || noteThemes.includes('sleep')) {
-    improvements.push('Improve sleep consistency — aim for similar bed and wake times.');
+    improvements.push('Improve sleep consistency - aim for similar bed and wake times.');
   }
   if (state.frictionPoints.includes('hydration') || noteThemes.includes('hydration')) {
-    improvements.push('Increase hydration — small sips throughout the day may help.');
+    improvements.push('Increase hydration - small sips throughout the day may help.');
   }
   if (state.frictionPoints.includes('stress') || noteThemes.includes('stress')) {
-    improvements.push('Reduce load today — short breaks or lighter tasks may help.');
+    improvements.push('Reduce load today - short breaks or lighter tasks may help.');
   }
   if (state.frictionPoints.includes('energy') || noteThemes.includes('fatigue')) {
     improvements.push('Prioritize rest or light movement instead of intense exercise.');
@@ -159,7 +159,7 @@ export function generateInsights(
   // One-line insight
   let insight: string;
   if (trend === 'up') {
-    insight = 'Your Pulse Score is up today — small steps are adding up.';
+    insight = 'Your Pulse Score is up today - small steps are adding up.';
   } else if (trend === 'down' && previousScore != null) {
     insight = 'Your Pulse Score is lower today; the suggestions below may help.';
   } else if (capped.length > 0) {
@@ -182,7 +182,7 @@ export function generateInsights(
   } else if (trend === 'down') {
     explanation = 'Your Pulse Score is a bit lower today; small changes may help.';
   } else if (trend === 'up') {
-    explanation = 'Your Pulse Score is up — your signals suggest a better baseline today.';
+    explanation = 'Your Pulse Score is up - your signals suggest a better baseline today.';
   } else {
     explanation = 'Your Pulse Score is steady. The suggestions below may help you nudge it up.';
   }
