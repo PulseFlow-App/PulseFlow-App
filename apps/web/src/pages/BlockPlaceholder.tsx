@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { getBlockById } from '../blocks/registry';
+import { BlockIcon } from '../components/BlockIcon';
 import styles from './BlockPlaceholder.module.css';
 
 export function BlockPlaceholder() {
@@ -21,7 +22,9 @@ export function BlockPlaceholder() {
         <Link to="/dashboard" className={styles.back}>← Dashboard</Link>
       </header>
       <main className={styles.main}>
-        <span className={styles.icon}>{block.icon}</span>
+        <span className={styles.iconWrap}>
+          <BlockIcon block={block} size="lg" />
+        </span>
         <h1 className={styles.title}>{block.name}</h1>
         <p className={styles.desc}>{block.description}</p>
         <p className={styles.placeholder}>

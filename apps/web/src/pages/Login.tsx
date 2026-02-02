@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { AppFooter } from '../components/AppFooter';
 import styles from './Login.module.css';
 
 export function Login() {
@@ -27,6 +28,7 @@ export function Login() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        <img src="/icons/icon-192.png" alt="Pulse" className={styles.logo} />
         <h1 className={styles.title}>Pulse</h1>
         <p className={styles.subtitle}>
           Sign in with email. Your daily wellness and routine pulse.
@@ -73,6 +75,7 @@ export function Login() {
         <p className={styles.hint}>
           This is the web app. Use the same API or Magic when you connect the backend.
         </p>
+        <AppFooter />
       </main>
     </div>
   );

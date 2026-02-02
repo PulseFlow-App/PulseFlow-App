@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Block } from '../blocks/registry';
+import { BlockIcon } from './BlockIcon';
 import styles from './BlockCard.module.css';
 
 type Props = {
@@ -10,7 +11,7 @@ type Props = {
 export function BlockCard({ block, href }: Props) {
   const content = (
     <>
-      <span className={styles.icon}>{block.icon}</span>
+      <BlockIcon block={block} size="md" />
       <div className={styles.text}>
         <h3 className={styles.name}>{block.name}</h3>
         <p className={styles.desc}>{block.description}</p>

@@ -12,6 +12,20 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoImg {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
 .logo {
   font-size: 1.25rem;
   font-weight: 600;
@@ -92,14 +106,3 @@
   margin: 0 0 12px;
 }
 
-.footer {
-  padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.footerText {
-  font-size: 0.8125rem;
-  color: #737373;
-  margin: 0;
-  line-height: 1.4;
-}

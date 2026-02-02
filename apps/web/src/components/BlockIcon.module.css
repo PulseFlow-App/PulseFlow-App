@@ -1,0 +1,18 @@
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sizeSm {
+  font-size: 1.5rem; /* 24px */
+}
+
+.sizeMd {
+  font-size: 2rem; /* 32px */
+}
+
+.sizeLg {
+  font-size: 3rem; /* 48px */
+}

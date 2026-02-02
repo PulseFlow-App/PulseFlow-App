@@ -51,7 +51,7 @@ You wrap your **existing PWA** in a minimal Android app that opens your PWA in a
 - **Google Play Developer account** – One-time **$25 USD** registration. No annual fee for the account.
 - **Developer identity** – Google may ask for verification (e.g. name, address, ID) depending on account type and region.
 - **PWA already live** – Your PWA must be served over HTTPS with a valid **web app manifest** and (for TWA) **Digital Asset Links** so Google can verify that the Play app and the website belong to you.
-- **Content and policy** – App must comply with [Google Play policy](https://support.google.com/googleplay/android-developer/answer/10788890) (content, privacy, security, etc.). For a wellness/utility app with optional wallet, you’ll need a privacy policy URL and, if you collect data, compliance with data policies.
+- **Content and policy** – App must comply with [Google Play policy](https://support.google.com/googleplay/android-developer/answer/10788890) (content, privacy, security, etc.). For a wellness/utility app with optional wallet, you’ll need a **privacy policy URL** and, if you collect data, compliance with data policies. The Pulse web app includes **Terms of Service**, **Privacy Policy**, and **Disclaimer** in the footer and at stable URLs: `https://app.pulseflow.site/terms`, `/privacy`, `/disclaimer` (use these when registering the PWA or TWA in stores).
 
 **How to build the Play package from your PWA:**
 - Use **Bubblewrap** (Node.js CLI):  

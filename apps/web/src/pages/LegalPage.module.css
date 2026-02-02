@@ -1,6 +1,7 @@
 .page {
   min-height: 100dvh;
   padding: 24px;
+  padding-bottom: 48px;
   background-color: #0a0e14;
   color: #fff;
 }
@@ -20,13 +21,8 @@
 }
 
 .main {
-  max-width: 480px;
+  max-width: 640px;
   margin: 0 auto;
-}
-
-.iconWrap {
-  display: block;
-  margin-bottom: 16px;
 }
 
 .title {
@@ -36,29 +32,42 @@
   letter-spacing: -0.02em;
 }
 
-.desc {
-  font-size: 1rem;
-  color: #a3a3a3;
-  margin: 0 0 24px;
-  line-height: 1.4;
-}
-
-.placeholder {
-  font-size: 0.9375rem;
+.updated {
+  font-size: 0.8125rem;
   color: #737373;
-  line-height: 1.5;
-  margin: 0;
+  margin: 0 0 24px;
 }
 
-.text {
-  margin: 0 0 16px;
+.content {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.link {
+.content h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 24px 0 8px;
+}
+
+.content h2:first-child {
+  margin-top: 0;
+}
+
+.content p {
+  margin: 0 0 12px;
+}
+
+.content ul {
+  margin: 0 0 12px;
+  padding-left: 1.25rem;
+}
+
+.content a {
   color: #3b82f6;
   text-decoration: none;
 }
 
-.link:hover {
+.content a:hover {
   text-decoration: underline;
 }

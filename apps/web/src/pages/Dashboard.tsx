@@ -1,5 +1,6 @@
 import { useAuth } from '../contexts/AuthContext';
 import { BlockCard } from '../components/BlockCard';
+import { AppFooter } from '../components/AppFooter';
 import { BLOCKS } from '../blocks/registry';
 import styles from './Dashboard.module.css';
 
@@ -14,7 +15,10 @@ export function Dashboard() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.logo}>Pulse</h1>
+        <div className={styles.logoWrap}>
+          <img src="/icons/icon-192.png" alt="" className={styles.logoImg} />
+          <h1 className={styles.logo}>Pulse</h1>
+        </div>
         <nav className={styles.nav}>
           <span className={styles.email}>{user?.email}</span>
           <button type="button" onClick={signOut} className={styles.profileBtn}>
@@ -46,11 +50,7 @@ export function Dashboard() {
           ))}
         </section>
 
-        <footer className={styles.footer}>
-          <p className={styles.footerText}>
-            Powered by Pulse. Body Signals and Work Routine blocks; more coming soon.
-          </p>
-        </footer>
+        <AppFooter />
       </main>
     </div>
   );

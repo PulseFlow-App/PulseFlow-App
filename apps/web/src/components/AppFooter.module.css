@@ -1,0 +1,38 @@
+.footer {
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: auto;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 8px;
+  margin-bottom: 8px;
+}
+
+.link {
+  font-size: 0.8125rem;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.sep {
+  font-size: 0.8125rem;
+  color: #737373;
+  user-select: none;
+}
+
+.copyright {
+  font-size: 0.75rem;
+  color: #737373;
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
+}

@@ -30,11 +30,6 @@
   background: rgba(23, 23, 23, 0.6);
 }
 
-.icon {
-  font-size: 2rem;
-  line-height: 1;
-}
-
 .text {
   flex: 1;
   min-width: 0;
