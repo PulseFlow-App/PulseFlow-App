@@ -28,7 +28,7 @@ export function Login() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <img src="/icons/icon-192.png" alt="Pulse" className={styles.logo} />
+        <img src="/icons/icon-192.png?v=2" alt="Pulse" className={styles.logo} />
         <h1 className={styles.title}>Pulse</h1>
         <p className={styles.subtitle}>
           Sign in with email. Your daily wellness and routine pulse.

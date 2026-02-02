@@ -16,7 +16,7 @@ export function Dashboard() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.logoWrap}>
-          <img src="/icons/icon-192.png" alt="" className={styles.logoImg} />
+          <img src="/icons/icon-192.png?v=2" alt="" className={styles.logoImg} />
           <h1 className={styles.logo}>Pulse</h1>
         </div>
         <nav className={styles.nav}>
