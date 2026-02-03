@@ -19,10 +19,7 @@ Strategy: ship **Pulse as a PWA** (Progressive Web App) so anyone can use it in 
 - **Icons** – at least 192x192 and 512x512 for "Add to Home Screen" and install prompts.
 
 ### How to get there from your current repo
-- **Option A – Separate web app in `apps/web`**  
-  Build a React (or Next.js) app that reuses your logic/API and is PWA-ready (manifest + service worker). Best if you want a clean web codebase and don’t need 100% parity with the Expo app right away.
-- **Option B – Expo for web**  
-  Expo can build for web (`expo export:web` or `npx expo start --web`). Some native modules (e.g. Magic, Phantom deep links) may need web-specific handling or fallbacks. Good for maximum code reuse with the current mobile app.
+- The PWA lives in **`apps/web`** (Vite + React, manifest + service worker via vite-plugin-pwa). Deploy it to Vercel/Netlify and point your domain at the deployment.
 
 Once the PWA is live on your domain, you can **register** it by:
 - Submitting your site to search engines (Google Search Console, etc.).
@@ -69,16 +66,6 @@ You wrap your **existing PWA** in a minimal Android app that opens your PWA in a
 | Policies | Privacy policy, Play policy compliance |
 | Build | Bubblewrap or PWABuilder → upload AAB to Play Console |
 
-### Path 2: Native Android app (e.g. current Expo build)
-
-You could build the existing Expo app for Android only (`eas build --platform android`) and upload that to Play. You’d still need:
-- $25 one-time Play developer account
-- Developer identity verification
-- Privacy policy and Play policy compliance
-- App signing (EAS can handle this)
-
-Path 1 (TWA) is usually simpler if your main product is already a PWA: one codebase (web), one deployment, and a small wrapper for Play.
-
 ---
 
 ## 4. What we’re *not* doing: iOS App Store
@@ -90,8 +77,6 @@ Path 1 (TWA) is usually simpler if your main product is already a PWA: one codeb
 
 ## 5. Suggested order of work
 
-1. **Ship PWA** – Get the web app (in `apps/web` or via Expo web) live on HTTPS with manifest + icons + optional service worker.
+1. **Ship PWA** – Get the web app in `apps/web` live on HTTPS with manifest + icons + optional service worker (see [Deploy](./deploy.md)).
 2. **Register domain** – Point your chosen domain to the PWA.
 3. **(Optional) Google Play** – Create Play developer account ($25), set up Digital Asset Links for your PWA domain, use Bubblewrap (or PWABuilder) to build TWA, then submit the AAB in Play Console and complete store listing + policy forms.
-
-If you tell me whether you prefer a new web app in `apps/web` or Expo-for-web first, I can outline concrete steps (e.g. Vite + React PWA template, or Expo web config) and a minimal `manifest.json` for Pulse.

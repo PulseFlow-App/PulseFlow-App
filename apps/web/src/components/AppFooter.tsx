@@ -10,6 +10,10 @@ export function AppFooter() {
         <Link to="/privacy" className={styles.link}>Privacy Policy</Link>
         <span className={styles.sep}>·</span>
         <Link to="/disclaimer" className={styles.link}>Disclaimer</Link>
+        <span className={styles.sep}>·</span>
+        <Link to="/admin" className={styles.link}>Admin</Link>
+        <span className={styles.sep}>·</span>
+        <Link to="/lab" className={styles.link}>Join the ecosystem</Link>
       </nav>
       <p className={styles.copyright}>
         Pulse – your daily wellness and routine pulse. Not medical advice.

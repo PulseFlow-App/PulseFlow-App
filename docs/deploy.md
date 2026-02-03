@@ -85,7 +85,7 @@ If the **API** project (the one for the backend) fails (e.g. "cd apps/api: No su
    Add to `apps/web/public/icons/`:
    - `icon-192.png` (192×192)
    - `icon-512.png` (512×512)  
-   You can copy/resize from `apps/mobile/assets/icon.png` or use the Pulse logo assets. Without these, the browser uses a default icon.
+   Use the Pulse logo or any 192×192 and 512×512 PNG (e.g. `apps/web/public/icons/`). Without these, the browser uses a default icon.
 
 2. **Build works locally**  
    From repo root:

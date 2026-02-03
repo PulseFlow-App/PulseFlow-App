@@ -21,7 +21,7 @@ Pulse helps users make sense of daily inputs:
 
 ## Premium Access
 
-Premium features are unlocked by **holding and staking Pulse tokens ($PULSE)**. The token exists on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump) — no token contract to create.
+Premium features are unlocked by **holding and locking Pulse tokens ($PULSE)** (lock for as long as you want the paid tier). The token exists on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump) — no token contract to create.
 
 **Premium includes:**
 
@@ -66,22 +66,21 @@ It is an **everyday system** for understanding your own rhythm, reducing noise, 
 | [**Vision**](docs/vision.md) | Why Pulse exists, philosophy, and core belief |
 | [**Product**](docs/product.md) | What Pulse does, features, and user tiers |
 | [**Roadmap**](docs/roadmap.md) | MVP 1 (core signal) and MVP 2 (adaptation & baselines) |
-| [**Token Utility**](docs/token-utility.md) | How $PULSE staking unlocks Premium |
+| [**Token Utility**](docs/token-utility.md) | How $PULSE locking unlocks Premium |
 | [**AI Stack**](docs/ai-stack.md) | Recommended AI architecture: inputs, reasoning, Pulse score, baselines |
 | [**FAQ**](docs/faq.md) | Common questions on product, Premium, privacy, and technical |
-| [**Frontend & testing**](docs/frontend-and-testing.md) | How to run and test the mobile app; sharing with testers; wallet connectors. |
+| [**Frontend & testing**](docs/frontend-and-testing.md) | How to run and test the web PWA. |
 | [**Deploy**](docs/deploy.md) | Deploy PWA (`apps/web`) and API (`apps/api`) to Vercel/Netlify; env vars; custom domain. |
 
 **Other references:**
 
 - [Data model & privacy](data-model/privacy.md) — Data ownership and consent rules
-- [Contracts](contracts/README.md) — Staking logic (token lives on Pump.fun; no contract to deploy)
+- [Contracts](contracts/README.md) — Locking logic (token lives on Pump.fun; no contract to deploy)
 
 ---
 
 ## Run the apps
 
-- **Mobile:** `cd apps/mobile && npm install && npx expo start` — Expo Go (scan QR) or `i` / `a` for simulator. No separate "expo folder"; the app is in `apps/mobile`; `.expo/` is cache (gitignored).
 - **Web (PWA):** `cd apps/web && npm install && npm run dev` — see [Deploy](docs/deploy.md) to ship.
 - **API:** `cd apps/api && npm install && npm run dev` — see [Deploy](docs/deploy.md) for Vercel.
 
@@ -92,10 +91,7 @@ It is an **everyday system** for understanding your own rhythm, reducing noise, 
 ```
 pulse/
 ├── apps/
-│   ├── mobile/                 # Pulse mobile app (Expo / React Native)
-│   │   ├── App.tsx, app.json, assets/
-│   │   └── src/                # screens, blocks (BodySignals, WorkRoutine), contexts, navigation
-│   ├── web/                    # PWA (Vite + React) — login, dashboard, block placeholders
+│   ├── web/                    # PWA (Vite + React) — login, dashboard, Body Signals, Work Routine, Lab
 │   │   ├── public/icons/       # PWA icons (icon-192.png, icon-512.png)
 │   │   └── src/                # pages, components, contexts, blocks/registry
 │   ├── api/                    # Backend (Express, Postgres or in-memory)
@@ -109,7 +105,7 @@ pulse/
 │   ├── config/                # App-wide configs
 │   └── utils/                 # Shared utilities
 │
-├── contracts/                 # Staking logic (token on Pump.fun; no token contract)
+├── contracts/                 # Locking logic (token on Pump.fun; no token contract)
 │   ├── staking/
 │   └── README.md
 │
@@ -137,7 +133,7 @@ pulse/
 - **Features are modular** — Meals, fitness, blood data, fridge photos can grow without chaos.
 - **User data is first-class** — Clear schemas, normalization, and a privacy layer.
 - **Token logic is isolated** — No pollution of core product logic.
-- **Future-proof** — Mobile app, browser extension, wearable sync can plug in later.
+- **Future-proof** — Browser extension, wearable sync, or native clients can plug in later.
 
 ---
 

@@ -1,0 +1,131 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import styles from './LegalPage.module.css';
+import adminStyles from './Admin.module.css';
+
+const API_BASE =
+  typeof import.meta !== 'undefined' && typeof import.meta.env?.VITE_API_URL === 'string' && import.meta.env.VITE_API_URL.trim()
+    ? import.meta.env.VITE_API_URL.trim().replace(/\/$/, '')
+    : '';
+
+type UserRow = { id: string; email: string; createdAt: string };
+
+export function Admin() {
+  const [adminKey, setAdminKey] = useState('');
+  const [users, setUsers] = useState<UserRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const loadUsers = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!API_BASE) {
+      setError('VITE_API_URL is not set. Configure it in the PWA project to use the admin cabinet.');
+      return;
+    }
+    const key = adminKey.trim();
+    if (!key) {
+      setError('Enter your admin API key.');
+      return;
+    }
+    setError(null);
+    setUsers(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/admin/users`, {
+        headers: { Authorization: `Bearer ${key}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status === 503) setError('Admin API not configured (ADMIN_API_KEY not set on the API).');
+        else if (res.status === 401) setError('Invalid admin key.');
+        else if (res.status === 400) setError(data?.message || 'User list requires Postgres (DATABASE_URL).');
+        else setError(data?.message || `Error ${res.status}.`);
+        return;
+      }
+      setUsers(Array.isArray(data.users) ? data.users : []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Network error.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (s: string) => {
+    try {
+      const d = new Date(s);
+      return Number.isNaN(d.getTime()) ? s : d.toLocaleString();
+    } catch {
+      return s;
+    }
+  };
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <Link to="/" className={styles.back}>← Back</Link>
+      </header>
+      <main id="main" className={styles.main}>
+        <h1 className={styles.title}>Admin cabinet</h1>
+        <p className={adminStyles.updated}>
+          List everyone who signed up via the API. Requires ADMIN_API_KEY set on the API and VITE_API_URL set for this app.
+        </p>
+
+        {!API_BASE && (
+          <p className={adminStyles.noApi}>
+            Set <strong>VITE_API_URL</strong> in the PWA project (e.g. in Vercel) to your API base URL, then redeploy. The admin cabinet uses it to call <code>GET /admin/users</code>.
+          </p>
+        )}
+
+        <form onSubmit={loadUsers} className={adminStyles.form}>
+          <label className={adminStyles.label} htmlFor="admin-key">
+            Admin API key
+          </label>
+          <input
+            id="admin-key"
+            type="password"
+            className={adminStyles.input}
+            value={adminKey}
+            onChange={(e) => {
+              setAdminKey(e.target.value);
+              setError(null);
+            }}
+            placeholder="Paste the key you set as ADMIN_API_KEY"
+            autoComplete="off"
+            disabled={!API_BASE}
+          />
+          <button type="submit" className={adminStyles.button} disabled={loading || !API_BASE}>
+            {loading ? 'Loading…' : 'Load users'}
+          </button>
+        </form>
+
+        {error && <p className={adminStyles.error} role="alert">{error}</p>}
+
+        {users && (
+          <>
+            <div className={adminStyles.tableWrap}>
+              <table className={adminStyles.table}>
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>User ID</th>
+                    <th>Signed up</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u.id}>
+                      <td>{u.email}</td>
+                      <td><code>{u.id}</code></td>
+                      <td>{formatDate(u.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className={adminStyles.count}>{users.length} user{users.length !== 1 ? 's' : ''}</p>
+          </>
+        )}
+      </main>
+    </div>
+  );
+}

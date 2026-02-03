@@ -12,7 +12,8 @@ import { WorkRoutineInsights } from './blocks/WorkRoutine/WorkRoutineInsights';
 import { Terms } from './pages/Terms';
 import { Privacy } from './pages/Privacy';
 import { Disclaimer } from './pages/Disclaimer';
-
+import { Admin } from './pages/Admin';
+import { Lab } from './pages/Lab';
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/" replace />;
@@ -90,6 +91,8 @@ export default function App() {
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/disclaimer" element={<Disclaimer />} />
+      <Route path="/admin" element={<Admin />} />
+      <Route path="/lab" element={<Lab />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

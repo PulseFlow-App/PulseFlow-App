@@ -95,6 +95,30 @@ function authMiddleware(req, res, next) {
   }
 }
 
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY || '';
+
+function adminMiddleware(req, res, next) {
+  if (!ADMIN_API_KEY) return res.status(503).json({ message: 'Admin API not configured' });
+  const header = req.headers.authorization;
+  const token = header && header.startsWith('Bearer ') ? header.slice(7) : null;
+  if (token !== ADMIN_API_KEY) return res.status(401).json({ message: 'Unauthorized' });
+  next();
+}
+
+// ----- Admin: list users (requires Postgres + ADMIN_API_KEY) -----
+app.get('/admin/users', adminMiddleware, async (req, res) => {
+  if (!db.hasDb()) {
+    return res.status(400).json({ message: 'User list requires DATABASE_URL (Postgres)' });
+  }
+  try {
+    const users = await db.listUsers();
+    return res.json({ users });
+  } catch (err) {
+    console.error('admin users error', err);
+    return res.status(500).json({ message: 'Failed to list users' });
+  }
+});
+
 // ----- Body logs -----
 app.get('/users/me/body-logs', authMiddleware, async (req, res) => {
   const from = req.query.from;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ScoreRing } from '../../components/ScoreRing';
-import { computeBodyPulse } from './store';
+import { computeBodyPulse, computeBodyPulseAsync } from './store';
 import type { BodyPulseSnapshot } from './types';
 import styles from './BodySignals.module.css';
 
@@ -9,9 +9,14 @@ const TREND_SYMBOL: Record<string, string> = { up: '↑', down: '↓', stable: '
 
 export function BodySignalsOverview() {
   const [pulse, setPulse] = useState<BodyPulseSnapshot>(() => computeBodyPulse());
+  const [loadingAI, setLoadingAI] = useState(false);
 
   useEffect(() => {
     setPulse(computeBodyPulse());
+    setLoadingAI(true);
+    computeBodyPulseAsync()
+      .then(setPulse)
+      .finally(() => setLoadingAI(false));
   }, []);
 
   return (
@@ -37,7 +42,11 @@ export function BodySignalsOverview() {
             </div>
             <p className={styles.insight}>{pulse.insight}</p>
             <p className={styles.explanation}>{pulse.explanation}</p>
-            {pulse.improvements.length > 0 && (
+            {loadingAI ? (
+              <div className={styles.improvementsBlock}>
+                <p className={styles.aiLoading}>Getting AI suggestions…</p>
+              </div>
+            ) : pulse.improvements.length > 0 ? (
               <div className={styles.improvementsBlock}>
                 <p className={styles.improvementsTitle}>What to improve today</p>
                 <ul className={styles.improvementsList}>
@@ -46,7 +55,7 @@ export function BodySignalsOverview() {
                   ))}
                 </ul>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
         <Link to="/dashboard/body-signals/trends" className={styles.button}>

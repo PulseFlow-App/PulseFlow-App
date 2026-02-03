@@ -42,9 +42,9 @@ It connects food, movement, recovery, and body metrics into a **single daily sig
 - Read basic insights
 - Community visibility
 
-### Premium (Stake $PULSE)
+### Premium (Lock $PULSE)
 
-$PULSE exists on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump). Unlocked by staking Pulse tokens:
+$PULSE exists on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump). Unlocked by locking Pulse tokens for as long as you want the paid tier (e.g. lock 1 month → Premium 1 month):
 
 - Unlimited AI requests
 - No per-request fees (excluding gas)

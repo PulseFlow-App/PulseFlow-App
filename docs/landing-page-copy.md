@@ -1,6 +1,6 @@
 # Landing Page Copy (pulseflow.site)
 
-Use this for the main landing at pulseflow.site. Store-safe: no crypto, no token, no staking in the hero or feature bullets. Optional "About Pulse" section at the bottom for off-app messaging.
+Use this for the main landing at pulseflow.site. Store-safe: no crypto, no token, no locking in the hero or feature bullets. Optional "About Pulse" section at the bottom for off-app messaging.
 
 ---
 
@@ -73,7 +73,7 @@ If you have a section below the fold or on a separate page for community/protoco
 
 ## Don't use on main landing
 
-- "Stake to unlock," "Connect wallet," "Buy $PULSE," "Token holders get…"
+- "Lock to unlock," "Connect wallet," "Buy $PULSE," "Token holders get…"
 - Any in-app flow that implies crypto is required for Premium.
 
 Use the **Short Bullets** or **Feature Bullets** as-is or tweak for tone; keep Premium = subscribe in-app and data ownership in every version.

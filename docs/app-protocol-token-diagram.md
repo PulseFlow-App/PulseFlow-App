@@ -7,7 +7,7 @@ One-page view of how the three layers interact. No token in the app; protocol br
 │  APP (Store-Safe)                                                            │
 │  • Sign in, dashboard, blocks (Body Signals, Work Routine, …)                │
 │  • Premium = Subscribe via Apple/Google IAP                                  │
-│  • No token balances, no staking, no “buy token to unlock”                   │
+│  • No token balances, no locking, no “buy token to unlock”                   │
 │  • Optional: “Learn about Pulse” / Community → opens web                     │
 └─────────────────────────────────────────────────────────────────────────────┘
                                         │
@@ -37,4 +37,4 @@ One-page view of how the three layers interact. No token in the app; protocol br
 **User flows:**
 
 - **App-only user:** Signs in → uses app → subscribes to Premium via IAP. Never sees token.
-- **Token holder:** Holds $PULSE on web/community → gets protocol credits, votes, Lab access. In the app they are just a user (or premium via IAP); app does not show token or staking.
+- **Token holder:** Holds $PULSE on web/community → gets protocol credits, votes, Lab access. In the app they are just a user (or premium via IAP); app does not show token or locking.

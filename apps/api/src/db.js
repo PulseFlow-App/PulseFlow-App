@@ -67,10 +67,20 @@ async function createBodyLog(log) {
   return log;
 }
 
+/** List all users (id, email, created_at). For admin/export. */
+async function listUsers() {
+  if (!pool) return [];
+  const { rows } = await pool.query(
+    'SELECT id, email, created_at AS "createdAt" FROM users ORDER BY created_at DESC'
+  );
+  return rows;
+}
+
 module.exports = {
   hasDb,
   getUserByEmail,
   createUser,
   getBodyLogs,
   createBodyLog,
+  listUsers,
 };

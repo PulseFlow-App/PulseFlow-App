@@ -33,19 +33,19 @@ All endpoints below require `Authorization: Bearer <accessToken>` (from sign-in)
 - **POST /auth/sign-up** — `{ email, password }` → `{ user, accessToken }`
 - **GET /users/me** — Current user profile.
 - **GET /users/me/body-logs** — List body logs (optional `?from=&to=`).
-- **POST /users/me/body-logs** — Create body log (payload: same shape as mobile `BodyLogEntry` without `id`/`date`; server sets `id`, `date`, `userId`).
+- **POST /users/me/body-logs** — Create body log (payload: same shape as web app `BodyLogEntry` without `id`/`date`; server sets `id`, `date`, `userId`).
 - **GET /users/me/work-check-ins** — List check-ins.
 - **POST /users/me/work-check-ins** — Create check-in.
 - **GET /users/me/baselines** — Personal baselines (sleep, energy, etc.) for AI and Pulse.
-- **GET /premium/status** — `?wallet=<address>` → `{ isPremium }` (read-only chain check for $PULSE staking).
+- **GET /premium/status** — `?wallet=<address>` → `{ isPremium }` (read-only chain check for $PULSE locking).
 
-Mobile app: when `EXPO_PUBLIC_API_URL` is set and user is signed in, **sync** body logs and check-ins to the API (e.g. after each log or on focus). When offline or no API, keep local store and sync when online (optional for MVP).
+Web app: when `VITE_API_URL` is set and user is signed in, the PWA calls the API for body logs and check-ins. When no API is configured, the app uses local-only storage (e.g. localStorage) for demo.
 
 ---
 
-## Mobile: Session Storage
+## Web: Session Storage
 
-- **Session** (userId, email, accessToken) is stored in **AsyncStorage** (MVP). For production, store **accessToken** in **expo-secure-store** and keep only non-sensitive user info in AsyncStorage, or use httpOnly cookies if the app uses a webview for auth.
+- **Session** (userId, email) is stored in **localStorage** (e.g. `@pulse/auth_session`) in the PWA. For production with API auth, the **accessToken** should be stored securely (e.g. memory only, or secure storage when available); never log or send passwords.
 - Never log or send passwords; send only hashed or via secure sign-in request.
 
 ---
@@ -57,7 +57,7 @@ Mobile app: when `EXPO_PUBLIC_API_URL` is set and user is signed in, **sync** bo
 - [ ] Passwords hashed (e.g. bcrypt) on backend; never stored plain.
 - [ ] Database encryption at rest; env for secrets.
 - [ ] Rate limiting and abuse protection on auth and API.
-- [ ] Premium check: backend verifies wallet staking (read-only) before returning `isPremium: true`.
+- [ ] Premium check: backend verifies wallet lock (read-only) before returning `isPremium: true`.
 
 ---
 

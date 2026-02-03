@@ -29,7 +29,7 @@ You upload a photo of your fridge. Pulse detects ingredients, then suggests meal
 
 ### How do I get Premium?
 
-By holding and staking **Pulse tokens ($PULSE)**. The token lives on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump). Premium is unlocked when you stake the required amount.
+By holding and **locking** **Pulse tokens ($PULSE)** for as long as you want the paid tier. The token lives on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump). You lock the required amount for the duration you choose (e.g. 1 month, 1 year); Premium is unlocked for that period.
 
 ### What does Premium include?
 
@@ -46,7 +46,7 @@ By holding and staking **Pulse tokens ($PULSE)**. The token lives on [Pump.fun](
 
 ### Is there in-app token trading?
 
-No. The app uses read-only chain interaction for staking status. No in-app trading — for App Store and Play Store compliance.
+No. The app uses read-only chain interaction for lock status. No in-app trading — for App Store and Play Store compliance.
 
 ---
 

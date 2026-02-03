@@ -1,6 +1,6 @@
 # Body Signals - AI insights prompt (MVP)
 
-Used by the mobile app (direct OpenAI) or by the backend when calling an LLM.
+Used by the web app (via API at `VITE_API_URL`) or by the backend when calling an LLM.
 
 ## Role
 
@@ -55,4 +55,4 @@ If you implement a backend endpoint instead of calling OpenAI from the app:
 - **Body:** `{ entry: { sleepHours, sleepQuality, energy, mood, hydration, stress, weight?, notes? }, score, trend, previousScore?, frictionPoints: string[] }`
 - **Response:** `{ insight: string, explanation: string, improvements: string[] }`
 
-The mobile app will call this when `EXPO_PUBLIC_API_URL` is set; otherwise it uses `EXPO_PUBLIC_OPENAI_API_KEY` for direct OpenAI.
+The web app calls this when `VITE_API_URL` is set; otherwise it uses rule-based fallback (no AI).

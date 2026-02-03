@@ -33,7 +33,7 @@ For "Add to Home Screen" and install prompt to show your icon, add:
 - `public/icons/icon-192.png` (192×192)
 - `public/icons/icon-512.png` (512×512)
 
-You can resize `apps/mobile/assets/icon.png` or use any PNG. If missing, the browser uses a default.
+Use any 192×192 and 512×512 PNG (e.g. in `apps/web/public/icons/`). If missing, the browser uses a default.
 
 ## Routes
 
@@ -48,6 +48,8 @@ You can resize `apps/mobile/assets/icon.png` or use any PNG. If missing, the bro
 | `/dashboard/work-routine/checkin` | 6-question check-in |
 | `/dashboard/work-routine/insights` | Latest assessment and quick wins |
 | `/terms`, `/privacy`, `/disclaimer` | Legal pages |
+| `/admin` | Admin cabinet: list users (enter ADMIN_API_KEY; requires VITE_API_URL) |
+| `/lab` | Pulse Lab: $PULSE, where to buy, how to lock (optional VITE_LOCKING_URL) |
 
 ## Testing: Web, PWA, and desktop
 
@@ -69,6 +71,7 @@ Details:
 
 ## Next steps
 
-- Connect to your API: set `VITE_API_URL` and use it in `AuthContext` and any data fetching.
+- **AI recommendations (Body Signals):** Set `VITE_API_URL` in your hosting env (e.g. Vercel/Netlify) and redeploy. The web app calls `POST /insights/body-signals` for insight/explanation/improvements. If unset, you get rule-based suggestions only. See `docs/why-ai-works-locally-but-not-deployed.md`.
+- Connect to your API for auth/data: set `VITE_API_URL` and use it in `AuthContext` and any data fetching.
 - Add Magic or wallet connect for web (separate SDKs).
 - Deploy to your domain and optionally publish to Google Play via [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap) / [PWABuilder](https://pwabuilder.com).

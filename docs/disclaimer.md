@@ -1,7 +1,7 @@
 # Disclaimer
 
 **Last updated:** 2026-02-02  
-**Effective for:** Pulse web app (app.pulseflow.site) and Pulse mobile app
+**Effective for:** Pulse web app (app.pulseflow.site)
 
 ---
 

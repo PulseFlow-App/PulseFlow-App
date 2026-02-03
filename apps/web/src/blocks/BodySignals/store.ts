@@ -1,6 +1,8 @@
 /**
  * Body Signals - web store (localStorage). Same logic as mobile.
+ * Optional AI via fetchAIInsights (backend at VITE_API_URL).
  */
+import { fetchAIInsights } from './aiInsights';
 import type { BodyLogEntry, BodyPulseSnapshot, DailySignalsState } from './types';
 
 const STORAGE_KEY = '@pulse/body_logs';
@@ -205,6 +207,36 @@ export function computeBodyPulse(): BodyPulseSnapshot {
     prevScore
   );
   return { score, trend, insight, explanation, improvements, date: getToday() };
+}
+
+/**
+ * Compute Body Pulse with optional AI insights (when VITE_API_URL is set).
+ * Score and trend are always rule-based; insight, explanation, improvements may come from API.
+ */
+export async function computeBodyPulseAsync(): Promise<BodyPulseSnapshot> {
+  const ruleBased = computeBodyPulse();
+  const logs = getLogs();
+  const recent = logs.filter((l) => l.date <= getToday()).slice(0, 14);
+  if (recent.length === 0) return ruleBased;
+
+  const latest = recent[0]!;
+  const state = evaluateDailySignals(latest);
+  const score = ruleBased.score;
+  const prevEntry = recent.length >= 2 ? recent[1] : undefined;
+  const prevScore = prevEntry ? calculatePulseScore(prevEntry, recent) : score;
+
+  const ai = await fetchAIInsights(latest, score, ruleBased.trend, state, prevScore);
+  if (ai) {
+    return {
+      score: ruleBased.score,
+      trend: ruleBased.trend,
+      insight: ai.insight,
+      explanation: ai.explanation,
+      improvements: ai.improvements.slice(0, MAX_IMPROVEMENTS),
+      date: ruleBased.date,
+    };
+  }
+  return ruleBased;
 }
 
 export function getLogsForRange(days: number): BodyLogEntry[] {

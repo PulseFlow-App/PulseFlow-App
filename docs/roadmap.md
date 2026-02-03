@@ -88,7 +88,7 @@ Transform Pulse from a daily snapshot into a personalized system that learns the
 
 ### Token Utility (MVP 2)
 
-- Full premium feature access via staking
+- Full premium feature access via locking (lock for as long as you want the paid tier)
 - Unlimited AI requests
 - Deep historical analysis
 - Priority model updates and new insight modules
@@ -97,7 +97,7 @@ Transform Pulse from a daily snapshot into a personalized system that learns the
 
 - Long-term user trust
 - Clear personalization advantage over generic health apps
-- Strong incentive to hold and stake Pulse tokens
+- Strong incentive to hold and lock Pulse tokens (lock for as long as you want the paid tier)
 
 ---
 

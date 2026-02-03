@@ -1,6 +1,6 @@
 # App Store–Safe Copy
 
-Use this language in the app and in store listings. No crypto, no staking, no token-gating.
+Use this language in the app and in store listings. No crypto, no locking, no token-gating.
 
 ---
 
@@ -11,7 +11,7 @@ Use this language in the app and in store listings. No crypto, no staking, no to
 - **Title:** Premium
 - **Short description:** Unlock unlimited requests, long-term trends, and personalized insights.
 - **Primary action:** Subscribe to Premium (opens IAP when implemented).
-- **Secondary (optional):** “Learn about Pulse” → opens pulseflow.site or community link (no mention of token or staking).
+- **Secondary (optional):** “Learn about Pulse” → opens pulseflow.site or community link (no mention of token or locking).
 
 **When user is premium:**
 
@@ -20,9 +20,9 @@ Use this language in the app and in store listings. No crypto, no staking, no to
 **Do not use:**
 
 - “Connect wallet to unlock premium”
-- “Stake $PULSE to unlock”
+- “Lock $PULSE to unlock”
 - “Token holders get…”
-- Any link that says “Buy token” or “Stake to unlock”
+- Any link that says “Buy token” or “Lock to unlock”
 
 ---
 
@@ -40,7 +40,7 @@ Pulse helps you stay in tune with your body and routine. Log sleep, energy, mood
 Wellness, routine, habits, body signals, daily score, insights, tracking.
 
 **Do not include:**  
-Crypto, token, staking, wallet, $PULSE, blockchain, in store listing or in-app purchase description.
+Crypto, token, locking, wallet, $PULSE, blockchain, in store listing or in-app purchase description.
 
 ---
 

@@ -1,6 +1,6 @@
 # Pulse App Icon & Color Design System
 
-**Implementation:** Block registry is in `apps/mobile/src/blocks/registry.ts` and `apps/web/src/blocks/registry.ts` (currently emoji icons). Theme colors in `apps/mobile/src/theme/colors.ts` and `apps/web/src/theme/colors.ts`. Use this doc when adding Iconify or block-specific colors.
+**Implementation:** Block registry is in `apps/web/src/blocks/registry.ts` (currently emoji icons). Theme colors in `apps/web/src/theme/colors.ts`. Use this doc when adding Iconify or block-specific colors.
 
 ---
 

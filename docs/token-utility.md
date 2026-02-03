@@ -90,7 +90,7 @@ The app consumes the protocol. The protocol cares about $PULSE. Apple never sees
 ## What NOT to Do (App Store / Play)
 
 - Do **not** show token balances in the app.
-- Do **not** mention staking in the UI.
+- Do **not** mention locking in the UI.
 - Do **not** hint that token replaces subscription.
 - Do **not** ask Apple/Play users to “go buy token” to unlock features.
 
