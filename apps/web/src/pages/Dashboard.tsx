@@ -27,7 +27,7 @@ export function Dashboard() {
         </nav>
       </header>
 
-      <main className={styles.main}>
+      <main id="main" className={styles.main}>
         <section className={styles.hero}>
           <p className={styles.heroLine1}>No noise.</p>
           <p className={styles.heroLine2}>Just signal.</p>

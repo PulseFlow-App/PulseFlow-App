@@ -17,7 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useWalletConnect } from '../contexts/WalletConnectContext';
 
 export function SignInScreen() {
-  const { signIn, signUp, signInWithMagic, signInWithWallet, isMagicEnabled } = useAuth();
+  const { signIn, signUp, signInWithMagic, signInWithGoogle, signInWithWallet, isMagicEnabled } = useAuth();
   const { openPhantomConnect, isConnecting: isWalletConnecting, error: walletError, clearError: clearWalletError } = useWalletConnect();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,6 +27,18 @@ export function SignInScreen() {
   const [useWallet, setUseWallet] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Google sign-in failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleMagicSubmit = async () => {
     setError(null);
@@ -109,6 +121,26 @@ export function SignInScreen() {
         <View style={styles.form}>
           {!useWallet ? (
             <>
+          {isMagicEnabled && (
+            <>
+              <Pressable
+                style={({ pressed }) => [styles.button, styles.buttonGoogle, pressed && styles.buttonPressed, loading && styles.buttonDisabled]}
+                onPress={handleGoogleSignIn}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color={colors.text} />
+                ) : (
+                  <Text style={styles.buttonGoogleText}>Sign in with Google</Text>
+                )}
+              </Pressable>
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or with email</Text>
+                <View style={styles.dividerLine} />
+              </View>
+            </>
+          )}
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
@@ -321,6 +353,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     marginTop: 24,
+  },
+  buttonGoogle: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  buttonGoogleText: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 16,
+    color: colors.text,
   },
   buttonPressed: { opacity: 0.9 },
   buttonDisabled: { opacity: 0.7 },

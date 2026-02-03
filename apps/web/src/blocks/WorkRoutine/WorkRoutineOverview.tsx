@@ -1,0 +1,53 @@
+import { Link } from 'react-router-dom';
+import { ScoreRing } from '../../components/ScoreRing';
+import { getCheckIns, getStreak, getWeeklyProgress } from './store';
+import styles from './WorkRoutine.module.css';
+
+export function WorkRoutineOverview() {
+  const checkIns = getCheckIns();
+  const streak = getStreak();
+  const weekly = getWeeklyProgress();
+  const total = checkIns.length;
+  const pulseScore = total === 0 ? 0 : Math.min(100, 40 + total * 8 + streak * 5);
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <Link to="/dashboard" className={styles.back}>
+          ← Dashboard
+        </Link>
+      </header>
+      <main id="main" className={styles.main}>
+        <div className={styles.blockHeader}>
+          <h1 className={styles.title}>Work Routine</h1>
+          <p className={styles.subtitle}>Check-ins & focus insights</p>
+        </div>
+        <div className={styles.card}>
+          <div className={styles.scoreSection}>
+            <ScoreRing score={pulseScore} label="Routine Pulse" size={120} />
+          </div>
+        </div>
+        <div className={styles.stats}>
+          <div className={styles.stat}>
+            <span className={styles.statValue}>{streak}</span>
+            <span className={styles.statLabel}>Day streak</span>
+          </div>
+          <div className={styles.stat}>
+            <span className={styles.statValue}>{total}</span>
+            <span className={styles.statLabel}>Total check-ins</span>
+          </div>
+          <div className={styles.stat}>
+            <span className={styles.statValue}>{weekly.percent}%</span>
+            <span className={styles.statLabel}>This week</span>
+          </div>
+        </div>
+        <Link to="/dashboard/work-routine/checkin" className={styles.button}>
+          Start Check-in
+        </Link>
+        <Link to="/dashboard/work-routine/insights" className={styles.buttonSecondary}>
+          View Insights
+        </Link>
+      </main>
+    </div>
+  );
+}

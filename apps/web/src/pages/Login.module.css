@@ -83,6 +83,7 @@
 .button {
   margin-top: 24px;
   padding: 16px;
+  min-height: 44px;
   font-size: 1rem;
   font-weight: 600;
   color: #0a0e14;
@@ -90,6 +91,9 @@
   border: none;
   border-radius: 16px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .button:hover {

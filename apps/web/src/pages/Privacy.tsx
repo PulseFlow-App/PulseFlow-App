@@ -7,7 +7,7 @@ export function Privacy() {
       <header className={styles.header}>
         <Link to="/" className={styles.back}>← Back</Link>
       </header>
-      <main className={styles.main}>
+      <main id="main" className={styles.main}>
         <h1 className={styles.title}>Privacy Policy</h1>
         <p className={styles.updated}>Last updated: 2026-02-02</p>
         <div className={styles.content}>

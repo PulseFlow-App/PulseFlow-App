@@ -25,6 +25,7 @@ type AuthContextValue = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signInWithMagic: (email: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signInWithWallet: (walletAddress: string) => Promise<void>;
   updateWalletUserEmail: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -103,6 +104,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await magic.auth.loginWithEmailOTP({ email: trimmedEmail });
       const info = await magic.user.getInfo();
       const emailFromMagic = (info as { email?: string }).email ?? trimmedEmail;
+      const wallets = (info as { wallets?: { solana?: { publicAddress?: string } } }).wallets;
+      const walletAddress = wallets?.solana?.publicAddress ?? null;
+      const issuer = (info as { issuer?: string }).issuer ?? '';
+      const userId = issuer ? `magic_${issuer.replace(/^did:[^:]+:/, '').slice(0, 20)}` : generateUserId();
+
+      const user: User = { userId, email: emailFromMagic, walletAddress };
+      const session = { user, provider: 'magic' };
+      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+      setAuth({ status: 'signedIn', user });
+    },
+    [magic]
+  );
+
+  const signInWithGoogle = useCallback(
+    async () => {
+      if (!magic) throw new Error('Magic is not configured');
+      const redirectURI =
+        (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_MAGIC_OAUTH_REDIRECT_URI?.trim()) ||
+        'pulse://oauth';
+      const oauth = (magic as { oauth?: { loginWithPopup: (cfg: { provider: string; redirectURI: string }) => Promise<unknown> } }).oauth;
+      if (!oauth) throw new Error('Magic OAuth is not configured');
+      await oauth.loginWithPopup({ provider: 'google', redirectURI });
+      const info = await magic.user.getInfo();
+      const emailFromMagic = (info as { email?: string }).email ?? '';
       const wallets = (info as { wallets?: { solana?: { publicAddress?: string } } }).wallets;
       const walletAddress = wallets?.solana?.publicAddress ?? null;
       const issuer = (info as { issuer?: string }).issuer ?? '';
@@ -247,6 +272,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signUp,
     signInWithMagic,
+    signInWithGoogle,
     signInWithWallet,
     updateWalletUserEmail,
     signOut,

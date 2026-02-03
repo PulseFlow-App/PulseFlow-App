@@ -1,0 +1,263 @@
+.page {
+  min-height: 100dvh;
+  padding: 24px;
+  background-color: #0a0e14;
+  color: #fff;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.back {
+  font-size: 0.9375rem;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+.main {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.blockHeader {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  margin: 0;
+}
+
+.card {
+  background: rgba(23, 23, 23, 0.6);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.scoreSection {
+  text-align: center;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 24px;
+  padding: 20px 16px;
+  background: rgba(23, 23, 23, 0.6);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat {
+  text-align: center;
+}
+
+.statValue {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: #a3a3a3;
+  margin-top: 4px;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  background: #22c55e;
+  color: #0a0e14;
+  padding: 16px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  margin-bottom: 12px;
+}
+
+.button:hover {
+  opacity: 0.9;
+}
+
+.buttonSecondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+  text-decoration: none;
+}
+
+.buttonSecondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Check-in */
+.progressBar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: -24px -24px 0;
+}
+
+.progressFill {
+  height: 100%;
+  background: #22c55e;
+  transition: width 0.2s ease;
+}
+
+.step {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  margin-bottom: 8px;
+}
+
+.questionText {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 24px;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option {
+  background: rgba(23, 23, 23, 0.6);
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 1rem;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.option:hover {
+  background: rgba(23, 23, 23, 0.8);
+}
+
+.optionSelected {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.footer {
+  padding: 24px 0 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 24px;
+}
+
+.nextButton {
+  width: 100%;
+  min-height: 44px;
+  background: #22c55e;
+  color: #0a0e14;
+  padding: 16px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+}
+
+.nextButton:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.nextButton:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: #737373;
+  cursor: not-allowed;
+}
+
+/* Insights */
+.cardLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #737373;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.cardText {
+  font-size: 1rem;
+  color: #fff;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.bullet {
+  font-size: 0.9375rem;
+  color: #fff;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.date {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  margin-top: 4px;
+}
+
+.hint {
+  font-size: 0.875rem;
+  color: #737373;
+  margin: 0;
+}
+
+.empty {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  margin: 0 0 16px;
+}
+
+.emptyLink {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #22c55e;
+  text-decoration: none;
+}
+
+.emptyLink:hover {
+  text-decoration: underline;
+}
