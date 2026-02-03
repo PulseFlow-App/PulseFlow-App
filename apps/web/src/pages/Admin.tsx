@@ -36,7 +36,7 @@ export function Admin() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        if (res.status === 503) setError('Admin API not configured (ADMIN_API_KEY not set on the API).');
+        if (res.status === 503) setError('Admin not configured. Set the password on the API.');
         else if (res.status === 401) setError('Invalid password.');
         else if (res.status === 400) setError(data?.message || 'User list requires Postgres (DATABASE_URL).');
         else setError(data?.message || `Error ${res.status}.`);
@@ -67,7 +67,7 @@ export function Admin() {
       <main id="main" className={styles.main}>
         <h1 className={styles.title}>Admin cabinet</h1>
         <p className={adminStyles.updated}>
-          List everyone who signed up via the API. Requires ADMIN_API_KEY set on the API and VITE_API_URL set for this app.
+          Enter the password. They will know which one.
         </p>
 
         {!API_BASE && (
