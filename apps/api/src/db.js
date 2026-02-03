@@ -25,13 +25,23 @@ async function getUserByEmail(email) {
   return rows[0] ? { userId: rows[0].id, email: rows[0].email, passwordHash: rows[0].password_hash } : null;
 }
 
-async function createUser(id, email, passwordHash) {
+async function createUser(id, email, passwordHash, wallet = null) {
   if (!pool) return null;
   await pool.query(
-    'INSERT INTO users (id, email, password_hash) VALUES ($1, $2, $3)',
-    [id, email, passwordHash]
+    'INSERT INTO users (id, email, password_hash, wallet) VALUES ($1, $2, $3, $4)',
+    [id, email, passwordHash, wallet]
   );
-  return { userId: id, email };
+  return { userId: id, email, wallet };
+}
+
+async function createReferral(referrerUserId, referredEmail, referredWallet = null) {
+  if (!pool) return null;
+  const id = `ref_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+  await pool.query(
+    'INSERT INTO referrals (id, referrer_user_id, referred_email, referred_wallet, created_at) VALUES ($1, $2, $3, $4, NOW())',
+    [id, referrerUserId, referredEmail, referredWallet]
+  );
+  return { id, referrerUserId, referredEmail, referredWallet };
 }
 
 async function getBodyLogs(userId, from, to) {
@@ -80,6 +90,7 @@ module.exports = {
   hasDb,
   getUserByEmail,
   createUser,
+  createReferral,
   getBodyLogs,
   createBodyLog,
   listUsers,

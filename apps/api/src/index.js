@@ -105,6 +105,40 @@ function adminMiddleware(req, res, next) {
   next();
 }
 
+// ----- Referrals: complete referral (new user + referral row) -----
+app.post('/referrals/complete', async (req, res) => {
+  const { referrerCode, email, wallet } = req.body || {};
+  const trimmed = (email || '').trim().toLowerCase();
+  const code = (referrerCode || '').trim();
+  if (!trimmed || !code) {
+    return res.status(400).json({ message: 'referrerCode and email required' });
+  }
+
+  if (!db.hasDb()) {
+    return res.status(400).json({ message: 'Referrals require DATABASE_URL (Postgres)' });
+  }
+
+  try {
+    const existing = await db.getUserByEmail(trimmed);
+    const userId = existing ? existing.userId : generateId();
+    if (!existing) {
+      const passwordHash = await bcrypt.hash(generateId(), 10);
+      await db.createUser(userId, trimmed, passwordHash, wallet || null);
+    }
+    await db.createReferral(code, trimmed, wallet || null);
+    return res.status(201).json({ ok: true, message: 'Referral recorded' });
+  } catch (err) {
+    if (err.code === '23503') {
+      return res.status(400).json({ message: 'Invalid referrer code' });
+    }
+    if (err.code === '23505') {
+      return res.status(200).json({ ok: true, message: 'Referral already recorded' });
+    }
+    console.error('referrals/complete error', err);
+    return res.status(500).json({ message: 'Failed to record referral' });
+  }
+});
+
 // ----- Admin: list users (requires Postgres + ADMIN_API_KEY) -----
 app.get('/admin/users', adminMiddleware, async (req, res) => {
   if (!db.hasDb()) {

@@ -11,7 +11,7 @@ const API_BASE =
 type UserRow = { id: string; email: string; createdAt: string };
 
 export function Admin() {
-  const [adminKey, setAdminKey] = useState('');
+  const [password, setPassword] = useState('');
   const [users, setUsers] = useState<UserRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,9 +22,9 @@ export function Admin() {
       setError('VITE_API_URL is not set. Configure it in the PWA project to use the admin cabinet.');
       return;
     }
-    const key = adminKey.trim();
+    const key = password.trim();
     if (!key) {
-      setError('Enter your admin API key.');
+      setError('Enter the password.');
       return;
     }
     setError(null);
@@ -37,7 +37,7 @@ export function Admin() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (res.status === 503) setError('Admin API not configured (ADMIN_API_KEY not set on the API).');
-        else if (res.status === 401) setError('Invalid admin key.');
+        else if (res.status === 401) setError('Invalid password.');
         else if (res.status === 400) setError(data?.message || 'User list requires Postgres (DATABASE_URL).');
         else setError(data?.message || `Error ${res.status}.`);
         return;
@@ -77,19 +77,19 @@ export function Admin() {
         )}
 
         <form onSubmit={loadUsers} className={adminStyles.form}>
-          <label className={adminStyles.label} htmlFor="admin-key">
-            Admin API key
+          <label className={adminStyles.label} htmlFor="admin-password">
+            Password
           </label>
           <input
-            id="admin-key"
+            id="admin-password"
             type="password"
             className={adminStyles.input}
-            value={adminKey}
+            value={password}
             onChange={(e) => {
-              setAdminKey(e.target.value);
+              setPassword(e.target.value);
               setError(null);
             }}
-            placeholder="Paste the key you set as ADMIN_API_KEY"
+            placeholder="Enter password"
             autoComplete="off"
             disabled={!API_BASE}
           />

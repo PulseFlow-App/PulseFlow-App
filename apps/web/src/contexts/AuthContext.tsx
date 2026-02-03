@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
+import { auth, googleAuthProvider, isFirebaseEnabled } from '../lib/firebase';
 
 export type User = {
   userId: string;
@@ -7,12 +9,19 @@ export type User = {
 
 type AuthContextValue = {
   user: User | null;
-  signIn: (email: string, password: string) => void;
-  signInWithMagic: (email: string, userId?: string) => void;
+  signIn: (email: string) => void;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => void;
+  isGoogleAuth: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+const STORAGE_KEY = '@pulse/auth_session';
+const REFERRAL_CODE_KEY = '@pulse/referral_code';
+const REFERRAL_WALLET_KEY = '@pulse/referral_wallet';
+
+const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/, '') || '';
 
 function generateUserId() {
   return `user_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
@@ -20,8 +29,9 @@ function generateUserId() {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
+    if (isFirebaseEnabled()) return null;
     try {
-      const raw = localStorage.getItem('@pulse/auth_session');
+      const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const data = JSON.parse(raw) as { user: User };
         if (data?.user?.userId && data?.user?.email) return data.user;
@@ -32,31 +42,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   });
 
-  const signIn = useCallback((email: string, _password: string) => {
+  useEffect(() => {
+    if (!auth) return;
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser?.email) {
+        setUser({
+          userId: firebaseUser.uid,
+          email: firebaseUser.email,
+        });
+      } else {
+        setUser(null);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    if (!user?.email || !API_BASE) return;
+    const code = localStorage.getItem(REFERRAL_CODE_KEY)?.trim();
+    if (!code) return;
+    const wallet = localStorage.getItem(REFERRAL_WALLET_KEY)?.trim() || undefined;
+    fetch(`${API_BASE}/referrals/complete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ referrerCode: code, email: user.email, wallet }),
+    })
+      .then(() => {
+        try {
+          localStorage.removeItem(REFERRAL_CODE_KEY);
+          localStorage.removeItem(REFERRAL_WALLET_KEY);
+        } catch {
+          // ignore
+        }
+      })
+      .catch(() => {
+        // ignore; can retry later or leave code for next session
+      });
+  }, [user?.email]);
+
+  const signIn = useCallback((email: string) => {
     const trimmed = email.trim().toLowerCase();
     if (!trimmed) return;
     const u: User = { userId: generateUserId(), email: trimmed };
     setUser(u);
-    localStorage.setItem('@pulse/auth_session', JSON.stringify({ user: u }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ user: u }));
   }, []);
 
-  const signInWithMagic = useCallback((email: string, userId?: string) => {
-    const trimmed = email.trim().toLowerCase();
-    if (!trimmed) return;
-    const u: User = {
-      userId: userId ?? generateUserId(),
-      email: trimmed,
-    };
-    setUser(u);
-    localStorage.setItem('@pulse/auth_session', JSON.stringify({ user: u }));
+  const signInWithGoogle = useCallback(async () => {
+    if (!auth) return;
+    await signInWithPopup(auth, googleAuthProvider);
   }, []);
 
-  const signOut = useCallback(() => {
+  const signOut = useCallback(async () => {
+    if (auth) {
+      try {
+        await firebaseSignOut(auth);
+      } catch {
+        // ignore
+      }
+    }
     setUser(null);
-    localStorage.removeItem('@pulse/auth_session');
+    localStorage.removeItem(STORAGE_KEY);
   }, []);
 
-  const value: AuthContextValue = { user, signIn, signInWithMagic, signOut };
+  const isGoogleAuth = isFirebaseEnabled();
+  const value: AuthContextValue = {
+    user,
+    signIn,
+    signInWithGoogle,
+    signOut,
+    isGoogleAuth,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

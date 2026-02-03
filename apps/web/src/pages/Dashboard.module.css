@@ -39,13 +39,19 @@
   gap: 16px;
 }
 
-.email {
+.profileLink {
   font-size: 0.875rem;
   color: #a3a3a3;
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-decoration: none;
+}
+
+.profileLink:hover {
+  color: #fff;
+  text-decoration: underline;
 }
 
 .profileBtn {

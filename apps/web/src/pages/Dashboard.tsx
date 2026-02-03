@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { BlockCard } from '../components/BlockCard';
 import { AppFooter } from '../components/AppFooter';
@@ -20,7 +21,9 @@ export function Dashboard() {
           <h1 className={styles.logo}>Pulse</h1>
         </div>
         <nav className={styles.nav}>
-          <span className={styles.email}>{user?.email}</span>
+          <Link to="/dashboard/profile" className={styles.profileLink}>
+            {user?.email}
+          </Link>
           <button type="button" onClick={signOut} className={styles.profileBtn}>
             Sign out
           </button>

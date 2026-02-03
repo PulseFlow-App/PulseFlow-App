@@ -68,6 +68,22 @@ CREATE TABLE IF NOT EXISTS body_logs (
 CREATE INDEX IF NOT EXISTS idx_body_logs_user_date ON body_logs(user_id, date);
 ```
 
+**Referrals and wallet (for Lab referral flow):** Run this extra SQL if you use referrals:
+
+```sql
+ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet TEXT;
+
+CREATE TABLE IF NOT EXISTS referrals (
+  id                TEXT PRIMARY KEY,
+  referrer_user_id  TEXT NOT NULL,
+  referred_email    TEXT NOT NULL,
+  referred_wallet   TEXT,
+  created_at        TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_user_id);
+```
+
 Adjust names or columns if your API expects different fields (e.g. `userId` vs `id`); the API code that reads/writes the DB must match this schema (or you change the schema to match the API).
 
 ---

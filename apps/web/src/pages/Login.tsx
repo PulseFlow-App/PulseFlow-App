@@ -2,19 +2,32 @@ import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AppFooter } from '../components/AppFooter';
-import { magic, isMagicEnabled } from '../lib/magic';
 import styles from './Login.module.css';
 
 export function Login() {
-  const { user, signIn } = useAuth();
+  const { user, signIn, signInWithGoogle, isGoogleAuth } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   if (user) return <Navigate to="/dashboard" replace />;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleGoogleLogin = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      setError(err instanceof Error ? err.message : 'Sign-in failed. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     const trimmed = email.trim();
@@ -22,22 +35,8 @@ export function Login() {
       setError('Email is required');
       return;
     }
-    signIn(trimmed, password);
+    signIn(trimmed);
     navigate('/dashboard', { replace: true });
-  };
-
-  const handleGoogleLogin = async () => {
-    if (!magic) return;
-    setError(null);
-    try {
-      await magic.oauth2.loginWithRedirect({
-        provider: 'google',
-        redirectURI: `${window.location.origin}/callback`,
-      });
-    } catch (err) {
-      console.error('Google sign-in error:', err);
-      setError(err instanceof Error ? err.message : 'Sign-in failed. Try again.');
-    }
   };
 
   return (
@@ -46,62 +45,52 @@ export function Login() {
         <img src="/icons/icon-192.png?v=2" alt="Pulse" className={styles.logo} />
         <h1 className={styles.title}>Pulse</h1>
         <p className={styles.subtitle}>
-          Sign in with email. Your daily wellness and routine pulse.
+          {isGoogleAuth
+            ? 'Sign in with Google. No password needed.'
+            : 'Your daily wellness and routine pulse.'}
         </p>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <label className={styles.label} htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            className={styles.input}
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError(null);
-            }}
-            placeholder="you@example.com"
-            autoComplete="email"
-            autoFocus
-          />
-
-          <label className={styles.label} htmlFor="password">
-            Password (optional for demo)
-          </label>
-          <input
-            id="password"
-            type="password"
-            className={styles.input}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            autoComplete="current-password"
-          />
-
-          {error && <p className={styles.error}>{error}</p>}
-
-          {isMagicEnabled() && (
-            <>
-              <button
-                type="button"
-                className={styles.buttonSecondary}
-                onClick={handleGoogleLogin}
-              >
-                Sign in with Google
-              </button>
-              <p className={styles.divider}>or</p>
-            </>
-          )}
-
-          <button type="submit" className={styles.button}>
-            Sign in
-          </button>
-        </form>
+        {isGoogleAuth ? (
+          <>
+            <button
+              type="button"
+              className={styles.button}
+              onClick={handleGoogleLogin}
+              disabled={loading}
+            >
+              {loading ? 'Signing in…' : 'Sign in with Google'}
+            </button>
+            {error && <p className={styles.error}>{error}</p>}
+          </>
+        ) : (
+          <form onSubmit={handleEmailSubmit} className={styles.form}>
+            <label className={styles.label} htmlFor="email">
+              Email (demo)
+            </label>
+            <input
+              id="email"
+              type="email"
+              className={styles.input}
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError(null);
+              }}
+              placeholder="you@example.com"
+              autoComplete="email"
+              autoFocus
+            />
+            {error && <p className={styles.error}>{error}</p>}
+            <button type="submit" className={styles.button}>
+              Continue
+            </button>
+          </form>
+        )}
 
         <p className={styles.hint}>
-          This is the web app. Use the same API or Magic when you connect the backend.
+          {isGoogleAuth
+            ? 'We use Google only to sign you in. We don’t post or access your data elsewhere.'
+            : 'Demo mode: no Firebase config. Add VITE_FIREBASE_* for Google sign-in.'}
         </p>
         <AppFooter />
       </main>
