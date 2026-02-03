@@ -104,6 +104,39 @@
   opacity: 0.9;
 }
 
+.buttonSecondary {
+  margin-top: 24px;
+  padding: 16px;
+  min-height: 44px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.buttonSecondary:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.buttonSecondary:active {
+  opacity: 0.9;
+}
+
+.divider {
+  font-size: 0.875rem;
+  color: #737373;
+  margin: 16px 0 0;
+  text-align: center;
+}
+
 .hint {
   font-size: 0.8125rem;
   color: #737373;

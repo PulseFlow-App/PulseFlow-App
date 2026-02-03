@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@iconify/react": "^5.0.2",
+    "@magic-ext/oauth2": "^15.2.0",
+    "magic-sdk": "^33.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.0"

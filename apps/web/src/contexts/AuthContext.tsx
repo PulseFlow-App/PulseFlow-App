@@ -8,6 +8,7 @@ export type User = {
 type AuthContextValue = {
   user: User | null;
   signIn: (email: string, password: string) => void;
+  signInWithMagic: (email: string, userId?: string) => void;
   signOut: () => void;
 };
 
@@ -39,12 +40,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('@pulse/auth_session', JSON.stringify({ user: u }));
   }, []);
 
+  const signInWithMagic = useCallback((email: string, userId?: string) => {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed) return;
+    const u: User = {
+      userId: userId ?? generateUserId(),
+      email: trimmed,
+    };
+    setUser(u);
+    localStorage.setItem('@pulse/auth_session', JSON.stringify({ user: u }));
+  }, []);
+
   const signOut = useCallback(() => {
     setUser(null);
     localStorage.removeItem('@pulse/auth_session');
   }, []);
 
-  const value: AuthContextValue = { user, signIn, signOut };
+  const value: AuthContextValue = { user, signIn, signInWithMagic, signOut };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

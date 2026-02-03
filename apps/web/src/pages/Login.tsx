@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AppFooter } from '../components/AppFooter';
+import { magic, isMagicEnabled } from '../lib/magic';
 import styles from './Login.module.css';
 
 export function Login() {
@@ -23,6 +24,20 @@ export function Login() {
     }
     signIn(trimmed, password);
     navigate('/dashboard', { replace: true });
+  };
+
+  const handleGoogleLogin = async () => {
+    if (!magic) return;
+    setError(null);
+    try {
+      await magic.oauth2.loginWithRedirect({
+        provider: 'google',
+        redirectURI: `${window.location.origin}/callback`,
+      });
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      setError(err instanceof Error ? err.message : 'Sign-in failed. Try again.');
+    }
   };
 
   return (
@@ -66,6 +81,19 @@ export function Login() {
           />
 
           {error && <p className={styles.error}>{error}</p>}
+
+          {isMagicEnabled() && (
+            <>
+              <button
+                type="button"
+                className={styles.buttonSecondary}
+                onClick={handleGoogleLogin}
+              >
+                Sign in with Google
+              </button>
+              <p className={styles.divider}>or</p>
+            </>
+          )}
 
           <button type="submit" className={styles.button}>
             Sign in
