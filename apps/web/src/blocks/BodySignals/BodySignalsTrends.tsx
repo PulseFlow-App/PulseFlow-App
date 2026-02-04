@@ -12,6 +12,8 @@ const METRICS: { key: TrendMetric; label: string }[] = [
   { key: 'mood', label: 'Mood' },
   { key: 'hydration', label: 'Hydration' },
   { key: 'stress', label: 'Stress' },
+  { key: 'appetite', label: 'Appetite' },
+  { key: 'digestion', label: 'Digestion' },
   { key: 'weight', label: 'Weight' },
 ];
 
@@ -30,6 +32,8 @@ export function BodySignalsTrends() {
       else if (metric === 'mood') y = l.mood;
       else if (metric === 'hydration') y = l.hydration;
       else if (metric === 'stress') y = l.stress;
+      else if (metric === 'appetite') y = l.appetite;
+      else if (metric === 'digestion') y = l.digestion;
       if (y != null) out.push({ x: 0, y, label: l.date.slice(5) });
     }
     return out;
@@ -39,7 +43,9 @@ export function BodySignalsTrends() {
     metric === 'energy' ||
     metric === 'mood' ||
     metric === 'hydration' ||
-    metric === 'stress';
+    metric === 'stress' ||
+    metric === 'appetite' ||
+    metric === 'digestion';
   const correlationHint =
     logs.length >= 2 && metric === 'energy'
       ? 'Low sleep → low energy'

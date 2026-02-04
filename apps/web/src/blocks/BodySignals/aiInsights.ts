@@ -3,12 +3,13 @@
  * Calls backend POST /insights/body-signals when VITE_API_URL is set.
  * Otherwise returns null → rule-based fallback in store.
  */
-import type { BodyLogEntry, DailySignalsState } from './types';
+import type { BodyLogEntry, DailySignalsState, FactorImpact } from './types';
 
 export type AIInsightsResult = {
   insight: string;
   explanation: string;
   improvements: string[];
+  factors?: FactorImpact[];
 };
 
 const MAX_IMPROVEMENTS = 3;
@@ -17,6 +18,19 @@ function getApiUrl(): string | undefined {
   const url = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL;
   if (typeof url !== 'string' || !url.trim()) return undefined;
   return url.trim().replace(/\/$/, '');
+}
+
+function parseFactors(raw: unknown): FactorImpact[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((x): x is Record<string, unknown> => x != null && typeof x === 'object')
+    .map((x) => ({
+      factor: typeof x.factor === 'string' ? x.factor : '',
+      impact: (x.impact === 'high' || x.impact === 'medium' || x.impact === 'low' ? x.impact : 'medium') as FactorImpact['impact'],
+      affects: Array.isArray(x.affects) ? (x.affects as unknown[]).filter((a): a is string => typeof a === 'string') : [],
+      note: typeof x.note === 'string' ? x.note : undefined,
+    }))
+    .filter((x) => x.factor);
 }
 
 function parseAIResponse(text: string): AIInsightsResult | null {
@@ -34,30 +48,39 @@ function parseAIResponse(text: string): AIInsightsResult | null {
           .filter(Boolean)
           .slice(0, MAX_IMPROVEMENTS)
       : [];
-    if (!insight && !explanation && improvements.length === 0) return null;
+    const factors = parseFactors(p.factors);
+    if (!insight && !explanation && improvements.length === 0 && factors.length === 0) return null;
     return {
       insight: insight || 'Your signals are in. Small tweaks may help.',
       explanation: explanation || 'Focus on one or two suggestions below.',
       improvements,
+      factors: factors.length ? factors : undefined,
     };
   } catch {
     return null;
   }
 }
 
+export type FetchAIInsightsResult =
+  | { result: AIInsightsResult; error: null }
+  | { result: null; error: string };
+
 /**
- * Request AI insights from backend (POST /insights/body-signals).
- * Same contract as mobile: { entry, score, trend, previousScore, frictionPoints } → { insight, explanation, improvements }.
+ * Request insights from backend (POST /insights/body-signals).
+ * Returns result + error reason so UI can show why AI was not fetched.
  */
 export async function fetchAIInsights(
   entry: BodyLogEntry,
   score: number,
   trend: string,
   state: DailySignalsState,
-  previousScore?: number
-): Promise<AIInsightsResult | null> {
+  previousScore?: number,
+  recentEntries?: BodyLogEntry[]
+): Promise<FetchAIInsightsResult> {
   const base = getApiUrl();
-  if (!base) return null;
+  if (!base) {
+    return { result: null, error: 'VITE_API_URL is not set. Set it in .env (e.g. http://localhost:3000) and restart.' };
+  }
   const url = `${base}/insights/body-signals`;
   try {
     const res = await fetch(url, {
@@ -72,18 +95,45 @@ export async function fetchAIInsights(
           hydration: entry.hydration,
           stress: entry.stress,
           weight: entry.weight,
+          appetite: entry.appetite,
+          digestion: entry.digestion,
           notes: entry.notes,
         },
         score,
         trend,
         previousScore,
         frictionPoints: state.frictionPoints,
+        recentEntries: (recentEntries || []).slice(0, 7).map((e) => ({
+          date: e.date,
+          sleepHours: e.sleepHours,
+          sleepQuality: e.sleepQuality,
+          energy: e.energy,
+          mood: e.mood,
+          hydration: e.hydration,
+          stress: e.stress,
+          appetite: e.appetite,
+          digestion: e.digestion,
+          notes: e.notes,
+        })),
       }),
     });
-    if (!res.ok) return null;
     const text = await res.text();
-    return parseAIResponse(text);
-  } catch {
-    return null;
+    if (!res.ok) {
+      return { result: null, error: `API error: ${res.status} ${res.statusText}. ${text.slice(0, 80)}` };
+    }
+    const parsed = parseAIResponse(text);
+    if (!parsed) {
+      return { result: null, error: 'API returned invalid or empty response.' };
+    }
+    return { result: parsed, error: null };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const isNetwork = /failed to fetch|network|connection refused|load failed/i.test(msg);
+    return {
+      result: null,
+      error: isNetwork
+        ? `Can't reach the API at ${base}. Start it locally: cd apps/api && npm run dev`
+        : `Request failed: ${msg}`,
+    };
   }
 }

@@ -199,18 +199,18 @@ app.post('/users/me/body-logs', authMiddleware, async (req, res) => {
   return res.status(201).json(log);
 });
 
-// ----- Insights (stub) -----
+// ----- Insights (note-aware, with factors) -----
+const { computeInsights } = require('./insights/bodySignals');
+
 app.post('/insights/body-signals', (req, res) => {
-  const { score, trend, frictionPoints } = req.body || {};
-  const reasons = (frictionPoints || []).slice(0, 2).join(' and ') || 'your signals';
-  const insight = trend === 'down' ? 'Your Pulse Score is lower today; the suggestions below may help.' : 'Focus on one or two of the suggestions below.';
-  const explanation = trend === 'down' ? `Your Pulse Score is lower today mainly due to ${reasons}.` : 'Your Pulse Score is steady. The suggestions below may help you nudge it up.';
-  const improvements = [
-    'Improve sleep consistency — aim for similar bed and wake times.',
-    'Increase hydration — small sips throughout the day may help.',
-    'Short breaks may help keep energy steady.',
-  ].slice(0, 3);
-  return res.json({ insight, explanation, improvements });
+  try {
+    const payload = req.body || {};
+    const { insight, explanation, improvements, factors } = computeInsights(payload);
+    return res.json({ insight, explanation, improvements, factors: factors || [] });
+  } catch (err) {
+    console.error('insights/body-signals error', err);
+    return res.status(500).json({ message: 'Insights failed' });
+  }
 });
 
 // ----- Premium (stub) -----

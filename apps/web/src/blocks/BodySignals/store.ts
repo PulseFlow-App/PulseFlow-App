@@ -3,7 +3,7 @@
  * Optional AI via fetchAIInsights (backend at VITE_API_URL).
  */
 import { fetchAIInsights } from './aiInsights';
-import type { BodyLogEntry, BodyPulseSnapshot, DailySignalsState } from './types';
+import type { BodyLogEntry, BodyPulseSnapshot, DailySignalsState, FactorImpact } from './types';
 
 const STORAGE_KEY = '@pulse/body_logs';
 const MAX_IMPROVEMENTS = 3;
@@ -109,12 +109,25 @@ function getNotesContext(notes: string | undefined): string[] {
   if (!notes || !notes.trim()) return [];
   const lower = notes.toLowerCase();
   const themes: string[] = [];
+  if (/\b(hungry|hunger|ravenous|starving|appetite|ready to eat)\b/.test(lower)) themes.push('hunger');
+  if (/\b(bloat|digestion|stomach|gut|full)\b/.test(lower)) themes.push('digestion');
   if (/\b(tired|fatigue|exhausted|drained)\b/.test(lower)) themes.push('fatigue');
   if (/\b(stress|stressed|overwhelm|deadline)\b/.test(lower)) themes.push('stress');
   if (/\b(sick|unwell|headache|recovery)\b/.test(lower)) themes.push('recovery');
-  if (/\b(sleep|insomnia|rest)\b/.test(lower)) themes.push('sleep');
+  if (/\b(sleep|insomnia|rest|waking|wake)\b/.test(lower)) themes.push('sleep');
   if (/\b(dry|thirst|water|hydrat)\b/.test(lower)) themes.push('hydration');
+  if (/\b(dizzy|dizziness|lightheaded|light-headed|vertigo|woozy)\b/.test(lower)) themes.push('dizzy');
   return themes;
+}
+
+function getDefaultFactors(state: DailySignalsState): FactorImpact[] {
+  const f: FactorImpact[] = [];
+  if (state.frictionPoints.includes('sleep')) f.push({ factor: 'Sleep', impact: 'medium', affects: ['Energy', 'Mood'] });
+  if (state.frictionPoints.includes('stress')) f.push({ factor: 'Stress', impact: 'medium', affects: ['Sleep', 'Mood'] });
+  if (state.frictionPoints.includes('energy')) f.push({ factor: 'Energy', impact: 'medium', affects: ['Mood'] });
+  if (state.frictionPoints.includes('hydration')) f.push({ factor: 'Hydration', impact: 'medium', affects: ['Energy'] });
+  if (state.frictionPoints.includes('mood')) f.push({ factor: 'Mood', impact: 'medium', affects: ['Energy'] });
+  return f;
 }
 
 export function generateInsights(
@@ -122,8 +135,8 @@ export function generateInsights(
   _score: number,
   trend: 'up' | 'down' | 'stable',
   state: DailySignalsState,
-  previousScore?: number
-): { insight: string; explanation: string; improvements: string[] } {
+  _previousScore?: number
+): { insight: string; explanation: string; improvements: string[]; factors: FactorImpact[] } {
   const noteThemes = getNotesContext(entry.notes);
   const improvements: string[] = [];
   if (state.frictionPoints.includes('sleep') || noteThemes.includes('sleep')) {
@@ -141,6 +154,17 @@ export function generateInsights(
   if (state.frictionPoints.includes('mood')) {
     improvements.push('A calm walk or a few minutes outdoors may support mood.');
   }
+  const hungerRelated = /hunger|appetite|eat|breakfast/i;
+  if (noteThemes.includes('hunger') && !improvements.some((item) => hungerRelated.test(item))) {
+    improvements.push('You mentioned hunger or appetite. Sleep and meal timing often affect this. Try a balanced breakfast and notice how the next days feel.');
+  }
+  const digestionRelated = /digestion|stomach|bloat/i;
+  if (noteThemes.includes('digestion') && !improvements.some((item) => digestionRelated.test(item))) {
+    improvements.push('You mentioned digestion. Smaller meals, hydration, and less stress may help.');
+  }
+  if (noteThemes.includes('dizzy') && !improvements.some((item) => /dizzy|lighthead|hydrat|sip|rest/i.test(item))) {
+    improvements.push('You mentioned feeling dizzy or lightheaded. Common non-medical causes include dehydration, low blood sugar, or standing up too fast. Try sipping water, a small snack if you haven’t eaten, and moving slowly when you stand. If it persists, consider checking in with a healthcare provider.');
+  }
   if (noteThemes.includes('recovery') && !improvements.some((i) => i.includes('rest'))) {
     improvements.push('Your inputs suggest your body may need recovery. Prioritize rest and hydration.');
   }
@@ -151,31 +175,36 @@ export function generateInsights(
   }
   const capped = improvements.slice(0, MAX_IMPROVEMENTS);
 
-  let insight: string;
-  if (trend === 'up') insight = 'Your Pulse Score is up today - small steps are adding up.';
-  else if (trend === 'down' && previousScore != null)
-    insight = 'Your Pulse Score is lower today; the suggestions below may help.';
-  else if (capped.length > 0)
-    insight = 'Focus on one or two of the suggestions below to improve your score.';
-  else insight = 'Keep logging to get personalized insights.';
-
   const reasons: string[] = [];
   if (state.frictionPoints.includes('sleep')) reasons.push('sleep');
   if (state.frictionPoints.includes('stress')) reasons.push('stress');
   if (state.frictionPoints.includes('energy')) reasons.push('low energy');
   if (state.frictionPoints.includes('hydration')) reasons.push('hydration');
   if (state.frictionPoints.includes('mood')) reasons.push('mood');
+  const reasonText = reasons.slice(0, 2).join(' and ');
+
+  let insight: string;
   let explanation: string;
-  if (trend === 'down' && reasons.length > 0) {
-    explanation = `Your Pulse Score is lower today mainly due to ${reasons.slice(0, 2).join(' and ')}.`;
-  } else if (trend === 'down') {
-    explanation = 'Your Pulse Score is a bit lower today; small changes may help.';
+  if (noteThemes.length > 0 && entry.notes?.trim()) {
+    insight = "Your note and today's signals are reflected in the suggestions below.";
+    explanation = reasonText ? `What's driving things: ${reasonText}.` : 'The table below shows what affects what.';
   } else if (trend === 'up') {
-    explanation = 'Your Pulse Score is up - your signals suggest a better baseline today.';
+    insight = 'Your Pulse Score is up today — small steps are adding up.';
+    explanation = 'The table below shows what is helping.';
+  } else if (trend === 'down' && reasonText) {
+    insight = `Your Pulse Score is lower today mainly due to ${reasonText}. The suggestions below may help.`;
+    explanation = 'The table below shows how these factors affect each other.';
+  } else if (trend === 'down') {
+    insight = 'Your Pulse Score is a bit lower today. The suggestions below may help.';
+    explanation = 'The table below shows what influences your score.';
+  } else if (capped.length > 0) {
+    insight = reasonText ? `Focus on ${reasonText} to nudge your score up.` : 'Focus on one or two suggestions below.';
+    explanation = 'The table below shows what affects what.';
   } else {
-    explanation = 'Your Pulse Score is steady. The suggestions below may help you nudge it up.';
+    insight = 'Keep logging to get personalized insights.';
+    explanation = 'The table below shows what influences your body pulse.';
   }
-  return { insight, explanation, improvements: capped };
+  return { insight, explanation, improvements: capped, factors: getDefaultFactors(state) };
 }
 
 export function computeBodyPulse(): BodyPulseSnapshot {
@@ -188,6 +217,7 @@ export function computeBodyPulse(): BodyPulseSnapshot {
       insight: 'Log your first entry to see your Body Pulse.',
       explanation: "After you log sleep, energy, mood, and other signals, you'll get a score and suggestions.",
       improvements: [],
+      insightsSource: 'rule-based',
       date: getToday(),
     };
   }
@@ -199,14 +229,14 @@ export function computeBodyPulse(): BodyPulseSnapshot {
   let trend: 'up' | 'down' | 'stable' = 'stable';
   if (score > prevScore + 3) trend = 'up';
   else if (score < prevScore - 3) trend = 'down';
-  const { insight, explanation, improvements } = generateInsights(
+  const { insight, explanation, improvements, factors } = generateInsights(
     latest,
     score,
     trend,
     state,
     prevScore
   );
-  return { score, trend, insight, explanation, improvements, date: getToday() };
+  return { score, trend, insight, explanation, improvements, factors, insightsSource: 'rule-based', date: getToday() };
 }
 
 /**
@@ -225,18 +255,21 @@ export async function computeBodyPulseAsync(): Promise<BodyPulseSnapshot> {
   const prevEntry = recent.length >= 2 ? recent[1] : undefined;
   const prevScore = prevEntry ? calculatePulseScore(prevEntry, recent) : score;
 
-  const ai = await fetchAIInsights(latest, score, ruleBased.trend, state, prevScore);
-  if (ai) {
+  const ai = await fetchAIInsights(latest, score, ruleBased.trend, state, prevScore, recent);
+  if (ai.result) {
+    const r = ai.result;
     return {
       score: ruleBased.score,
       trend: ruleBased.trend,
-      insight: ai.insight,
-      explanation: ai.explanation,
-      improvements: ai.improvements.slice(0, MAX_IMPROVEMENTS),
+      insight: r.insight,
+      explanation: r.explanation,
+      improvements: r.improvements.slice(0, MAX_IMPROVEMENTS),
+      factors: r.factors?.length ? r.factors : ruleBased.factors,
+      insightsSource: 'api',
       date: ruleBased.date,
     };
   }
-  return ruleBased;
+  return { ...ruleBased, insightsError: ai.error ?? undefined };
 }
 
 export function getLogsForRange(days: number): BodyLogEntry[] {

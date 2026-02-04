@@ -44,7 +44,11 @@ export function Admin() {
       }
       setUsers(Array.isArray(data.users) ? data.users : []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Network error.');
+      const msg = err instanceof Error ? err.message : 'Network error.';
+      const isConnectionRefused = /failed to fetch|network error|connection refused|err_connection_refused/i.test(msg) || (err && typeof err === 'object' && 'message' in err && String((err as Error).message).toLowerCase().includes('fetch'));
+      setError(isConnectionRefused
+        ? "Can't reach the API. If testing locally, start it: cd apps/api && npm run dev"
+        : msg);
     } finally {
       setLoading(false);
     }

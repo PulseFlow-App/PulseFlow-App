@@ -11,6 +11,8 @@ export function BodySignalsLog() {
   const [mood, setMood] = useState(3);
   const [hydration, setHydration] = useState(3);
   const [stress, setStress] = useState(3);
+  const [appetite, setAppetite] = useState<number | ''>(3);
+  const [digestion, setDigestion] = useState<number | ''>(3);
   const [weight, setWeight] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -23,6 +25,8 @@ export function BodySignalsLog() {
       mood,
       hydration,
       stress,
+      appetite: appetite === '' ? undefined : (appetite as number),
+      digestion: digestion === '' ? undefined : (digestion as number),
       weight: weight ? parseFloat(weight) : undefined,
       notes: notes.trim() || undefined,
     });
@@ -133,6 +137,36 @@ export function BodySignalsLog() {
             </div>
           </div>
           <div className={styles.field}>
+            <label className={styles.label}>Appetite / hunger (1–5, optional)</label>
+            <div className={styles.sliderRow}>
+              <span className={styles.sliderValue}>{appetite === '' ? '—' : appetite}</span>
+              <input
+                type="range"
+                className={styles.slider}
+                min={1}
+                max={5}
+                step={1}
+                value={appetite === '' ? 3 : appetite}
+                onChange={(e) => setAppetite(parseInt(e.target.value, 10))}
+              />
+            </div>
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label}>Digestion / comfort (1–5, optional)</label>
+            <div className={styles.sliderRow}>
+              <span className={styles.sliderValue}>{digestion === '' ? '—' : digestion}</span>
+              <input
+                type="range"
+                className={styles.slider}
+                min={1}
+                max={5}
+                step={1}
+                value={digestion === '' ? 3 : digestion}
+                onChange={(e) => setDigestion(parseInt(e.target.value, 10))}
+              />
+            </div>
+          </div>
+          <div className={styles.field}>
             <label className={styles.label}>Weight (kg)</label>
             <input
               type="number"
@@ -149,11 +183,11 @@ export function BodySignalsLog() {
               className={`${styles.input} ${styles.textArea}`}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Travel day, poor sleep - context only"
+              placeholder="e.g. Woke up super hungry, bloated after lunch, deadline stress"
               maxLength={500}
               rows={3}
             />
-            <p className={styles.hint}>Context only; notes influence suggestions cautiously.</p>
+            <p className={styles.hint}>Notes are analyzed with your metrics to personalize suggestions.</p>
           </div>
           <button type="submit" className={styles.submitButton}>
             Submit
