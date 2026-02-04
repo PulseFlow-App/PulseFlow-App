@@ -67,7 +67,7 @@ export function Admin() {
       <main id="main" className={styles.main}>
         <h1 className={styles.title}>Admin cabinet</h1>
         <p className={adminStyles.updated}>
-          Enter the password. They will know which one.
+          Enter the password.
         </p>
 
         {!API_BASE && (
