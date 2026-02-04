@@ -4,7 +4,7 @@
  */
 import { Icon } from '@iconify/react';
 
-const SIGNAL_ICONS: Record<string, string> = {
+const SIGNAL_ICONS = {
   sleep: 'solar:moon-stars-linear',
   stress: 'solar:brain-linear',
   mood: 'solar:heart-linear',
@@ -14,7 +14,9 @@ const SIGNAL_ICONS: Record<string, string> = {
   hydration: 'solar:water-drops-linear',
   cumulative: 'solar:chart-2-linear',
   moderate: 'solar:chart-2-linear',
-};
+} as const;
+
+const FALLBACK_ICON = SIGNAL_ICONS.cumulative;
 
 /** Detect primary signal from a bullet line (e.g. "Sleep quality is the main driver") */
 function getIconForLine(line: string): string {
@@ -27,7 +29,7 @@ function getIconForLine(line: string): string {
   if (/\bdigestion\b/.test(lower)) return SIGNAL_ICONS.digestion;
   if (/\bhydrat/.test(lower)) return SIGNAL_ICONS.hydration;
   if (/\bcumulative\b|\bmoderate\b|\brange\b/.test(lower)) return SIGNAL_ICONS.cumulative;
-  return SIGNAL_ICONS.cumulative;
+  return FALLBACK_ICON;
 }
 
 /** Strip leading bullet and trim */

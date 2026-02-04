@@ -79,7 +79,7 @@ export function BodySignalsOverview() {
                   </section>
                 )}
               </div>
-            ) : !loadingAI && pulse.insightsSource !== 'api' ? (
+            ) : !loadingAI && (pulse.insightsSource === 'rule-based' || pulse.insightsSource === undefined) ? (
               <div className={styles.improvementsBlock}>
                 <p className={styles.improvementsTitle}>AI didn&apos;t fetch.</p>
                 <p className={styles.insightsError} role="status">
