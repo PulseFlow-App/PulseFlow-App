@@ -93,6 +93,19 @@
   color: #22c55e;
 }
 
+.pulseLink {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.pulseLink:hover {
+  text-decoration: underline;
+}
+
 .section {
   display: flex;
   flex-direction: column;

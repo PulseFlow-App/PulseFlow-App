@@ -15,6 +15,7 @@ import { Disclaimer } from './pages/Disclaimer';
 import { Admin } from './pages/Admin';
 import { Lab } from './pages/Lab';
 import { Profile } from './pages/Profile';
+import { Pulse } from './pages/Pulse';
 import { Invite } from './pages/Invite';
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -31,6 +32,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/pulse"
+        element={
+          <ProtectedRoute>
+            <Pulse />
           </ProtectedRoute>
         }
       />

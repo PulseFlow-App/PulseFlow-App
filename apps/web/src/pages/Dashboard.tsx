@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { recordAppUsage } from '../stores/appStreak';
 import { BlockCard } from '../components/BlockCard';
 import { AppFooter } from '../components/AppFooter';
 import { BLOCKS } from '../blocks/registry';
@@ -10,6 +12,10 @@ const COMING_SOON_IDS = ['nutrition', 'movement', 'recovery'];
 
 export function Dashboard() {
   const { user, signOut } = useAuth();
+
+  useEffect(() => {
+    if (user) recordAppUsage();
+  }, [user]);
   const activeBlocks = BLOCKS.filter((b) => ACTIVE_IDS.includes(b.id));
   const comingSoonBlocks = BLOCKS.filter((b) => COMING_SOON_IDS.includes(b.id));
 
@@ -34,6 +40,9 @@ export function Dashboard() {
         <section className={styles.hero}>
           <p className={styles.heroLine1}>No noise.</p>
           <p className={styles.heroLine2}>Just signal.</p>
+          <Link to="/dashboard/pulse" className={styles.pulseLink}>
+            See your Pulse
+          </Link>
         </section>
 
         <section className={styles.section}>

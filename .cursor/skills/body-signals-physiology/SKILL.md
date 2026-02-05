@@ -252,6 +252,20 @@ Instead of teaching "medical knowledge," define **skills** the agent should appl
 
 ---
 
+## Trusted Sources (Canonical) & Ingestion
+
+**Full list (16 sources by domain), ingestion pattern, and legal guardrails:** see `apps/ai-engine/prompts/trusted-sources-and-guardrails.md`.
+
+**Domains:** Sleep & cognitive function (Sleep Foundation, Stanford Sleep, NIH/NHLBI). Energy & attention (Yerkes–Dodson, APA, HBR). Nutrition (Harvard T.H. Chan, WHO, NIH ODS). Stress & mood (APA, Stanford Behavior Design, BJ Fogg). Working routines & cognitive load (Cognitive Load Theory, OSHA, Cornell Ergonomics, Microsoft Research).
+
+**When ingesting into the AI, use structured relational knowledge:**
+
+- **Topic** + **Evidence** (which sources) + **Relationship** (bullet cause–effect; link signals explicitly) + **Language rules** (use *may* and *often*, not *will*; no diagnosis; link signals e.g. sleep quality → energy, mood).
+
+**Legal / UX guardrails (all sources):** Use educational summaries only. No dosage, treatment, or diagnosis. No "disease" or "condition". Always translate into **patterns and observations**. Example: "Research suggests that changes in sleep patterns may influence daily energy and mood." Never: "You have a sleep disorder."
+
+---
+
 ## Compliance & App Store Safety (Important)
 
 **Always include** an implicit or explicit boundary so output is clearly educational, not medical advice. Use **one** of these (or equivalent) — e.g. a single footer line:

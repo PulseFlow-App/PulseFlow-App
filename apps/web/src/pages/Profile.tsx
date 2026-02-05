@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getCheckIns, getStreak, getWeeklyProgress } from '../blocks/WorkRoutine/store';
+import { getAppStreak } from '../stores/appStreak';
+import { getCheckIns, getWeeklyProgress } from '../blocks/WorkRoutine/store';
 import styles from './Profile.module.css';
 
 export function Profile() {
   const { user, signOut } = useAuth();
   const checkIns = getCheckIns();
-  const streak = getStreak();
+  const streak = getAppStreak();
   const weekly = getWeeklyProgress();
 
   if (!user) return null;
@@ -37,7 +38,7 @@ export function Profile() {
             </div>
             <div className={styles.statCard}>
               <span className={styles.statValue}>{streak}</span>
-              <span className={styles.statLabel}>Current streak (days)</span>
+              <span className={styles.statLabel}>App streak (days)</span>
             </div>
             <div className={styles.statCard}>
               <span className={styles.statValue}>{weekly.count}/7</span>

@@ -1,0 +1,117 @@
+# Pulse — Trusted Sources & Ingestion Guardrails
+
+Canonical reference for teaching the AI across blocks (Body Signals, Work Routine, future). Use **educational summaries only**. Never dosage, treatment, or diagnosis language.
+
+---
+
+## Sleep & Cognitive Function
+
+| # | Source | Use for | URL |
+|---|--------|---------|-----|
+| 1 | **Sleep Foundation** | Sleep stages, quality, timing, cognition, fatigue | https://www.sleepfoundation.org/what-happens-when-you-sleep |
+| 2 | **Stanford Center for Sleep Sciences** | Sleep architecture, cognitive effects | https://med.stanford.edu/sleep.html |
+| 3 | **NIH (NHLBI) – Sleep** | Public health summaries on sleep | https://www.nhlbi.nih.gov/health/sleep |
+
+---
+
+## Energy, Attention & Performance
+
+| # | Source | Use for | URL |
+|---|--------|---------|-----|
+| 4 | **Yerkes–Dodson Law** | Stress and performance; arousal/cognitive load | https://en.wikipedia.org/wiki/Yerkes–Dodson_law |
+| 5 | **APA – Stress** | Attention, cognitive load, stress–sleep–task interaction | https://www.apa.org/topics/stress |
+| 6 | **Harvard Business Review** | Focus, multitasking, neuroscience (search: HBR focus neuroscience multitasking) | — |
+
+---
+
+## Nutrition Signals & Body Reactions
+
+| # | Source | Use for | URL |
+|---|--------|---------|-----|
+| 7 | **Harvard T.H. Chan Nutrition Source** | Macronutrients, digestion, energy availability | https://www.hsph.harvard.edu/nutritionsource |
+| 8 | **WHO – Nutrition** | Population-level, non-commercial | https://www.who.int/health-topics/nutrition |
+| 9 | **NIH Office of Dietary Supplements** | Role of vitamins/minerals (not prescriptions) | https://ods.od.nih.gov |
+
+---
+
+## Stress, Mood & Behavioral Science
+
+| # | Source | Use for | URL |
+|---|--------|---------|-----|
+| 10 | **APA – Stress and Health** | Stress physiology, mood relationships | https://www.apa.org/topics/stress |
+| 11 | **Stanford Behavior Design Lab** | Habit formation, consistency | https://behaviordesign.stanford.edu |
+| 12 | **BJ Fogg Behavior Model** | Behavior adoption, small habit change | https://www.behaviormodel.org |
+
+---
+
+## Working Routines & Cognitive Load
+
+| # | Source | Use for | URL |
+|---|--------|---------|-----|
+| 13 | **Cognitive Load Theory** | Mental load and performance (high-level summaries) | https://en.wikipedia.org/wiki/Cognitive_load |
+| 14 | **OSHA – Ergonomics** | Workplace factors, comfort, fatigue | https://www.osha.gov/ergonomics |
+| 15 | **Cornell Ergonomics Web** | Posture, workstation, comfort, focus | http://ergo.human.cornell.edu |
+| 16 | **Microsoft Research** | Productivity, work habits, human factors (search: Microsoft Research productivity multitasking) | — |
+
+---
+
+## How to Ingest Into the AI (Structured Relational Knowledge)
+
+When teaching the agent from these sources, use this pattern:
+
+```
+Topic: [e.g. Sleep Quality vs Cognitive Load]
+Evidence: [e.g. Sleep Foundation + NIH]
+Relationship:
+- [Cause–effect in plain language, e.g. Poor sleep quality is associated with lower daytime energy]
+- [Link signals explicitly, e.g. Poor sleep commonly links to slower reaction times and focus lapses]
+- [Cross-domain if relevant, e.g. Cognitive load interacts with fatigue]
+Language rules:
+- Use *may* and *often*, not *will*
+- Do not use medical diagnosis language
+- Link signals explicitly (e.g., sleep quality → energy, mood)
+```
+
+**Example:**
+
+```
+Topic: Sleep Quality vs Cognitive Load
+Evidence: Sleep Foundation + NIH
+Relationship:
+- Poor sleep quality is associated with lower daytime energy
+- Poor sleep commonly links to slower reaction times and focus lapses
+- Cognitive load interacts with fatigue
+Language rules:
+- Use *may* and *often*, not *will*
+- Do not use medical diagnosis language
+- Link signals explicitly (e.g., sleep quality → energy, mood)
+```
+
+---
+
+## Legal / UX Guardrails (All Sources)
+
+- Use **educational summaries** only.
+- Avoid extracting dosage, treatment, or diagnosis language.
+- Do not reference "disease" or "condition".
+- Always translate outcomes into **patterns and observations**.
+- Add a **universal non-medical disclaimer** in system prompts.
+
+**Example pattern language (use this style):**
+
+> "Research suggests that changes in sleep patterns may influence daily energy and mood."
+
+**Never:**
+
+> "You have a sleep disorder."
+
+---
+
+## Universal Disclaimer (For System Prompts)
+
+Include in every block's system prompt:
+
+- This is not medical advice. For education and self-awareness only.
+- If symptoms persist or concern you, consult a healthcare professional.
+
+One clear line is enough; do not overdo disclaimers.

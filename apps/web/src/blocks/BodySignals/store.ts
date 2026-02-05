@@ -282,3 +282,16 @@ export function getLogsForRange(days: number): BodyLogEntry[] {
     .filter((l) => l.date >= startStr && l.date <= endStr)
     .sort((a, b) => a.date.localeCompare(b.date));
 }
+
+/** True if the most recent body log is from today. */
+export function hasBodyToday(): boolean {
+  const logs = getBodyLogs();
+  const latest = logs[0];
+  return Boolean(latest && latest.date === getToday());
+}
+
+/** 0–100 Body Pulse score for today; null if no log today. */
+export function getTodayBodyScore(): number | null {
+  if (!hasBodyToday()) return null;
+  return computeBodyPulse().score;
+}

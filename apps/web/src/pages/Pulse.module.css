@@ -1,0 +1,254 @@
+.page {
+  min-height: 100dvh;
+  padding: 24px;
+  background-color: #0a0e14;
+  color: #fff;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.back {
+  font-size: 0.9375rem;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+.main {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  margin: 0 0 24px;
+}
+
+.ctaCard {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.ctaHeading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #fff;
+}
+
+.ctaText {
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  margin: 0 0 16px;
+  line-height: 1.45;
+}
+
+.ctaButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ctaPrimary {
+  display: block;
+  text-align: center;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0a0e14;
+  background: #3b82f6;
+  border: none;
+  border-radius: 12px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ctaPrimary:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+.ctaSecondary {
+  display: block;
+  text-align: center;
+  padding: 12px 20px;
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ctaSecondary:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.scoreCard {
+  background: rgba(23, 23, 23, 0.6);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.diagramSection {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.diagramHeading {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #a3a3a3;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.diagramBar {
+  height: 28px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.diagramSegment {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.diagramSegmentBody {
+  background: linear-gradient(90deg, #15803d, #22c55e);
+  border-radius: 14px 0 0 14px;
+}
+
+.diagramSegmentRoutine {
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  border-radius: 0 14px 14px 0;
+}
+
+.diagramSegmentSolo {
+  border-radius: 14px;
+}
+
+.diagramLegend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px 24px;
+  font-size: 0.875rem;
+  color: #a3a3a3;
+}
+
+.diagramLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.diagramLegendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.diagramLegendDotBody {
+  background: #22c55e;
+}
+
+.diagramLegendDotRoutine {
+  background: #3b82f6;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 32px 20px;
+  color: #a3a3a3;
+}
+
+.emptyHeading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.emptyLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.emptyLink {
+  display: block;
+  text-align: center;
+  padding: 14px 20px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
+  text-decoration: none;
+}
+
+.emptyLink:hover {
+  background: rgba(59, 130, 246, 0.15);
+  text-decoration: underline;
+}
+
+.linksSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.linkButton {
+  display: block;
+  text-align: center;
+  padding: 14px 20px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(23, 23, 23, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  text-decoration: none;
+}
+
+.linkButton:hover {
+  background: rgba(23, 23, 23, 0.95);
+  border-color: rgba(255, 255, 255, 0.15);
+}

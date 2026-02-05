@@ -17,7 +17,7 @@ export function WorkRoutineInsights() {
         <div id="main" className={styles.empty}>
           <h2 className={styles.emptyTitle}>No insights yet</h2>
           <p className={styles.emptyText}>
-            Complete a check-in to see your assessment and quick wins.
+            Complete a check-in to see your pattern and one thing to try.
           </p>
           <Link to="/dashboard/work-routine/checkin" className={styles.emptyLink}>
             Start Check-in →
@@ -26,6 +26,8 @@ export function WorkRoutineInsights() {
       </div>
     );
   }
+
+  const useNarrative = latest?.analysis.pattern != null && latest.analysis.shaping != null && latest.analysis.oneThing != null;
 
   return (
     <div className={styles.page}>
@@ -47,7 +49,22 @@ export function WorkRoutineInsights() {
             </p>
           )}
         </div>
-        {latest && (
+        {latest && useNarrative ? (
+          <div className={styles.narrativeCard}>
+            <section className={styles.narrativeSection} aria-labelledby="wr-pattern-heading">
+              <h2 id="wr-pattern-heading" className={styles.narrativeHeading}>Today&apos;s work pattern</h2>
+              <p className={styles.narrativeText}>{latest.analysis.pattern}</p>
+            </section>
+            <section className={styles.narrativeSection} aria-labelledby="wr-shaping-heading">
+              <h2 id="wr-shaping-heading" className={styles.narrativeHeading}>What&apos;s shaping this</h2>
+              <p className={styles.narrativeShaping}>{latest.analysis.shaping}</p>
+            </section>
+            <section className={styles.narrativeSection} aria-labelledby="wr-onething-heading">
+              <h2 id="wr-onething-heading" className={styles.narrativeHeading}>One thing to observe</h2>
+              <p className={styles.narrativeText}>{latest.analysis.oneThing}</p>
+            </section>
+          </div>
+        ) : latest ? (
           <>
             <div className={styles.card}>
               <p className={styles.cardLabel}>Assessment</p>
@@ -62,7 +79,7 @@ export function WorkRoutineInsights() {
               ))}
             </div>
           </>
-        )}
+        ) : null}
         <p className={styles.hint}>Complete more check-ins to see patterns over time.</p>
       </main>
     </div>

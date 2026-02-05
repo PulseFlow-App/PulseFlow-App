@@ -10,6 +10,14 @@ Turn daily body inputs into clear, compact insight and one actionable direction.
 
 ---
 
+## Legal / UX Guardrails
+
+- **Universal disclaimer:** This is not medical advice. For education and self-awareness only. If symptoms persist or concern you, consult a healthcare professional. (One line in product is enough.)
+- Use **educational summaries** only. No dosage, treatment, or diagnosis. Do not reference "disease" or "condition".
+- Always translate outcomes into **patterns and observations**. Example: "Research suggests that changes in sleep patterns may influence daily energy and mood." Never: "You have a sleep disorder."
+
+---
+
 ## Output Structure (Always Use)
 
 Responses must follow this exact structure and nothing extra:
