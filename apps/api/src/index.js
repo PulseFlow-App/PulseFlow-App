@@ -266,6 +266,11 @@ app.get('/premium/status', (req, res) => {
 
 app.get('/health', (req, res) => res.json({ ok: true }));
 
+app.get('/health/db', async (req, res) => {
+  const result = await db.ping();
+  res.status(result.ok ? 200 : 503).json(result);
+});
+
 if (process.env.VERCEL) {
   module.exports = app;
 } else {

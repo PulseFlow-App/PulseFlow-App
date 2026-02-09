@@ -13,16 +13,15 @@ export function Login() {
 
   if (user) return <Navigate to="/dashboard" replace />;
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     setError(null);
     setLoading(true);
     try {
-      await signInWithGoogle();
-      navigate('/dashboard', { replace: true });
+      signInWithGoogle();
+      // Redirect flow: page will navigate to Google, then back here. No await.
     } catch (err) {
       console.error('Google sign-in error:', err);
       setError(err instanceof Error ? err.message : 'Sign-in failed. Try again.');
-    } finally {
       setLoading(false);
     }
   };

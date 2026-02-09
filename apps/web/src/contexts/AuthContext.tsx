@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth, googleAuthProvider, isFirebaseEnabled } from '../lib/firebase';
 
 export type User = {
@@ -44,6 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!auth) return;
+    getRedirectResult(auth).catch((err) => {
+      if (import.meta.env.DEV) console.error('Google redirect sign-in error:', err);
+    });
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser?.email) {
         const u = { userId: firebaseUser.uid, email: firebaseUser.email };
@@ -112,9 +115,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGoogle = useCallback(() => {
     if (!auth) return;
-    await signInWithPopup(auth, googleAuthProvider);
+    signInWithRedirect(auth, googleAuthProvider);
   }, []);
 
   const signOut = useCallback(async () => {

@@ -86,6 +86,12 @@ Rows are created **only by the API** (Express app), using a **direct Postgres co
 
 5. **Same DB:** Ensure the Supabase project (and connection string) used by the API is the one where you run `SELECT * FROM public.users`.
 
+6. **DB connectivity from API (Vercel):** Call **`GET https://YOUR_API_URL/health/db`** (no auth).  
+   - **200** `{ ok: true }` → API can reach Postgres; if `/admin/users` still 500, check API logs for the actual error.  
+   - **503** `{ ok: false, error: "no_database" }` → DATABASE_URL is not set in the API project (or wrong Vercel project).  
+   - **503** `{ ok: false, error: "ENOTFOUND" | "ECONNREFUSED" | "ETIMEDOUT" }` → DB unreachable from Vercel (wrong URL, Supabase paused, or network).  
+   After changing env vars on Vercel, **redeploy** the API so the new values are used.
+
 ---
 
 ## 7. Summary

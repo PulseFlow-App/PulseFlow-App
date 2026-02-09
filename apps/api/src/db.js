@@ -16,6 +16,17 @@ function hasDb() {
   return pool !== null;
 }
 
+/** Test DB connectivity (for health check). Returns { ok: true } or { ok: false, error: string }. */
+async function ping() {
+  if (!pool) return { ok: false, error: 'no_database' };
+  try {
+    await pool.query('SELECT 1');
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.code || e.message };
+  }
+}
+
 async function getUserByEmail(email) {
   if (!pool) return null;
   const { rows } = await pool.query(
@@ -88,6 +99,7 @@ async function listUsers() {
 
 module.exports = {
   hasDb,
+  ping,
   getUserByEmail,
   createUser,
   createReferral,
