@@ -54,6 +54,45 @@ app.post('/auth/sign-up', async (req, res) => {
   return res.json({ user: { userId, email: trimmed }, accessToken });
 });
 
+// Sync user from app login (Firebase or email demo) into DB so they appear in public.users
+app.post('/auth/sync', async (req, res) => {
+  const { email, userId } = req.body || {};
+  const trimmed = (email || '').trim().toLowerCase();
+  if (!trimmed) {
+    return res.status(400).json({ message: 'Email required', code: 'EMAIL_REQUIRED' });
+  }
+  if (!db.hasDb()) {
+    console.log('[auth/sync] No database; skipping sync for', trimmed);
+    return res.json({ ok: true, message: 'No database', created: false });
+  }
+  try {
+    const existing = await db.getUserByEmail(trimmed);
+    if (existing) {
+      console.log('[auth/sync] User exists:', existing.userId, trimmed);
+      return res.json({ ok: true, userId: existing.userId, created: false });
+    }
+    const id = (userId && String(userId).trim()) || generateId();
+    const passwordHash = await bcrypt.hash(generateId(), 10);
+    await db.createUser(id, trimmed, passwordHash, null);
+    console.log('[auth/sync] User created:', id, trimmed);
+    return res.status(201).json({ ok: true, userId: id, created: true });
+  } catch (err) {
+    if (err.code === '23505') {
+      const existing = await db.getUserByEmail(trimmed).catch(() => null);
+      if (existing) {
+        console.log('[auth/sync] Race: user exists after conflict:', existing.userId, trimmed);
+        return res.json({ ok: true, userId: existing.userId, created: false });
+      }
+    }
+    console.error('[auth/sync] Error:', err.code || err.message, trimmed, err);
+    const code = err?.code || '';
+    const msg = code === 'ENOTFOUND' || code === 'ECONNREFUSED' || code === 'ETIMEDOUT'
+      ? 'Database unreachable. Check DATABASE_URL.'
+      : 'Sync failed';
+    return res.status(500).json({ message: msg, code: code || 'SYNC_FAILED' });
+  }
+});
+
 app.post('/auth/sign-in', async (req, res) => {
   const { email, password } = req.body || {};
   const trimmed = (email || '').trim().toLowerCase();

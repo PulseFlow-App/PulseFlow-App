@@ -46,10 +46,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!auth) return;
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser?.email) {
-        setUser({
-          userId: firebaseUser.uid,
-          email: firebaseUser.email,
-        });
+        const u = { userId: firebaseUser.uid, email: firebaseUser.email };
+        setUser(u);
+        if (API_BASE) {
+          fetch(`${API_BASE}/auth/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: firebaseUser.email, userId: firebaseUser.uid }),
+          })
+            .then((r) => {
+              if (!r.ok && import.meta.env.DEV) {
+                r.json().then((d) => console.warn('[auth/sync] Failed:', r.status, d)).catch(() => {});
+              }
+            })
+            .catch((e) => { if (import.meta.env.DEV) console.warn('[auth/sync] Request failed:', e); });
+        }
       } else {
         setUser(null);
       }
@@ -86,6 +97,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const u: User = { userId: generateUserId(), email: trimmed };
     setUser(u);
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ user: u }));
+    if (API_BASE) {
+      fetch(`${API_BASE}/auth/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed, userId: u.userId }),
+      })
+        .then((r) => {
+          if (!r.ok && import.meta.env.DEV) {
+            r.json().then((d) => console.warn('[auth/sync] Failed:', r.status, d)).catch(() => {});
+          }
+        })
+        .catch((e) => { if (import.meta.env.DEV) console.warn('[auth/sync] Request failed:', e); });
+    }
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
