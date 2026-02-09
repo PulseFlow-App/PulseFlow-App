@@ -2,6 +2,7 @@
  * Pulse API — minimal backend for auth, body logs, insights, premium.
  * Uses Postgres when DATABASE_URL is set; otherwise in-memory (MVP).
  */
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -149,7 +150,11 @@ app.get('/admin/users', adminMiddleware, async (req, res) => {
     return res.json({ users });
   } catch (err) {
     console.error('admin users error', err);
-    return res.status(500).json({ message: 'Failed to list users' });
+    const code = err?.code || '';
+    const msg = code === 'ENOTFOUND' || code === 'ECONNREFUSED' || code === 'ETIMEDOUT'
+      ? 'Database unreachable. Check DATABASE_URL and network (e.g. internet, Supabase host).'
+      : 'Failed to list users';
+    return res.status(500).json({ message: msg, errorCode: code || undefined });
   }
 });
 

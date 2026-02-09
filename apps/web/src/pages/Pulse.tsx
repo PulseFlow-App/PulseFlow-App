@@ -44,7 +44,7 @@ export function Pulse() {
             </h2>
             <p className={styles.ctaText}>
               You logged body signals today. Adding how your work day went will
-              give you a combined Pulse and clearer insights—focus, energy, and
+              give you a combined Pulse and clearer insights: focus, energy, and
               how they connect.
             </p>
             <div className={styles.ctaButtons}>
@@ -65,7 +65,7 @@ export function Pulse() {
             </h2>
             <p className={styles.ctaText}>
               You logged work routine today. Adding sleep, energy, and mood will
-              give you a combined Pulse and better insights—how body and work
+              give you a combined Pulse and better insights: how body and work
               connect.
             </p>
             <div className={styles.ctaButtons}>

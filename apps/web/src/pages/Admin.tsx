@@ -70,8 +70,11 @@ export function Admin() {
       </header>
       <main id="main" className={styles.main}>
         <h1 className={styles.title}>Admin cabinet</h1>
+        <div className={adminStyles.simplerOption}>
+          <strong>Simpler:</strong> View users in your <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer">Supabase Dashboard</a> → Table Editor → <code>users</code>. No password here. See <code>docs/simple-analytics.md</code>.
+        </div>
         <p className={adminStyles.updated}>
-          Enter the password.
+          Or enter the password to load the list in this page.
         </p>
 
         {!API_BASE && (

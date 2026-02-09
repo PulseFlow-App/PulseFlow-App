@@ -47,6 +47,8 @@ Use this as a checklist in **Vercel → Your project → Settings → Environmen
 
 - **VERCEL** – Set automatically; the API uses it to export the app for serverless.
 
+**If Admin cabinet returns 500 when loading users:** The API is failing (often DB or env). In the **API** project on Vercel, set **DATABASE_URL** and **ADMIN_API_KEY**, then redeploy. If the DB is unreachable from Vercel (e.g. Supabase paused or wrong URL), you get 500; see [Setup database → Troubleshooting](./setup-database.md#7-troubleshooting-database-unreachable).
+
 ---
 
 ## Checklist (copy and use)
