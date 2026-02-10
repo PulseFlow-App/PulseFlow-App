@@ -44,9 +44,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!auth) return;
-    getRedirectResult(auth).catch((err) => {
-      if (import.meta.env.DEV) console.error('Google redirect sign-in error:', err);
-    });
+    let cancelled = false;
+    getRedirectResult(auth)
+      .then((credential) => {
+        if (cancelled) return;
+        if (credential?.user?.email) {
+          const u = { userId: credential.user.uid, email: credential.user.email };
+          setUser(u);
+        }
+      })
+      .catch((err) => {
+        if (import.meta.env.DEV) console.error('Google redirect sign-in error:', err);
+      });
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser?.email) {
         const u = { userId: firebaseUser.uid, email: firebaseUser.email };
@@ -68,7 +77,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
       }
     });
-    return () => unsub();
+    return () => {
+      cancelled = true;
+      unsub();
+    };
   }, []);
 
   useEffect(() => {

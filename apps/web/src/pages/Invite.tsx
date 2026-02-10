@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import styles from './Invite.module.css';
 
 const REFERRAL_STORAGE_KEY = '@pulse/referral_code';
@@ -10,6 +11,8 @@ const APP_ORIGIN =
 
 export function Invite() {
   const { code } = useParams<{ code: string }>();
+  const { user, signInWithGoogle, isGoogleAuth } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (code?.trim()) {
@@ -21,6 +24,12 @@ export function Invite() {
     }
   }, [code]);
 
+  useEffect(() => {
+    if (user) navigate('/dashboard', { replace: true });
+  }, [user, navigate]);
+
+  if (user) return null;
+
   return (
     <div className={styles.page}>
       <main id="main" className={styles.main}>
@@ -28,6 +37,22 @@ export function Invite() {
         <p className={styles.subtitle}>
           A friend invited you. Complete the steps below so they receive their <strong>10,000 $PULSE</strong> bonus.
         </p>
+
+        {isGoogleAuth && (
+          <section className={styles.section} aria-labelledby="signin-heading">
+            <h2 id="signin-heading" className={styles.sectionTitle}>Sign in to complete the referral</h2>
+            <p className={styles.note}>
+              Your invite code is saved. Sign in with Google here and you'll be taken to the app. Your friend gets their bonus once you're in.
+            </p>
+            <button
+              type="button"
+              className={styles.primaryButton}
+              onClick={() => signInWithGoogle()}
+            >
+              Sign in with Google
+            </button>
+          </section>
+        )}
 
         <section className={styles.section} aria-labelledby="flow-heading">
           <h2 id="flow-heading" className={styles.sectionTitle}>What you need to do</h2>
@@ -48,9 +73,11 @@ export function Invite() {
           <Link to="/lab" className={styles.primaryButton}>
             Go to Pulse Lab (connect wallet)
           </Link>
-          <a href={APP_ORIGIN} target="_blank" rel="noopener noreferrer" className={styles.secondaryButton}>
-            Open app and register →
-          </a>
+          {!isGoogleAuth && (
+            <a href={APP_ORIGIN} target="_blank" rel="noopener noreferrer" className={styles.secondaryButton}>
+              Open app and register →
+            </a>
+          )}
         </div>
 
         <section className={styles.section} aria-labelledby="solana-heading">
