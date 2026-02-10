@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import { onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut as firebaseSignOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth, googleAuthProvider, isFirebaseEnabled } from '../lib/firebase';
 
 export type User = {
@@ -129,7 +129,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = useCallback(() => {
     if (!auth) return;
-    signInWithRedirect(auth, googleAuthProvider);
+    signInWithPopup(auth, googleAuthProvider)
+      .then((result) => {
+        if (result?.user?.email) {
+          const u = { userId: result.user.uid, email: result.user.email };
+          setUser(u);
+          if (API_BASE) {
+            fetch(`${API_BASE}/auth/sync`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: result.user.email, userId: result.user.uid }),
+            }).catch(() => {});
+          }
+        }
+      })
+      .catch((err) => {
+        if (import.meta.env.DEV) console.error('Google sign-in error:', err);
+        if (err?.code === 'auth/popup-blocked') {
+          signInWithRedirect(auth, googleAuthProvider);
+        }
+      });
   }, []);
 
   const signOut = useCallback(() => {
