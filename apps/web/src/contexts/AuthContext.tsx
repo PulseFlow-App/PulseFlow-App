@@ -10,7 +10,7 @@ export type User = {
 type AuthContextValue = {
   user: User | null;
   signIn: (email: string) => void;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: () => void;
   signOut: () => void;
   isGoogleAuth: boolean;
 };
@@ -120,13 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithRedirect(auth, googleAuthProvider);
   }, []);
 
-  const signOut = useCallback(async () => {
+  const signOut = useCallback(() => {
     if (auth) {
-      try {
-        await firebaseSignOut(auth);
-      } catch {
-        // ignore
-      }
+      firebaseSignOut(auth).catch(() => {});
     }
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
