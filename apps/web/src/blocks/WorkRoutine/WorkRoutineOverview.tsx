@@ -26,16 +26,6 @@ export function WorkRoutineOverview() {
             <ScoreRing score={pulseScore} label="Routine Pulse" size={120} />
           </div>
         </div>
-        <div className={styles.stats}>
-          <div className={styles.stat}>
-            <span className={styles.statValue}>{total}</span>
-            <span className={styles.statLabel}>Total check-ins</span>
-          </div>
-          <div className={styles.stat}>
-            <span className={styles.statValue}>{weekly.percent}%</span>
-            <span className={styles.statLabel}>This week</span>
-          </div>
-        </div>
         <Link to="/dashboard/work-routine/checkin" className={styles.button}>
           Start Check-in
         </Link>

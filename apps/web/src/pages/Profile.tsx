@@ -1,8 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getAppStreak } from '../stores/appStreak';
-import { getCheckIns, getWeeklyProgress } from '../blocks/WorkRoutine/store';
 import {
   getNotificationsEnabled,
   setNotificationsEnabled,
@@ -16,10 +14,6 @@ export function Profile() {
   const { user, signOut } = useAuth();
   const [notificationsOn, setNotificationsOn] = useState(getNotificationsEnabled());
   const [notifyPermission, setNotifyPermission] = useState<NotificationPermission | null>(null);
-
-  const checkIns = getCheckIns();
-  const streak = getAppStreak();
-  const weekly = getWeeklyProgress();
 
   const handleNotificationsToggle = useCallback(async (enabled: boolean) => {
     if (enabled) {
@@ -77,28 +71,6 @@ export function Profile() {
                 Notifications were blocked. Enable them in your browser settings for this site to get reminders.
               </p>
             )}
-          </div>
-        </section>
-
-        <section className={styles.section} aria-labelledby="stats-heading">
-          <h2 id="stats-heading" className={styles.sectionTitle}>Check-in statistics</h2>
-          <div className={styles.statsGrid}>
-            <div className={styles.statCard}>
-              <span className={styles.statValue}>{checkIns.length}</span>
-              <span className={styles.statLabel}>Total check-ins</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statValue}>{streak}</span>
-              <span className={styles.statLabel}>App streak (days)</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statValue}>{weekly.count}/7</span>
-              <span className={styles.statLabel}>This week</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statValue}>{weekly.percent}%</span>
-              <span className={styles.statLabel}>Weekly consistency</span>
-            </div>
           </div>
         </section>
 

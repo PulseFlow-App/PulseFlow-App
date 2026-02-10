@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 
 // In-memory fallback when no DATABASE_URL
 const users = new Map();
