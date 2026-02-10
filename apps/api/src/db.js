@@ -5,10 +5,12 @@
 const { Pool } = require('pg');
 
 const connectionString = process.env.DATABASE_URL;
+// Default: accept Supabase/pooler certs (avoids SELF_SIGNED_CERT_IN_CHAIN on Vercel). Set DATABASE_SSL_REJECT_UNAUTHORIZED=true for strict verification.
+const sslRejectUnauthorized = process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === 'true' || process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === '1';
 const pool = connectionString
   ? new Pool({
       connectionString,
-      ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: true },
+      ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: sslRejectUnauthorized },
     })
   : null;
 
@@ -39,10 +41,19 @@ async function getUserByEmail(email) {
 async function createUser(id, email, passwordHash, wallet = null) {
   if (!pool) return null;
   await pool.query(
-    'INSERT INTO users (id, email, password_hash, wallet) VALUES ($1, $2, $3, $4)',
+    'INSERT INTO users (id, email, password_hash, wallet, last_seen_at) VALUES ($1, $2, $3, $4, NOW())',
     [id, email, passwordHash, wallet]
   );
   return { userId: id, email, wallet };
+}
+
+/** Update last_seen_at for an existing user (call on each /auth/sync). */
+async function updateLastSeen(userId) {
+  if (!pool) return;
+  await pool.query(
+    'UPDATE users SET last_seen_at = NOW() WHERE id = $1',
+    [userId]
+  );
 }
 
 async function createReferral(referrerUserId, referredEmail, referredWallet = null) {
@@ -88,11 +99,11 @@ async function createBodyLog(log) {
   return log;
 }
 
-/** List all users (id, email, created_at). For admin/export. */
+/** List all users (id, email, created_at, last_seen_at). For admin/export. */
 async function listUsers() {
   if (!pool) return [];
   const { rows } = await pool.query(
-    'SELECT id, email, created_at AS "createdAt" FROM users ORDER BY created_at DESC'
+    'SELECT id, email, created_at AS "createdAt", last_seen_at AS "lastSeenAt" FROM users ORDER BY created_at DESC'
   );
   return rows;
 }
@@ -103,6 +114,7 @@ module.exports = {
   getUserByEmail,
   createUser,
   createReferral,
+  updateLastSeen,
   getBodyLogs,
   createBodyLog,
   listUsers,

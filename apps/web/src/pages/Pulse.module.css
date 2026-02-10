@@ -59,6 +59,13 @@
   line-height: 1.45;
 }
 
+.aggregationText {
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  margin: 12px 0 0;
+  line-height: 1.5;
+}
+
 .ctaButtons {
   display: flex;
   flex-direction: column;

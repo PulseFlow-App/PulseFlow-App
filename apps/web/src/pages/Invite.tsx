@@ -36,7 +36,7 @@ export function Invite() {
               <strong>Connect a Solana wallet on the Lab page.</strong> Go to Pulse Lab and connect a compatible wallet (e.g. Phantom, Solflare). We’ve saved your invite code so we can link it when you’re done.
             </li>
             <li>
-              <strong>Open the Pulse app and register with your email.</strong> Visit <a href={APP_ORIGIN} target="_blank" rel="noopener noreferrer">the Pulse app</a> and sign in with Google (or enter your email). That creates your account and completes the referral — your friend gets their bonus.
+              <strong>Open the Pulse app and register with your email.</strong> Visit <a href={APP_ORIGIN} target="_blank" rel="noopener noreferrer">the Pulse app</a> and sign in with Google (or enter your email). That creates your account and completes the referral. Your friend gets their bonus.
             </li>
           </ol>
           <p className={styles.note}>
@@ -63,7 +63,7 @@ export function Invite() {
         <section className={styles.section} aria-labelledby="gas-heading">
           <h2 id="gas-heading" className={styles.sectionTitle}>What is gas?</h2>
           <p className={styles.body}>
-            Gas is the small fee paid to the Solana network to process transactions (sending SOL, signing in, etc.). You pay it in SOL. You only need a tiny amount of SOL in your wallet to cover gas — usually less than a cent per transaction.
+            Gas is the small fee paid to the Solana network to process transactions (sending SOL, signing in, etc.). You pay it in SOL. You only need a tiny amount of SOL in your wallet to cover gas, usually less than a cent per transaction.
           </p>
         </section>
 

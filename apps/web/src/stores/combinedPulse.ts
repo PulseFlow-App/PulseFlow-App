@@ -1,5 +1,5 @@
 /**
- * Combined Pulse — aggregates Body Signals + Work Routine for today.
+ * Combined Pulse: aggregates Body Signals and Work Routine for today.
  * Used by the Pulse page to show one score and offer cross-block check-in.
  */
 import { hasBodyToday, getTodayBodyScore } from '../blocks/BodySignals/store';

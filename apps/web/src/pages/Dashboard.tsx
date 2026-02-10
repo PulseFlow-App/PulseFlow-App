@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { recordAppUsage } from '../stores/appStreak';
+import { recordAppUsage, getAppStreak } from '../stores/appStreak';
+import { getCheckIns } from '../blocks/WorkRoutine/store';
+import { startNotificationChecks } from '../stores/notifications';
 import { BlockCard } from '../components/BlockCard';
 import { AppFooter } from '../components/AppFooter';
 import { BLOCKS } from '../blocks/registry';
@@ -16,6 +18,13 @@ export function Dashboard() {
   useEffect(() => {
     if (user) recordAppUsage();
   }, [user]);
+
+  useEffect(() => {
+    if (user) startNotificationChecks();
+  }, [user]);
+
+  const streak = getAppStreak();
+  const checkInsCount = getCheckIns().length;
   const activeBlocks = BLOCKS.filter((b) => ACTIVE_IDS.includes(b.id));
   const comingSoonBlocks = BLOCKS.filter((b) => COMING_SOON_IDS.includes(b.id));
 
@@ -43,6 +52,30 @@ export function Dashboard() {
           <Link to="/dashboard/pulse" className={styles.pulseLink}>
             See your Pulse
           </Link>
+        </section>
+
+        <section className={styles.statsStrip} aria-label="Your stats">
+          <div className={styles.statItem}>
+            <span className={styles.statNumber}>{streak}</span>
+            <span className={styles.statLabel}>Day streak</span>
+          </div>
+          <div className={styles.statItem}>
+            <span className={styles.statNumber}>{checkInsCount}</span>
+            <span className={styles.statLabel}>Check-ins</span>
+          </div>
+          <div className={styles.statItem}>
+            <Link to={user ? '/dashboard/invite' : '/invite'} className={styles.statLink}>
+              Invite friends
+            </Link>
+          </div>
+          <div className={styles.statItem}>
+            <span className={styles.statNumber}>0</span>
+            <span className={styles.statLabel}>Points</span>
+          </div>
+          <div className={styles.statItem}>
+            <span className={styles.statMuted}>Leaderboard</span>
+            <span className={styles.statLabel}>Coming soon</span>
+          </div>
         </section>
 
         <section className={styles.section}>

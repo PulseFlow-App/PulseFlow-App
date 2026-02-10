@@ -5,6 +5,7 @@ import { Dashboard } from './pages/Dashboard';
 import { BlockPlaceholder } from './pages/BlockPlaceholder';
 import { BodySignalsOverview } from './blocks/BodySignals/BodySignalsOverview';
 import { BodySignalsLog } from './blocks/BodySignals/BodySignalsLog';
+import { BodySignalsResult } from './blocks/BodySignals/BodySignalsResult';
 import { BodySignalsTrends } from './blocks/BodySignals/BodySignalsTrends';
 import { WorkRoutineOverview } from './blocks/WorkRoutine/WorkRoutineOverview';
 import { WorkRoutineCheckIn } from './blocks/WorkRoutine/WorkRoutineCheckIn';
@@ -17,6 +18,7 @@ import { Lab } from './pages/Lab';
 import { Profile } from './pages/Profile';
 import { Pulse } from './pages/Pulse';
 import { Invite } from './pages/Invite';
+import { ShareInvite } from './pages/ShareInvite';
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/" replace />;
@@ -56,6 +58,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <BodySignalsLog />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/body-signals/result"
+        element={
+          <ProtectedRoute>
+            <BodySignalsResult />
           </ProtectedRoute>
         }
       />
@@ -113,6 +123,14 @@ export default function App() {
       <Route path="/admin" element={<Admin />} />
       <Route path="/lab" element={<Lab />} />
       <Route path="/invite/:code" element={<Invite />} />
+      <Route
+        path="/dashboard/invite"
+        element={
+          <ProtectedRoute>
+            <ShareInvite />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

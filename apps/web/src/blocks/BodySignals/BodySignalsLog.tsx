@@ -30,7 +30,7 @@ export function BodySignalsLog() {
       weight: weight ? parseFloat(weight) : undefined,
       notes: notes.trim() || undefined,
     });
-    navigate('/dashboard/pulse?from=body-signals', { replace: true });
+    navigate('/dashboard/body-signals/result', { replace: true });
   };
 
   return (
@@ -139,7 +139,7 @@ export function BodySignalsLog() {
           <div className={styles.field}>
             <label className={styles.label}>Appetite / hunger (1–5, optional)</label>
             <div className={styles.sliderRow}>
-              <span className={styles.sliderValue}>{appetite === '' ? '—' : appetite}</span>
+              <span className={styles.sliderValue}>{appetite === '' ? 'n/a' : appetite}</span>
               <input
                 type="range"
                 className={styles.slider}
@@ -154,7 +154,7 @@ export function BodySignalsLog() {
           <div className={styles.field}>
             <label className={styles.label}>Digestion / comfort (1–5, optional)</label>
             <div className={styles.sliderRow}>
-              <span className={styles.sliderValue}>{digestion === '' ? '—' : digestion}</span>
+              <span className={styles.sliderValue}>{digestion === '' ? 'n/a' : digestion}</span>
               <input
                 type="range"
                 className={styles.slider}

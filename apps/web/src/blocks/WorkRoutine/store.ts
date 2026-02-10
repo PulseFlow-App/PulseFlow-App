@@ -1,5 +1,5 @@
 /**
- * Work Routine — check-ins and narrative analysis.
+ * Work Routine: check-ins and narrative analysis.
  * Logic aligned with: .cursor/skills/work-routine/SKILL.md and apps/ai-engine/prompts/work-routine-system-prompt.md.
  * Work routine = cognitive load, focus quality, mental fatigue, environment, timing (not productivity advice).
  */

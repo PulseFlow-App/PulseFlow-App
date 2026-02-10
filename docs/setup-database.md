@@ -50,10 +50,11 @@ Your Postgres database needs **tables** for users and body logs. Run this SQL on
 ```sql
 -- Users (email sign-in)
 CREATE TABLE IF NOT EXISTS users (
-  id           TEXT PRIMARY KEY,
-  email        TEXT NOT NULL UNIQUE,
+  id            TEXT PRIMARY KEY,
+  email         TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
-  created_at   TIMESTAMPTZ DEFAULT NOW()
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+  last_seen_at  TIMESTAMPTZ
 );
 
 -- Body logs (per user, per day)
@@ -83,6 +84,14 @@ CREATE TABLE IF NOT EXISTS referrals (
 
 CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_user_id);
 ```
+
+**Last seen (for “who comes every day”):** If your `users` table was created before this column existed, add it with:
+
+```sql
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ;
+```
+
+The API updates `last_seen_at` on every `/auth/sync` so you can query active users (e.g. in Supabase: “users active in last 24h” or in the Admin cabinet).
 
 Adjust names or columns if your API expects different fields (e.g. `userId` vs `id`); the API code that reads/writes the DB must match this schema (or you change the schema to match the API).
 
@@ -163,19 +172,27 @@ Example: password `wrU2@%z` → in the URL use `wrU2%40%25z` (so the full URI is
 - If you're on a restricted network (e.g. corporate), outbound access to the DB host may be blocked; try another network or VPN.
 - **Supabase:** If the project was paused, resume it in the dashboard; the hostname may not resolve when the project is paused.
 
-### D. Test the connection locally
+### D. SELF_SIGNED_CERT_IN_CHAIN (e.g. on Vercel)
+
+If `/health/db` returns `{ "ok": false, "error": "SELF_SIGNED_CERT_IN_CHAIN" }`, the API cannot verify the DB server’s SSL certificate. The API **defaults to accepting** the connection (so this usually resolves after a deploy). If you still see it, ensure you’ve deployed the latest API code. To enforce strict certificate verification, set **DATABASE_SSL_REJECT_UNAUTHORIZED=true** in the API project.
+
+---
+
+### E. Test the connection locally
 
 From `apps/api` (with `DATABASE_URL` in `.env`):
+
+Uses the same SSL behavior as the API: for Supabase/pooler, cert verification is relaxed by default (avoids `SELF_SIGNED_CERT_IN_CHAIN`). Set `DATABASE_SSL_REJECT_UNAUTHORIZED=true` to use strict verification.
 
 ```bash
 cd apps/api && node -e "
 require('dotenv').config();
 const { Pool } = require('pg');
+const cs = process.env.DATABASE_URL;
+const rejectUnauthorized = process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === 'true' || process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === '1';
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')
-    ? { rejectUnauthorized: true }
-    : false
+  connectionString: cs,
+  ssl: cs && !cs.includes('localhost') ? { rejectUnauthorized } : false
 });
 pool.query('SELECT 1')
   .then(() => { console.log('DB connection OK'); process.exit(0); })

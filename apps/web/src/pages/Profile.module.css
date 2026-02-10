@@ -70,6 +70,27 @@
   word-break: break-all;
 }
 
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  cursor: pointer;
+  font-size: 0.9375rem;
+}
+
+.toggleRow input {
+  width: 18px;
+  height: 18px;
+  accent-color: #22c55e;
+}
+
+.warning {
+  font-size: 0.8125rem;
+  color: #fbbf24;
+  margin: 12px 0 0;
+}
+
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

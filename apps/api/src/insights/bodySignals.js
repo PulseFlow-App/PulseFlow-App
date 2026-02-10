@@ -26,6 +26,11 @@ function getNoteThemes(notes) {
   if (/\b(dry|thirst|water|hydrat|dehydrat)\b/.test(lower)) themes.push('hydration');
   if (/\b(mood|down|sad|irritable|grumpy|anxious)\b/.test(lower)) themes.push('mood');
   if (/\b(dizzy|dizziness|lightheaded|light-headed|vertigo|woozy)\b/.test(lower)) themes.push('dizzy');
+  // Situational: events and plans (for Situation → Tradeoff → Adjustment)
+  if (/\b(gym|workout|training|exercise|ran|run|lift|cardio|sport)\b/.test(lower)) themes.push('exercise');
+  if (/\b(party|parties|going out|drinks|alcohol|late night|night out)\b/.test(lower)) themes.push('party_late');
+  if (/\b(travel|flight|flying|jet lag|trip|traveling)\b/.test(lower)) themes.push('travel');
+  if (/\b(deadline|deadlines|big day|presentation|exam|interview)\b/.test(lower)) themes.push('deadline');
   return themes;
 }
 
@@ -139,7 +144,7 @@ function summarizeNote(notes) {
   return s.length > 80 ? s.slice(0, 77) + '…' : s;
 }
 
-// Today's pattern: short sentences, note referenced, 2+ signals. No em dashes.
+// Today's pattern: short sentences, note referenced, 2+ signals. Situation-aware when notes mention events/plans.
 function buildNarrativePattern(entry, trend, frictionPoints, noteThemes) {
   const e = entry || {};
   const notes = (e.notes || '').trim();
@@ -151,7 +156,18 @@ function buildNarrativePattern(entry, trend, frictionPoints, noteThemes) {
 
   const parts = [];
 
-  if (trend === 'down' && frictionPoints.length > 0) {
+  // Situational pattern when note describes events/plans (gym + party, travel, deadline)
+  if (noteThemes.includes('exercise') && noteThemes.includes('party_late')) {
+    parts.push('Training added physical load earlier. A late night will likely compress sleep and recovery. Energy tomorrow is the main risk, not today.');
+  } else if (noteThemes.includes('exercise')) {
+    parts.push('Physical load from training is the main lever today. Recovery (food, hydration, rest) will show up in energy and mood.');
+  } else if (noteThemes.includes('party_late')) {
+    parts.push('A late night will likely compress sleep. Energy and recovery tomorrow are the main levers to watch.');
+  } else if (noteThemes.includes('travel')) {
+    parts.push('Travel shifts sleep and routine. Energy and hydration over the next day or two will reflect how you recover.');
+  } else if (noteThemes.includes('deadline')) {
+    parts.push('A big day adds cognitive and often physical load. Sleep and one clear recovery lever will shape how tomorrow feels.');
+  } else if (trend === 'down' && frictionPoints.length > 0) {
     parts.push(`Your signals point to mild strain around ${frictionPoints.slice(0, 2).join(' and ')}.`);
   } else if (trend === 'up') {
     parts.push('Your pulse is up today. Small steps are adding up.');
@@ -159,7 +175,7 @@ function buildNarrativePattern(entry, trend, frictionPoints, noteThemes) {
     parts.push('Your signals point to mild strain around sleep and energy.');
   }
 
-  if (hasNote) {
+  if (hasNote && !noteThemes.includes('exercise') && !noteThemes.includes('party_late') && !noteThemes.includes('travel') && !noteThemes.includes('deadline')) {
     const noteSummary = summarizeNote(notes);
     parts.push(`Your note about ${noteSummary} fits this.`);
   }
@@ -177,7 +193,7 @@ function buildNarrativePattern(entry, trend, frictionPoints, noteThemes) {
   return parts.join(' ');
 }
 
-// What's shaping your Pulse score: bullet rhythm. Each line adds a signal, cause, or relationship. No em dashes.
+// What's shaping your Pulse score: bullet rhythm. Situation-aware when notes mention events/plans.
 function buildNarrativeWhy(entry, trend, frictionPoints, noteThemes) {
   const e = entry || {};
   const lines = [];
@@ -185,9 +201,25 @@ function buildNarrativeWhy(entry, trend, frictionPoints, noteThemes) {
   const stressHigh = e.stress != null && e.stress >= 4;
   const stressMid = e.stress != null && e.stress >= 3;
 
+  if (noteThemes.includes('exercise') && noteThemes.includes('party_late')) {
+    lines.push('Exercise increases recovery needs.');
+    lines.push('Shortened sleep after activity often shows up as lower energy and appetite the next day.');
+    lines.push('Stress is secondary here.');
+  } else if (noteThemes.includes('exercise')) {
+    lines.push('Physical load from training drives recovery needs.');
+    lines.push('Food, hydration, and rest will show up in energy and mood.');
+  } else if (noteThemes.includes('party_late') || noteThemes.includes('travel')) {
+    lines.push('Sleep and timing are the main levers.');
+    lines.push('Hydration and when you wind down often affect how tomorrow feels.');
+  } else if (noteThemes.includes('deadline')) {
+    lines.push('Cognitive and physical load from the day drive recovery needs.');
+    lines.push('Sleep and one clear break or stop time will shape tomorrow.');
+  }
+
+  const hasSituational = noteThemes.includes('exercise') || noteThemes.includes('party_late') || noteThemes.includes('travel') || noteThemes.includes('deadline');
   if (sleepQualityLow || frictionPoints.includes('sleep')) {
-    lines.push('Sleep quality is the main driver today.');
-    lines.push('Lower sleep quality often flattens energy and appetite.');
+    if (!lines.length) lines.push('Sleep quality is the main driver today.');
+    if (!hasSituational) lines.push('Lower sleep quality often flattens energy and appetite.');
   }
   if (stressHigh || stressMid || frictionPoints.includes('stress')) {
     lines.push('Stress may be adding background load.');
@@ -204,11 +236,28 @@ function buildNarrativeWhy(entry, trend, frictionPoints, noteThemes) {
   return lines.map((line) => '• ' + line).join('\n');
 }
 
-// One thing to observe or try: one experiment, specific. No em dashes. Frame as "Observe…" or "Notice whether…"
+// One thing to observe or try: situational when notes mention events/plans; otherwise one experiment. No new load in recovery contexts.
 function buildNarrativeOneThing(entry, frictionPoints, noteThemes) {
   const e = entry || {};
   const sleepQualityLow = e.sleepQuality != null && e.sleepQuality < 3;
   const stressHigh = e.stress != null && e.stress >= 4;
+
+  // Situation: exercise + party/late night (recovery before social, not "go for a walk")
+  if (noteThemes.includes('exercise') && noteThemes.includes('party_late')) {
+    return 'Prioritize recovery before the party: eat a proper meal after the gym (not just snacks), hydrate earlier in the evening, and if sleep is shorter tonight, aim for deeper rest rather than duration.';
+  }
+  if (noteThemes.includes('exercise') && !noteThemes.includes('party_late')) {
+    return 'Notice whether a proper meal and hydration after training change how you feel later. Recovery inputs matter as much as the workout.';
+  }
+  if (noteThemes.includes('party_late')) {
+    return 'Hydrate earlier in the evening and notice how it affects tomorrow. If sleep is shorter, one small lever is timing: wind down a bit before bed when you can.';
+  }
+  if (noteThemes.includes('travel')) {
+    return 'Focus on one lever: hydration and light movement when you can (e.g. short walk after landing). Notice how sleep and energy respond over the next day or two.';
+  }
+  if (noteThemes.includes('deadline')) {
+    return 'Notice whether one short break or a clear stop time today changes how sleep and tomorrow feel. Recovery after a big day matters.';
+  }
 
   if (noteThemes.includes('no_appetite')) {
     return 'Observe just one change: Eat a bit earlier or more evenly and check appetite tomorrow. Or notice whether deeper sleep reduces stress, even if total hours stay the same.';

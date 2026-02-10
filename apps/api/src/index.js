@@ -68,6 +68,7 @@ app.post('/auth/sync', async (req, res) => {
   try {
     const existing = await db.getUserByEmail(trimmed);
     if (existing) {
+      db.updateLastSeen(existing.userId).catch(() => {});
       console.log('[auth/sync] User exists:', existing.userId, trimmed);
       return res.json({ ok: true, userId: existing.userId, created: false });
     }

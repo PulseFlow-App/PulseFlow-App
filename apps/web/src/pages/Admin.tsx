@@ -8,7 +8,7 @@ const API_BASE =
     ? import.meta.env.VITE_API_URL.trim().replace(/\/$/, '')
     : '';
 
-type UserRow = { id: string; email: string; createdAt: string };
+type UserRow = { id: string; email: string; createdAt: string; lastSeenAt?: string | null };
 
 export function Admin() {
   const [password, setPassword] = useState('');
@@ -116,6 +116,7 @@ export function Admin() {
                     <th>Email</th>
                     <th>User ID</th>
                     <th>Signed up</th>
+                    <th>Last seen</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -124,6 +125,7 @@ export function Admin() {
                       <td>{u.email}</td>
                       <td><code>{u.id}</code></td>
                       <td>{formatDate(u.createdAt)}</td>
+                      <td>{u.lastSeenAt ? formatDate(u.lastSeenAt) : 'Never'}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -8,6 +8,11 @@ import type { BodyLogEntry, BodyPulseSnapshot, DailySignalsState, FactorImpact }
 const STORAGE_KEY = '@pulse/body_logs';
 const MAX_IMPROVEMENTS = 3;
 
+/** Remove em dashes from app/AI text so recommendations stay consistent. */
+function noEmDash(s: string): string {
+  return s.replace(/\u2014/g, '. ').replace(/\s+\.\s+/g, '. ').trim();
+}
+
 function getToday(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -189,7 +194,7 @@ export function generateInsights(
     insight = "Your note and today's signals are reflected in the suggestions below.";
     explanation = reasonText ? `What's driving things: ${reasonText}.` : 'The table below shows what affects what.';
   } else if (trend === 'up') {
-    insight = 'Your Pulse Score is up today — small steps are adding up.';
+    insight = 'Your Pulse Score is up today. Small steps are adding up.';
     explanation = 'The table below shows what is helping.';
   } else if (trend === 'down' && reasonText) {
     insight = `Your Pulse Score is lower today mainly due to ${reasonText}. The suggestions below may help.`;
@@ -261,9 +266,9 @@ export async function computeBodyPulseAsync(): Promise<BodyPulseSnapshot> {
     return {
       score: ruleBased.score,
       trend: ruleBased.trend,
-      insight: r.insight,
-      explanation: r.explanation,
-      improvements: r.improvements.slice(0, MAX_IMPROVEMENTS),
+      insight: noEmDash(r.insight),
+      explanation: noEmDash(r.explanation),
+      improvements: r.improvements.slice(0, MAX_IMPROVEMENTS).map(noEmDash),
       factors: r.factors?.length ? r.factors : ruleBased.factors,
       insightsSource: 'api',
       date: ruleBased.date,

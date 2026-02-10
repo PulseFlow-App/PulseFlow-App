@@ -37,48 +37,6 @@ export function Pulse() {
           Combined score from Body Signals and Work Routine
         </p>
 
-        {showOfferWorkRoutine && (
-          <div className={styles.ctaCard} role="region" aria-labelledby="cta-heading-wr">
-            <h2 id="cta-heading-wr" className={styles.ctaHeading}>
-              Add Work Routine for your best Pulse
-            </h2>
-            <p className={styles.ctaText}>
-              You logged body signals today. Adding how your work day went will
-              give you a combined Pulse and clearer insights: focus, energy, and
-              how they connect.
-            </p>
-            <div className={styles.ctaButtons}>
-              <Link to="/dashboard/work-routine/checkin" className={styles.ctaPrimary}>
-                Add Work Routine
-              </Link>
-              <a href="#pulse-score" className={styles.ctaSecondary}>
-                See my Pulse anyway
-              </a>
-            </div>
-          </div>
-        )}
-
-        {showOfferBodySignals && (
-          <div className={styles.ctaCard} role="region" aria-labelledby="cta-heading-bs">
-            <h2 id="cta-heading-bs" className={styles.ctaHeading}>
-              Add Body Signals for your best Pulse
-            </h2>
-            <p className={styles.ctaText}>
-              You logged work routine today. Adding sleep, energy, and mood will
-              give you a combined Pulse and better insights: how body and work
-              connect.
-            </p>
-            <div className={styles.ctaButtons}>
-              <Link to="/dashboard/body-signals/log" className={styles.ctaPrimary}>
-                Add Body Signals
-              </Link>
-              <a href="#pulse-score" className={styles.ctaSecondary}>
-                See my Pulse anyway
-              </a>
-            </div>
-          </div>
-        )}
-
         {pulse.combined !== null ? (
           <div id="pulse-score" className={styles.scoreCard}>
             <ScoreRing
@@ -115,9 +73,13 @@ export function Pulse() {
                   </span>
                 )}
               </div>
-              {hasBoth && (
+              {hasBoth ? (
+                <p className={styles.aggregationText}>
+                  Body Signals contributed {bodyScore}% and Work Routine contributed {routineScore}%. Your combined Pulse ({pulse.combined}) is the average of both. More data gives a clearer picture.
+                </p>
+              ) : (
                 <p className={styles.ctaText} style={{ marginTop: 12, marginBottom: 0 }}>
-                  Your combined Pulse is the average of both. More data = clearer picture.
+                  Add another block to get a combined Pulse and richer insights.
                 </p>
               )}
             </div>
@@ -130,7 +92,47 @@ export function Pulse() {
               </Link>
             </div>
           </div>
-        ) : (
+        ) : null}
+
+        {showOfferWorkRoutine && (
+          <div className={styles.ctaCard} role="region" aria-labelledby="cta-heading-wr">
+            <h2 id="cta-heading-wr" className={styles.ctaHeading}>
+              Add Work Routine for your best Pulse
+            </h2>
+            <p className={styles.ctaText}>
+              You logged body signals today. Adding how your work day went will give you a combined Pulse and clearer insights: focus, energy, and how they connect.
+            </p>
+            <div className={styles.ctaButtons}>
+              <Link to="/dashboard/work-routine/checkin" className={styles.ctaPrimary}>
+                Add Work Routine
+              </Link>
+              <a href="#pulse-score" className={styles.ctaSecondary}>
+                See my Pulse anyway
+              </a>
+            </div>
+          </div>
+        )}
+
+        {showOfferBodySignals && (
+          <div className={styles.ctaCard} role="region" aria-labelledby="cta-heading-bs">
+            <h2 id="cta-heading-bs" className={styles.ctaHeading}>
+              Add Body Signals for your best Pulse
+            </h2>
+            <p className={styles.ctaText}>
+              You logged work routine today. Adding sleep, energy, and mood will give you a combined Pulse and better insights: how body and work connect.
+            </p>
+            <div className={styles.ctaButtons}>
+              <Link to="/dashboard/body-signals/log" className={styles.ctaPrimary}>
+                Add Body Signals
+              </Link>
+              <a href="#pulse-score" className={styles.ctaSecondary}>
+                See my Pulse anyway
+              </a>
+            </div>
+          </div>
+        )}
+
+        {pulse.combined === null ? (
           <div className={styles.emptyState}>
             <p className={styles.emptyHeading}>No Pulse yet today</p>
             <p className={styles.emptyText}>
