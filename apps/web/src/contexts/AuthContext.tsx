@@ -145,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch((err) => {
         if (import.meta.env.DEV) console.error('Google sign-in error:', err);
-        if (err?.code === 'auth/popup-blocked') {
+        if (err?.code === 'auth/popup-blocked' && auth) {
           signInWithRedirect(auth, googleAuthProvider);
         }
       });
