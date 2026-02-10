@@ -24,6 +24,79 @@ export function Pulse() {
   const bodyShare = hasBoth ? 50 : pulse.body !== null ? 100 : 0;
   const routineShare = hasBoth ? 50 : pulse.routine !== null ? 100 : 0;
 
+  const scoreCardLabel = hasBoth ? 'Combined Pulse' : pulse.body !== null ? 'Body Pulse' : 'Work Pulse';
+  const scoreCardBlock = pulse.combined !== null ? (
+    <div id="pulse-score" className={styles.scoreCard}>
+      <ScoreRing score={pulse.combined} label={scoreCardLabel} />
+      <div className={styles.diagramSection}>
+        <h3 className={styles.diagramHeading}>What made it this way</h3>
+        <div className={styles.diagramBar} aria-hidden="true">
+          {pulse.body !== null && (
+            <div
+              className={`${styles.diagramSegment} ${styles.diagramSegmentBody} ${!hasBoth ? styles.diagramSegmentSolo : ''}`}
+              style={{ width: `${bodyShare}%` }}
+            />
+          )}
+          {pulse.routine !== null && (
+            <div
+              className={`${styles.diagramSegment} ${styles.diagramSegmentRoutine} ${!hasBoth ? styles.diagramSegmentSolo : ''}`}
+              style={{ width: `${routineShare}%` }}
+            />
+          )}
+        </div>
+        <div className={styles.diagramLegend}>
+          {pulse.body !== null && (
+            <span className={styles.diagramLegendItem}>
+              <span className={`${styles.diagramLegendDot} ${styles.diagramLegendDotBody}`} aria-hidden />
+              Body Signals: {bodyScore}%
+            </span>
+          )}
+          {pulse.routine !== null && (
+            <span className={styles.diagramLegendItem}>
+              <span className={`${styles.diagramLegendDot} ${styles.diagramLegendDotRoutine}`} aria-hidden />
+              Work Routine: {routineScore}%
+            </span>
+          )}
+        </div>
+        {hasBoth ? (
+          <p className={styles.aggregationText}>
+            Body Signals contributed {bodyScore}% and Work Routine contributed {routineScore}%. Your combined Pulse is {pulse.combined}, the average of both. More data gives a clearer picture.
+          </p>
+        ) : (
+          <p className={styles.ctaText} style={{ marginTop: 12, marginBottom: 0 }}>
+            Add another block to get a combined Pulse and richer insights.
+          </p>
+        )}
+      </div>
+      <div className={styles.linksSection}>
+        <Link to="/dashboard/body-signals" className={styles.linkButton}>
+          Body Signals
+        </Link>
+        <Link to="/dashboard/work-routine" className={styles.linkButton}>
+          Work Routine
+        </Link>
+      </div>
+    </div>
+  ) : null;
+
+  const emptyStateBlock = pulse.combined === null ? (
+    <div className={styles.emptyState}>
+      <p className={styles.emptyHeading}>No Pulse yet today</p>
+      <p className={styles.emptyText}>
+        Log Body Signals or complete a Work Routine check-in to see your
+        Pulse. Doing both gives you the best combined score and insights.
+      </p>
+      <div className={styles.emptyLinks}>
+        <Link to="/dashboard/body-signals/log" className={styles.emptyLink}>
+          Log Body Signals
+        </Link>
+        <Link to="/dashboard/work-routine/checkin" className={styles.emptyLink}>
+          Work Routine check-in
+        </Link>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -37,62 +110,7 @@ export function Pulse() {
           Combined score from Body Signals and Work Routine
         </p>
 
-        {pulse.combined !== null ? (
-          <div id="pulse-score" className={styles.scoreCard}>
-            <ScoreRing
-              score={pulse.combined}
-              label={hasBoth ? 'Combined Pulse' : pulse.body !== null ? 'Body Pulse' : 'Work Pulse'}
-            />
-            <div className={styles.diagramSection}>
-              <h3 className={styles.diagramHeading}>What made it this way</h3>
-              <div className={styles.diagramBar} aria-hidden="true">
-                {pulse.body !== null && (
-                  <div
-                    className={`${styles.diagramSegment} ${styles.diagramSegmentBody} ${!hasBoth ? styles.diagramSegmentSolo : ''}`}
-                    style={{ width: `${bodyShare}%` }}
-                  />
-                )}
-                {pulse.routine !== null && (
-                  <div
-                    className={`${styles.diagramSegment} ${styles.diagramSegmentRoutine} ${!hasBoth ? styles.diagramSegmentSolo : ''}`}
-                    style={{ width: `${routineShare}%` }}
-                  />
-                )}
-              </div>
-              <div className={styles.diagramLegend}>
-                {pulse.body !== null && (
-                  <span className={styles.diagramLegendItem}>
-                    <span className={`${styles.diagramLegendDot} ${styles.diagramLegendDotBody}`} aria-hidden />
-                    Body Signals: {bodyScore}%
-                  </span>
-                )}
-                {pulse.routine !== null && (
-                  <span className={styles.diagramLegendItem}>
-                    <span className={`${styles.diagramLegendDot} ${styles.diagramLegendDotRoutine}`} aria-hidden />
-                    Work Routine: {routineScore}%
-                  </span>
-                )}
-              </div>
-              {hasBoth ? (
-                <p className={styles.aggregationText}>
-                  Body Signals contributed {bodyScore}% and Work Routine contributed {routineScore}%. Your combined Pulse ({pulse.combined}) is the average of both. More data gives a clearer picture.
-                </p>
-              ) : (
-                <p className={styles.ctaText} style={{ marginTop: 12, marginBottom: 0 }}>
-                  Add another block to get a combined Pulse and richer insights.
-                </p>
-              )}
-            </div>
-            <div className={styles.linksSection}>
-              <Link to="/dashboard/body-signals" className={styles.linkButton}>
-                Body Signals
-              </Link>
-              <Link to="/dashboard/work-routine" className={styles.linkButton}>
-                Work Routine
-              </Link>
-            </div>
-          </div>
-        ) : null}
+        {scoreCardBlock}
 
         {showOfferWorkRoutine && (
           <div className={styles.ctaCard} role="region" aria-labelledby="cta-heading-wr">
@@ -132,23 +150,7 @@ export function Pulse() {
           </div>
         )}
 
-        {pulse.combined === null ? (
-          <div className={styles.emptyState}>
-            <p className={styles.emptyHeading}>No Pulse yet today</p>
-            <p className={styles.emptyText}>
-              Log Body Signals or complete a Work Routine check-in to see your
-              Pulse. Doing both gives you the best combined score and insights.
-            </p>
-            <div className={styles.emptyLinks}>
-              <Link to="/dashboard/body-signals/log" className={styles.emptyLink}>
-                Log Body Signals
-              </Link>
-              <Link to="/dashboard/work-routine/checkin" className={styles.emptyLink}>
-                Work Routine check-in
-              </Link>
-            </div>
-          </div>
-        )}
+        {emptyStateBlock}
       </main>
     </div>
   );
