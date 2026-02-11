@@ -130,10 +130,8 @@ export function Pulse() {
                   )}
                   {bodySnapshot.insightsError && (
                     <p className={styles.insightsHint} role="status">
-                      {bodySnapshot.insightsError}
-                      {bodySnapshot.insightsError.includes('VITE_API_URL') && (
-                        ' Set VITE_API_URL in your app build environment and ensure the API allows this origin (CORS).'
-                      )}
+                      Suggestions above are from your data only. AI could not be reached: {bodySnapshot.insightsError}
+                      {bodySnapshot.insightsError.includes('VITE_API_URL') && ' Set VITE_API_URL in your app build (e.g. Vercel) and CORS on the API for personalized insights.'}
                     </p>
                   )}
                 </>

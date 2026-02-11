@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth, googleAuthProvider, isFirebaseEnabled } from '../lib/firebase';
 
@@ -24,6 +24,15 @@ const REFERRAL_WALLET_KEY = '@pulse/referral_wallet';
 
 const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/, '') || '';
 
+/** After a 500 from auth/sync, skip sync for this long to avoid spamming a failing API. */
+const AUTH_SYNC_BACKOFF_MS = 3 * 60 * 1000;
+
+function isLocalOrDev(): boolean {
+  if (import.meta.env.DEV) return true;
+  const host = typeof window !== 'undefined' ? window.location?.hostname ?? '' : '';
+  return host === 'localhost' || host.endsWith('.local');
+}
+
 function generateUserId() {
   return `user_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
@@ -31,6 +40,8 @@ function generateUserId() {
 const TOKEN_KEY = '@pulse/access_token';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const lastSyncFailureAt = useRef<number>(0);
+
   const [accessToken, setAccessToken] = useState<string | null>(() => {
     try {
       return localStorage.getItem(TOKEN_KEY);
@@ -71,12 +82,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const u = { userId: firebaseUser.uid, email: firebaseUser.email };
         setUser(u);
         if (API_BASE) {
+          if (Date.now() - lastSyncFailureAt.current < AUTH_SYNC_BACKOFF_MS) {
+            if (import.meta.env.DEV) console.warn('[auth/sync] Skipping (backoff after previous 500)');
+            return;
+          }
           fetch(`${API_BASE}/auth/sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: firebaseUser.email, userId: firebaseUser.uid }),
           })
-            .then((r) => r.json().catch(() => ({})))
+            .then((r) => {
+              if (r.status >= 500) lastSyncFailureAt.current = Date.now();
+              return r.json().catch(() => ({}));
+            })
             .then((data) => {
               if (data?.accessToken) {
                 setAccessToken(data.accessToken);
@@ -84,7 +102,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
               if (!data?.ok && import.meta.env.DEV) console.warn('[auth/sync] Failed:', data);
             })
-            .catch((e) => { if (import.meta.env.DEV) console.warn('[auth/sync] Request failed:', e); });
+            .catch((e) => {
+              lastSyncFailureAt.current = Date.now();
+              if (import.meta.env.DEV) console.warn('[auth/sync] Request failed:', e);
+            });
         }
       } else {
         setUser(null);
@@ -98,26 +119,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const lastReferralFailureAt = useRef<number>(0);
   useEffect(() => {
     if (!user?.email || !API_BASE) return;
     const code = localStorage.getItem(REFERRAL_CODE_KEY)?.trim();
     if (!code) return;
+    if (Date.now() - lastReferralFailureAt.current < AUTH_SYNC_BACKOFF_MS) return;
     const wallet = localStorage.getItem(REFERRAL_WALLET_KEY)?.trim() || undefined;
     fetch(`${API_BASE}/referrals/complete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ referrerCode: code, email: user.email, wallet }),
     })
-      .then(() => {
-        try {
-          localStorage.removeItem(REFERRAL_CODE_KEY);
-          localStorage.removeItem(REFERRAL_WALLET_KEY);
-        } catch {
-          // ignore
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (res.ok || res.status === 200) {
+          try {
+            localStorage.removeItem(REFERRAL_CODE_KEY);
+            localStorage.removeItem(REFERRAL_WALLET_KEY);
+          } catch {
+            // ignore
+          }
+          return;
+        }
+        if (res.status >= 500) lastReferralFailureAt.current = Date.now();
+        if (res.status === 400 && data?.code === 'REFERRER_NOT_FOUND') {
+          if (import.meta.env.DEV) console.warn('[referrals/complete] Referrer not in DB yet:', data?.message);
         }
       })
       .catch(() => {
-        // ignore; can retry later or leave code for next session
+        lastReferralFailureAt.current = Date.now();
       });
   }, [user?.email]);
 
@@ -127,44 +158,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const u: User = { userId: generateUserId(), email: trimmed };
     setUser(u);
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ user: u }));
-    if (API_BASE) {
+    if (API_BASE && Date.now() - lastSyncFailureAt.current >= AUTH_SYNC_BACKOFF_MS) {
       fetch(`${API_BASE}/auth/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmed, userId: u.userId }),
       })
-        .then((r) => r.json().catch(() => ({})))
+        .then((r) => {
+          if (r.status >= 500) lastSyncFailureAt.current = Date.now();
+          return r.json().catch(() => ({}));
+        })
         .then((data) => {
           if (data?.accessToken) {
             setAccessToken(data.accessToken);
             try { localStorage.setItem(TOKEN_KEY, data.accessToken); } catch { /* ignore */ }
           }
         })
-        .catch((e) => { if (import.meta.env.DEV) console.warn('[auth/sync] Request failed:', e); });
+        .catch((e) => {
+          lastSyncFailureAt.current = Date.now();
+          if (import.meta.env.DEV) console.warn('[auth/sync] Request failed:', e);
+        });
     }
   }, []);
 
   const signInWithGoogle = useCallback(() => {
     if (!auth) return;
+    const useRedirect = !isLocalOrDev();
+    if (useRedirect) {
+      signInWithRedirect(auth, googleAuthProvider).catch((err) => {
+        if (import.meta.env.DEV) console.error('Google redirect sign-in error:', err);
+      });
+      return;
+    }
     signInWithPopup(auth, googleAuthProvider)
       .then((result) => {
         if (result?.user?.email) {
           const u = { userId: result.user.uid, email: result.user.email };
           setUser(u);
-          if (API_BASE) {
+          if (API_BASE && Date.now() - lastSyncFailureAt.current >= AUTH_SYNC_BACKOFF_MS) {
             fetch(`${API_BASE}/auth/sync`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email: result.user.email, userId: result.user.uid }),
             })
-              .then((r) => r.json().catch(() => ({})))
+              .then((r) => {
+                if (r.status >= 500) lastSyncFailureAt.current = Date.now();
+                return r.json().catch(() => ({}));
+              })
               .then((data) => {
                 if (data?.accessToken) {
                   setAccessToken(data.accessToken);
                   try { localStorage.setItem(TOKEN_KEY, data.accessToken); } catch { /* ignore */ }
                 }
               })
-              .catch(() => {});
+              .catch(() => { lastSyncFailureAt.current = Date.now(); });
           }
         }
       })

@@ -79,7 +79,8 @@ export function BodySignalsResult() {
                 )}
                 {!loadingAI && pulse.insightsError && (
                   <p className={styles.insightsError} role="status">
-                    {pulse.insightsError}
+                    Suggestions above are from your data only. AI insights could not be loaded: {pulse.insightsError}
+                    {pulse.insightsError.includes('VITE_API_URL') && ' Set VITE_API_URL in your app build (e.g. Vercel env) and ensure the API allows this origin (CORS).'}
                   </p>
                 )}
               </>

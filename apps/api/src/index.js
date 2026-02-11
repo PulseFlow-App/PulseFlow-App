@@ -209,6 +209,13 @@ app.post('/referrals/complete', async (req, res) => {
 
   const REFERRAL_POINTS = 100;
   try {
+    const referrerExists = await db.userExistsById(code);
+    if (!referrerExists) {
+      return res.status(400).json({
+        message: 'Invalid referrer code. The person who invited you needs to open the app and sign in once so their account is created, then you can try again.',
+        code: 'REFERRER_NOT_FOUND',
+      });
+    }
     const existing = await db.getUserByEmail(trimmed);
     const userId = existing ? existing.userId : generateId();
     if (!existing) {

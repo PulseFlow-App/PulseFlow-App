@@ -38,6 +38,13 @@ async function getUserByEmail(email) {
   return rows[0] ? { userId: rows[0].id, email: rows[0].email, passwordHash: rows[0].password_hash } : null;
 }
 
+/** Check if a user exists by id (e.g. referrer must exist before awarding referral points). */
+async function userExistsById(userId) {
+  if (!pool || !userId) return false;
+  const { rows } = await pool.query('SELECT 1 FROM users WHERE id = $1', [userId]);
+  return rows.length > 0;
+}
+
 async function createUser(id, email, passwordHash, wallet = null) {
   if (!pool) return null;
   await pool.query(
@@ -143,6 +150,7 @@ module.exports = {
   hasDb,
   ping,
   getUserByEmail,
+  userExistsById,
   createUser,
   createReferral,
   updateLastSeen,

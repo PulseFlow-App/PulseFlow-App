@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { recordAppUsage, getAppStreak } from '../stores/appStreak';
+import { getBodyLogs } from '../blocks/BodySignals/store';
 import { getCheckIns } from '../blocks/WorkRoutine/store';
 import { startNotificationChecks } from '../stores/notifications';
 import { BlockCard } from '../components/BlockCard';
@@ -18,7 +19,6 @@ type PointsData = {
   referralPoints: number;
   bonusPoints: number;
   totalPoints: number;
-  loginCount: number;
 };
 
 export function Dashboard() {
@@ -49,7 +49,6 @@ export function Dashboard() {
             referralPoints: data.referralPoints ?? 0,
             bonusPoints: data.bonusPoints ?? 0,
             totalPoints: data.totalPoints ?? 0,
-            loginCount: data.loginCount ?? 0,
           });
         }
       })
@@ -58,13 +57,12 @@ export function Dashboard() {
   }, [user, accessToken]);
 
   const streak = getAppStreak();
-  const checkInsCount = getCheckIns().length;
+  const checkInsCount = getBodyLogs().length + getCheckIns().length;
   const activeBlocks = BLOCKS.filter((b) => ACTIVE_IDS.includes(b.id));
   const comingSoonBlocks = BLOCKS.filter((b) => COMING_SOON_IDS.includes(b.id));
   const totalPoints = points?.totalPoints ?? 0;
   const referralPoints = points?.referralPoints ?? 0;
   const bonusPoints = points?.bonusPoints ?? 0;
-  const loginCount = points?.loginCount ?? 0;
 
   return (
     <div className={styles.page}>
@@ -96,10 +94,6 @@ export function Dashboard() {
           <div className={styles.statItem}>
             <span className={styles.statNumber}>{streak}</span>
             <span className={styles.statLabel}>Day streak</span>
-          </div>
-          <div className={styles.statItem}>
-            <span className={styles.statNumber}>{loginCount}</span>
-            <span className={styles.statLabel}>Log-ins</span>
           </div>
           <div className={styles.statItem}>
             <span className={styles.statNumber}>{checkInsCount}</span>
