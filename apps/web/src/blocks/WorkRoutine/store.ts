@@ -15,9 +15,14 @@ function getWorkNoteThemes(notes: string): string[] {
   if (/\b(back to back calls|back-to-back calls|calls all day|nonstop calls|back to back meetings|meetings all day|meeting marathon)\b/.test(lower)) themes.push('back_to_back_calls');
   if (/\b(meetings all day|meeting marathon|back to back meetings|back-to-back meetings)\b/.test(lower) && !themes.includes('back_to_back_calls')) themes.push('meetings_heavy');
   if (/\b(deadline|deadlines|big day|crunch|ship date)\b/.test(lower)) themes.push('deadline');
-  if (/\b(couldn't focus|could not focus|no focus|distracted all day|couldn\'t focus)\b/.test(lower)) themes.push('no_focus');
+  if (/\b(couldn't focus|could not focus|no focus|distracted all day|couldn\'t focus|barely focused)\b/.test(lower)) themes.push('no_focus');
   if (/\b(interruptions|constant interruptions|pings|slack|messages all day)\b/.test(lower)) themes.push('interruptions');
   if (/\b(deep work|focus block|heads down|uninterrupted)\b/.test(lower)) themes.push('deep_work');
+  if (/\b(overwhelm|overwhelmed|chaotic|chaos|fire drill|putting out fires)\b/.test(lower)) themes.push('overwhelm');
+  if (/\b(no break|no breaks|didn't take a break|no time to break)\b/.test(lower)) themes.push('no_breaks');
+  if (/\b(long day|very long day|marathon day|10 hour|12 hour)\b/.test(lower)) themes.push('long_day_note');
+  if (/\b(screen all day|screens all day|zoom fatigue|video calls)\b/.test(lower)) themes.push('screen_heavy');
+  if (/\b(tired|exhausted|drained|wiped|burned out|burnout)\b/.test(lower)) themes.push('drained');
   return themes;
 }
 
@@ -106,6 +111,41 @@ function ruleBasedAnalysisFromMetrics(m: WorkDayMetrics): CheckInAnalysis {
         'A short transition before the next task can reduce carryover fatigue.',
       ];
       oneThing = 'Notice whether a short break or transition after the block changes how energy and focus hold for the rest of the day.';
+    } else if (noteThemes.includes('overwhelm')) {
+      pattern = 'When the day feels chaotic, cognitive load and task switching spike. Recovery windows disappear and mental fatigue builds fast.';
+      shapingLines = [
+        'Context switching and firefighting leave little sustained attention.',
+        'One protected block or one clear stop can create a recovery window.',
+      ];
+      oneThing = 'Try one thing: block 20–30 minutes with Do Not Disturb, or set one hard stop time. Notice whether it changes how the rest of the day (or tomorrow) feels.';
+    } else if (noteThemes.includes('no_breaks')) {
+      pattern = 'No breaks mean no recovery between tasks. Mental fatigue and focus drop even when the workload feels manageable.';
+      shapingLines = [
+        'Back-to-back work without gaps amplifies cognitive load.',
+        'Focus often drops before energy does when there are no transition windows.',
+      ];
+      oneThing = 'Notice whether one 5–10 minute gap (even between calls or tasks) changes how focus holds later in the day.';
+    } else if (noteThemes.includes('long_day_note')) {
+      pattern = 'Long days extend cognitive load without extra recovery. Energy and focus tomorrow often pay the cost.';
+      shapingLines = [
+        'Extended hours without more breaks increase recovery debt.',
+        'A clear stop time or buffer before sleep can reduce next-day drag.',
+      ];
+      oneThing = 'Notice whether one hard stop time or a short wind-down before bed changes how you feel the next morning.';
+    } else if (noteThemes.includes('screen_heavy')) {
+      pattern = 'Screen-heavy days add sustained visual and cognitive load. Focus and energy often drop by late afternoon.';
+      shapingLines = [
+        'Continuous screen time reduces natural break points.',
+        'Short off-screen breaks or one meeting-free block can create a reset.',
+      ];
+      oneThing = 'Observe if one 10–15 minute block away from screens (or one meeting-free window) changes how focus and energy hold.';
+    } else if (noteThemes.includes('drained')) {
+      pattern = 'Feeling drained or exhausted usually means recovery has been below what the load required. Cognitive and physical load both draw from the same pool.';
+      shapingLines = [
+        'Mental fatigue and low energy often reflect accumulated load and few recovery windows.',
+        'One lever is timing: when you stop, and one short break earlier tomorrow.',
+      ];
+      oneThing = 'Notice whether one earlier stop today or one short break earlier tomorrow changes how drained you feel. No extra load – just one recovery lever.';
     } else {
       pattern = 'Your note points to a specific work pattern. Cognitive load and recovery windows are the main levers.';
       shapingLines = ['Task structure and breaks often shape focus and mental fatigue.', 'This looks cumulative, not acute.'];
@@ -113,40 +153,60 @@ function ruleBasedAnalysisFromMetrics(m: WorkDayMetrics): CheckInAnalysis {
     }
     shapingLines.push('This looks cumulative, not acute.');
   } else {
-    // Metric-driven (no concrete work pattern in notes). No banned phrases.
+    // Metric-driven: reference actual numbers so it feels tailored, not generic.
+    const hrs = m.workHours;
+    const focusSessions = m.focusSessions ?? 0;
+    const breaks = m.breaks ?? 0;
     const patternParts: string[] = [];
     if (longDay && (energyDrop || lowCompletion)) {
-      patternParts.push('Focus and mental fatigue are tightly linked today. Energy appears to drop alongside longer work blocks.');
-    } else if (lowFocus || highDistractions || highInterruptions) {
-      patternParts.push('Focus quality and cognitive load are the main levers today.');
+      patternParts.push(`With ${hrs} hours and ${breaks} break${breaks !== 1 ? 's' : ''}, focus and mental fatigue are tightly linked. Energy often drops when recovery windows are few.`);
+    } else if (lowFocus && hrs >= 4) {
+      patternParts.push(`${focusSessions} focus session${focusSessions !== 1 ? 's' : ''} in ${hrs} hours usually means high context switching. Cognitive load and mental fatigue tend to track that.`);
+    } else if (highDistractions || highInterruptions) {
+      patternParts.push('Distractions and interruptions are the main levers today. They fragment focus and add task-switching cost.');
+    } else if (lowBreaks && hrs >= 5) {
+      patternParts.push(`${breaks} break${breaks !== 1 ? 's' : ''} in ${hrs} hours leaves little recovery between tasks. Mental fatigue often builds by end of day.`);
+    } else if (energyDrop) {
+      patternParts.push('Energy dropped from start to end of day. That often links to hours, breaks, or meeting load rather than workload alone.');
+    } else if (meetingHeavy) {
+      patternParts.push('Meeting load is high and focus blocks are few. Context switching and mental fatigue usually follow.');
+    } else if (lowComfort) {
+      patternParts.push('Desk or posture comfort may be adding background load. It often shows up as extra fatigue even on moderate days.');
     } else {
-      patternParts.push('Focus quality and cognitive load are the main levers today. One specific lever to try below.');
+      patternParts.push(`Your numbers (${hrs}h, ${focusSessions} focus block${focusSessions !== 1 ? 's' : ''}, ${breaks} break${breaks !== 1 ? 's' : ''}) point to one lever below.`);
     }
-    if (lowBreaks && longDay) patternParts.push('Fewer breaks often show up as lower energy by end of day.');
-    if (lowComfort) patternParts.push('Posture or space comfort may be adding background load.');
     pattern = patternParts.join(' ');
 
     shapingLines = [];
-    if (lowFocus && m.workHours >= 4) shapingLines.push('Focus sessions are the main driver. Few deep-work blocks often increase mental fatigue and flatten energy.');
-    if (highDistractions) shapingLines.push('Distractions may be cutting into focus quality.');
-    if (highInterruptions) shapingLines.push('Interruptions often fragment focus and add cognitive load.');
-    if (lowBreaks && m.workHours >= 5) shapingLines.push('Fewer breaks can amplify mental fatigue even on moderate workload days.');
-    if (energyDrop) shapingLines.push('Energy dropped from start to end. Often links to hours, breaks, or meeting load.');
-    if (meetingHeavy) shapingLines.push('Meeting load is limiting focus blocks and can increase task friction.');
+    if (lowFocus && hrs >= 4) shapingLines.push('Few deep-work blocks often increase mental fatigue and flatten energy.');
+    if (highDistractions) shapingLines.push('Distractions cut into focus quality and add cognitive load.');
+    if (highInterruptions) shapingLines.push('Interruptions fragment focus and reduce sustained attention.');
+    if (lowBreaks && hrs >= 5) shapingLines.push('Fewer breaks amplify mental fatigue even on moderate workload days.');
+    if (energyDrop) shapingLines.push('Energy drop from start to end often links to hours, breaks, or meeting load.');
+    if (meetingHeavy) shapingLines.push('Meeting load limits focus blocks and can increase task friction.');
     if (lowComfort) shapingLines.push('Desk or posture strain can add to perceived fatigue.');
-    if (shapingLines.length === 0) shapingLines.push('Signals are in a moderate range. Try the specific lever below.');
+    if (shapingLines.length === 0) shapingLines.push('One specific lever below can shift focus or energy.');
     shapingLines.push('This looks cumulative, not acute.');
 
-    if (lowFocus && m.workHours >= 4) oneThing = 'Notice whether one or two deep focus sessions tomorrow change how mental fatigue and energy hold.';
-    else if (lowBreaks && m.workHours >= 5) oneThing = 'Notice whether a short break earlier in the day changes how focus holds in the afternoon.';
-    else if (highDistractions) oneThing = 'Observe if reducing one distraction source (e.g. notifications or tab count) changes focus quality.';
-    else if (highInterruptions) oneThing = 'Observe if protecting one focus block with a Do Not Disturb window changes how much gets done.';
-    else if (energyDrop && m.workHours >= 6) oneThing = 'Notice whether winding down a bit earlier or adding a buffer before sleep changes tomorrow\'s energy.';
-    else if (lowCompletion) oneThing = 'Notice whether picking one priority and timeboxing it changes how focus and completion feel.';
-    else if (meetingHeavy) oneThing = 'Observe if one meeting-free focus block changes flow and mental fatigue.';
-    else if (lowComfort) oneThing = 'Notice whether one small tweak to desk or chair changes comfort and focus over the week.';
-    else if (longDay && m.workHours >= 10) oneThing = 'Notice whether capping focused work hours when you can changes recovery and next-day energy.';
-    else oneThing = 'Observe if one short break earlier in the day or one protected focus block changes how focus and energy hold.';
+    oneThing = lowFocus && hrs >= 4
+      ? 'Notice whether one or two 25–30 minute focus blocks tomorrow (notifications off) change how mental fatigue and energy hold.'
+      : lowBreaks && hrs >= 5
+      ? 'Notice whether one 5–10 minute break earlier in the day (e.g. before noon) changes how focus holds in the afternoon.'
+      : highDistractions
+      ? 'Observe if turning off one distraction source (e.g. notifications or one extra tab) for 30 minutes changes focus quality.'
+      : highInterruptions
+      ? 'Observe if one 20–30 minute Do Not Disturb window changes how much gets done and how focus feels.'
+      : energyDrop && hrs >= 6
+      ? 'Notice whether one clear stop time or a 15-minute buffer before sleep changes tomorrow\'s energy.'
+      : lowCompletion
+      ? 'Notice whether picking one priority and timeboxing it (e.g. 45 minutes) changes how focus and completion feel.'
+      : meetingHeavy
+      ? 'Observe if one meeting-free block (even 30 minutes before or after the run) changes flow and mental fatigue.'
+      : lowComfort
+      ? 'Notice whether one small desk or chair tweak changes comfort and focus over the next few days.'
+      : longDay && hrs >= 10
+      ? 'Notice whether one hard stop time when you can changes recovery and next-day energy.'
+      : 'Observe if one short break earlier in the day or one 25-minute protected block changes how focus and energy hold.';
   }
 
   const shaping = shapingLines.map((line) => '• ' + line).join('\n');
@@ -169,13 +229,13 @@ function ruleBasedAnalysisFromResponses(responses: Record<string, QuestionRespon
   const scores = Object.values(responses).map((r) => r.score);
   const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 2.5;
   let assessment: string;
-  if (avg >= 3.5) assessment = 'Strong day overall. Your signals look balanced.';
-  else if (avg >= 2.5) assessment = 'Solid baseline. One small tweak can lift your routine.';
+  if (avg >= 3.5) assessment = 'Signals are in a good range. One lever below can help keep focus and energy stable.';
+  else if (avg >= 2.5) assessment = 'Sleep, focus, or breaks are the main levers. One specific experiment below.';
   else assessment = 'Focus on one lever tomorrow: sleep or one focus block. Build from there.';
   const shaping = quickWins.length > 0 ? quickWins.map((l) => '• ' + l).join('\n') + '\n• This looks cumulative.' : '';
-  const oneThing = sleep <= 2 ? 'Observe just one change: Aim for 7–8 hours of sleep. Notice how tomorrow feels.'
-    : focus <= 2 ? 'Observe just one change: Block one 25-minute focus session. See how completion feels.'
-    : 'Observe just one change: One short walk or stretch. Notice how energy responds.';
+  const oneThing = sleep <= 2 ? 'Notice whether 7–8 hours of sleep changes how tomorrow feels.'
+    : focus <= 2 ? 'Notice whether one 25-minute focus block (notifications off) changes how completion feels.'
+    : 'Notice whether one short break or stretch changes how energy responds.';
   return { assessment, quickWins, pattern: assessment, shaping, oneThing };
 }
 
@@ -270,4 +330,14 @@ export function getWeeklyProgress(): { count: number; percent: number } {
   const week = entries.filter((e) => new Date(e.timestamp) >= cutoff);
   const uniqueDays = new Set(week.map((e) => new Date(e.timestamp).toDateString())).size;
   return { count: uniqueDays, percent: Math.min(100, Math.round((uniqueDays / 7) * 100)) };
+}
+
+/** Check-ins within the last N days, sorted by date descending (newest first). */
+export function getCheckInsForRange(days: number): CheckInEntry[] {
+  const entries = loadEntries();
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  return entries
+    .filter((e) => new Date(e.timestamp) >= cutoff)
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 }

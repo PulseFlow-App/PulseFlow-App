@@ -9,7 +9,7 @@ import { BodySignalsResult } from './blocks/BodySignals/BodySignalsResult';
 import { BodySignalsTrends } from './blocks/BodySignals/BodySignalsTrends';
 import { WorkRoutineOverview } from './blocks/WorkRoutine/WorkRoutineOverview';
 import { WorkRoutineCheckIn } from './blocks/WorkRoutine/WorkRoutineCheckIn';
-import { WorkRoutineInsights } from './blocks/WorkRoutine/WorkRoutineInsights';
+import { WorkRoutineTrends } from './blocks/WorkRoutine/WorkRoutineTrends';
 import { Terms } from './pages/Terms';
 import { Privacy } from './pages/Privacy';
 import { Disclaimer } from './pages/Disclaimer';
@@ -97,7 +97,7 @@ export default function App() {
         path="/dashboard/work-routine/insights"
         element={
           <ProtectedRoute>
-            <WorkRoutineInsights />
+            <WorkRoutineTrends />
           </ProtectedRoute>
         }
       />

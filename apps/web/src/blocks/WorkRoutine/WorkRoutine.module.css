@@ -116,6 +116,51 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
+/* Trends (range, metrics, chart) */
+.statsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-bottom: 16px;
+}
+
+.statLabel {
+  font-size: 0.8125rem;
+  color: #737373;
+}
+
+.rangeRow,
+.metricRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.rangeChip,
+.metricChip {
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: rgba(23, 23, 23, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #a3a3a3;
+  cursor: pointer;
+}
+
+.rangeChipActive,
+.metricChipActive {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.chartCard {
+  margin-bottom: 16px;
+  min-height: 140px;
+}
+
 /* Check-in */
 .progressBar {
   height: 4px;

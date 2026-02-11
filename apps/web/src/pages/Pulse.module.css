@@ -276,6 +276,20 @@
   margin-bottom: 0;
 }
 
+.narrativeIntro {
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.narrativeTextSmall {
+  font-size: 0.75rem;
+  color: #737373;
+  margin: 0 0 6px;
+  font-style: italic;
+}
+
 .narrativeHeading {
   font-size: 0.75rem;
   font-weight: 600;

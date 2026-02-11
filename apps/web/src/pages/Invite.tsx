@@ -15,7 +15,7 @@ export function Invite() {
       try {
         localStorage.setItem(REFERRAL_STORAGE_KEY, code.trim());
       } catch {
-        // ignore
+        // ignore (Safari can restrict storage when opened from external link)
       }
     }
   }, [code]);
@@ -25,6 +25,16 @@ export function Invite() {
   }, [user, navigate]);
 
   if (user) return null;
+
+  const handleSignInWithGoogle = () => {
+    if (!code?.trim()) {
+      signInWithGoogle();
+      return;
+    }
+    // Safari: localStorage may not survive OAuth redirect when opened from external link.
+    // Carry the referral code in the URL so it's still there when we land back from Google.
+    navigate(`/?invite=${encodeURIComponent(code.trim())}`, { replace: true });
+  };
 
   return (
     <div className={styles.page}>
@@ -38,12 +48,12 @@ export function Invite() {
           <button
             type="button"
             className={styles.primaryButton}
-            onClick={() => signInWithGoogle()}
+            onClick={handleSignInWithGoogle}
           >
             Sign in with Google
           </button>
         ) : (
-          <Link to="/" className={styles.primaryButton}>
+          <Link to={code?.trim() ? `/?invite=${encodeURIComponent(code.trim())}` : '/'} className={styles.primaryButton}>
             Go to Pulse and sign in
           </Link>
         )}

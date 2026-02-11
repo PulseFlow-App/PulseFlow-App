@@ -92,9 +92,14 @@ export function Pulse() {
         )}
       </div>
 
-      {/* Narrative: body and/or routine description */}
+      {/* Narrative: one combined flow when both, else body or routine only */}
       {(hasBody || hasRoutine) && (
         <div className={styles.narrativeBlock}>
+          {hasBoth && (
+            <p className={styles.narrativeIntro}>
+              Body and work both feed your Pulse today. Below: what’s shaping it and one thing to try.
+            </p>
+          )}
           {hasBody && (
             <>
               {loadingBody ? (
@@ -102,7 +107,9 @@ export function Pulse() {
               ) : bodySnapshot ? (
                 <>
                   <section className={styles.narrativeSection} aria-labelledby="pulse-pattern-heading">
-                    <h2 id="pulse-pattern-heading" className={styles.narrativeHeading}>Today’s pattern</h2>
+                    <h2 id="pulse-pattern-heading" className={styles.narrativeHeading}>
+                      {hasBoth ? 'From Body Signals' : 'Today’s pattern'}
+                    </h2>
                     <p className={styles.narrativeInsight}>{bodySnapshot.insight}</p>
                   </section>
                   {bodySnapshot.explanation && (
@@ -122,7 +129,7 @@ export function Pulse() {
                       )}
                     </section>
                   )}
-                  {bodySnapshot.improvements.length > 0 && (
+                  {bodySnapshot.improvements.length > 0 && !hasBoth && (
                     <section className={styles.narrativeSection} aria-labelledby="pulse-one-heading">
                       <h2 id="pulse-one-heading" className={styles.narrativeHeading}>A small thing to try</h2>
                       <p className={styles.narrativeOneThing}>{bodySnapshot.improvements[0]}</p>
@@ -141,12 +148,23 @@ export function Pulse() {
           {hasRoutine && routineEntry?.analysis && (
             <section className={styles.narrativeSection} aria-labelledby="pulse-routine-heading">
               <h2 id="pulse-routine-heading" className={styles.narrativeHeading}>
-                {hasBody ? 'Work Routine today' : 'Today’s pattern'}
+                From your work check-in
               </h2>
-              <p className={styles.narrativeInsight}>{routineEntry.analysis.pattern}</p>
+              <p className={styles.narrativeTextSmall}>
+                Based on your logged focus, energy, and breaks (not AI).
+              </p>
+              <p className={styles.narrativeText}>{routineEntry.analysis.pattern}</p>
               {routineEntry.analysis.oneThing && (
                 <p className={styles.narrativeOneThing}>{routineEntry.analysis.oneThing}</p>
               )}
+            </section>
+          )}
+          {hasBoth && (bodySnapshot?.improvements?.[0] || routineEntry?.analysis?.oneThing) && (
+            <section className={styles.narrativeSection} aria-labelledby="pulse-one-heading">
+              <h2 id="pulse-one-heading" className={styles.narrativeHeading}>One thing to try</h2>
+              <p className={styles.narrativeOneThing}>
+                {bodySnapshot?.improvements?.[0] ?? routineEntry?.analysis?.oneThing}
+              </p>
             </section>
           )}
         </div>

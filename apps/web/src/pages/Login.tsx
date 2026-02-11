@@ -1,15 +1,30 @@
-import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AppFooter } from '../components/AppFooter';
 import styles from './Login.module.css';
 
+const REFERRAL_STORAGE_KEY = '@pulse/referral_code';
+
 export function Login() {
+  const [searchParams] = useSearchParams();
   const { user, signIn, signInWithGoogle, isGoogleAuth } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Safari: referral code in URL survives OAuth redirect when localStorage doesn't. Store it so AuthContext can complete referral.
+  useEffect(() => {
+    const invite = searchParams.get('invite')?.trim();
+    if (invite) {
+      try {
+        localStorage.setItem(REFERRAL_STORAGE_KEY, invite);
+      } catch {
+        // ignore
+      }
+    }
+  }, [searchParams]);
 
   if (user) return <Navigate to="/dashboard" replace />;
 
