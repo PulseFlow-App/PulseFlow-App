@@ -18,6 +18,22 @@ npm run dev
 
 Open http://localhost:5173. Sign in with any email (demo; no backend required). You get the dashboard with Body Signals and Work Routine blocks (full logging, trends, check-ins).
 
+**Using the API (auth sync, referrals, AI insights, points):** Start the API in another terminal — it uses **port 3002** by default:
+
+```bash
+cd apps/api
+npm install
+npm run dev
+```
+
+Then set the web app’s API URL: create `apps/web/.env` or `apps/web/.env.local` with:
+
+```
+VITE_API_URL=http://localhost:3002
+```
+
+Restart the web dev server so it picks up the env. If you see `ERR_CONNECTION_REFUSED` or "Can't reach the API", the API is not running or the URL/port is wrong (use 3002, not 3000, unless you set `PORT=3000` in the API).
+
 ## Build for production
 
 ```bash

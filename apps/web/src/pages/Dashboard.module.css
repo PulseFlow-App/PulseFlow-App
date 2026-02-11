@@ -148,6 +148,36 @@
   color: #a3a3a3;
 }
 
+.pointsBreakdown {
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.breakdownRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.breakdownRow:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.breakdownLabel {
+  font-size: 0.8125rem;
+  color: #a3a3a3;
+}
+
+.breakdownValue {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+}
+
 .section {
   display: flex;
   flex-direction: column;

@@ -79,7 +79,10 @@ export async function fetchAIInsights(
 ): Promise<FetchAIInsightsResult> {
   const base = getApiUrl();
   if (!base) {
-    return { result: null, error: 'VITE_API_URL is not set. Set it in .env (e.g. http://localhost:3000) and restart.' };
+    return {
+      result: null,
+      error: 'VITE_API_URL is not set. Set it in your app build environment (e.g. Vercel → Environment Variables) and redeploy. The API is used for AI recommendations.',
+    };
   }
   const url = `${base}/insights/body-signals`;
   try {
@@ -119,7 +122,14 @@ export async function fetchAIInsights(
     });
     const text = await res.text();
     if (!res.ok) {
-      return { result: null, error: `API error: ${res.status} ${res.statusText}. ${text.slice(0, 80)}` };
+      const snippet = text.slice(0, 80);
+      if (res.status === 403) {
+        return {
+          result: null,
+          error: 'API rejected the request. Ensure the API allows your app origin: set CORS_ORIGIN or CORS_ORIGINS on the API to your PWA URL.',
+        };
+      }
+      return { result: null, error: `API error: ${res.status} ${res.statusText}. ${snippet}` };
     }
     const parsed = parseAIResponse(text);
     if (!parsed) {
@@ -132,7 +142,7 @@ export async function fetchAIInsights(
     return {
       result: null,
       error: isNetwork
-        ? `Can't reach the API at ${base}. Start it locally: cd apps/api && npm run dev`
+        ? `Can't reach the API at ${base}. Check that the API is running and allows this origin (CORS). For PWA: set CORS_ORIGIN (or CORS_ORIGINS) on the API to your app URL.`
         : `Request failed: ${msg}`,
     };
   }

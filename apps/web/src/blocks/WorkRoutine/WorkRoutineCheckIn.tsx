@@ -49,8 +49,10 @@ export function WorkRoutineCheckIn() {
       setPhotoDataUrl(null);
       return;
     }
-    if (!file.type.startsWith('image/')) {
-      setPhotoError('Please choose an image file.');
+    // Only allow safe raster image types (no SVG/HTML to prevent XSS or phishing file uploads)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setPhotoError('Please choose a JPEG, PNG, or WebP image.');
       return;
     }
     const reader = new FileReader();
@@ -304,7 +306,7 @@ export function WorkRoutineCheckIn() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               className={styles.fileInput}
               aria-label="Upload image"
               onChange={handlePhotoChange}

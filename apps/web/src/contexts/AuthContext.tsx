@@ -9,6 +9,7 @@ export type User = {
 
 type AuthContextValue = {
   user: User | null;
+  accessToken: string | null;
   signIn: (email: string) => void;
   signInWithGoogle: () => void;
   signOut: () => void;
@@ -27,7 +28,16 @@ function generateUserId() {
   return `user_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
 
+const TOKEN_KEY = '@pulse/access_token';
+
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [accessToken, setAccessToken] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(TOKEN_KEY);
+    } catch {
+      return null;
+    }
+  });
   const [user, setUser] = useState<User | null>(() => {
     if (isFirebaseEnabled()) return null;
     try {
@@ -66,15 +76,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: firebaseUser.email, userId: firebaseUser.uid }),
           })
-            .then((r) => {
-              if (!r.ok && import.meta.env.DEV) {
-                r.json().then((d) => console.warn('[auth/sync] Failed:', r.status, d)).catch(() => {});
+            .then((r) => r.json().catch(() => ({})))
+            .then((data) => {
+              if (data?.accessToken) {
+                setAccessToken(data.accessToken);
+                try { localStorage.setItem(TOKEN_KEY, data.accessToken); } catch { /* ignore */ }
               }
+              if (!data?.ok && import.meta.env.DEV) console.warn('[auth/sync] Failed:', data);
             })
             .catch((e) => { if (import.meta.env.DEV) console.warn('[auth/sync] Request failed:', e); });
         }
       } else {
         setUser(null);
+        setAccessToken(null);
+        try { localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
       }
     });
     return () => {
@@ -118,9 +133,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmed, userId: u.userId }),
       })
-        .then((r) => {
-          if (!r.ok && import.meta.env.DEV) {
-            r.json().then((d) => console.warn('[auth/sync] Failed:', r.status, d)).catch(() => {});
+        .then((r) => r.json().catch(() => ({})))
+        .then((data) => {
+          if (data?.accessToken) {
+            setAccessToken(data.accessToken);
+            try { localStorage.setItem(TOKEN_KEY, data.accessToken); } catch { /* ignore */ }
           }
         })
         .catch((e) => { if (import.meta.env.DEV) console.warn('[auth/sync] Request failed:', e); });
@@ -139,7 +156,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email: result.user.email, userId: result.user.uid }),
-            }).catch(() => {});
+            })
+              .then((r) => r.json().catch(() => ({})))
+              .then((data) => {
+                if (data?.accessToken) {
+                  setAccessToken(data.accessToken);
+                  try { localStorage.setItem(TOKEN_KEY, data.accessToken); } catch { /* ignore */ }
+                }
+              })
+              .catch(() => {});
           }
         }
       })
@@ -156,12 +181,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       firebaseSignOut(auth).catch(() => {});
     }
     setUser(null);
+    setAccessToken(null);
     localStorage.removeItem(STORAGE_KEY);
+    try { localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
   }, []);
 
   const isGoogleAuth = isFirebaseEnabled();
   const value: AuthContextValue = {
     user,
+    accessToken,
     signIn,
     signInWithGoogle,
     signOut,

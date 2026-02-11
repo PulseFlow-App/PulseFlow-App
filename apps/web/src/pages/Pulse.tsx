@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { ScoreRing } from '../components/ScoreRing';
 import {
@@ -5,6 +6,10 @@ import {
   hasBodyTodayCheck,
   hasRoutineTodayCheck,
 } from '../stores/combinedPulse';
+import { computeBodyPulseAsync } from '../blocks/BodySignals/store';
+import type { BodyPulseSnapshot } from '../blocks/BodySignals/types';
+import { getExplanationBullets, SignalIcon } from '../blocks/BodySignals/signalIcons';
+import { getLatestCheckIn } from '../blocks/WorkRoutine/store';
 import styles from './Pulse.module.css';
 
 export function Pulse() {
@@ -14,6 +19,9 @@ export function Pulse() {
   const pulse = getCombinedPulse();
   const hasBody = hasBodyTodayCheck();
   const hasRoutine = hasRoutineTodayCheck();
+
+  const [bodySnapshot, setBodySnapshot] = useState<BodyPulseSnapshot | null>(null);
+  const [loadingBody, setLoadingBody] = useState(false);
 
   const showOfferWorkRoutine = from === 'body-signals' && !hasRoutine && hasBody;
   const showOfferBodySignals = from === 'work-routine' && !hasBody && hasRoutine;
@@ -25,6 +33,21 @@ export function Pulse() {
   const routineShare = hasBoth ? 50 : pulse.routine !== null ? 100 : 0;
 
   const scoreCardLabel = hasBoth ? 'Combined Pulse' : pulse.body !== null ? 'Body Pulse' : 'Work Pulse';
+  const routineEntry = hasRoutine ? getLatestCheckIn() : undefined;
+
+  useEffect(() => {
+    if (!hasBody) {
+      setBodySnapshot(null);
+      setLoadingBody(false);
+      return;
+    }
+    setLoadingBody(true);
+    setBodySnapshot(null);
+    computeBodyPulseAsync()
+      .then(setBodySnapshot)
+      .finally(() => setLoadingBody(false));
+  }, [hasBody]);
+
   const scoreCardBlock = pulse.combined !== null ? (
     <div id="pulse-score" className={styles.scoreCard}>
       <ScoreRing score={pulse.combined} label={scoreCardLabel} />
@@ -68,6 +91,69 @@ export function Pulse() {
           </p>
         )}
       </div>
+
+      {/* Narrative: body and/or routine description */}
+      {(hasBody || hasRoutine) && (
+        <div className={styles.narrativeBlock}>
+          {hasBody && (
+            <>
+              {loadingBody ? (
+                <p className={styles.bodyLoading}>Getting your pattern…</p>
+              ) : bodySnapshot ? (
+                <>
+                  <section className={styles.narrativeSection} aria-labelledby="pulse-pattern-heading">
+                    <h2 id="pulse-pattern-heading" className={styles.narrativeHeading}>Today’s pattern</h2>
+                    <p className={styles.narrativeInsight}>{bodySnapshot.insight}</p>
+                  </section>
+                  {bodySnapshot.explanation && (
+                    <section className={styles.narrativeSection} aria-labelledby="pulse-why-heading">
+                      <h2 id="pulse-why-heading" className={styles.narrativeHeading}>What’s shaping your Pulse</h2>
+                      {getExplanationBullets(bodySnapshot.explanation).length > 0 ? (
+                        <ul className={styles.explanationList} aria-label="What affects your score">
+                          {getExplanationBullets(bodySnapshot.explanation).map(({ icon, text }, i) => (
+                            <li key={i} className={styles.explanationItem}>
+                              <SignalIcon icon={icon} className={styles.explanationIcon} />
+                              <span className={styles.explanationText}>{text}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className={styles.narrativeText}>{bodySnapshot.explanation}</p>
+                      )}
+                    </section>
+                  )}
+                  {bodySnapshot.improvements.length > 0 && (
+                    <section className={styles.narrativeSection} aria-labelledby="pulse-one-heading">
+                      <h2 id="pulse-one-heading" className={styles.narrativeHeading}>A small thing to try</h2>
+                      <p className={styles.narrativeOneThing}>{bodySnapshot.improvements[0]}</p>
+                    </section>
+                  )}
+                  {bodySnapshot.insightsError && (
+                    <p className={styles.insightsHint} role="status">
+                      {bodySnapshot.insightsError}
+                      {bodySnapshot.insightsError.includes('VITE_API_URL') && (
+                        ' Set VITE_API_URL in your app build environment and ensure the API allows this origin (CORS).'
+                      )}
+                    </p>
+                  )}
+                </>
+              ) : null}
+            </>
+          )}
+          {hasRoutine && routineEntry?.analysis && (
+            <section className={styles.narrativeSection} aria-labelledby="pulse-routine-heading">
+              <h2 id="pulse-routine-heading" className={styles.narrativeHeading}>
+                {hasBody ? 'Work Routine today' : 'Today’s pattern'}
+              </h2>
+              <p className={styles.narrativeInsight}>{routineEntry.analysis.pattern}</p>
+              {routineEntry.analysis.oneThing && (
+                <p className={styles.narrativeOneThing}>{routineEntry.analysis.oneThing}</p>
+              )}
+            </section>
+          )}
+        </div>
+      )}
+
       <div className={styles.linksSection}>
         <Link to="/dashboard/body-signals" className={styles.linkButton}>
           Body Signals
@@ -112,6 +198,7 @@ export function Pulse() {
 
         {scoreCardBlock}
 
+        {/* CTA: add the other block (below score + description) */}
         {showOfferWorkRoutine && (
           <div className={styles.ctaCard} role="region" aria-labelledby="cta-heading-wr">
             <h2 id="cta-heading-wr" className={styles.ctaHeading}>

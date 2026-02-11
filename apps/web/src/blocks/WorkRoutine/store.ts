@@ -241,11 +241,9 @@ export function hasRoutineToday(): boolean {
   return latest.timestamp.slice(0, 10) === TODAY();
 }
 
-/** 0–100 score from today's check-in metrics; null if no check-in today. */
-export function getTodayRoutineScore(): number | null {
-  const latest = getLatestCheckIn();
-  if (!latest || latest.timestamp.slice(0, 10) !== TODAY()) return null;
-  const m = latest.metrics;
+/** 0–100 score from a check-in's metrics; null if no metrics. */
+export function getScoreForCheckIn(entry: CheckInEntry): number | null {
+  const m = entry.metrics;
   if (!m) return null;
   const energyStart = m.energyStart ?? 3;
   const energyEnd = m.energyEnd ?? 3;
@@ -256,6 +254,13 @@ export function getTodayRoutineScore(): number | null {
   const avg = (energyStart + energyEnd + taskCompletion + deskComfort + (5 - distractions) + (5 - interruptions)) / 6;
   const score = Math.round(((avg - 1) / 4) * 100);
   return Math.max(0, Math.min(100, score));
+}
+
+/** 0–100 score from today's check-in metrics; null if no check-in today. */
+export function getTodayRoutineScore(): number | null {
+  const latest = getLatestCheckIn();
+  if (!latest || latest.timestamp.slice(0, 10) !== TODAY()) return null;
+  return getScoreForCheckIn(latest);
 }
 
 export function getWeeklyProgress(): { count: number; percent: number } {

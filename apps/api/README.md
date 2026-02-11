@@ -17,6 +17,10 @@ Server runs at `http://localhost:3000`. Set `VITE_API_URL` in the web app (e.g. 
 | Variable     | Required | Description |
 |-------------|----------|-------------|
 | `JWT_SECRET` | Yes (production) | Secret for signing JWTs. Generate with `openssl rand -hex 32`. |
+| `DATABASE_URL` | No | Postgres connection string; if unset, in-memory storage. |
+| `ADMIN_API_KEY` | No | Password for Admin cabinet (`GET /admin/users`, `POST /admin/points`). |
+| `CORS_ORIGIN` | No | Single allowed origin for CORS (e.g. your PWA URL). If unset, all origins allowed. |
+| `CORS_ORIGINS` | No | Comma-separated allowed origins (alternative to CORS_ORIGIN). |
 | `PORT`       | No | Port (default 3000). Set by Railway/Render. |
 
 ## Deploy

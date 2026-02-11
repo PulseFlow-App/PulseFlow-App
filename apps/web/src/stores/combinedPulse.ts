@@ -1,9 +1,9 @@
 /**
  * Combined Pulse: aggregates Body Signals and Work Routine for today.
- * Used by the Pulse page to show one score and offer cross-block check-in.
+ * Also provides aggregated pulse across all log-ins and check-ins.
  */
-import { hasBodyToday, getTodayBodyScore } from '../blocks/BodySignals/store';
-import { hasRoutineToday, getTodayRoutineScore } from '../blocks/WorkRoutine/store';
+import { hasBodyToday, getTodayBodyScore, getBodyLogs, calculatePulseScore } from '../blocks/BodySignals/store';
+import { hasRoutineToday, getTodayRoutineScore, getCheckIns, getScoreForCheckIn } from '../blocks/WorkRoutine/store';
 
 export type CombinedPulseSource = 'body' | 'routine';
 
@@ -32,6 +32,30 @@ export function getCombinedPulse(): CombinedPulseResult {
   }
 
   return { body, routine, combined, sources };
+}
+
+/** Aggregated pulse from all body log-ins and all work routine check-ins. */
+export function getAggregatedPulse(): {
+  score: number;
+  bodyLogCount: number;
+  checkInCount: number;
+  hasData: boolean;
+} {
+  const bodyLogs = getBodyLogs();
+  const checkIns = getCheckIns();
+  const bodyScores = bodyLogs.map((entry) => calculatePulseScore(entry, bodyLogs));
+  const routineScores = checkIns
+    .map((e) => getScoreForCheckIn(e))
+    .filter((s): s is number => s !== null);
+  const allScores = [...bodyScores, ...routineScores];
+  const count = allScores.length;
+  const score = count === 0 ? 0 : Math.round(allScores.reduce((a, b) => a + b, 0) / count);
+  return {
+    score: Math.max(0, Math.min(100, score)),
+    bodyLogCount: bodyLogs.length,
+    checkInCount: checkIns.length,
+    hasData: count > 0,
+  };
 }
 
 export function hasBodyTodayCheck(): boolean {

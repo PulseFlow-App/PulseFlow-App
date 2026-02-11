@@ -5,13 +5,50 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('./db');
+const security = require('./security');
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+
+// Secure headers (X-Content-Type-Options, X-Frame-Options, etc.)
+app.use(helmet());
+
+// CORS: restrict to allowed origins when set (never log credentials or tokens)
+const corsOrigin = process.env.CORS_ORIGIN?.trim();
+const corsOriginsEnv = process.env.CORS_ORIGINS?.trim();
+const corsOriginList = corsOriginsEnv ? corsOriginsEnv.split(',').map((s) => s.trim()).filter(Boolean) : null;
+const corsOptions = corsOrigin
+  ? { origin: corsOrigin }
+  : corsOriginList?.length
+    ? { origin: (origin, cb) => cb(null, !origin || corsOriginList.includes(origin)) }
+    : {}; // allow all when unset (e.g. dev)
+app.use(cors(corsOptions));
+
+// Limit JSON body size to reduce DoS and prevent huge payloads
+app.use(express.json({ limit: '100kb' }));
+
+// Rate limits: stricter for auth/referrals to prevent brute force and abuse
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 50,
+  message: { message: 'Too many attempts. Try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+const generalLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 min
+  max: 120,
+  message: { message: 'Too many requests. Try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/auth', authLimiter);
+app.use('/referrals', authLimiter);
+app.use('/', generalLimiter);
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const PORT = process.env.PORT || 3002;
@@ -24,12 +61,15 @@ function generateId() {
   return `id_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
 
-// ----- Auth -----
+// ----- Auth (never log passwords, tokens, or raw Authorization headers) -----
 app.post('/auth/sign-up', async (req, res) => {
   const { email, password } = req.body || {};
-  const trimmed = (email || '').trim().toLowerCase();
-  if (!trimmed || !password) {
+  const trimmed = security.validateEmail(email);
+  if (!trimmed || !password || typeof password !== 'string') {
     return res.status(400).json({ message: 'Email and password required' });
+  }
+  if (password.length > 1024) {
+    return res.status(400).json({ message: 'Invalid request' });
   }
 
   if (db.hasDb()) {
@@ -57,10 +97,11 @@ app.post('/auth/sign-up', async (req, res) => {
 // Sync user from app login (Firebase or email demo) into DB so they appear in public.users
 app.post('/auth/sync', async (req, res) => {
   const { email, userId } = req.body || {};
-  const trimmed = (email || '').trim().toLowerCase();
+  const trimmed = security.validateEmail(email);
   if (!trimmed) {
     return res.status(400).json({ message: 'Email required', code: 'EMAIL_REQUIRED' });
   }
+  const validatedUserId = userId != null ? security.validateUserIdLike(String(userId), security.MAX_USER_ID_LEN) : null;
   if (!db.hasDb()) {
     console.log('[auth/sync] No database; skipping sync for', trimmed);
     return res.json({ ok: true, message: 'No database', created: false });
@@ -69,20 +110,23 @@ app.post('/auth/sync', async (req, res) => {
     const existing = await db.getUserByEmail(trimmed);
     if (existing) {
       db.updateLastSeen(existing.userId).catch(() => {});
+      const accessToken = jwt.sign({ userId: existing.userId, email: trimmed }, JWT_SECRET, { expiresIn: '7d' });
       console.log('[auth/sync] User exists:', existing.userId, trimmed);
-      return res.json({ ok: true, userId: existing.userId, created: false });
+      return res.json({ ok: true, userId: existing.userId, created: false, accessToken });
     }
-    const id = (userId && String(userId).trim()) || generateId();
+    const id = validatedUserId || generateId();
     const passwordHash = await bcrypt.hash(generateId(), 10);
     await db.createUser(id, trimmed, passwordHash, null);
+    const accessToken = jwt.sign({ userId: id, email: trimmed }, JWT_SECRET, { expiresIn: '7d' });
     console.log('[auth/sync] User created:', id, trimmed);
-    return res.status(201).json({ ok: true, userId: id, created: true });
+    return res.status(201).json({ ok: true, userId: id, created: true, accessToken });
   } catch (err) {
     if (err.code === '23505') {
       const existing = await db.getUserByEmail(trimmed).catch(() => null);
       if (existing) {
+        const accessToken = jwt.sign({ userId: existing.userId, email: trimmed }, JWT_SECRET, { expiresIn: '7d' });
         console.log('[auth/sync] Race: user exists after conflict:', existing.userId, trimmed);
-        return res.json({ ok: true, userId: existing.userId, created: false });
+        return res.json({ ok: true, userId: existing.userId, created: false, accessToken });
       }
     }
     console.error('[auth/sync] Error:', err.code || err.message, trimmed, err);
@@ -96,9 +140,12 @@ app.post('/auth/sync', async (req, res) => {
 
 app.post('/auth/sign-in', async (req, res) => {
   const { email, password } = req.body || {};
-  const trimmed = (email || '').trim().toLowerCase();
-  if (!trimmed || !password) {
+  const trimmed = security.validateEmail(email);
+  if (!trimmed || !password || typeof password !== 'string') {
     return res.status(400).json({ message: 'Email and password required' });
+  }
+  if (password.length > 1024) {
+    return res.status(400).json({ message: 'Invalid request' });
   }
 
   if (db.hasDb()) {
@@ -149,24 +196,27 @@ function adminMiddleware(req, res, next) {
 // ----- Referrals: complete referral (new user + referral row) -----
 app.post('/referrals/complete', async (req, res) => {
   const { referrerCode, email, wallet } = req.body || {};
-  const trimmed = (email || '').trim().toLowerCase();
-  const code = (referrerCode || '').trim();
+  const trimmed = security.validateEmail(email);
+  const code = security.validateUserIdLike(referrerCode, security.MAX_REFERRER_CODE_LEN);
   if (!trimmed || !code) {
     return res.status(400).json({ message: 'referrerCode and email required' });
   }
+  const walletVal = security.validateWallet(wallet);
 
   if (!db.hasDb()) {
     return res.status(400).json({ message: 'Referrals require DATABASE_URL (Postgres)' });
   }
 
+  const REFERRAL_POINTS = 100;
   try {
     const existing = await db.getUserByEmail(trimmed);
     const userId = existing ? existing.userId : generateId();
     if (!existing) {
       const passwordHash = await bcrypt.hash(generateId(), 10);
-      await db.createUser(userId, trimmed, passwordHash, wallet || null);
+      await db.createUser(userId, trimmed, passwordHash, walletVal);
     }
-    await db.createReferral(code, trimmed, wallet || null);
+    await db.createReferral(code, trimmed, walletVal);
+    await db.addReferralPoints(code, REFERRAL_POINTS);
     return res.status(201).json({ ok: true, message: 'Referral recorded' });
   } catch (err) {
     if (err.code === '23503') {
@@ -198,14 +248,61 @@ app.get('/admin/users', adminMiddleware, async (req, res) => {
   }
 });
 
+// ----- Admin: grant bonus points to a user (userId or email) -----
+app.post('/admin/points', adminMiddleware, async (req, res) => {
+  const { userId, email, amount } = req.body || {};
+  const points = security.validatePointsAmount(amount);
+  if (points == null) {
+    return res.status(400).json({ message: 'Positive amount required (max ' + security.MAX_ADMIN_POINTS + ')' });
+  }
+  if (!db.hasDb()) {
+    return res.status(400).json({ message: 'Points require DATABASE_URL (Postgres)' });
+  }
+  let id = security.validateUserIdLike(userId, security.MAX_USER_ID_LEN);
+  if (!id && email) {
+    const trimmed = security.validateEmail(email);
+    if (trimmed) {
+      const u = await db.getUserByEmail(trimmed);
+      if (u) id = u.userId;
+    }
+  }
+  if (!id) {
+    return res.status(400).json({ message: 'userId or email required' });
+  }
+  try {
+    await db.addBonusPoints(id, points);
+    return res.json({ ok: true, message: 'Points granted', userId: id, amount: points });
+  } catch (err) {
+    console.error('admin points error', err);
+    return res.status(500).json({ message: 'Failed to grant points' });
+  }
+});
+
+// ----- User: get my points (auth) -----
+app.get('/users/me/points', authMiddleware, async (req, res) => {
+  if (db.hasDb()) {
+    try {
+      const points = await db.getUserPoints(req.user.userId);
+      return res.json(points);
+    } catch (err) {
+      console.error('users/me/points error', err);
+      return res.status(500).json({ message: 'Failed to load points' });
+    }
+  }
+  return res.json({ referralPoints: 0, bonusPoints: 0, totalPoints: 0, loginCount: 0 });
+});
+
 // ----- Body logs -----
 app.get('/users/me/body-logs', authMiddleware, async (req, res) => {
   const from = req.query.from;
   const to = req.query.to;
+  // Validate date query params: YYYY-MM-DD, max length 10
+  const fromStr = typeof from === 'string' && from.length <= 10 ? from : undefined;
+  const toStr = typeof to === 'string' && to.length <= 10 ? to : undefined;
 
   if (db.hasDb()) {
     try {
-      const logs = await db.getBodyLogs(req.user.userId, from, to);
+      const logs = await db.getBodyLogs(req.user.userId, fromStr, toStr);
       return res.json({ logs });
     } catch (err) {
       console.error('body-logs get db error', err);
@@ -215,18 +312,23 @@ app.get('/users/me/body-logs', authMiddleware, async (req, res) => {
 
   const list = bodyLogs.get(req.user.userId) || [];
   let out = list;
-  if (from) out = out.filter((l) => l.date >= from);
-  if (to) out = out.filter((l) => l.date <= to);
+  if (fromStr) out = out.filter((l) => l.date >= fromStr);
+  if (toStr) out = out.filter((l) => l.date <= toStr);
   return res.json({ logs: out });
 });
 
 app.post('/users/me/body-logs', authMiddleware, async (req, res) => {
-  const entry = req.body || {};
+  const raw = req.body || {};
+  const payload = security.sanitizeBodyLogPayload(raw);
+  const payloadStr = JSON.stringify(payload);
+  if (Buffer.byteLength(payloadStr, 'utf8') > security.MAX_BODY_LOG_PAYLOAD_BYTES) {
+    return res.status(413).json({ message: 'Payload too large' });
+  }
   const log = {
     id: generateId(),
     date: new Date().toISOString().slice(0, 10),
     userId: req.user.userId,
-    ...entry,
+    ...payload,
   };
 
   if (db.hasDb()) {
@@ -248,6 +350,9 @@ app.post('/users/me/body-logs', authMiddleware, async (req, res) => {
 const { computeInsights } = require('./insights/bodySignals');
 
 app.post('/insights/body-signals', (req, res) => {
+  if (!security.isBodyWithinLimit(req, security.MAX_INSIGHTS_BODY_BYTES)) {
+    return res.status(413).json({ message: 'Request too large' });
+  }
   try {
     const payload = req.body || {};
     const { insight, explanation, improvements, factors } = computeInsights(payload);

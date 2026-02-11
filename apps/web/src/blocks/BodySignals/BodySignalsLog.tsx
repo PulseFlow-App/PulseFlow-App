@@ -30,7 +30,7 @@ export function BodySignalsLog() {
       weight: weight ? parseFloat(weight) : undefined,
       notes: notes.trim() || undefined,
     });
-    navigate('/dashboard/body-signals/result', { replace: true });
+    navigate('/dashboard/pulse?from=body-signals', { replace: true });
   };
 
   return (

@@ -259,3 +259,92 @@
   background: rgba(23, 23, 23, 0.95);
   border-color: rgba(255, 255, 255, 0.15);
 }
+
+/* Narrative (body / routine description) */
+.narrativeBlock {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+
+.narrativeSection {
+  margin-bottom: 1.25rem;
+}
+
+.narrativeSection:last-child {
+  margin-bottom: 0;
+}
+
+.narrativeHeading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #737373;
+  margin: 0 0 8px;
+}
+
+.narrativeInsight {
+  font-size: 0.9375rem;
+  color: #fff;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.narrativeText {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  margin: 0;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.narrativeOneThing {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 12px 0 0;
+  line-height: 1.55;
+}
+
+.bodyLoading {
+  font-size: 0.8125rem;
+  color: #737373;
+  margin: 0;
+}
+
+.insightsHint {
+  font-size: 0.8125rem;
+  color: #a16207;
+  margin: 8px 0 0;
+}
+
+.explanationList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.explanationItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  line-height: 1.45;
+}
+
+.explanationItem:last-child {
+  margin-bottom: 0;
+}
+
+.explanationIcon {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
+}
+
+.explanationText {
+  flex: 1;
+  min-width: 0;
+}

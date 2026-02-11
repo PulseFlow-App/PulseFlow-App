@@ -38,9 +38,11 @@ Use this as a checklist in **Vercel → Your project → Settings → Environmen
 |----------|----------|-------------|---------|
 | **DATABASE_URL** | Yes (for production) | Postgres connection string. If unset, the API uses in-memory storage (no persistent users or body logs). | `postgresql://user:pass@host:5432/db?sslmode=require` |
 | **JWT_SECRET** | Yes (for production) | Secret used to sign and verify auth tokens. Use a long random string (e.g. `openssl rand -hex 32`). | (long random string) |
-| **ADMIN_API_KEY** | No | Password for Admin cabinet (`GET /admin/users`). Generate a secret; use the same value as the “password” in the web app Admin page. If unset, the endpoint returns 503. | (long random string) |
+| **ADMIN_API_KEY** | No | Password for Admin cabinet (`GET /admin/users`). Generate a secret; use the same value as the "password" in the web app Admin page. If unset, the endpoint returns 503. | (long random string) |
+| **CORS_ORIGIN** | No | Single allowed origin for CORS (e.g. your PWA URL). If unset, all origins allowed. | `https://app.pulseflow.site` |
+| **CORS_ORIGINS** | No | Comma-separated allowed origins (alternative to CORS_ORIGIN). | `https://app.pulseflow.site,https://www.pulseflow.site` |
 
-**How to get ADMIN_API_KEY:** You don’t “get” it from a service — you **generate** it yourself and set it only in your **API** project (never in the PWA or frontend). Generate a long random string, e.g. run in a terminal: `openssl rand -hex 32`. Copy the output and add it as `ADMIN_API_KEY` in Vercel → your **API** project → Settings → Environment Variables. Use that same value as the password in the Admin cabinet in the web app.
+**How to get ADMIN_API_KEY:** You don't "get" it from a service — you **generate** it yourself and set it only in your **API** project (never in the PWA or frontend). Generate a long random string, e.g. run in a terminal: `openssl rand -hex 32`. Copy the output and add it as `ADMIN_API_KEY` in Vercel → your **API** project → Settings → Environment Variables. Use that same value as the password in the Admin cabinet in the web app.
 | **PORT** | No | Server port (Vercel usually ignores this; serverless uses the runtime default). | `3000` |
 
 **Auto-set by Vercel (do not add yourself):**
@@ -71,6 +73,7 @@ Use this as a checklist in **Vercel → Your project → Settings → Environmen
 - [ ] `DATABASE_URL` – Postgres connection string (required for persistent data and referrals)
 - [ ] `JWT_SECRET` – Auth token secret (required for production)
 - [ ] `ADMIN_API_KEY` – Password for Admin cabinet / `GET /admin/users` (optional)
+- [ ] `CORS_ORIGIN` or `CORS_ORIGINS` – Allowed origins (optional; recommended in production)
 - [ ] `PORT` – Optional (default 3000)
 
 ---

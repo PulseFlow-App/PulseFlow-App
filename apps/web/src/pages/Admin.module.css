@@ -55,6 +55,23 @@
   margin: 16px 0 0;
 }
 
+.success {
+  font-size: 0.9375rem;
+  color: #22c55e;
+  margin: 16px 0 0;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 24px 0 12px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.sectionTitle:first-of-type {
+  margin-top: 0;
+}
+
 .simplerOption {
   font-size: 0.875rem;
   color: #a3a3a3;

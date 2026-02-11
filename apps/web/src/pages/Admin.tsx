@@ -8,13 +8,25 @@ const API_BASE =
     ? import.meta.env.VITE_API_URL.trim().replace(/\/$/, '')
     : '';
 
-type UserRow = { id: string; email: string; createdAt: string; lastSeenAt?: string | null };
+type UserRow = {
+  id: string;
+  email: string;
+  createdAt: string;
+  lastSeenAt?: string | null;
+  referralPoints?: number;
+  bonusPoints?: number;
+  loginCount?: number;
+};
 
 export function Admin() {
   const [password, setPassword] = useState('');
   const [users, setUsers] = useState<UserRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [grantEmail, setGrantEmail] = useState('');
+  const [grantAmount, setGrantAmount] = useState('');
+  const [granting, setGranting] = useState(false);
+  const [grantMessage, setGrantMessage] = useState<string | null>(null);
 
   const loadUsers = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +72,51 @@ export function Admin() {
       return Number.isNaN(d.getTime()) ? s : d.toLocaleString();
     } catch {
       return s;
+    }
+  };
+
+  const grantPoints = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setGrantMessage(null);
+    const email = grantEmail.trim();
+    const amount = parseInt(grantAmount, 10);
+    if (!API_BASE || !password.trim()) {
+      setError('Enter the password and ensure VITE_API_URL is set.');
+      return;
+    }
+    if (!email || !Number.isFinite(amount) || amount <= 0) {
+      setGrantMessage('Enter a user email and a positive points amount.');
+      return;
+    }
+    setGranting(true);
+    try {
+      const res = await fetch(`${API_BASE}/admin/points`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${password.trim()}`,
+        },
+        body: JSON.stringify({ email, amount }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setGrantMessage(data?.message || `Error ${res.status}`);
+        return;
+      }
+      setGrantMessage(`Granted ${amount} points to ${email}.`);
+      setGrantAmount('');
+      if (users) {
+        const list = users.map((u) =>
+          u.email.toLowerCase() === email.toLowerCase()
+            ? { ...u, bonusPoints: (u.bonusPoints ?? 0) + amount }
+            : u
+        );
+        setUsers(list);
+      }
+    } catch (err) {
+      setGrantMessage(err instanceof Error ? err.message : 'Request failed');
+    } finally {
+      setGranting(false);
     }
   };
 
@@ -109,12 +166,53 @@ export function Admin() {
 
         {users && (
           <>
+            <h2 className={adminStyles.sectionTitle}>Grant reward points</h2>
+            <form onSubmit={grantPoints} className={adminStyles.form}>
+              <label className={adminStyles.label} htmlFor="grant-email">
+                User email
+              </label>
+              <input
+                id="grant-email"
+                type="email"
+                className={adminStyles.input}
+                value={grantEmail}
+                onChange={(e) => { setGrantEmail(e.target.value); setGrantMessage(null); }}
+                placeholder="user@example.com"
+                disabled={granting}
+              />
+              <label className={adminStyles.label} htmlFor="grant-amount">
+                Points to grant
+              </label>
+              <input
+                id="grant-amount"
+                type="number"
+                min={1}
+                className={adminStyles.input}
+                value={grantAmount}
+                onChange={(e) => { setGrantAmount(e.target.value); setGrantMessage(null); }}
+                placeholder="e.g. 50"
+                disabled={granting}
+              />
+              <button type="submit" className={adminStyles.button} disabled={granting || !API_BASE}>
+                {granting ? 'Granting…' : 'Grant points'}
+              </button>
+            </form>
+            {grantMessage && (
+              <p className={grantMessage.startsWith('Granted') ? adminStyles.success : adminStyles.error} role="alert">
+                {grantMessage}
+              </p>
+            )}
+
+            <h2 className={adminStyles.sectionTitle}>Users</h2>
             <div className={adminStyles.tableWrap}>
               <table className={adminStyles.table}>
                 <thead>
                   <tr>
                     <th>Email</th>
                     <th>User ID</th>
+                    <th>Referral</th>
+                    <th>Bonus</th>
+                    <th>Log-ins</th>
                     <th>Signed up</th>
                     <th>Last seen</th>
                   </tr>
@@ -124,6 +222,9 @@ export function Admin() {
                     <tr key={u.id}>
                       <td>{u.email}</td>
                       <td><code>{u.id}</code></td>
+                      <td>{u.referralPoints ?? 0}</td>
+                      <td>{u.bonusPoints ?? 0}</td>
+                      <td>{u.loginCount ?? 0}</td>
                       <td>{formatDate(u.createdAt)}</td>
                       <td>{u.lastSeenAt ? formatDate(u.lastSeenAt) : 'Never'}</td>
                     </tr>

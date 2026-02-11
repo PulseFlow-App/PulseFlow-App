@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { recordAppUsage, getAppStreak } from '../stores/appStreak';
@@ -12,8 +12,18 @@ import styles from './Dashboard.module.css';
 const ACTIVE_IDS = ['body-signals', 'work-routine'];
 const COMING_SOON_IDS = ['nutrition', 'movement', 'recovery'];
 
+const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/, '') || '';
+
+type PointsData = {
+  referralPoints: number;
+  bonusPoints: number;
+  totalPoints: number;
+  loginCount: number;
+};
+
 export function Dashboard() {
-  const { user, signOut } = useAuth();
+  const { user, accessToken, signOut } = useAuth();
+  const [points, setPoints] = useState<PointsData | null>(null);
 
   useEffect(() => {
     if (user) recordAppUsage();
@@ -23,10 +33,38 @@ export function Dashboard() {
     if (user) startNotificationChecks();
   }, [user]);
 
+  useEffect(() => {
+    if (!user || !accessToken || !API_BASE) {
+      setPoints(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(`${API_BASE}/users/me/points`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data && typeof data.referralPoints === 'number') {
+          setPoints({
+            referralPoints: data.referralPoints ?? 0,
+            bonusPoints: data.bonusPoints ?? 0,
+            totalPoints: data.totalPoints ?? 0,
+            loginCount: data.loginCount ?? 0,
+          });
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user, accessToken]);
+
   const streak = getAppStreak();
   const checkInsCount = getCheckIns().length;
   const activeBlocks = BLOCKS.filter((b) => ACTIVE_IDS.includes(b.id));
   const comingSoonBlocks = BLOCKS.filter((b) => COMING_SOON_IDS.includes(b.id));
+  const totalPoints = points?.totalPoints ?? 0;
+  const referralPoints = points?.referralPoints ?? 0;
+  const bonusPoints = points?.bonusPoints ?? 0;
+  const loginCount = points?.loginCount ?? 0;
 
   return (
     <div className={styles.page}>
@@ -60,6 +98,10 @@ export function Dashboard() {
             <span className={styles.statLabel}>Day streak</span>
           </div>
           <div className={styles.statItem}>
+            <span className={styles.statNumber}>{loginCount}</span>
+            <span className={styles.statLabel}>Log-ins</span>
+          </div>
+          <div className={styles.statItem}>
             <span className={styles.statNumber}>{checkInsCount}</span>
             <span className={styles.statLabel}>Check-ins</span>
           </div>
@@ -69,12 +111,19 @@ export function Dashboard() {
             </Link>
           </div>
           <div className={styles.statItem}>
-            <span className={styles.statNumber}>0</span>
-            <span className={styles.statLabel}>Points</span>
+            <span className={styles.statNumber}>{totalPoints}</span>
+            <span className={styles.statLabel}>Total points</span>
           </div>
-          <div className={styles.statItem}>
-            <span className={styles.statMuted}>Leaderboard</span>
-            <span className={styles.statLabel}>Coming soon</span>
+        </section>
+
+        <section className={styles.pointsBreakdown} aria-label="Points breakdown">
+          <div className={styles.breakdownRow}>
+            <span className={styles.breakdownLabel}>Referral points</span>
+            <span className={styles.breakdownValue}>{referralPoints}</span>
+          </div>
+          <div className={styles.breakdownRow}>
+            <span className={styles.breakdownLabel}>Reward points (admin)</span>
+            <span className={styles.breakdownValue}>{bonusPoints}</span>
           </div>
         </section>
 

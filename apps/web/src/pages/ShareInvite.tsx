@@ -28,7 +28,7 @@ export function ShareInvite() {
       <main id="main" className={styles.main}>
         <h1 className={styles.title}>Invite friends</h1>
         <p className={styles.subtitle}>
-          Share your link. When they sign up with that link, you get credit and they can join Pulse Lab.
+          Share your link. When they sign up with that link, you earn <strong>100 referral points</strong> and they can join Pulse Lab.
         </p>
         <div className={styles.linkBox}>
           <code className={styles.linkText}>{inviteLink}</code>
@@ -37,7 +37,7 @@ export function ShareInvite() {
           </button>
         </div>
         <p className={styles.note}>
-          Your friends open this link, then sign in with Google or email. We’ll link their account to yours for referral rewards.
+          Your friends open this link, then sign in with Google or email. We’ll link their account to yours and you’ll earn points for each referral.
         </p>
       </main>
     </div>
