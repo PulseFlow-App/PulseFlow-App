@@ -63,6 +63,7 @@ export function addFridgeLog(entry: {
   freezer?: FridgePhoto;
   main?: FridgePhoto;
   veggie?: FridgePhoto;
+  notes?: string;
 }): FridgeLogEntry {
   const log: FridgeLogEntry = {
     id: generateId(),
@@ -70,6 +71,7 @@ export function addFridgeLog(entry: {
     ...(entry.freezer && { freezer: entry.freezer }),
     ...(entry.main && { main: entry.main }),
     ...(entry.veggie && { veggie: entry.veggie }),
+    ...(entry.notes?.trim() && { notes: entry.notes.trim() }),
   };
   const entries = loadEntries();
   entries.push(log);

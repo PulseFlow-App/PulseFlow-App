@@ -13,7 +13,7 @@ export function NutritionOverview() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Nutrition</h1>
           <p className={styles.subtitle}>
-            Log fridge photos (freezer, main, veggie) for recipe ideas. Best result with all three.
+            Log fridge photos (freezer, main, veggie) and ask what to cook today. Recipe ideas use your Pulse — body signals and work routine — so suggestions match your nutrition needs, energy, and context.
           </p>
         </div>
         <Link to="/dashboard/nutrition/fridge" className={styles.button}>

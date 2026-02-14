@@ -104,6 +104,22 @@
   margin: 4px 0 8px;
 }
 
+.notesInput {
+  width: 100%;
+  padding: 12px;
+  font-size: 0.9375rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  resize: vertical;
+  min-height: 72px;
+}
+
+.notesInput::placeholder {
+  color: #737373;
+}
+
 .fileInput {
   display: block;
   width: 100%;

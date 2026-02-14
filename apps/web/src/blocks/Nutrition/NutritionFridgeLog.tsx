@@ -39,6 +39,7 @@ export function NutritionFridgeLog() {
   const [freezer, setFreezer] = useState<string | null>(null);
   const [main, setMain] = useState<string | null>(null);
   const [veggie, setVeggie] = useState<string | null>(null);
+  const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState<Partial<Record<FridgeSlot, string>>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -83,6 +84,7 @@ export function NutritionFridgeLog() {
       freezer: await buildPhoto(freezer),
       main: await buildPhoto(main),
       veggie: await buildPhoto(veggie),
+      notes: notes.trim() || undefined,
     };
     addFridgeLog(entry);
     setSubmitting(false);
@@ -102,10 +104,23 @@ export function NutritionFridgeLog() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Log fridge photos</h1>
           <p className={styles.subtitle}>
-            For best recipe ideas, add all three: freezer, main compartment, and veggie drawer. Max {MAX_PHOTO_LABEL} per image.
+            Add fridge photos and a note. You can ask what to cook today to meet your nutrition needs — recipe ideas use your Pulse (body signals & work routine) so suggestions fit your energy, stress, and context.
           </p>
         </div>
         <form onSubmit={handleSubmit}>
+          <div className={styles.slotSection}>
+            <div className={styles.slotLabel}>Note (optional)</div>
+            <p className={styles.hint}>e.g. dietary needs, what you feel like cooking, or &quot;what can I make with this today?&quot; This and your Pulse factors are used for smarter recipe suggestions.</p>
+            <textarea
+              className={styles.notesInput}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Need something quick and filling; low energy today"
+              maxLength={500}
+              rows={3}
+              aria-label="Note for recipe suggestions"
+            />
+          </div>
           {SLOTS.map(({ key, label }) => (
             <div key={key} className={styles.slotSection}>
               <div className={styles.slotLabel}>{label}</div>

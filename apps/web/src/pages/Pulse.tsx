@@ -23,6 +23,7 @@ export function Pulse() {
   const [bodySnapshot, setBodySnapshot] = useState<BodyPulseSnapshot | null>(null);
   const [loadingBody, setLoadingBody] = useState(false);
 
+  const showOfferWorkRoutine = hasBody && !hasRoutine;
   const showOfferBodySignals = from === 'work-routine' && !hasBody && hasRoutine;
 
   const bodyScore = pulse.body ?? 0;
@@ -198,6 +199,25 @@ export function Pulse() {
         </p>
 
         {scoreCardBlock}
+
+        {showOfferWorkRoutine && (
+          <div className={styles.ctaCard} role="region" aria-labelledby="cta-heading-wr">
+            <h2 id="cta-heading-wr" className={styles.ctaHeading}>
+              Add Work Routine for your best Pulse
+            </h2>
+            <p className={styles.ctaText}>
+              You logged body signals today. Adding how your work day went will give you a combined Pulse and clearer insights: focus, energy, and how they connect.
+            </p>
+            <div className={styles.ctaButtons}>
+              <Link to="/dashboard/work-routine/checkin" className={styles.ctaPrimary}>
+                Log work routine
+              </Link>
+              <a href="#pulse-score" className={styles.ctaSecondary}>
+                See my Pulse anyway
+              </a>
+            </div>
+          </div>
+        )}
 
         {showOfferBodySignals && (
           <div className={styles.ctaCard} role="region" aria-labelledby="cta-heading-bs">

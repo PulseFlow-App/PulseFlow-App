@@ -104,7 +104,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             })
             .catch((e) => {
               lastSyncFailureAt.current = Date.now();
-              if (import.meta.env.DEV) console.warn('[auth/sync] Request failed:', e);
+              if (import.meta.env.DEV) {
+                console.warn('[auth/sync] Request failed:', e);
+                if (e?.message === 'Failed to fetch' || e?.name === 'TypeError') {
+                  console.warn('[auth/sync] Ensure the API is running (cd apps/api && npm run dev) and VITE_API_URL matches — default port is 3002.');
+                }
+              }
             });
         }
       } else {

@@ -14,7 +14,7 @@ export type FridgePhoto = {
 /** Fridge zones for structured logging. */
 export type FridgeSlot = 'freezer' | 'main' | 'veggie';
 
-/** One fridge log entry: up to 3 photos (freezer, main, veggie). All optional; best result with all 3. */
+/** One fridge log entry: up to 3 photos (freezer, main, veggie) + optional notes. All optional; best result with all 3. */
 export type FridgeLogEntry = {
   id: string;
   timestamp: string; // ISO
@@ -24,6 +24,8 @@ export type FridgeLogEntry = {
   main?: FridgePhoto;
   /** Veggie drawer / container */
   veggie?: FridgePhoto;
+  /** User note: dietary needs, what they want to cook, etc. Used with Pulse context for recipe AI. */
+  notes?: string;
 };
 
 /** User focus for recipe generation (single choice or unset). */

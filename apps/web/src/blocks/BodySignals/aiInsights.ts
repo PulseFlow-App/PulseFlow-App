@@ -139,11 +139,12 @@ export async function fetchAIInsights(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     const isNetwork = /failed to fetch|network|connection refused|load failed/i.test(msg);
-    return {
-      result: null,
-      error: isNetwork
-        ? `Can't reach the API at ${base}. Check that the API is running and allows this origin (CORS). For PWA: set CORS_ORIGIN (or CORS_ORIGINS) on the API to your app URL.`
-        : `Request failed: ${msg}`,
-    };
+    const baseError = isNetwork
+      ? `Can't reach the API at ${base}. Check that the API is running and allows this origin (CORS). For PWA: set CORS_ORIGIN (or CORS_ORIGINS) on the API to your app URL.`
+      : `Request failed: ${msg}`;
+    const devHint = import.meta.env.DEV && isNetwork
+      ? ' Local API: run "cd apps/api && npm run dev" and use VITE_API_URL=http://localhost:3002 (port 3002, not 3000).'
+      : '';
+    return { result: null, error: baseError + devHint };
   }
 }
