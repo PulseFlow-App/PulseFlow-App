@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AppFooter } from '../components/AppFooter';
 import styles from './Login.module.css';
@@ -9,7 +9,6 @@ const REFERRAL_STORAGE_KEY = '@pulse/referral_code';
 export function Login() {
   const [searchParams] = useSearchParams();
   const { user, signIn, signInWithGoogle, isGoogleAuth } = useAuth();
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,7 +49,7 @@ export function Login() {
       return;
     }
     signIn(trimmed);
-    navigate('/dashboard', { replace: true });
+    // Redirect happens via "if (user) return <Navigate to=/dashboard />" after state updates
   };
 
   return (

@@ -18,7 +18,7 @@ export function BodySignalsOverview() {
           <h1 className={styles.title}>Body Signals</h1>
           <p className={styles.subtitle}>
             {aggregated.hasData
-              ? `Aggregated from ${aggregated.bodyLogCount} body log${aggregated.bodyLogCount !== 1 ? 's' : ''} and ${aggregated.checkInCount} check-in${aggregated.checkInCount !== 1 ? 's' : ''}`
+              ? 'Your pulse from body and work data'
               : 'Log body data and work check-ins to see your pulse'}
           </p>
         </div>

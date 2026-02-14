@@ -23,7 +23,6 @@ export function Pulse() {
   const [bodySnapshot, setBodySnapshot] = useState<BodyPulseSnapshot | null>(null);
   const [loadingBody, setLoadingBody] = useState(false);
 
-  const showOfferWorkRoutine = from === 'body-signals' && !hasRoutine && hasBody;
   const showOfferBodySignals = from === 'work-routine' && !hasBody && hasRoutine;
 
   const bodyScore = pulse.body ?? 0;
@@ -135,12 +134,6 @@ export function Pulse() {
                       <p className={styles.narrativeOneThing}>{bodySnapshot.improvements[0]}</p>
                     </section>
                   )}
-                  {bodySnapshot.insightsError && (
-                    <p className={styles.insightsHint} role="status">
-                      Suggestions above are from your data only. AI could not be reached: {bodySnapshot.insightsError}
-                      {bodySnapshot.insightsError.includes('VITE_API_URL') && ' Set VITE_API_URL in your app build (e.g. Vercel) and CORS on the API for personalized insights.'}
-                    </p>
-                  )}
                 </>
               ) : null}
             </>
@@ -170,14 +163,6 @@ export function Pulse() {
         </div>
       )}
 
-      <div className={styles.linksSection}>
-        <Link to="/dashboard/body-signals" className={styles.linkButton}>
-          Body Signals
-        </Link>
-        <Link to="/dashboard/work-routine" className={styles.linkButton}>
-          Work Routine
-        </Link>
-      </div>
     </div>
   ) : null;
 
@@ -213,26 +198,6 @@ export function Pulse() {
         </p>
 
         {scoreCardBlock}
-
-        {/* CTA: add the other block (below score + description) */}
-        {showOfferWorkRoutine && (
-          <div className={styles.ctaCard} role="region" aria-labelledby="cta-heading-wr">
-            <h2 id="cta-heading-wr" className={styles.ctaHeading}>
-              Add Work Routine for your best Pulse
-            </h2>
-            <p className={styles.ctaText}>
-              You logged body signals today. Adding how your work day went will give you a combined Pulse and clearer insights: focus, energy, and how they connect.
-            </p>
-            <div className={styles.ctaButtons}>
-              <Link to="/dashboard/work-routine/checkin" className={styles.ctaPrimary}>
-                Add Work Routine
-              </Link>
-              <a href="#pulse-score" className={styles.ctaSecondary}>
-                See my Pulse anyway
-              </a>
-            </div>
-          </div>
-        )}
 
         {showOfferBodySignals && (
           <div className={styles.ctaCard} role="region" aria-labelledby="cta-heading-bs">

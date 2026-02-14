@@ -27,13 +27,8 @@ export function Invite() {
   if (user) return null;
 
   const handleSignInWithGoogle = () => {
-    if (!code?.trim()) {
-      signInWithGoogle();
-      return;
-    }
-    // Safari: localStorage may not survive OAuth redirect when opened from external link.
-    // Carry the referral code in the URL so it's still there when we land back from Google.
-    navigate(`/?invite=${encodeURIComponent(code.trim())}`, { replace: true });
+    // Code is already stored in localStorage by useEffect; start sign-in so user actually logs in.
+    signInWithGoogle();
   };
 
   return (

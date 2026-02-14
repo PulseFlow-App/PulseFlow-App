@@ -1,8 +1,12 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { addWorkDayCheckIn } from './store';
 import type { WorkDayMetrics, WorkspaceType, MeetingLoad } from './types';
+import { MAX_PHOTO_BYTES, MAX_PHOTO_LABEL, getDataUrlDecodedBytes } from '../../lib/photoLimit';
 import styles from './WorkRoutine.module.css';
+
+const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/, '') || '';
 
 const WORKSPACE_OPTIONS: { value: WorkspaceType; label: string }[] = [
   { value: 'home', label: 'Home' },
@@ -19,9 +23,8 @@ const MEETING_OPTIONS: { value: MeetingLoad; label: string }[] = [
 
 const PHOTO_CAPTIONS = ['Calendar', 'Desk setup', 'Workspace', 'Other'] as const;
 
-const MAX_PHOTO_BASE64_BYTES = 280_000; // ~210KB raw → ~280K base64
-
 export function WorkRoutineCheckIn() {
+  const { accessToken } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -58,10 +61,9 @@ export function WorkRoutineCheckIn() {
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
-      const base64Length = dataUrl.length - (dataUrl.indexOf(',') + 1);
-      const bytes = Math.ceil((base64Length * 3) / 4);
-      if (bytes > MAX_PHOTO_BASE64_BYTES) {
-        setPhotoError('Image too large. Use a smaller image (e.g. under 200 KB).');
+      const bytes = getDataUrlDecodedBytes(dataUrl);
+      if (bytes > MAX_PHOTO_BYTES) {
+        setPhotoError(`Image too large. Maximum size is ${MAX_PHOTO_LABEL}.`);
         setPhotoDataUrl(null);
         return;
       }
@@ -70,8 +72,24 @@ export function WorkRoutineCheckIn() {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    let photoUri: string | undefined;
+    if (photoDataUrl && API_BASE && accessToken) {
+      try {
+        const res = await fetch(`${API_BASE}/users/me/photos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+          body: JSON.stringify({ dataUrl: photoDataUrl }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) photoUri = data.url.startsWith('http') ? data.url : `${API_BASE}${data.url}`;
+        }
+      } catch {
+        // continue with local-only photo
+      }
+    }
     const metrics: WorkDayMetrics = {
       workHours,
       focusSessions,
@@ -87,9 +105,13 @@ export function WorkRoutineCheckIn() {
       screenHours: screenHours === '' ? undefined : screenHours,
       notes: notes.trim() || undefined,
       photo:
-        photoDataUrl ?
-          { dataUrl: photoDataUrl, caption: photoCaption.trim() || undefined }
-        : undefined,
+        photoDataUrl
+          ? {
+              dataUrl: photoDataUrl,
+              caption: photoCaption.trim() || undefined,
+              photoUri,
+            }
+          : undefined,
     };
     addWorkDayCheckIn(metrics);
     navigate('/dashboard/pulse?from=work-routine', { replace: true });
@@ -302,7 +324,7 @@ export function WorkRoutineCheckIn() {
 
           <div className={styles.field}>
             <label className={styles.label}>Photo (optional)</label>
-            <p className={styles.hint}>Calendar, desk setup, or something else. Max ~200 KB.</p>
+            <p className={styles.hint}>Calendar, desk setup, or something else. Max {MAX_PHOTO_LABEL}.</p>
             <input
               ref={fileInputRef}
               type="file"

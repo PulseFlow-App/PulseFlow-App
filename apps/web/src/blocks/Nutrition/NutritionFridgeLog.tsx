@@ -1,0 +1,148 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { addFridgeLog } from './store';
+import type { FridgePhoto, FridgeSlot } from './types';
+import { MAX_PHOTO_BYTES, MAX_PHOTO_LABEL, getDataUrlDecodedBytes } from '../../lib/photoLimit';
+import styles from './Nutrition.module.css';
+
+const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/, '') || '';
+
+const SLOTS: { key: FridgeSlot; label: string }[] = [
+  { key: 'freezer', label: 'Freezer' },
+  { key: 'main', label: 'Main fridge' },
+  { key: 'veggie', label: 'Veggie drawer' },
+];
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+async function uploadPhoto(dataUrl: string, accessToken: string): Promise<string | undefined> {
+  if (!API_BASE) return undefined;
+  try {
+    const res = await fetch(`${API_BASE}/users/me/photos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({ dataUrl }),
+    });
+    if (!res.ok) return undefined;
+    const data = await res.json();
+    const url = data.url;
+    return typeof url === 'string' && url ? (url.startsWith('http') ? url : `${API_BASE}${url}`) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function NutritionFridgeLog() {
+  const { accessToken } = useAuth();
+  const navigate = useNavigate();
+  const [freezer, setFreezer] = useState<string | null>(null);
+  const [main, setMain] = useState<string | null>(null);
+  const [veggie, setVeggie] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Partial<Record<FridgeSlot, string>>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const slotsState = { freezer, main, veggie };
+
+  const handleFile = (slot: FridgeSlot, file: File | undefined) => {
+    setErrors((e) => ({ ...e, [slot]: undefined }));
+    const setter = slot === 'freezer' ? setFreezer : slot === 'main' ? setMain : setVeggie;
+    if (!file) {
+      setter(null);
+      return;
+    }
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setErrors((e) => ({ ...e, [slot]: 'Use JPEG, PNG, or WebP.' }));
+      setter(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const bytes = getDataUrlDecodedBytes(dataUrl);
+      if (bytes > MAX_PHOTO_BYTES) {
+        setErrors((e) => ({ ...e, [slot]: `Max ${MAX_PHOTO_LABEL} per image.` }));
+        setter(null);
+        return;
+      }
+      setter(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!freezer && !main && !veggie) return;
+    setSubmitting(true);
+    const buildPhoto = async (dataUrl: string | null): Promise<FridgePhoto | undefined> => {
+      if (!dataUrl) return undefined;
+      const photoUri = accessToken ? await uploadPhoto(dataUrl, accessToken) : undefined;
+      return { dataUrl, photoUri };
+    };
+    const entry = {
+      freezer: await buildPhoto(freezer),
+      main: await buildPhoto(main),
+      veggie: await buildPhoto(veggie),
+    };
+    addFridgeLog(entry);
+    setSubmitting(false);
+    navigate('/dashboard/nutrition', { replace: true });
+  };
+
+  const hasAny = freezer || main || veggie;
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <Link to="/dashboard/nutrition" className={styles.back}>
+          ← Nutrition
+        </Link>
+      </header>
+      <main id="main" className={styles.main}>
+        <div className={styles.blockHeader}>
+          <h1 className={styles.title}>Log fridge photos</h1>
+          <p className={styles.subtitle}>
+            For best recipe ideas, add all three: freezer, main compartment, and veggie drawer. Max {MAX_PHOTO_LABEL} per image.
+          </p>
+        </div>
+        <form onSubmit={handleSubmit}>
+          {SLOTS.map(({ key, label }) => (
+            <div key={key} className={styles.slotSection}>
+              <div className={styles.slotLabel}>{label}</div>
+              <p className={styles.hint}>Optional. JPEG, PNG, or WebP.</p>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className={styles.fileInput}
+                aria-label={`Upload ${label} photo`}
+                onChange={(e) => handleFile(key, e.target.files?.[0])}
+              />
+              {slotsState[key] && (
+                <>
+                  <div className={styles.photoPreview}>
+                    <img src={slotsState[key]!} alt={label} className={styles.photoImg} />
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.removePhoto}
+                    onClick={() => (key === 'freezer' ? setFreezer(null) : key === 'main' ? setMain(null) : setVeggie(null))}
+                  >
+                    Remove photo
+                  </button>
+                </>
+              )}
+              {errors[key] && <p className={styles.photoError} role="alert">{errors[key]}</p>}
+            </div>
+          ))}
+          <button
+            type="submit"
+            className={styles.submitButton}
+            disabled={!hasAny || submitting}
+          >
+            {submitting ? 'Saving…' : 'Save fridge log'}
+          </button>
+        </form>
+      </main>
+    </div>
+  );
+}

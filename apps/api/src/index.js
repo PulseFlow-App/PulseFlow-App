@@ -28,8 +28,11 @@ const corsOptions = corsOrigin
     : {}; // allow all when unset (e.g. dev)
 app.use(cors(corsOptions));
 
-// Limit JSON body size to reduce DoS and prevent huge payloads
-app.use(express.json({ limit: '100kb' }));
+// Limit JSON body size: 4MB for photo upload, 100kb for other routes
+app.use((req, res, next) => {
+  const isPhotoUpload = req.method === 'POST' && req.path === '/users/me/photos';
+  express.json({ limit: isPhotoUpload ? '4mb' : '100kb' })(req, res, next);
+});
 
 // Rate limits: stricter for auth/referrals to prevent brute force and abuse
 const authLimiter = rateLimit({
@@ -56,9 +59,33 @@ const PORT = process.env.PORT || 3002;
 // In-memory fallback when no DATABASE_URL
 const users = new Map();
 const bodyLogs = new Map();
+/** In-memory photo store: id -> { dataUrl, userId }. 2 MB max per image. */
+const photoStore = new Map();
+const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 
 function generateId() {
   return `id_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+}
+
+function generatePhotoId() {
+  return `photo_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
+/** Validate data URL: image type and decoded size <= 2 MB. Returns { ok: true, dataUrl } or { ok: false, message }. */
+function validatePhotoDataUrl(dataUrl) {
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) {
+    return { ok: false, message: 'Invalid image: must be a data URL (data:image/...)' };
+  }
+  const match = dataUrl.match(/^data:image\/(jpeg|png|webp);base64,/i);
+  if (!match) {
+    return { ok: false, message: 'Only JPEG, PNG, and WebP images are allowed' };
+  }
+  const base64 = dataUrl.indexOf(',') >= 0 ? dataUrl.slice(dataUrl.indexOf(',') + 1) : '';
+  const decodedBytes = Math.ceil((base64.length * 3) / 4);
+  if (decodedBytes > MAX_PHOTO_BYTES) {
+    return { ok: false, message: `Image too large. Maximum size is ${MAX_PHOTO_BYTES / (1024 * 1024)} MB` };
+  }
+  return { ok: true, dataUrl };
 }
 
 // ----- Auth (never log passwords, tokens, or raw Authorization headers) -----
@@ -297,6 +324,37 @@ app.get('/users/me/points', authMiddleware, async (req, res) => {
     }
   }
   return res.json({ referralPoints: 0, bonusPoints: 0, totalPoints: 0, loginCount: 0 });
+});
+
+// ----- User photos (upload + serve). Max 2 MB per image; stored in-memory. -----
+app.post('/users/me/photos', authMiddleware, (req, res) => {
+  const { dataUrl } = req.body || {};
+  const validated = validatePhotoDataUrl(dataUrl);
+  if (!validated.ok) {
+    return res.status(400).json({ message: validated.message });
+  }
+  const id = generatePhotoId();
+  photoStore.set(id, { dataUrl: validated.dataUrl, userId: req.user.userId });
+  return res.status(201).json({ id, url: `/users/me/photos/${id}` });
+});
+
+app.get('/users/me/photos/:id', authMiddleware, (req, res) => {
+  const { id } = req.params;
+  const entry = photoStore.get(id);
+  if (!entry || entry.userId !== req.user.userId) {
+    return res.status(404).json({ message: 'Photo not found' });
+  }
+  const dataUrl = entry.dataUrl;
+  const comma = dataUrl.indexOf(',');
+  if (comma === -1) return res.status(500).json({ message: 'Invalid stored photo' });
+  const base64 = dataUrl.slice(comma + 1);
+  const prefix = dataUrl.slice(0, comma);
+  const mimeMatch = prefix.match(/^data:([^;]+);/);
+  const contentType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const buffer = Buffer.from(base64, 'base64');
+  res.setHeader('Content-Type', contentType);
+  res.setHeader('Cache-Control', 'private, max-age=86400');
+  res.send(buffer);
 });
 
 // ----- Body logs -----

@@ -10,8 +10,8 @@ import { AppFooter } from '../components/AppFooter';
 import { BLOCKS } from '../blocks/registry';
 import styles from './Dashboard.module.css';
 
-const ACTIVE_IDS = ['body-signals', 'work-routine'];
-const COMING_SOON_IDS = ['nutrition', 'movement', 'recovery'];
+const ACTIVE_IDS = ['body-signals', 'work-routine', 'nutrition'];
+const COMING_SOON_IDS = ['movement', 'recovery'];
 
 const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/, '') || '';
 

@@ -35,10 +35,12 @@ export type CheckInAnalysis = {
 export type WorkspaceType = 'home' | 'office' | 'cafe' | 'other';
 export type MeetingLoad = 'none' | 'few' | 'many';
 
-/** Optional photo upload (e.g. calendar, desk setup). Stored as data URL; keep small for localStorage. */
+/** Optional photo upload (e.g. calendar, desk setup). dataUrl for local display; photoUri when uploaded to API. */
 export type CheckInPhoto = {
   dataUrl: string;
   caption?: string;
+  /** Set after upload to API (e.g. /users/me/photos/:id). */
+  photoUri?: string;
 };
 
 /**

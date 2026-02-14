@@ -10,6 +10,8 @@ import { BodySignalsTrends } from './blocks/BodySignals/BodySignalsTrends';
 import { WorkRoutineOverview } from './blocks/WorkRoutine/WorkRoutineOverview';
 import { WorkRoutineCheckIn } from './blocks/WorkRoutine/WorkRoutineCheckIn';
 import { WorkRoutineTrends } from './blocks/WorkRoutine/WorkRoutineTrends';
+import { NutritionOverview } from './blocks/Nutrition/NutritionOverview';
+import { NutritionFridgeLog } from './blocks/Nutrition/NutritionFridgeLog';
 import { Terms } from './pages/Terms';
 import { Privacy } from './pages/Privacy';
 import { Disclaimer } from './pages/Disclaimer';
@@ -98,6 +100,22 @@ export default function App() {
         element={
           <ProtectedRoute>
             <WorkRoutineTrends />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/nutrition"
+        element={
+          <ProtectedRoute>
+            <NutritionOverview />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/nutrition/fridge"
+        element={
+          <ProtectedRoute>
+            <NutritionFridgeLog />
           </ProtectedRoute>
         }
       />

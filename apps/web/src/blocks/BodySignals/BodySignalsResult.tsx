@@ -77,33 +77,11 @@ export function BodySignalsResult() {
                     <p className={styles.oneThing}>{pulse.improvements[0]}</p>
                   </section>
                 )}
-                {!loadingAI && pulse.insightsError && (
-                  <p className={styles.insightsError} role="status">
-                    Suggestions above are from your data only. AI insights could not be loaded: {pulse.insightsError}
-                    {pulse.insightsError.includes('VITE_API_URL') && ' Set VITE_API_URL in your app build (e.g. Vercel env) and ensure the API allows this origin (CORS).'}
-                  </p>
-                )}
               </>
             )}
           </div>
         </div>
 
-        <section className={styles.ctaSection} aria-labelledby="add-block-heading">
-          <h2 id="add-block-heading" className={styles.ctaHeading}>
-            Add Work Routine for your best Pulse
-          </h2>
-          <p className={styles.ctaText}>
-            You logged body signals today. Adding how your work day went will give you a combined Pulse and clearer insights: focus, energy, and how they connect.
-          </p>
-          <div className={styles.ctaButtons}>
-            <Link to="/dashboard/work-routine/checkin" className={styles.ctaPrimary}>
-              Add Work Routine
-            </Link>
-            <Link to="/dashboard/pulse?from=body-signals" className={styles.ctaSecondary}>
-              See full Pulse
-            </Link>
-          </div>
-        </section>
       </main>
     </div>
   );

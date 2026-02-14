@@ -37,9 +37,10 @@ export const BLOCKS: Block[] = [
     id: 'nutrition',
     name: 'Nutrition',
     description: 'Fridge, meals & weekly suggestions',
-    status: 'comingSoon',
+    status: 'active',
     icon: 'solar:leaf-linear',
     color: '#4ade80',
+    route: 'NutritionOverview',
   },
   {
     id: 'movement',

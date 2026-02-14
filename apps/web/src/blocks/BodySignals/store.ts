@@ -144,9 +144,6 @@ export function generateInsights(
 ): { insight: string; explanation: string; improvements: string[]; factors: FactorImpact[] } {
   const noteThemes = getNotesContext(entry.notes);
   const improvements: string[] = [];
-  if (state.frictionPoints.includes('sleep') || noteThemes.includes('sleep')) {
-    improvements.push('Improve sleep consistency - aim for similar bed and wake times.');
-  }
   if (state.frictionPoints.includes('hydration') || noteThemes.includes('hydration')) {
     improvements.push('Increase hydration - small sips throughout the day may help.');
   }

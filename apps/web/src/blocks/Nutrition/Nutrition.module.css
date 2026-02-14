@@ -1,0 +1,169 @@
+.page {
+  min-height: 100dvh;
+  padding: 24px;
+  background-color: #0a0e14;
+  color: #fff;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.back {
+  font-size: 0.9375rem;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+.main {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.blockHeader {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  margin: 0;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  background: #22c55e;
+  color: #0a0e14;
+  padding: 16px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  margin-bottom: 12px;
+}
+
+.button:hover {
+  opacity: 0.9;
+}
+
+.buttonSecondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  background: transparent;
+  color: #fff;
+  padding: 16px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 12px;
+}
+
+.buttonSecondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Fridge log */
+.slotSection {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(23, 23, 23, 0.6);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slotLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #a3a3a3;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.hint {
+  font-size: 0.8125rem;
+  color: #737373;
+  margin: 4px 0 8px;
+}
+
+.fileInput {
+  display: block;
+  width: 100%;
+  font-size: 0.875rem;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.photoPreview {
+  margin-top: 8px;
+}
+
+.photoImg {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.removePhoto {
+  margin-top: 8px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  color: #f87171;
+  background: transparent;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.removePhoto:hover {
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.photoError {
+  font-size: 0.875rem;
+  color: #f87171;
+  margin-top: 4px;
+}
+
+.submitButton {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 24px;
+  background: #4ade80;
+  color: #0a0e14;
+  border: none;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.submitButton:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.submitButton:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: #737373;
+  cursor: not-allowed;
+}
