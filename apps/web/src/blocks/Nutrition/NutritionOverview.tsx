@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom';
+import { RecoveryContextCard } from './RecoveryContextCard';
+import { getNutritionPatternInsights } from './patternInsights';
 import styles from './Nutrition.module.css';
 
 export function NutritionOverview() {
+  const insights = getNutritionPatternInsights();
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -13,10 +17,35 @@ export function NutritionOverview() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Nutrition</h1>
           <p className={styles.subtitle}>
-            Log fridge photos (freezer, main, veggie) and ask what to cook today. Recipe ideas use your Pulse — body signals and work routine — so suggestions match your nutrition needs, energy, and context.
+            Meal timing, hydration, and fridge photos connect to your Pulse — body signals and work routine — so suggestions match your energy, sleep, and context.
           </p>
         </div>
-        <Link to="/dashboard/nutrition/fridge" className={styles.button}>
+
+        <RecoveryContextCard />
+
+        {insights.length > 0 && (
+          <div className={styles.insightsCard} role="region" aria-labelledby="insights-heading">
+            <h2 id="insights-heading" className={styles.insightsHeading}>
+              Pattern insights
+            </h2>
+            <ul className={styles.insightsList}>
+              {insights.map((text, i) => (
+                <li key={i}>{text}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <Link to="/dashboard/nutrition/meal-timing" className={styles.button}>
+          Meal timing
+        </Link>
+        <Link to="/dashboard/nutrition/hydration" className={styles.buttonSecondary}>
+          Hydration timing
+        </Link>
+        <Link to="/dashboard/nutrition/reflections" className={styles.buttonSecondary}>
+          Post-meal reflection
+        </Link>
+        <Link to="/dashboard/nutrition/fridge" className={styles.buttonSecondary}>
           Log fridge photos
         </Link>
       </main>

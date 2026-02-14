@@ -12,6 +12,9 @@ import { WorkRoutineCheckIn } from './blocks/WorkRoutine/WorkRoutineCheckIn';
 import { WorkRoutineTrends } from './blocks/WorkRoutine/WorkRoutineTrends';
 import { NutritionOverview } from './blocks/Nutrition/NutritionOverview';
 import { NutritionFridgeLog } from './blocks/Nutrition/NutritionFridgeLog';
+import { NutritionMealTiming } from './blocks/Nutrition/NutritionMealTiming';
+import { NutritionPostMealReflection } from './blocks/Nutrition/NutritionPostMealReflection';
+import { NutritionHydrationTiming } from './blocks/Nutrition/NutritionHydrationTiming';
 import { Terms } from './pages/Terms';
 import { Privacy } from './pages/Privacy';
 import { Disclaimer } from './pages/Disclaimer';
@@ -116,6 +119,30 @@ export default function App() {
         element={
           <ProtectedRoute>
             <NutritionFridgeLog />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/nutrition/meal-timing"
+        element={
+          <ProtectedRoute>
+            <NutritionMealTiming />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/nutrition/reflections"
+        element={
+          <ProtectedRoute>
+            <NutritionPostMealReflection />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/nutrition/hydration"
+        element={
+          <ProtectedRoute>
+            <NutritionHydrationTiming />
           </ProtectedRoute>
         }
       />

@@ -31,7 +31,7 @@ app.use(cors(corsOptions));
 // Limit JSON body size: 4MB for photo upload, 100kb for other routes
 app.use((req, res, next) => {
   const isPhotoUpload = req.method === 'POST' && req.path === '/users/me/photos';
-  express.json({ limit: isPhotoUpload ? '4mb' : '100kb' })(req, res, next);
+  express.json({ limit: isPhotoUpload ? '14mb' : '100kb' })(req, res, next);
 });
 
 // Rate limits: stricter for auth/referrals to prevent brute force and abuse
@@ -59,9 +59,9 @@ const PORT = process.env.PORT || 3002;
 // In-memory fallback when no DATABASE_URL
 const users = new Map();
 const bodyLogs = new Map();
-/** In-memory photo store: id -> { dataUrl, userId }. 2 MB max per image. */
+/** In-memory photo store: id -> { dataUrl, userId }. 10 MB max per image. */
 const photoStore = new Map();
-const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 
 function generateId() {
   return `id_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
@@ -71,7 +71,7 @@ function generatePhotoId() {
   return `photo_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
-/** Validate data URL: image type and decoded size <= 2 MB. Returns { ok: true, dataUrl } or { ok: false, message }. */
+/** Validate data URL: image type and decoded size <= 10 MB. Returns { ok: true, dataUrl } or { ok: false, message }. */
 function validatePhotoDataUrl(dataUrl) {
   if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) {
     return { ok: false, message: 'Invalid image: must be a data URL (data:image/...)' };

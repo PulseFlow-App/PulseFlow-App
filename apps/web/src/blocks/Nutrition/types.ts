@@ -3,7 +3,7 @@
  * Fridge logging: 3 slots for best result — freezer, main compartment, veggie drawer/container.
  */
 
-/** Single fridge photo. dataUrl for local display; photoUri when uploaded to API. Max 2 MB per image (see lib/photoLimit). */
+/** Single fridge photo. dataUrl for local display; photoUri when uploaded to API. Max 10 MB per image (see lib/photoLimit). */
 export type FridgePhoto = {
   dataUrl: string;
   caption?: string;
@@ -54,3 +54,60 @@ export type RecipePersonalization = {
   heavyWorkout?: boolean;
   lateNightPlanned?: boolean;
 };
+
+// --- Nutrition Block MVP: meal timing, hydration, post-meal reflection (see docs/nutrition-block-design.md) ---
+
+/** When the biggest meal of the day was. */
+export type BiggestMeal = 'morning' | 'afternoon' | 'evening';
+
+/** One day's meal timing (low friction: no calorie counting). */
+export type MealTimingEntry = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  /** Time of first meal (e.g. "08:30" or "08:00") */
+  firstMealTime?: string;
+  /** Time of last meal */
+  lastMealTime?: string;
+  biggestMeal?: BiggestMeal;
+  lateNightEating?: boolean;
+};
+
+/** Context when user hydrates (multi-select). */
+export type HydrationContext =
+  | 'before_coffee'
+  | 'during_work'
+  | 'around_workout'
+  | 'after_alcohol'
+  | 'morning'
+  | 'afternoon'
+  | 'evening';
+
+/** One day's hydration timing (optional upgrade from Body hydration 1–5). */
+export type HydrationTimingEntry = {
+  id: string;
+  date: string;
+  when: HydrationContext[];
+  notes?: string;
+};
+
+/** How user felt 60–90 min after eating (Food → Signal reflection loop). */
+export type PostMealFeeling = 'energized' | 'heavy' | 'sleepy' | 'focused' | 'bloated';
+
+/** Post-meal reflection: links meal timing (or time) to feeling. */
+export type PostMealReflectionEntry = {
+  id: string;
+  timestamp: string; // ISO
+  /** Optional link to meal timing entry for the day */
+  date: string;
+  feeling: PostMealFeeling;
+  notes?: string;
+};
+
+/** Situational recovery mode (derived from Body + Work Routine; not a user log). */
+export type RecoverySituation =
+  | 'gym_day'
+  | 'party_night'
+  | 'travel_day'
+  | 'deadline_day'
+  | 'poor_sleep_night'
+  | 'normal';

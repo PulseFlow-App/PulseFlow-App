@@ -183,3 +183,210 @@
   color: #737373;
   cursor: not-allowed;
 }
+
+/* Recovery context card */
+.recoveryCard {
+  padding: 16px;
+  margin-bottom: 24px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 16px;
+}
+
+.recoveryHeading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #fff;
+}
+
+.recoveryLabel {
+  font-size: 0.9375rem;
+  color: #93c5fd;
+  margin: 0 0 4px;
+}
+
+.recoveryTip {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Meal timing / forms */
+.timeInput {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.textInput {
+  width: 100%;
+  padding: 12px;
+  font-size: 0.9375rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.textInput::placeholder {
+  color: #737373;
+}
+
+.select {
+  width: 100%;
+  padding: 12px;
+  font-size: 0.9375rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.optionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.radioLabel,
+.checkboxLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9375rem;
+  color: #e5e5e5;
+  cursor: pointer;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Post-meal reflection */
+.reflectionPrompt {
+  margin-bottom: 24px;
+}
+
+.sectionHeading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: #fff;
+}
+
+.reflectionForm .slotLabel {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.reflectionForm .slotLabel:first-of-type {
+  margin-top: 0;
+}
+
+.reflectionList {
+  margin-top: 24px;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.listItem {
+  margin-bottom: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(23, 23, 23, 0.6);
+  overflow: hidden;
+}
+
+.listItemButton {
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.9375rem;
+  color: #fff;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.listItemDate {
+  color: #a3a3a3;
+}
+
+.listItemFeeling {
+  font-weight: 500;
+}
+
+.listItemDetail {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.875rem;
+  color: #d4d4d4;
+}
+
+.listItemDetail p {
+  margin: 0 0 8px;
+}
+
+.listItemDetail p:last-child {
+  margin-bottom: 0;
+}
+
+.listItemMeta {
+  font-size: 0.75rem;
+  color: #737373;
+}
+
+.emptyList {
+  font-size: 0.9375rem;
+  color: #737373;
+  margin: 0;
+}
+
+/* Pattern insights */
+.insightsCard {
+  padding: 16px;
+  margin-bottom: 24px;
+  background: rgba(34, 197, 94, 0.06);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 16px;
+}
+
+.insightsHeading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #fff;
+}
+
+.insightsList {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  line-height: 1.5;
+}
+
+.insightsList li {
+  margin-bottom: 4px;
+}

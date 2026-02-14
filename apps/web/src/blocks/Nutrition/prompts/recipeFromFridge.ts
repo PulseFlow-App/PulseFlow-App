@@ -2,7 +2,7 @@
  * Structured multimodal prompt for recipe generation from 3 fridge photos.
  * Use with Gemini (or any vision model). Reduces hallucination via strict rules and optional constraints.
  */
-import type { RecipeConstraint, RecipeFocusPreference, RecipePersonalization } from '../types';
+import type { RecipeConstraint, RecipeFocusPreference, RecipePersonalization, RecoverySituation } from '../types';
 
 /**
  * System prompt: recipe generator from 3 fridge photos.
@@ -82,6 +82,8 @@ export type BuildRecipeUserPromptOptions = {
   constraints?: RecipeConstraint[];
   /** Optional Pulse-style context. */
   personalization?: RecipePersonalization;
+  /** Optional recovery situation (from getRecoverySituation()). */
+  recoverySituation?: RecoverySituation;
   /** If true, include ingredient-grouping instruction. */
   useIngredientGrouping?: boolean;
   /** If true, include anti-hallucination instruction. */
@@ -99,6 +101,7 @@ export function buildRecipeFromFridgeUserPrompt(options: BuildRecipeUserPromptOp
     focusPreference,
     constraints = [],
     personalization,
+    recoverySituation,
     useIngredientGrouping = true,
     useAntiHallucination = true,
   } = options;
@@ -126,6 +129,18 @@ export function buildRecipeFromFridgeUserPrompt(options: BuildRecipeUserPromptOp
         .join(' ')
     : '';
 
+  const recoveryLabels: Record<RecoverySituation, string> = {
+    gym_day: 'Gym / workout day — recovery-focused meals.',
+    party_night: 'Party / going out — light before, hydrate; gentle next day.',
+    travel_day: 'Travel day — easy meals and hydration on the go.',
+    deadline_day: 'Deadline / big day — steady energy with regular small meals.',
+    poor_sleep_night: 'Poor sleep last night — lighter meals may help tonight.',
+    normal: 'Normal day.',
+  };
+  const recoveryBlock = recoverySituation && recoverySituation !== 'normal'
+    ? `Today's context: ${recoveryLabels[recoverySituation]}`
+    : '';
+
   const parts = [
     `You will receive 3 images:`,
     `Image 1: Freezer`,
@@ -140,6 +155,7 @@ export function buildRecipeFromFridgeUserPrompt(options: BuildRecipeUserPromptOp
     focusLine,
     constraintBlock,
     personalizationBlock ? `\n${personalizationBlock}` : '',
+    recoveryBlock ? `\n${recoveryBlock}` : '',
     ``,
     `Now analyze the images and suggest recipes.`,
   ];

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { addFridgeLog } from './store';
+import { RecoveryContextCard } from './RecoveryContextCard';
 import type { FridgePhoto, FridgeSlot } from './types';
 import { MAX_PHOTO_BYTES, MAX_PHOTO_LABEL, getDataUrlDecodedBytes } from '../../lib/photoLimit';
 import styles from './Nutrition.module.css';
@@ -104,9 +105,10 @@ export function NutritionFridgeLog() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Log fridge photos</h1>
           <p className={styles.subtitle}>
-            Add fridge photos and a note. You can ask what to cook today to meet your nutrition needs — recipe ideas use your Pulse (body signals & work routine) so suggestions fit your energy, stress, and context.
+            Add fridge photos and a note. Recipe ideas use your Pulse (body signals & work routine) so suggestions fit your energy, stress, and context.
           </p>
         </div>
+        <RecoveryContextCard />
         <form onSubmit={handleSubmit}>
           <div className={styles.slotSection}>
             <div className={styles.slotLabel}>Note (optional)</div>
