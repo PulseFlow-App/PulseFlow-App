@@ -52,7 +52,7 @@ export function BodySignalsTrends() {
       : metric === 'stress'
         ? 'High stress can affect sleep and mood'
         : metric === 'sleep'
-          ? 'Aim for 7–9 hours'
+          ? 'Aim for 7-9 hours'
           : '';
 
   return (

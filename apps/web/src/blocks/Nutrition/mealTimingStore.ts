@@ -37,13 +37,14 @@ export function getMealTimingForDate(date: string): MealTimingEntry | undefined 
 
 export function setMealTimingForDate(
   date: string,
-  entry: Omit<MealTimingEntry, 'id' | 'date'>
+  entry: Partial<Omit<MealTimingEntry, 'id' | 'date'>>
 ): MealTimingEntry {
   const entries = loadEntries();
   const existing = entries.find((e) => e.date === date);
   const updated: MealTimingEntry = {
     id: existing?.id ?? generateId(),
     date,
+    ...existing,
     ...entry,
   };
   const rest = entries.filter((e) => e.date !== date);

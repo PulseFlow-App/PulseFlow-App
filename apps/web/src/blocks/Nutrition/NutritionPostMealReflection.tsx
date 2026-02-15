@@ -62,7 +62,7 @@ export function NutritionPostMealReflection() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Post-meal reflection</h1>
           <p className={styles.subtitle}>
-            How did you feel 60–90 min after eating? Over time this reveals what works for you.
+            How did you feel 60-90 min after eating? Over time this reveals what works for you.
           </p>
         </div>
 

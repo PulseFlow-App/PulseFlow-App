@@ -14,7 +14,7 @@ export function AppFooter() {
         <Link to="/lab" className={styles.link}>Join the ecosystem</Link>
       </nav>
       <p className={styles.copyright}>
-        Pulse – your daily wellness and routine pulse. Not medical advice.
+        Pulse: your daily wellness and routine pulse. Not medical advice.
       </p>
     </footer>
   );

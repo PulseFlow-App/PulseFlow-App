@@ -24,7 +24,7 @@ Rules:
 * Assume basic kitchen staples only if user confirms (salt, oil, pepper).
 * Prioritize minimizing waste.
 * Prefer simple, efficient recipes.
-* Suggest 2–4 recipe options max.
+* Suggest 2-4 recipe options max.
 * Keep instructions concise and step-based.
 * Highlight which ingredients from which compartment are used.
 
@@ -37,7 +37,7 @@ Reasoning step (required): Group ingredients into proteins, vegetables, sauces, 
 Always structure output as:
 
 1. Ingredient Summary (what you see, by compartment; mark uncertain items as "possibly X")
-2. Recipe Options (2–4 options, short step-based instructions; note which compartment each ingredient comes from)
+2. Recipe Options (2-4 options, short step-based instructions; note which compartment each ingredient comes from)
 3. Why These Work (brief: waste-minimizing, uses what's there, fits constraints if any)
 4. Optional Add-ons (only if user indicated they have basics)
 
@@ -107,7 +107,7 @@ export function buildRecipeFromFridgeUserPrompt(options: BuildRecipeUserPromptOp
   } = options;
 
   const staplesLine = hasStaples
-    ? `I have basic staples: yes${staplesNote ? ` — ${staplesNote}` : ''}.`
+    ? `I have basic staples: yes${staplesNote ? ` (${staplesNote})` : ''}.`
     : 'I have basic staples: no.';
 
   const focusLine = focusPreference
@@ -121,20 +121,20 @@ export function buildRecipeFromFridgeUserPrompt(options: BuildRecipeUserPromptOp
 
   const personalizationBlock = personalization && (personalization.lowEnergy || personalization.heavyWorkout || personalization.lateNightPlanned)
     ? [
-        personalization.lowEnergy && 'User logs suggest low energy — suggest energy-supporting meals.',
-        personalization.heavyWorkout && 'Heavy workout logged — suggest recovery-oriented meals.',
-        personalization.lateNightPlanned && 'Late night planned — suggest lighter, digestion-friendly meals.',
+        personalization.lowEnergy && 'User logs suggest low energy. Suggest energy-supporting meals.',
+        personalization.heavyWorkout && 'Heavy workout logged. Suggest recovery-oriented meals.',
+        personalization.lateNightPlanned && 'Late night planned. Suggest lighter, digestion-friendly meals.',
       ]
         .filter(Boolean)
         .join(' ')
     : '';
 
   const recoveryLabels: Record<RecoverySituation, string> = {
-    gym_day: 'Gym / workout day — recovery-focused meals.',
-    party_night: 'Party / going out — light before, hydrate; gentle next day.',
-    travel_day: 'Travel day — easy meals and hydration on the go.',
-    deadline_day: 'Deadline / big day — steady energy with regular small meals.',
-    poor_sleep_night: 'Poor sleep last night — lighter meals may help tonight.',
+    gym_day: 'Gym / workout day. Recovery-focused meals.',
+    party_night: 'Party / going out. Light before, hydrate; gentle next day.',
+    travel_day: 'Travel day. Easy meals and hydration on the go.',
+    deadline_day: 'Deadline / big day. Steady energy with regular small meals.',
+    poor_sleep_night: 'Poor sleep last night. Lighter meals may help tonight.',
     normal: 'Normal day.',
   };
   const recoveryBlock = recoverySituation && recoverySituation !== 'normal'

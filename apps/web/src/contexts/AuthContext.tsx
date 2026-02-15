@@ -33,6 +33,12 @@ function isLocalOrDev(): boolean {
   return host === 'localhost' || host.endsWith('.local');
 }
 
+/** Prefer redirect on desktop; popup often blocked or broken (COOP). */
+function isLikelyDesktop(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth >= 768 && !('ontouchstart' in window);
+}
+
 function generateUserId() {
   return `user_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
@@ -107,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               if (import.meta.env.DEV) {
                 console.warn('[auth/sync] Request failed:', e);
                 if (e?.message === 'Failed to fetch' || e?.name === 'TypeError') {
-                  console.warn('[auth/sync] Ensure the API is running (cd apps/api && npm run dev) and VITE_API_URL matches — default port is 3002.');
+                  console.warn('[auth/sync] Ensure the API is running (cd apps/api && npm run dev) and VITE_API_URL matches (default port is 3002).');
                 }
               }
             });
@@ -188,7 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = useCallback(() => {
     if (!auth) return;
-    const useRedirect = !isLocalOrDev();
+    const useRedirect = !isLocalOrDev() || isLikelyDesktop();
     if (useRedirect) {
       signInWithRedirect(auth, googleAuthProvider).catch((err) => {
         if (import.meta.env.DEV) console.error('Google redirect sign-in error:', err);

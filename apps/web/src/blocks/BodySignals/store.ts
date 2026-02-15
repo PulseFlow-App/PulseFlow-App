@@ -292,7 +292,7 @@ export function hasBodyToday(): boolean {
   return Boolean(latest && latest.date === getToday());
 }
 
-/** 0–100 Body Pulse score for today; null if no log today. */
+/** 0-100 Body Pulse score for today; null if no log today. */
 export function getTodayBodyScore(): number | null {
   if (!hasBodyToday()) return null;
   return computeBodyPulse().score;

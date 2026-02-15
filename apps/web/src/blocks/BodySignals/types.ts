@@ -11,9 +11,9 @@ export type BodyLogEntry = {
   mood?: number;
   hydration?: number;
   stress?: number;
-  /** Optional: appetite/hunger 1–5 (1 = low, 5 = very high) */
+  /** Optional: appetite/hunger 1-5 (1 = low, 5 = very high) */
   appetite?: number;
-  /** Optional: digestion/comfort 1–5 (1 = poor, 5 = great) */
+  /** Optional: digestion/comfort 1-5 (1 = poor, 5 = great) */
   digestion?: number;
   notes?: string;
   photoUri?: string;

@@ -191,7 +191,7 @@ export function WorkRoutineCheckIn() {
             </div>
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Desk / space comfort (1–5)</label>
+            <label className={styles.label}>Desk / space comfort (1-5)</label>
             <div className={styles.sliderRow}>
               <span className={styles.sliderValue}>{deskComfort}</span>
               <input
@@ -236,7 +236,7 @@ export function WorkRoutineCheckIn() {
             </div>
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Energy at start of work (1–5)</label>
+            <label className={styles.label}>Energy at start of work (1-5)</label>
             <div className={styles.sliderRow}>
               <span className={styles.sliderValue}>{energyStart}</span>
               <input
@@ -251,7 +251,7 @@ export function WorkRoutineCheckIn() {
             </div>
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Energy at end of work (1–5)</label>
+            <label className={styles.label}>Energy at end of work (1-5)</label>
             <div className={styles.sliderRow}>
               <span className={styles.sliderValue}>{energyEnd}</span>
               <input
@@ -266,7 +266,7 @@ export function WorkRoutineCheckIn() {
             </div>
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>How much did you get done? (1–5)</label>
+            <label className={styles.label}>How much did you get done? (1-5)</label>
             <div className={styles.sliderRow}>
               <span className={styles.sliderValue}>{taskCompletion}</span>
               <input

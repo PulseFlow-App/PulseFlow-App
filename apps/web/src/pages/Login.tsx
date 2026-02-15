@@ -102,7 +102,7 @@ export function Login() {
 
         <p className={styles.hint}>
           {isGoogleAuth
-            ? 'We use Google only to sign you in. We don’t post or access your data elsewhere.'
+            ? 'You’ll be redirected to Google and back. We use Google only to sign you in; we don’t post or access your data elsewhere.'
             : 'Demo mode: no Firebase config. Add VITE_FIREBASE_* for Google sign-in.'}
         </p>
         <AppFooter />

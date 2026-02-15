@@ -8,7 +8,7 @@ import { getHydrationTimingForRange } from './hydrationTimingStore';
 
 const LOOKBACK_DAYS = 14;
 
-/** Return 0–3 short insight strings for the Nutrition block. */
+/** Return 0-3 short insight strings for the Nutrition block. */
 export function getNutritionPatternInsights(): string[] {
   const insights: string[] = [];
   const bodyLogs = getBodyLogs().slice(0, 30);
@@ -26,6 +26,14 @@ export function getNutritionPatternInsights(): string[] {
   const lateEaters = mealTimings.filter((e) => e.lateNightEating === true);
   const noFirstMeal = mealTimings.filter((e) => !e.firstMealTime || e.firstMealTime > '11:00');
 
+  const energyCrashPattern =
+    lowEnergyDays.length >= 1 &&
+    highAppetiteDays.length >= 1 &&
+    bodyLogs.some((e) => (e.stress ?? 0) >= 3 && (e.stress ?? 0) <= 4) &&
+    lowSleepDays.length >= 1;
+  if (energyCrashPattern && noFirstMeal.length >= 1) {
+    insights.push('Your energy dips often show up 3-4 hours after a late or skipped first meal. An earlier, small breakfast may help.');
+  }
   if (lowSleepDays.length >= 2 && highAppetiteDays.length >= 2) {
     insights.push('Hunger often rises after short-sleep days. Earlier or more consistent sleep may help appetite stay steady.');
   }
@@ -49,4 +57,18 @@ export function getNutritionPatternInsights(): string[] {
   }
 
   return insights.slice(0, 3);
+}
+
+/** Weekly nutrition stability: days with meal timing or hydration logged in last 7 days, and a 0-100 score. */
+export function getWeeklyNutritionStability(): { daysLogged: number; score: number; label: string } {
+  const mealTimings = getMealTimingForRange(7);
+  const hydrationTimings = getHydrationTimingForRange(7);
+  const dates = new Set([
+    ...mealTimings.map((e) => e.date),
+    ...hydrationTimings.map((e) => e.date),
+  ]);
+  const daysLogged = dates.size;
+  const score = Math.min(100, Math.round((daysLogged / 7) * 100));
+  const label = score >= 70 ? 'Good consistency' : score >= 40 ? 'Building consistency' : 'Log more to see patterns';
+  return { daysLogged, score, label };
 }

@@ -44,7 +44,7 @@ export type CheckInPhoto = {
 };
 
 /**
- * Work-day metrics (slide/form style). All numeric scales 1–5 unless noted.
+ * Work-day metrics (slide/form style). All numeric scales 1-5 unless noted.
  * Maps to Work Routine concepts: focusSessions+distractions+interruptions → focus quality;
  * energyStart/End+taskCompletion → mental fatigue; workHours+meetingLoad → workload intensity;
  * breaks → recovery during work; deskComfort → posture; workspace+distractions → environment.

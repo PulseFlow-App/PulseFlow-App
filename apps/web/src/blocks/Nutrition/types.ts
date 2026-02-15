@@ -1,6 +1,6 @@
 /**
  * Nutrition block types.
- * Fridge logging: 3 slots for best result — freezer, main compartment, veggie drawer/container.
+ * Fridge logging: 3 slots for best result: freezer, main compartment, veggie drawer/container.
  */
 
 /** Single fridge photo. dataUrl for local display; photoUri when uploaded to API. Max 10 MB per image (see lib/photoLimit). */
@@ -70,6 +70,10 @@ export type MealTimingEntry = {
   lastMealTime?: string;
   biggestMeal?: BiggestMeal;
   lateNightEating?: boolean;
+  /** Macro-free protein awareness: protein at breakfast? */
+  proteinAtBreakfast?: boolean;
+  /** Protein at last meal? */
+  proteinAtLastMeal?: boolean;
 };
 
 /** Context when user hydrates (multi-select). */
@@ -82,7 +86,7 @@ export type HydrationContext =
   | 'afternoon'
   | 'evening';
 
-/** One day's hydration timing (optional upgrade from Body hydration 1–5). */
+/** One day's hydration timing (optional upgrade from Body hydration 1-5). */
 export type HydrationTimingEntry = {
   id: string;
   date: string;
@@ -90,7 +94,7 @@ export type HydrationTimingEntry = {
   notes?: string;
 };
 
-/** How user felt 60–90 min after eating (Food → Signal reflection loop). */
+/** How user felt 60-90 min after eating (Food to Signal reflection loop). */
 export type PostMealFeeling = 'energized' | 'heavy' | 'sleepy' | 'focused' | 'bloated';
 
 /** Post-meal reflection: links meal timing (or time) to feeling. */

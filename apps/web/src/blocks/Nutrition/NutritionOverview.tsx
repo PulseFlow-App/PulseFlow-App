@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { RecoveryContextCard } from './RecoveryContextCard';
-import { getNutritionPatternInsights } from './patternInsights';
+import { getNutritionPatternInsights, getWeeklyNutritionStability } from './patternInsights';
 import styles from './Nutrition.module.css';
 
 export function NutritionOverview() {
   const insights = getNutritionPatternInsights();
+  const stability = getWeeklyNutritionStability();
 
   return (
     <div className={styles.page}>
@@ -17,11 +18,20 @@ export function NutritionOverview() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Nutrition</h1>
           <p className={styles.subtitle}>
-            Meal timing, hydration, and fridge photos connect to your Pulse — body signals and work routine — so suggestions match your energy, sleep, and context.
+            Meal timing, hydration, and fridge photos connect to your Pulse (body signals and work routine) so suggestions match your energy, sleep, and context.
           </p>
         </div>
 
         <RecoveryContextCard />
+
+        <div className={styles.stabilityCard} role="region" aria-labelledby="stability-heading">
+          <h2 id="stability-heading" className={styles.stabilityHeading}>
+            This week
+          </h2>
+          <p className={styles.stabilityText}>
+            {stability.daysLogged} day{stability.daysLogged !== 1 ? 's' : ''} logged (meal or hydration). {stability.label}
+          </p>
+        </div>
 
         {insights.length > 0 && (
           <div className={styles.insightsCard} role="region" aria-labelledby="insights-heading">

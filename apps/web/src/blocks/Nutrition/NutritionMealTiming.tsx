@@ -23,6 +23,8 @@ export function NutritionMealTiming() {
   const [lastMealTime, setLastMealTime] = useState(existing?.lastMealTime ?? '');
   const [biggestMeal, setBiggestMeal] = useState<BiggestMeal | ''>(existing?.biggestMeal ?? '');
   const [lateNightEating, setLateNightEating] = useState<boolean>(existing?.lateNightEating ?? false);
+  const [proteinAtBreakfast, setProteinAtBreakfast] = useState<boolean>(existing?.proteinAtBreakfast ?? false);
+  const [proteinAtLastMeal, setProteinAtLastMeal] = useState<boolean>(existing?.proteinAtLastMeal ?? false);
 
   useEffect(() => {
     if (existing) {
@@ -30,6 +32,8 @@ export function NutritionMealTiming() {
       setLastMealTime(existing.lastMealTime ?? '');
       setBiggestMeal(existing.biggestMeal ?? '');
       setLateNightEating(existing.lateNightEating ?? false);
+      setProteinAtBreakfast(existing.proteinAtBreakfast ?? false);
+      setProteinAtLastMeal(existing.proteinAtLastMeal ?? false);
     }
   }, [existing?.id]);
 
@@ -40,6 +44,8 @@ export function NutritionMealTiming() {
       lastMealTime: lastMealTime.trim() || undefined,
       biggestMeal: biggestMeal || undefined,
       lateNightEating,
+      proteinAtBreakfast,
+      proteinAtLastMeal,
     });
     navigate('/dashboard/nutrition', { replace: true });
   };
@@ -103,13 +109,32 @@ export function NutritionMealTiming() {
             </div>
           </div>
           <div className={styles.slotSection}>
+            <span className={styles.slotLabel}>Protein (simple yes/no)</span>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={proteinAtBreakfast}
+                onChange={(e) => setProteinAtBreakfast(e.target.checked)}
+              />
+              <span>Protein at breakfast</span>
+            </label>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={proteinAtLastMeal}
+                onChange={(e) => setProteinAtLastMeal(e.target.checked)}
+              />
+              <span>Protein at last meal</span>
+            </label>
+          </div>
+          <div className={styles.slotSection}>
             <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={lateNightEating}
                 onChange={(e) => setLateNightEating(e.target.checked)}
               />
-              <span>Late-night eating (after ~9–10pm)</span>
+              <span>Late-night eating (after ~9-10pm)</span>
             </label>
           </div>
           <button type="submit" className={styles.submitButton}>

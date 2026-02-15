@@ -1,6 +1,6 @@
 /**
  * Hydration timing log (when user hydrates). MVP Nutrition Block.
- * See docs/nutrition-block-design.md. Connects to Body hydration 1–5 and energy.
+ * See docs/nutrition-block-design.md. Connects to Body hydration 1-5 and energy.
  */
 import type { HydrationTimingEntry, HydrationContext } from './types';
 

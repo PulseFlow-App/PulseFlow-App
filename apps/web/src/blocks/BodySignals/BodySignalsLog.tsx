@@ -62,7 +62,7 @@ export function BodySignalsLog() {
             </div>
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Sleep quality (1–5)</label>
+            <label className={styles.label}>Sleep quality (1-5)</label>
             <div className={styles.sliderRow}>
               <span className={styles.sliderValue}>{sleepQuality}</span>
               <input
@@ -77,7 +77,7 @@ export function BodySignalsLog() {
             </div>
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Energy (1–5)</label>
+            <label className={styles.label}>Energy (1-5)</label>
             <div className={styles.sliderRow}>
               <span className={styles.sliderValue}>{energy}</span>
               <input
@@ -92,7 +92,7 @@ export function BodySignalsLog() {
             </div>
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Mood (1–5)</label>
+            <label className={styles.label}>Mood (1-5)</label>
             <div className={styles.sliderRow}>
               <span className={styles.sliderValue}>{mood}</span>
               <input
@@ -107,7 +107,7 @@ export function BodySignalsLog() {
             </div>
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Hydration (1–5)</label>
+            <label className={styles.label}>Hydration (1-5)</label>
             <div className={styles.sliderRow}>
               <span className={styles.sliderValue}>{hydration}</span>
               <input
@@ -122,7 +122,7 @@ export function BodySignalsLog() {
             </div>
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Stress (1–5)</label>
+            <label className={styles.label}>Stress (1-5)</label>
             <div className={styles.sliderRow}>
               <span className={styles.sliderValue}>{stress}</span>
               <input
