@@ -48,6 +48,8 @@ Server runs at `http://localhost:3000`. Set `VITE_API_URL` in the web app (e.g. 
 - `POST /auth/sign-in` — `{ email, password }` → `{ user, accessToken }`
 - `GET /users/me/body-logs` — list logs (Bearer token)
 - `POST /users/me/body-logs` — create log (Bearer token)
+- `GET /users/me/check-ins` — list work routine check-ins (Bearer token; optional `?from=&to=` YYYY-MM-DD)
+- `POST /users/me/check-ins` — create check-in (Bearer token)
 - `POST /insights/body-signals` — stub; app can use Google AI instead
 - `GET /premium/status?wallet=...` — stub; implement $PULSE locking check
 - `GET /health` — health check

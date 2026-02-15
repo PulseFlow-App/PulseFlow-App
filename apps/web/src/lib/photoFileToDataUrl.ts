@@ -5,9 +5,24 @@ import heic2any from 'heic2any';
 
 const HEIC_TYPES = ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'];
 
+/** HEIF/HEIC brands at offset 8 in ftyp box (ISO Base Media). */
+const HEIC_BRANDS = new Set(['heic', 'heix', 'hevc', 'mif1', 'msf1']);
+
 export function isHeicFile(file: File): boolean {
   const type = (file.type || '').toLowerCase();
   return HEIC_TYPES.includes(type) || file.name?.toLowerCase().endsWith('.heic') || file.name?.toLowerCase().endsWith('.heif');
+}
+
+/** Detect HEIC/HEIF by file signature (ftyp at 4, brand at 8). Safari sometimes sends HEIC with wrong type/name. */
+export async function isHeicByMagicBytes(file: File): Promise<boolean> {
+  const buf = await file.slice(0, 12).arrayBuffer();
+  if (buf.byteLength < 12) return false;
+  const u8 = new Uint8Array(buf);
+  const ftyp =
+    u8[4] === 0x66 && u8[5] === 0x74 && u8[6] === 0x79 && u8[7] === 0x70; // "ftyp"
+  if (!ftyp) return false;
+  const brand = String.fromCharCode(u8[8], u8[9], u8[10], u8[11]);
+  return HEIC_BRANDS.has(brand);
 }
 
 function blobToDataUrl(blob: Blob): Promise<string> {
@@ -23,21 +38,35 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 export const HEIC_CONVERSION_ERROR_MESSAGE =
   'HEIC conversion failed. Convert to JPEG on your device or use a JPEG/PNG image.';
 
+async function tryHeicConversion(blob: Blob): Promise<string> {
+  const result = await heic2any({ blob, toType: 'image/jpeg', quality: 1 });
+  const out = Array.isArray(result) ? result[0] : result;
+  if (!out) throw new Error(HEIC_CONVERSION_ERROR_MESSAGE);
+  return blobToDataUrl(out);
+}
+
 /**
  * Returns a data URL (JPEG for HEIC, or original for JPEG/PNG/WebP). Rejects on error.
- * On desktop, file.type for .heic is often empty; we pass a typed Blob so heic2any gets a proper input.
+ * Detects HEIC by type/name or by file magic bytes (Safari sometimes sends HEIC with wrong type).
  */
 export async function photoFileToDataUrl(file: File): Promise<string> {
-  if (isHeicFile(file)) {
+  const knownHeic = isHeicFile(file);
+  if (knownHeic) {
     try {
       const blob =
         file.type && HEIC_TYPES.includes(file.type.toLowerCase())
           ? file
           : new Blob([await file.arrayBuffer()], { type: 'image/heic' });
-      const result = await heic2any({ blob, toType: 'image/jpeg', quality: 1 });
-      const out = Array.isArray(result) ? result[0] : result;
-      if (!out) throw new Error(HEIC_CONVERSION_ERROR_MESSAGE);
-      return await blobToDataUrl(out);
+      return await tryHeicConversion(blob);
+    } catch {
+      throw new Error(HEIC_CONVERSION_ERROR_MESSAGE);
+    }
+  }
+  // Safari/iOS can send HEIC with wrong type/name; detect by magic bytes and try conversion
+  if (await isHeicByMagicBytes(file)) {
+    try {
+      const blob = new Blob([await file.arrayBuffer()], { type: 'image/heic' });
+      return await tryHeicConversion(blob);
     } catch {
       throw new Error(HEIC_CONVERSION_ERROR_MESSAGE);
     }

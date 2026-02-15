@@ -59,6 +59,7 @@ const PORT = process.env.PORT || 3002;
 // In-memory fallback when no DATABASE_URL
 const users = new Map();
 const bodyLogs = new Map();
+const checkIns = new Map();
 /** In-memory photo store: id -> { dataUrl, userId }. 3 MB max per image (keeps request under Vercel 4.5 MB body limit). */
 const photoStore = new Map();
 const MAX_PHOTO_BYTES = 3 * 1024 * 1024;
@@ -416,6 +417,54 @@ app.post('/users/me/body-logs', authMiddleware, async (req, res) => {
   if (!bodyLogs.has(req.user.userId)) bodyLogs.set(req.user.userId, []);
   bodyLogs.get(req.user.userId).unshift(log);
   return res.status(201).json(log);
+});
+
+// ----- Work routine check-ins -----
+app.get('/users/me/check-ins', authMiddleware, async (req, res) => {
+  const from = req.query.from;
+  const to = req.query.to;
+  const fromStr = typeof from === 'string' && from.length <= 10 ? from : undefined;
+  const toStr = typeof to === 'string' && to.length <= 10 ? to : undefined;
+
+  if (db.hasDb()) {
+    try {
+      const entries = await db.getCheckIns(req.user.userId, fromStr, toStr);
+      return res.json({ checkIns: entries });
+    } catch (err) {
+      console.error('check-ins get db error', err);
+      return res.status(500).json({ message: 'Failed to load check-ins' });
+    }
+  }
+
+  let list = checkIns.get(req.user.userId) || [];
+  if (fromStr) list = list.filter((e) => (e.timestamp || '').slice(0, 10) >= fromStr);
+  if (toStr) list = list.filter((e) => (e.timestamp || '').slice(0, 10) <= toStr);
+  list = [...list].sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+  return res.json({ checkIns: list });
+});
+
+app.post('/users/me/check-ins', authMiddleware, (req, res) => {
+  const raw = req.body || {};
+  const payload = security.sanitizeCheckInPayload(raw);
+  if (!payload) {
+    return res.status(400).json({ message: 'Invalid check-in payload or too large' });
+  }
+  const entry = { ...payload, userId: req.user.userId };
+
+  if (db.hasDb()) {
+    db.createCheckIn(entry)
+      .then(() => res.status(201).json(entry))
+      .catch((err) => {
+        if (err.code === '23505') return res.status(201).json(entry); // duplicate id, idempotent
+        console.error('check-ins post db error', err);
+        return res.status(500).json({ message: 'Failed to save check-in' });
+      });
+    return;
+  }
+
+  if (!checkIns.has(req.user.userId)) checkIns.set(req.user.userId, []);
+  checkIns.get(req.user.userId).unshift(entry);
+  return res.status(201).json(entry);
 });
 
 // ----- Insights (note-aware, with factors) -----

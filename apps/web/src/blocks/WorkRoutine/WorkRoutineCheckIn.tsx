@@ -115,7 +115,17 @@ export function WorkRoutineCheckIn() {
             }
           : undefined,
     };
-    addWorkDayCheckIn(metrics);
+    const entry = addWorkDayCheckIn(metrics);
+    if (API_BASE && accessToken) {
+      fetch(`${API_BASE}/users/me/check-ins`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(entry),
+      }).catch(() => {});
+    }
     navigate('/dashboard/pulse?from=work-routine', { replace: true });
   };
 

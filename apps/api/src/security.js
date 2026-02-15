@@ -11,6 +11,7 @@ const MAX_REFERRER_CODE_LEN = 256;
 const MAX_WALLET_LEN = 128;
 const MAX_BODY_LOG_PAYLOAD_BYTES = 50 * 1024; // 50KB
 const MAX_INSIGHTS_BODY_BYTES = 100 * 1024;   // 100KB
+const MAX_CHECKIN_PAYLOAD_BYTES = 100 * 1024; // 100KB (no base64 photo in payload)
 const MAX_ADMIN_POINTS = 1_000_000;
 const MAX_NOTES_LEN = 5000;
 
@@ -79,6 +80,24 @@ function sanitizeBodyLogPayload(obj) {
   return out;
 }
 
+/** Sanitize work routine check-in payload: allow known shape, strip dataUrl from photo (store only photoUri). */
+function sanitizeCheckInPayload(obj) {
+  if (obj == null || typeof obj !== 'object' || Array.isArray(obj)) return null;
+  const id = obj.id;
+  if (!isNonEmptyString(id) || id.length > 128) return null;
+  const payload = { ...obj };
+  if (payload.metrics && typeof payload.metrics === 'object' && payload.metrics.photo) {
+    const photo = payload.metrics.photo;
+    if (typeof photo === 'object' && photo !== null && 'dataUrl' in photo) {
+      const { dataUrl, ...rest } = photo;
+      payload.metrics = { ...payload.metrics, photo: rest };
+    }
+  }
+  const str = JSON.stringify(payload);
+  if (Buffer.byteLength(str, 'utf8') > MAX_CHECKIN_PAYLOAD_BYTES) return null;
+  return payload;
+}
+
 /** Check JSON string length for body (before parsing). */
 function isBodyWithinLimit(req, maxBytes) {
   const len = req.get('content-length');
@@ -103,11 +122,13 @@ module.exports = {
   MAX_WALLET_LEN,
   MAX_BODY_LOG_PAYLOAD_BYTES,
   MAX_INSIGHTS_BODY_BYTES,
+  MAX_CHECKIN_PAYLOAD_BYTES,
   MAX_ADMIN_POINTS,
   validateEmail,
   validateUserIdLike,
   validateWallet,
   sanitizeBodyLogPayload,
+  sanitizeCheckInPayload,
   isBodyWithinLimit,
   validatePointsAmount,
   isNonEmptyString,

@@ -67,6 +67,16 @@ CREATE TABLE IF NOT EXISTS body_logs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_body_logs_user_date ON body_logs(user_id, date);
+
+-- Work routine check-ins (per user, synced from PWA)
+CREATE TABLE IF NOT EXISTS work_routine_checkins (
+  id         TEXT PRIMARY KEY,
+  user_id    TEXT NOT NULL REFERENCES users(id),
+  payload    JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_checkins_user_timestamp ON work_routine_checkins(user_id, ((payload->>'timestamp')));
 ```
 
 **Referrals and wallet (for Lab referral flow):** Run this extra SQL if you use referrals:
@@ -116,12 +126,15 @@ Supabase warns when tables in `public` are exposed to **PostgREST** but RLS is n
 
 ### Recommended: enable RLS, no policies
 
+Enable RLS on all app tables and **do not** add any RLS policies. That satisfies Supabase’s advisory while keeping access only through your API (direct connection bypasses RLS).
+
 Run this in **Supabase → SQL Editor** (after the tables exist):
 
 ```sql
 -- Enable RLS so the "RLS Disabled in Public" advisory is resolved
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.body_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.work_routine_checkins ENABLE ROW LEVEL SECURITY;
 
 -- If you created referrals:
 ALTER TABLE public.referrals ENABLE ROW LEVEL SECURITY;

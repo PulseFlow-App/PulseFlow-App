@@ -47,6 +47,11 @@ function saveEntries(entries: CheckInEntry[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
 }
 
+/** Replace local check-ins with a list (e.g. from server sync). Use after fetching from API. */
+export function setCheckInsFromServer(entries: CheckInEntry[]): void {
+  saveEntries(Array.isArray(entries) ? entries : []);
+}
+
 /** Narrative format: pattern (short), shaping (bullet lines), one thing to try. Note = reality; must explain effect + leverage. No banned phrases. */
 function ruleBasedAnalysisFromMetrics(m: WorkDayMetrics): CheckInAnalysis {
   const notes = (m.notes || '').trim();

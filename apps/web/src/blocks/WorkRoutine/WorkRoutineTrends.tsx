@@ -78,6 +78,9 @@ export function WorkRoutineTrends() {
           <span className={styles.statLabel}>{count7} check-in{count7 !== 1 ? 's' : ''} in last 7 days</span>
           <span className={styles.statLabel}>{count30} in last 30 days</span>
         </div>
+        <p className={styles.hint} style={{ marginTop: '0.25rem', marginBottom: 0 }}>
+          Check-ins sync across devices when you're signed in.
+        </p>
 
         <div className={styles.rangeRow}>
           {RANGES.map((d) => (

@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { recordAppUsage, getAppStreak } from '../stores/appStreak';
 import { getBodyLogs } from '../blocks/BodySignals/store';
-import { getCheckIns } from '../blocks/WorkRoutine/store';
-import { startNotificationChecks } from '../stores/notifications';
+import { getCheckIns, setCheckInsFromServer } from '../blocks/WorkRoutine/store';
+import { startNotificationChecks, stopNotificationChecks } from '../stores/notifications';
 import { BlockCard } from '../components/BlockCard';
 import { AppFooter } from '../components/AppFooter';
 import { BLOCKS } from '../blocks/registry';
@@ -32,7 +32,38 @@ export function Dashboard() {
 
   useEffect(() => {
     if (user) startNotificationChecks();
+    return () => stopNotificationChecks();
   }, [user]);
+
+  useEffect(() => {
+    if (!user || !accessToken || !API_BASE) return;
+    let cancelled = false;
+    fetch(`${API_BASE}/users/me/check-ins`, { headers: { Authorization: `Bearer ${accessToken}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled) return;
+        const server = Array.isArray(data?.checkIns) ? data.checkIns : [];
+        const serverIds = new Set(server.map((e: { id?: string }) => e.id));
+        const local = getCheckIns();
+        const localOnly = local.filter((e) => e.id && !serverIds.has(e.id));
+        const merged = [...server, ...localOnly].sort(
+          (a, b) => (b.timestamp || '').localeCompare(a.timestamp || '')
+        );
+        setCheckInsFromServer(merged);
+        localOnly.forEach((entry) => {
+          fetch(`${API_BASE}/users/me/check-ins`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(entry),
+          }).catch(() => {});
+        });
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user, accessToken]);
 
   const streak = getAppStreak();
   const checkInsCount = getBodyLogs().length + getCheckIns().length;

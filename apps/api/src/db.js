@@ -209,6 +209,35 @@ async function createBodyLog(log) {
   return log;
 }
 
+/** Work routine check-ins: list by user, optional date range. */
+async function getCheckIns(userId, from, to) {
+  if (!pool) return [];
+  let query = 'SELECT id, user_id AS "userId", payload, created_at AS "createdAt" FROM work_routine_checkins WHERE user_id = $1';
+  const params = [userId];
+  if (from) {
+    params.push(from);
+    query += ` AND (payload->>'timestamp')::date >= $${params.length}`;
+  }
+  if (to) {
+    params.push(to);
+    query += ` AND (payload->>'timestamp')::date <= $${params.length}`;
+  }
+  query += " ORDER BY (payload->>'timestamp') DESC";
+  const { rows } = await pool.query(query, params);
+  return rows.map((r) => ({ id: r.id, ...r.payload, createdAt: r.createdAt }));
+}
+
+/** Work routine check-ins: create one. */
+async function createCheckIn(entry) {
+  if (!pool) return null;
+  const { id, userId, ...payload } = entry;
+  await pool.query(
+    'INSERT INTO work_routine_checkins (id, user_id, payload) VALUES ($1, $2, $3)',
+    [id, userId, JSON.stringify(payload)]
+  );
+  return entry;
+}
+
 /** List all users (id, email, created_at, last_seen_at, points, login_count). For admin/export. */
 async function listUsers() {
   if (!pool) return [];
@@ -233,5 +262,7 @@ module.exports = {
   addBonusPoints,
   getBodyLogs,
   createBodyLog,
+  getCheckIns,
+  createCheckIn,
   listUsers,
 };
