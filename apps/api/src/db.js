@@ -112,6 +112,61 @@ async function addReferralPoints(userId, amount) {
   );
 }
 
+/**
+ * Complete referral and grant points in one transaction so we never create a referral row without crediting the referrer.
+ * options: { hashPassword: (plain) => Promise<hash>, generateId: () => string }
+ * Returns { ok: true }, { referrerNotFound: true }, or { already: true }. Throws on other errors.
+ */
+async function completeReferralWithPoints(referrerCode, referredEmail, referredWallet, pointsAmount, options) {
+  if (!pool || !referrerCode || !referredEmail || !options?.hashPassword || !options?.generateId) {
+    throw new Error('Missing pool or options');
+  }
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const ref = await client.query('SELECT 1 FROM users WHERE id = $1', [referrerCode]);
+    if (ref.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return { referrerNotFound: true };
+    }
+    const existingRef = await client.query(
+      'SELECT 1 FROM referrals WHERE referrer_user_id = $1 AND referred_email = $2',
+      [referrerCode, referredEmail]
+    );
+    if (existingRef.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return { already: true };
+    }
+    const existing = await client.query('SELECT id FROM users WHERE email = $1', [referredEmail]);
+    let userId = existing.rows[0]?.id;
+    if (!userId) {
+      userId = options.generateId();
+      const passwordHash = await options.hashPassword(options.generateId());
+      await client.query(
+        'INSERT INTO users (id, email, password_hash, wallet, last_seen_at) VALUES ($1, $2, $3, $4, NOW())',
+        [userId, referredEmail, passwordHash, referredWallet]
+      );
+    }
+    const refId = `ref_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    await client.query(
+      'INSERT INTO referrals (id, referrer_user_id, referred_email, referred_wallet, created_at) VALUES ($1, $2, $3, $4, NOW())',
+      [refId, referrerCode, referredEmail, referredWallet]
+    );
+    await client.query(
+      'UPDATE users SET referral_points = COALESCE(referral_points, 0) + $1 WHERE id = $2',
+      [pointsAmount, referrerCode]
+    );
+    await client.query('COMMIT');
+    return { ok: true };
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    if (err.code === '23505') return { already: true };
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 /** Add bonus points (admin manual distribution). */
 async function addBonusPoints(userId, amount) {
   if (!pool || !userId || amount <= 0) return;
@@ -174,6 +229,7 @@ module.exports = {
   getUserPoints,
   setActivityPoints,
   addReferralPoints,
+  completeReferralWithPoints,
   addBonusPoints,
   getBodyLogs,
   createBodyLog,

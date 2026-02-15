@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { addWorkDayCheckIn } from './store';
 import type { WorkDayMetrics, WorkspaceType, MeetingLoad } from './types';
 import { MAX_PHOTO_BYTES, MAX_PHOTO_LABEL, getDataUrlDecodedBytes } from '../../lib/photoLimit';
+import { photoFileToDataUrl, isHeicFile } from '../../lib/photoFileToDataUrl';
 import styles from './WorkRoutine.module.css';
 
 const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/, '') || '';
@@ -52,24 +53,25 @@ export function WorkRoutineCheckIn() {
       setPhotoDataUrl(null);
       return;
     }
-    // Only allow safe raster image types (no SVG/HTML to prevent XSS or phishing file uploads)
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      setPhotoError('Please choose a JPEG, PNG, or WebP image.');
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+    if (!allowedTypes.includes(file.type) && !isHeicFile(file)) {
+      setPhotoError('Please choose a JPEG, PNG, WebP, or HEIC (iPhone) image.');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      const bytes = getDataUrlDecodedBytes(dataUrl);
-      if (bytes > MAX_PHOTO_BYTES) {
-        setPhotoError(`Image too large. Maximum size is ${MAX_PHOTO_LABEL}.`);
+    photoFileToDataUrl(file)
+      .then((dataUrl) => {
+        const bytes = getDataUrlDecodedBytes(dataUrl);
+        if (bytes > MAX_PHOTO_BYTES) {
+          setPhotoError(`Image too large. Maximum size is ${MAX_PHOTO_LABEL}.`);
+          setPhotoDataUrl(null);
+          return;
+        }
+        setPhotoDataUrl(dataUrl);
+      })
+      .catch(() => {
+        setPhotoError('Could not load image. Try JPEG or PNG.');
         setPhotoDataUrl(null);
-        return;
-      }
-      setPhotoDataUrl(dataUrl);
-    };
-    reader.readAsDataURL(file);
+      });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -328,7 +330,7 @@ export function WorkRoutineCheckIn() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
               className={styles.fileInput}
               aria-label="Upload image"
               onChange={handlePhotoChange}

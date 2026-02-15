@@ -220,7 +220,7 @@ function adminMiddleware(req, res, next) {
   next();
 }
 
-// ----- Referrals: complete referral (new user + referral row) -----
+// ----- Referrals: complete referral (new user + referral row + points in one transaction) -----
 app.post('/referrals/complete', async (req, res) => {
   const { referrerCode, email, wallet } = req.body || {};
   const trimmed = security.validateEmail(email);
@@ -236,21 +236,19 @@ app.post('/referrals/complete', async (req, res) => {
 
   const REFERRAL_POINTS = 100;
   try {
-    const referrerExists = await db.userExistsById(code);
-    if (!referrerExists) {
+    const result = await db.completeReferralWithPoints(code, trimmed, walletVal, REFERRAL_POINTS, {
+      hashPassword: (plain) => bcrypt.hash(plain, 10),
+      generateId,
+    });
+    if (result.referrerNotFound) {
       return res.status(400).json({
         message: 'Invalid referrer code. The person who invited you needs to open the app and sign in once so their account is created, then you can try again.',
         code: 'REFERRER_NOT_FOUND',
       });
     }
-    const existing = await db.getUserByEmail(trimmed);
-    const userId = existing ? existing.userId : generateId();
-    if (!existing) {
-      const passwordHash = await bcrypt.hash(generateId(), 10);
-      await db.createUser(userId, trimmed, passwordHash, walletVal);
+    if (result.already) {
+      return res.status(200).json({ ok: true, message: 'Referral already recorded' });
     }
-    await db.createReferral(code, trimmed, walletVal);
-    await db.addReferralPoints(code, REFERRAL_POINTS);
     return res.status(201).json({ ok: true, message: 'Referral recorded' });
   } catch (err) {
     if (err.code === '23503') {

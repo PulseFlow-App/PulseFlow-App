@@ -137,26 +137,6 @@
   text-align: center;
 }
 
-.redirectFallback {
-  font-size: 0.8125rem;
-  color: #737373;
-  margin: 12px 0 0;
-}
-
-.redirectLink {
-  background: none;
-  border: none;
-  color: #3b82f6;
-  cursor: pointer;
-  font-size: inherit;
-  padding: 0;
-  text-decoration: underline;
-}
-
-.redirectLink:hover {
-  color: #60a5fa;
-}
-
 .hint {
   font-size: 0.8125rem;
   color: #737373;
@@ -164,44 +144,3 @@
   line-height: 1.4;
 }
 
-.troubleshoot {
-  margin-top: 20px;
-  font-size: 0.8125rem;
-  color: #a3a3a3;
-}
-
-.troubleshoot summary {
-  cursor: pointer;
-  color: #737373;
-  list-style: none;
-}
-
-.troubleshoot summary::-webkit-details-marker {
-  display: none;
-}
-
-.troubleshoot summary::before {
-  content: '▸ ';
-}
-
-.troubleshoot[open] summary::before {
-  content: '▾ ';
-}
-
-.troubleshootList {
-  margin: 12px 0 0;
-  padding-left: 1.25rem;
-  line-height: 1.5;
-}
-
-.troubleshootList li {
-  margin-bottom: 8px;
-}
-
-.troubleshootList li:last-child {
-  margin-bottom: 0;
-}
-
-.troubleshootList strong {
-  color: rgba(255, 255, 255, 0.85);
-}

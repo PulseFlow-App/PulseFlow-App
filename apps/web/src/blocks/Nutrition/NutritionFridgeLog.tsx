@@ -5,6 +5,7 @@ import { addFridgeLog } from './store';
 import { RecoveryContextCard } from './RecoveryContextCard';
 import type { FridgePhoto, FridgeSlot } from './types';
 import { MAX_PHOTO_BYTES, MAX_PHOTO_LABEL, getDataUrlDecodedBytes } from '../../lib/photoLimit';
+import { photoFileToDataUrl, isHeicFile } from '../../lib/photoFileToDataUrl';
 import styles from './Nutrition.module.css';
 
 const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/, '') || '';
@@ -17,7 +18,7 @@ const SLOTS: { key: FridgeSlot; label: string }[] = [
   { key: 'veggie', label: 'Veggie drawer' },
 ];
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
 async function uploadPhoto(dataUrl: string, accessToken: string): Promise<string | undefined> {
   if (!API_BASE) return undefined;
@@ -62,23 +63,26 @@ export function NutritionFridgeLog() {
       setter(null);
       return;
     }
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      setErrors((e) => ({ ...e, [slot]: 'Use JPEG, PNG, or WebP.' }));
+    const allowed = ALLOWED_TYPES.includes(file.type) || isHeicFile(file);
+    if (!allowed) {
+      setErrors((e) => ({ ...e, [slot]: 'Use JPEG, PNG, WebP, or HEIC (iPhone).' }));
       setter(null);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      const bytes = getDataUrlDecodedBytes(dataUrl);
-      if (bytes > MAX_PHOTO_BYTES) {
-        setErrors((e) => ({ ...e, [slot]: `Max ${MAX_PHOTO_LABEL} per image.` }));
+    photoFileToDataUrl(file)
+      .then((dataUrl) => {
+        const bytes = getDataUrlDecodedBytes(dataUrl);
+        if (bytes > MAX_PHOTO_BYTES) {
+          setErrors((e) => ({ ...e, [slot]: `Max ${MAX_PHOTO_LABEL} per image.` }));
+          setter(null);
+          return;
+        }
+        setter(dataUrl);
+      })
+      .catch(() => {
+        setErrors((e) => ({ ...e, [slot]: 'Could not load image. Try JPEG or PNG.' }));
         setter(null);
-        return;
-      }
-      setter(dataUrl);
-    };
-    reader.readAsDataURL(file);
+      });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,10 +146,10 @@ export function NutritionFridgeLog() {
           {SLOTS.map(({ key, label }) => (
             <div key={key} className={styles.slotSection}>
               <div className={styles.slotLabel}>{label}</div>
-              <p className={styles.hint}>Optional. JPEG, PNG, or WebP.</p>
+              <p className={styles.hint}>Optional. JPEG, PNG, WebP, or HEIC (iPhone).</p>
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                 className={styles.fileInput}
                 aria-label={`Upload ${label} photo`}
                 onChange={(e) => handleFile(key, e.target.files?.[0])}

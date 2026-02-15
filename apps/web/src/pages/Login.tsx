@@ -8,7 +8,7 @@ const REFERRAL_STORAGE_KEY = '@pulse/referral_code';
 
 export function Login() {
   const [searchParams] = useSearchParams();
-  const { user, signIn, signInWithGoogle, signInWithGoogleRedirect, isGoogleAuth } = useAuth();
+  const { user, signIn, signInWithGoogle, isGoogleAuth } = useAuth();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -73,9 +73,6 @@ export function Login() {
             >
               {loading ? 'Signing in…' : 'Sign in with Google'}
             </button>
-            <p className={styles.redirectFallback}>
-              Popup didn’t open? <button type="button" className={styles.redirectLink} onClick={signInWithGoogleRedirect}>Use redirect instead</button>
-            </p>
             {error && <p className={styles.error}>{error}</p>}
           </>
         ) : (
@@ -103,20 +100,10 @@ export function Login() {
           </form>
         )}
 
-        <p className={styles.hint}>
-          {isGoogleAuth
-            ? 'You’ll be redirected to Google and back. We use Google only to sign you in; we don’t post or access your data elsewhere.'
-            : 'Demo mode: no Firebase config. Add VITE_FIREBASE_* for Google sign-in.'}
-        </p>
-        {isGoogleAuth && (
-          <details className={styles.troubleshoot}>
-            <summary>Having trouble signing in?</summary>
-            <ul className={styles.troubleshootList}>
-              <li><strong>Safari:</strong> Allow pop-ups for this site (Safari → Settings → Websites → Pop-up Windows). To test, you can turn off "Prevent cross-site tracking" in Privacy.</li>
-              <li><strong>Chrome:</strong> Allow third-party cookies for this site (Settings → Privacy and security → Cookies).</li>
-              <li><strong>URL:</strong> Open the app using the correct address (e.g. the link you were given). Don't use a different bookmark or copy of the link.</li>
-            </ul>
-          </details>
+        {!isGoogleAuth && (
+          <p className={styles.hint}>
+            Demo mode: no Firebase config. Add VITE_FIREBASE_* for Google sign-in.
+          </p>
         )}
         <AppFooter />
       </main>

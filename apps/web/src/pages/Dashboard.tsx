@@ -116,7 +116,7 @@ export function Dashboard() {
 
         <section className={styles.pointsBreakdown} aria-label="Points breakdown">
           <div className={styles.breakdownRow}>
-            <span className={styles.breakdownLabel}>Activity (streak & check-ins)</span>
+            <span className={styles.breakdownLabel}>Points earned</span>
             <span className={styles.breakdownValue}>{activityPoints}</span>
           </div>
           <div className={styles.breakdownRow}>

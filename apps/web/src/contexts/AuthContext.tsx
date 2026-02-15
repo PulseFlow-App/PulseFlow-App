@@ -127,14 +127,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!code) return;
     if (Date.now() - lastReferralFailureAt.current < AUTH_SYNC_BACKOFF_MS) return;
     const wallet = localStorage.getItem(REFERRAL_WALLET_KEY)?.trim() || undefined;
-    fetch(`${API_BASE}/referrals/complete`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ referrerCode: code, email: user.email, wallet }),
-    })
-      .then(async (res) => {
+    const body = JSON.stringify({ referrerCode: code, email: user.email, wallet });
+    const doRequest = (): Promise<void> =>
+      fetch(`${API_BASE}/referrals/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      }).then(async (res) => {
         const data = await res.json().catch(() => ({}));
-        if (res.ok || res.status === 200) {
+        if (res.ok || res.status === 200 || res.status === 201) {
           try {
             localStorage.removeItem(REFERRAL_CODE_KEY);
             localStorage.removeItem(REFERRAL_WALLET_KEY);
@@ -145,11 +146,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         if (res.status >= 500) lastReferralFailureAt.current = Date.now();
         if (res.status === 400 && data?.code === 'REFERRER_NOT_FOUND') {
-          if (import.meta.env.DEV) console.warn('[referrals/complete] Referrer not in DB yet:', data?.message);
+          throw { retry: true };
         }
-      })
-      .catch(() => {
-        lastReferralFailureAt.current = Date.now();
+        return Promise.reject();
+      });
+    doRequest()
+      .catch((err) => {
+        if (err?.retry) {
+          const retryDelay = 2500;
+          const retries = 2;
+          let attempt = 0;
+          const retry = () => {
+            attempt += 1;
+            if (attempt > retries) {
+              if (import.meta.env.DEV) console.warn('[referrals/complete] Referrer still not in DB after retries');
+              return;
+            }
+            setTimeout(() => {
+              fetch(`${API_BASE}/referrals/complete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+                .then(async (res) => {
+                  const data = await res.json().catch(() => ({}));
+                  if (res.ok || res.status === 200 || res.status === 201) {
+                    try {
+                      localStorage.removeItem(REFERRAL_CODE_KEY);
+                      localStorage.removeItem(REFERRAL_WALLET_KEY);
+                    } catch {
+                      // ignore
+                    }
+                    return;
+                  }
+                  if (res.status === 400 && data?.code === 'REFERRER_NOT_FOUND') retry();
+                })
+                .catch(() => retry());
+            }, retryDelay);
+          };
+          retry();
+        }
       });
   }, [user?.email]);
 
