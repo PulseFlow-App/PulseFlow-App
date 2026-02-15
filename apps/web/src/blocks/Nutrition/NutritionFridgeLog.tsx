@@ -9,6 +9,8 @@ import styles from './Nutrition.module.css';
 
 const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/, '') || '';
 
+const UPLOAD_TIMEOUT_MS = 60_000;
+
 const SLOTS: { key: FridgeSlot; label: string }[] = [
   { key: 'freezer', label: 'Freezer' },
   { key: 'main', label: 'Main fridge' },
@@ -19,17 +21,22 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 async function uploadPhoto(dataUrl: string, accessToken: string): Promise<string | undefined> {
   if (!API_BASE) return undefined;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
   try {
     const res = await fetch(`${API_BASE}/users/me/photos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
       body: JSON.stringify({ dataUrl }),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     if (!res.ok) return undefined;
     const data = await res.json();
     const url = data.url;
     return typeof url === 'string' && url ? (url.startsWith('http') ? url : `${API_BASE}${url}`) : undefined;
   } catch {
+    clearTimeout(timeoutId);
     return undefined;
   }
 }
@@ -43,11 +50,13 @@ export function NutritionFridgeLog() {
   const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState<Partial<Record<FridgeSlot, string>>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const slotsState = { freezer, main, veggie };
 
   const handleFile = (slot: FridgeSlot, file: File | undefined) => {
     setErrors((e) => ({ ...e, [slot]: undefined }));
+    setSubmitError(null);
     const setter = slot === 'freezer' ? setFreezer : slot === 'main' ? setMain : setVeggie;
     if (!file) {
       setter(null);
@@ -75,21 +84,28 @@ export function NutritionFridgeLog() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!freezer && !main && !veggie) return;
+    setSubmitError(null);
     setSubmitting(true);
-    const buildPhoto = async (dataUrl: string | null): Promise<FridgePhoto | undefined> => {
-      if (!dataUrl) return undefined;
-      const photoUri = accessToken ? await uploadPhoto(dataUrl, accessToken) : undefined;
-      return { dataUrl, photoUri };
-    };
-    const entry = {
-      freezer: await buildPhoto(freezer),
-      main: await buildPhoto(main),
-      veggie: await buildPhoto(veggie),
-      notes: notes.trim() || undefined,
-    };
-    addFridgeLog(entry);
-    setSubmitting(false);
-    navigate('/dashboard/nutrition', { replace: true });
+    try {
+      const buildPhoto = async (dataUrl: string | null): Promise<FridgePhoto | undefined> => {
+        if (!dataUrl) return undefined;
+        const photoUri = accessToken ? await uploadPhoto(dataUrl, accessToken) : undefined;
+        return { dataUrl, photoUri };
+      };
+      const entry = {
+        freezer: await buildPhoto(freezer),
+        main: await buildPhoto(main),
+        veggie: await buildPhoto(veggie),
+        notes: notes.trim() || undefined,
+      };
+      addFridgeLog(entry);
+      navigate('/dashboard/nutrition', { replace: true });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong. Try again.';
+      setSubmitError(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const hasAny = freezer || main || veggie;
@@ -116,7 +132,7 @@ export function NutritionFridgeLog() {
             <textarea
               className={styles.notesInput}
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e) => { setNotes(e.target.value); setSubmitError(null); }}
               placeholder="e.g. Need something quick and filling; low energy today"
               maxLength={500}
               rows={3}
@@ -151,6 +167,7 @@ export function NutritionFridgeLog() {
               {errors[key] && <p className={styles.photoError} role="alert">{errors[key]}</p>}
             </div>
           ))}
+          {submitError && <p className={styles.photoError} role="alert">{submitError}</p>}
           <button
             type="submit"
             className={styles.submitButton}

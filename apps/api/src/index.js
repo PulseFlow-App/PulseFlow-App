@@ -335,7 +335,7 @@ app.get('/users/me/points', authMiddleware, async (req, res) => {
   return res.json({ referralPoints: 0, bonusPoints: 0, activityPoints: 0, totalPoints: 0, loginCount: 0 });
 });
 
-// ----- User photos (upload + serve). Max 2 MB per image; stored in-memory. -----
+// ----- User photos (upload + serve). Max 10 MB per image; stored in-memory. -----
 app.post('/users/me/photos', authMiddleware, (req, res) => {
   const { dataUrl } = req.body || {};
   const validated = validatePhotoDataUrl(dataUrl);

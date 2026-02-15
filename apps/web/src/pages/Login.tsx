@@ -105,6 +105,16 @@ export function Login() {
             ? 'You’ll be redirected to Google and back. We use Google only to sign you in; we don’t post or access your data elsewhere.'
             : 'Demo mode: no Firebase config. Add VITE_FIREBASE_* for Google sign-in.'}
         </p>
+        {isGoogleAuth && (
+          <details className={styles.troubleshoot}>
+            <summary>Having trouble signing in?</summary>
+            <ul className={styles.troubleshootList}>
+              <li><strong>Safari:</strong> Allow pop-ups for this site (Safari → Settings → Websites → Pop-up Windows). To test, you can turn off "Prevent cross-site tracking" in Privacy.</li>
+              <li><strong>Chrome:</strong> Allow third-party cookies for this site (Settings → Privacy and security → Cookies).</li>
+              <li><strong>URL:</strong> Open the app using the correct address (e.g. the link you were given). Don't use a different bookmark or copy of the link.</li>
+            </ul>
+          </details>
+        )}
         <AppFooter />
       </main>
     </div>
