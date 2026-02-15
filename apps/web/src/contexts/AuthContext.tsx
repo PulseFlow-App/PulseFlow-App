@@ -29,13 +29,6 @@ const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/
 /** After a 500 from auth/sync, skip sync for this long to avoid spamming a failing API. */
 const AUTH_SYNC_BACKOFF_MS = 3 * 60 * 1000;
 
-function isLocalOrDev(): boolean {
-  if (import.meta.env.DEV) return true;
-  const host = typeof window !== 'undefined' ? window.location?.hostname ?? '' : '';
-  return host === 'localhost' || host.endsWith('.local');
-}
-
-
 function generateUserId() {
   return `user_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
