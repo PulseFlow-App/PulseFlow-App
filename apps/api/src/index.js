@@ -59,9 +59,9 @@ const PORT = process.env.PORT || 3002;
 // In-memory fallback when no DATABASE_URL
 const users = new Map();
 const bodyLogs = new Map();
-/** In-memory photo store: id -> { dataUrl, userId }. 10 MB max per image. */
+/** In-memory photo store: id -> { dataUrl, userId }. 3 MB max per image (keeps request under Vercel 4.5 MB body limit). */
 const photoStore = new Map();
-const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+const MAX_PHOTO_BYTES = 3 * 1024 * 1024;
 
 function generateId() {
   return `id_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
@@ -71,7 +71,7 @@ function generatePhotoId() {
   return `photo_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
-/** Validate data URL: image type and decoded size <= 10 MB. Returns { ok: true, dataUrl } or { ok: false, message }. */
+/** Validate data URL: image type and decoded size <= 3 MB. Returns { ok: true, dataUrl } or { ok: false, message }. */
 function validatePhotoDataUrl(dataUrl) {
   if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) {
     return { ok: false, message: 'Invalid image: must be a data URL (data:image/...)' };
@@ -333,7 +333,7 @@ app.get('/users/me/points', authMiddleware, async (req, res) => {
   return res.json({ referralPoints: 0, bonusPoints: 0, activityPoints: 0, totalPoints: 0, loginCount: 0 });
 });
 
-// ----- User photos (upload + serve). Max 10 MB per image; stored in-memory. -----
+// ----- User photos (upload + serve). Max 3 MB per image; stored in-memory. -----
 app.post('/users/me/photos', authMiddleware, (req, res) => {
   const { dataUrl } = req.body || {};
   const validated = validatePhotoDataUrl(dataUrl);

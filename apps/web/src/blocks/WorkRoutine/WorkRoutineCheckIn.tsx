@@ -330,7 +330,7 @@ export function WorkRoutineCheckIn() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
               className={styles.fileInput}
               aria-label="Upload image"
               onChange={handlePhotoChange}

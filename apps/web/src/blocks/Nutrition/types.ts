@@ -3,7 +3,7 @@
  * Fridge logging: 3 slots for best result: freezer, main compartment, veggie drawer/container.
  */
 
-/** Single fridge photo. dataUrl for local display; photoUri when uploaded to API. Max 10 MB per image (see lib/photoLimit). */
+/** Single fridge photo. dataUrl for local display; photoUri when uploaded to API. Max 3 MB per image (see lib/photoLimit). */
 export type FridgePhoto = {
   dataUrl: string;
   caption?: string;

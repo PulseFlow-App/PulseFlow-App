@@ -3,14 +3,14 @@
  * Used by Work Routine, Nutrition, and API so client and server stay in sync.
  */
 
-/** Max decoded image size: 10 MB. Fits typical iPhone photos. */
-export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+/** Max decoded image size: 3 MB so base64 request body stays under Vercel 4.5 MB limit. */
+export const MAX_PHOTO_BYTES = 3 * 1024 * 1024;
 
-/** Approx base64 length for 10 MB raw (4/3 * size). Client checks decoded size. */
+/** Approx base64 length for max raw (4/3 * size). Client checks decoded size. */
 export const MAX_PHOTO_BASE64_BYTES = Math.ceil((MAX_PHOTO_BYTES * 4) / 3);
 
 /** Human-readable limit for UI messages. */
-export const MAX_PHOTO_LABEL = '10 MB';
+export const MAX_PHOTO_LABEL = '3 MB';
 
 /**
  * Get decoded byte size from a data URL (base64).
