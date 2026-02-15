@@ -18,6 +18,7 @@ const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/
 type PointsData = {
   referralPoints: number;
   bonusPoints: number;
+  activityPoints: number;
   totalPoints: number;
 };
 
@@ -33,36 +34,38 @@ export function Dashboard() {
     if (user) startNotificationChecks();
   }, [user]);
 
+  const streak = getAppStreak();
+  const checkInsCount = getBodyLogs().length + getCheckIns().length;
+
   useEffect(() => {
     if (!user || !accessToken || !API_BASE) {
       setPoints(null);
       return;
     }
     let cancelled = false;
-    fetch(`${API_BASE}/users/me/points`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
+    const url = `${API_BASE}/users/me/points?streak=${encodeURIComponent(streak)}&checkIns=${encodeURIComponent(checkInsCount)}`;
+    fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!cancelled && data && typeof data.referralPoints === 'number') {
           setPoints({
             referralPoints: data.referralPoints ?? 0,
             bonusPoints: data.bonusPoints ?? 0,
+            activityPoints: data.activityPoints ?? 0,
             totalPoints: data.totalPoints ?? 0,
           });
         }
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [user, accessToken]);
+  }, [user, accessToken, streak, checkInsCount]);
 
-  const streak = getAppStreak();
-  const checkInsCount = getBodyLogs().length + getCheckIns().length;
   const activeBlocks = BLOCKS.filter((b) => ACTIVE_IDS.includes(b.id));
   const comingSoonBlocks = BLOCKS.filter((b) => COMING_SOON_IDS.includes(b.id));
   const totalPoints = points?.totalPoints ?? 0;
   const referralPoints = points?.referralPoints ?? 0;
   const bonusPoints = points?.bonusPoints ?? 0;
+  const activityPoints = points?.activityPoints ?? 0;
 
   return (
     <div className={styles.page}>
@@ -100,17 +103,22 @@ export function Dashboard() {
             <span className={styles.statLabel}>Check-ins</span>
           </div>
           <div className={styles.statItem}>
-            <Link to={user ? '/dashboard/invite' : '/invite'} className={styles.statLink}>
-              Invite friends
-            </Link>
-          </div>
-          <div className={styles.statItem}>
             <span className={styles.statNumber}>{totalPoints}</span>
             <span className={styles.statLabel}>Total points</span>
           </div>
         </section>
 
+        <div className={styles.inviteRow}>
+          <Link to={user ? '/dashboard/invite' : '/invite'} className={styles.inviteLink}>
+            Invite friends
+          </Link>
+        </div>
+
         <section className={styles.pointsBreakdown} aria-label="Points breakdown">
+          <div className={styles.breakdownRow}>
+            <span className={styles.breakdownLabel}>Activity (streak & check-ins)</span>
+            <span className={styles.breakdownValue}>{activityPoints}</span>
+          </div>
           <div className={styles.breakdownRow}>
             <span className={styles.breakdownLabel}>Referral points</span>
             <span className={styles.breakdownValue}>{referralPoints}</span>

@@ -143,6 +143,21 @@
   text-decoration: underline;
 }
 
+.inviteRow {
+  margin-bottom: 24px;
+}
+
+.inviteLink {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.inviteLink:hover {
+  text-decoration: underline;
+}
+
 .statMuted {
   font-size: 0.875rem;
   color: #a3a3a3;

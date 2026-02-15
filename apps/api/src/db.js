@@ -75,15 +75,32 @@ async function createReferral(referrerUserId, referredEmail, referredWallet = nu
 
 /** Get points and login count for a user. Returns zeros when no DB or user missing. */
 async function getUserPoints(userId) {
-  if (!pool) return { referralPoints: 0, bonusPoints: 0, totalPoints: 0, loginCount: 0 };
+  if (!pool) return { referralPoints: 0, bonusPoints: 0, activityPoints: 0, totalPoints: 0, loginCount: 0 };
   const { rows } = await pool.query(
-    'SELECT COALESCE(referral_points, 0) AS referral_points, COALESCE(bonus_points, 0) AS bonus_points, COALESCE(login_count, 0) AS login_count FROM users WHERE id = $1',
+    'SELECT COALESCE(referral_points, 0) AS referral_points, COALESCE(bonus_points, 0) AS bonus_points, COALESCE(activity_points, 0) AS activity_points, COALESCE(login_count, 0) AS login_count FROM users WHERE id = $1',
     [userId]
   );
-  if (!rows[0]) return { referralPoints: 0, bonusPoints: 0, totalPoints: 0, loginCount: 0 };
+  if (!rows[0]) return { referralPoints: 0, bonusPoints: 0, activityPoints: 0, totalPoints: 0, loginCount: 0 };
   const r = Number(rows[0].referral_points) || 0;
   const b = Number(rows[0].bonus_points) || 0;
-  return { referralPoints: r, bonusPoints: b, totalPoints: r + b, loginCount: Number(rows[0].login_count) || 0 };
+  const a = Number(rows[0].activity_points) || 0;
+  return { referralPoints: r, bonusPoints: b, activityPoints: a, totalPoints: r + b + a, loginCount: Number(rows[0].login_count) || 0 };
+}
+
+/** Points per streak day and per check-in (activity rewards). */
+const POINTS_PER_STREAK_DAY = 2;
+const POINTS_PER_CHECKIN = 1;
+
+/** Set activity points from current streak and check-in count. Replaces previous activity points. */
+async function setActivityPoints(userId, streak, checkIns) {
+  if (!pool || !userId) return;
+  const s = Math.max(0, Math.min(Number(streak) || 0, 365));
+  const c = Math.max(0, Math.min(Number(checkIns) || 0, 50000));
+  const activityPoints = s * POINTS_PER_STREAK_DAY + c * POINTS_PER_CHECKIN;
+  await pool.query(
+    'UPDATE users SET activity_points = $1 WHERE id = $2',
+    [activityPoints, userId]
+  );
 }
 
 /** Add referral points to the referrer (after a referral is completed). */
@@ -141,7 +158,7 @@ async function createBodyLog(log) {
 async function listUsers() {
   if (!pool) return [];
   const { rows } = await pool.query(
-    'SELECT id, email, created_at AS "createdAt", last_seen_at AS "lastSeenAt", COALESCE(referral_points, 0) AS "referralPoints", COALESCE(bonus_points, 0) AS "bonusPoints", COALESCE(login_count, 0) AS "loginCount" FROM users ORDER BY created_at DESC'
+    'SELECT id, email, created_at AS "createdAt", last_seen_at AS "lastSeenAt", COALESCE(referral_points, 0) AS "referralPoints", COALESCE(bonus_points, 0) AS "bonusPoints", COALESCE(activity_points, 0) AS "activityPoints", COALESCE(login_count, 0) AS "loginCount" FROM users ORDER BY created_at DESC'
   );
   return rows;
 }
@@ -155,6 +172,7 @@ module.exports = {
   createReferral,
   updateLastSeen,
   getUserPoints,
+  setActivityPoints,
   addReferralPoints,
   addBonusPoints,
   getBodyLogs,

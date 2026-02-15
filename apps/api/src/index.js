@@ -312,10 +312,19 @@ app.post('/admin/points', adminMiddleware, async (req, res) => {
   }
 });
 
-// ----- User: get my points (auth) -----
+// ----- User: get my points (auth). Optional ?streak=&checkIns= to update activity points from app. -----
 app.get('/users/me/points', authMiddleware, async (req, res) => {
   if (db.hasDb()) {
     try {
+      const streak = req.query.streak;
+      const checkIns = req.query.checkIns;
+      if (streak !== undefined && checkIns !== undefined) {
+        const s = parseInt(streak, 10);
+        const c = parseInt(checkIns, 10);
+        if (Number.isInteger(s) && Number.isInteger(c) && s >= 0 && c >= 0) {
+          await db.setActivityPoints(req.user.userId, s, c);
+        }
+      }
       const points = await db.getUserPoints(req.user.userId);
       return res.json(points);
     } catch (err) {
@@ -323,7 +332,7 @@ app.get('/users/me/points', authMiddleware, async (req, res) => {
       return res.status(500).json({ message: 'Failed to load points' });
     }
   }
-  return res.json({ referralPoints: 0, bonusPoints: 0, totalPoints: 0, loginCount: 0 });
+  return res.json({ referralPoints: 0, bonusPoints: 0, activityPoints: 0, totalPoints: 0, loginCount: 0 });
 });
 
 // ----- User photos (upload + serve). Max 2 MB per image; stored in-memory. -----

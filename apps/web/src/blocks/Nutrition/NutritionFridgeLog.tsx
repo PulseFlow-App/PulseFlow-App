@@ -105,7 +105,7 @@ export function NutritionFridgeLog() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Log fridge photos</h1>
           <p className={styles.subtitle}>
-            Add fridge photos and a note. Recipe ideas use your Pulse (body signals & work routine) so suggestions fit your energy, stress, and context.
+            Add fridge photos and a note. Recipe ideas use your Pulse and your body signals and work routine so suggestions fit your energy, stress, and context.
           </p>
         </div>
         <RecoveryContextCard />

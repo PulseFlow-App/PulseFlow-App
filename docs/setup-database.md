@@ -91,15 +91,16 @@ CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_user_id)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ;
 ```
 
-**Points and login count:** Add columns for referral points, admin bonus points, and login count:
+**Points and login count:** Add columns for referral points, admin bonus points, activity points, and login count:
 
 ```sql
 ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_points INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_points INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS login_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS activity_points INTEGER NOT NULL DEFAULT 0;
 ```
 
-The API updates `last_seen_at` and increments `login_count` on every `/auth/sync`. Referral completion credits `referral_points` to the referrer; admins grant `bonus_points` via `POST /admin/points`.
+The API updates `last_seen_at` and increments `login_count` on every `/auth/sync`. Referral completion credits `referral_points` to the referrer; admins grant `bonus_points` via `POST /admin/points`. **Activity points** are earned from day streak and check-ins: when the app calls `GET /users/me/points?streak=&checkIns=`, the API updates `activity_points` (2 points per streak day, 1 per check-in) and returns the full breakdown. If your `users` table already had the points columns from an earlier setup, run only: `ALTER TABLE users ADD COLUMN IF NOT EXISTS activity_points INTEGER NOT NULL DEFAULT 0;`
 
 The API updates `last_seen_at` on every `/auth/sync` so you can query active users (e.g. in Supabase: “users active in last 24h” or in the Admin cabinet).
 

@@ -18,7 +18,7 @@ export function NutritionOverview() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Nutrition</h1>
           <p className={styles.subtitle}>
-            Meal timing, hydration, and fridge photos connect to your Pulse (body signals and work routine) so suggestions match your energy, sleep, and context.
+            Meal timing, hydration, and fridge photos connect to your Pulse. We use your body signals and work routine so suggestions match your energy, sleep, and context.
           </p>
         </div>
 
