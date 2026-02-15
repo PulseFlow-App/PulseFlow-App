@@ -11,7 +11,9 @@ type AuthContextValue = {
   user: User | null;
   accessToken: string | null;
   signIn: (email: string) => void;
-  signInWithGoogle: () => void;
+  signInWithGoogle: () => Promise<void>;
+  /** Redirect flow only (use if popup fails or is blocked). */
+  signInWithGoogleRedirect: () => void;
   signOut: () => void;
   isGoogleAuth: boolean;
 };
@@ -33,11 +35,6 @@ function isLocalOrDev(): boolean {
   return host === 'localhost' || host.endsWith('.local');
 }
 
-/** Prefer redirect on desktop; popup often blocked or broken (COOP). */
-function isLikelyDesktop(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.innerWidth >= 768 && !('ontouchstart' in window);
-}
 
 function generateUserId() {
   return `user_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
@@ -192,16 +189,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const signInWithGoogle = useCallback(() => {
-    if (!auth) return;
-    const useRedirect = !isLocalOrDev() || isLikelyDesktop();
-    if (useRedirect) {
-      signInWithRedirect(auth, googleAuthProvider).catch((err) => {
-        if (import.meta.env.DEV) console.error('Google redirect sign-in error:', err);
-      });
-      return;
-    }
-    signInWithPopup(auth, googleAuthProvider)
+  const signInWithGoogle = useCallback((): Promise<void> => {
+    if (!auth) return Promise.reject(new Error('Auth not configured'));
+    // Try popup first (works more reliably when redirect/auth domain is misconfigured). Fallback to redirect if popup blocked.
+    return signInWithPopup(auth, googleAuthProvider)
       .then((result) => {
         if (result?.user?.email) {
           const u = { userId: result.user.uid, email: result.user.email };
@@ -227,11 +218,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       })
       .catch((err) => {
-        if (import.meta.env.DEV) console.error('Google sign-in error:', err);
         if (err?.code === 'auth/popup-blocked' && auth) {
-          signInWithRedirect(auth, googleAuthProvider);
+          return signInWithRedirect(auth, googleAuthProvider) as Promise<void>;
         }
+        if (import.meta.env.DEV) console.error('Google sign-in error:', err);
+        const message = err?.message || err?.code || 'Sign-in failed';
+        return Promise.reject(new Error(typeof message === 'string' ? message : 'Sign-in failed'));
       });
+  }, []);
+
+  const signInWithGoogleRedirect = useCallback(() => {
+    if (!auth) return;
+    signInWithRedirect(auth, googleAuthProvider).catch((err) => {
+      if (import.meta.env.DEV) console.error('Google redirect sign-in error:', err);
+    });
   }, []);
 
   const signOut = useCallback(() => {
@@ -250,6 +250,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     accessToken,
     signIn,
     signInWithGoogle,
+    signInWithGoogleRedirect,
     signOut,
     isGoogleAuth,
   };

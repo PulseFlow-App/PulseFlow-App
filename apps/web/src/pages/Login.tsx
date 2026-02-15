@@ -8,7 +8,7 @@ const REFERRAL_STORAGE_KEY = '@pulse/referral_code';
 
 export function Login() {
   const [searchParams] = useSearchParams();
-  const { user, signIn, signInWithGoogle, isGoogleAuth } = useAuth();
+  const { user, signIn, signInWithGoogle, signInWithGoogleRedirect, isGoogleAuth } = useAuth();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -27,15 +27,15 @@ export function Login() {
 
   if (user) return <Navigate to="/dashboard" replace />;
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     setError(null);
     setLoading(true);
     try {
-      signInWithGoogle();
-      // Redirect flow: page will navigate to Google, then back here. No await.
+      await signInWithGoogle();
+      // Popup: we get here on success. Redirect: we usually navigate away before this.
     } catch (err) {
-      console.error('Google sign-in error:', err);
       setError(err instanceof Error ? err.message : 'Sign-in failed. Try again.');
+    } finally {
       setLoading(false);
     }
   };
@@ -73,6 +73,9 @@ export function Login() {
             >
               {loading ? 'Signing in…' : 'Sign in with Google'}
             </button>
+            <p className={styles.redirectFallback}>
+              Popup didn’t open? <button type="button" className={styles.redirectLink} onClick={signInWithGoogleRedirect}>Use redirect instead</button>
+            </p>
             {error && <p className={styles.error}>{error}</p>}
           </>
         ) : (
