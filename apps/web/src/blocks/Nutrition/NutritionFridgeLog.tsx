@@ -79,8 +79,8 @@ export function NutritionFridgeLog() {
         }
         setter(dataUrl);
       })
-      .catch(() => {
-        setErrors((e) => ({ ...e, [slot]: 'Could not load image. Try JPEG or PNG.' }));
+      .catch((err) => {
+        setErrors((e) => ({ ...e, [slot]: err instanceof Error ? err.message : 'Could not load image. Try JPEG or PNG.' }));
         setter(null);
       });
   };

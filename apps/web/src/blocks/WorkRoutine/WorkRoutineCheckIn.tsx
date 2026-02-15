@@ -68,8 +68,8 @@ export function WorkRoutineCheckIn() {
         }
         setPhotoDataUrl(dataUrl);
       })
-      .catch(() => {
-        setPhotoError('Could not load image. Try JPEG or PNG.');
+      .catch((err) => {
+        setPhotoError(err instanceof Error ? err.message : 'Could not load image. Try JPEG or PNG.');
         setPhotoDataUrl(null);
       });
   };
