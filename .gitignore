@@ -39,6 +39,9 @@ coverage/
 .nyc_output/
 
 
+# Firebase CLI
+.firebase/
+
 # Misc
 *.pem
 .cache/

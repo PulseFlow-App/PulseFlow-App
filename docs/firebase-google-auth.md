@@ -51,7 +51,7 @@ In `apps/web/.env` (and in Vercel for production), set:
 
 ```env
 VITE_FIREBASE_API_KEY=          # value of apiKey from Firebase config
-VITE_FIREBASE_AUTH_DOMAIN=app.pulseflow.site   # production: your app URL (must match Authorized domains)
+VITE_FIREBASE_AUTH_DOMAIN=pulseflow-ca453.firebaseapp.com   # use exactly what Firebase Console shows (authDomain)
 VITE_FIREBASE_PROJECT_ID=       # value of projectId
 VITE_FIREBASE_STORAGE_BUCKET=   # value of storageBucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=  # value of messagingSenderId
@@ -68,9 +68,8 @@ VITE_FIREBASE_MEASUREMENT_ID=   # value of measurementId (optional)
 In **Authentication** → **Settings** → **Authorized domains**, add:
 
 - `localhost` (for dev)
-- `app.pulseflow.site` (your production domain)
-
-Use the **same** domain as `VITE_FIREBASE_AUTH_DOMAIN` in production so the redirect and `/_/firebase/init.json` work.
+- Your **auth domain** (e.g. `pulseflow-ca453.firebaseapp.com`) – usually already there
+- `app.pulseflow.site` (so users can open the app from your custom domain)
 
 ---
 
@@ -82,21 +81,64 @@ Use the **same** domain as `VITE_FIREBASE_AUTH_DOMAIN` in production so the redi
 
 ---
 
-## 6. 404 for `/_/firebase/init.json` (redirect not completing)
+## 6. Sign-in doesn’t open Google / brings me back to my app
 
-If sign-in opens Google but then you see **`GET .../_/firebase/init.json 404 (Not Found)`** in the console and the redirect never completes:
+If you set `VITE_FIREBASE_AUTH_DOMAIN` to your app URL (e.g. `app.pulseflow.site`), the popup or redirect can open your app instead of Google. **Fix:** use the **Firebase default auth domain** from Firebase Console (e.g. `pulseflow-ca453.firebaseapp.com`). Set `VITE_FIREBASE_AUTH_DOMAIN=pulseflow-ca453.firebaseapp.com` in Vercel (and in `.env` for local), redeploy the PWA, and try again. Ensure that domain is in **Authorized domains**.
 
-- The Auth redirect lands on **authDomain** (e.g. `pulseflow-xxx.firebaseapp.com`). The handler there requests `/_/firebase/init.json` from the same origin. That file must be served by whatever is deployed at that URL.
+## 7. 404 for `/_/firebase/init.json` (redirect not completing)
 
-**Fix (choose one):**
+If sign-in opens Google but then you see **`GET .../_/firebase/init.json 404 (Not Found)`** after choosing an account:
 
-1. **Use your app URL as auth domain**  
-   Set `VITE_FIREBASE_AUTH_DOMAIN` to your app’s URL (e.g. `your-app.vercel.app`). Add that domain in Firebase Console → **Authentication** → **Settings** → **Authorized domains**. Redeploy the web app. The build generates `_/firebase/init.json` from your env, so your app will serve it and the 404 goes away.
+- The redirect lands on **authDomain** (e.g. `pulseflow-ca453.firebaseapp.com`). That origin must serve `/_/firebase/init.json`.
 
-2. **Deploy the app to Firebase Hosting**  
-   If you keep auth domain as `xxx.firebaseapp.com`, deploy the **same built app** (e.g. from `apps/web`) to **Firebase Hosting** for that project. The build already includes `public/_/firebase/init.json` (generated at build time), so the Hosting site will serve it.
+**Fix:** Deploy the built PWA to **Firebase Hosting** for the same project. Steps:
 
-The web app’s **build** script runs `node scripts/generate-firebase-init.js` before Vite, so every build outputs `public/_/firebase/init.json` from your `VITE_FIREBASE_*` env. No extra step needed as long as the app (or its build output) is served at the auth domain.
+### 7a. One-time setup (Firebase CLI + project)
+
+1. Install the Firebase CLI (if you don’t have it):
+   ```bash
+   npm install -g firebase-tools
+   ```
+2. Log in and link the project:
+   ```bash
+   firebase login
+   ```
+   If your Firebase project is not `pulseflow-ca453`, edit the repo root **`.firebaserc`** and set `"default"` to your project ID.
+
+3. The repo already has **`firebase.json`** at the root with:
+   - `hosting.public` = `apps/web/dist`
+   - SPA rewrite: all routes → `/index.html`
+
+### 7b. Build and deploy
+
+From the **repo root** (e.g. `PulseFlowApp/`):
+
+1. Build the PWA (this also generates `_/firebase/init.json` from your env):
+   ```bash
+   cd apps/web && npm run build && cd ../..
+   ```
+   Or from repo root:
+   ```bash
+   npm run build --workspace=pulse-web
+   ```
+   if you use workspaces; otherwise the `cd` form is fine.
+
+2. Deploy to Firebase Hosting:
+   ```bash
+   firebase deploy --only hosting
+   ```
+
+3. When it finishes, your app (and `/_/firebase/init.json`) are served at **`https://pulseflow-ca453.firebaseapp.com`** (or your project’s URL). The auth redirect will load that file and sign-in can complete.
+
+### 7c. Optional: run build + deploy in one go
+
+From repo root:
+
+```bash
+cd apps/web && npm run build && cd ../.. && firebase deploy --only hosting
+```
+
+You only need to deploy to Firebase Hosting when you want the **auth redirect** to work on the `*.firebaseapp.com` domain. Your main app can still be on Vercel at `app.pulseflow.site`; users who open the app there will hit Google sign-in and then land on `pulseflow-ca453.firebaseapp.com` for the callback, then Firebase can redirect them back to your app.
 
 ---
 

@@ -12,7 +12,7 @@ Use this as a checklist in **Vercel → Your project → Settings → Environmen
 |----------|----------|-------------|---------|
 | **VITE_API_URL** | No | Backend API base URL. Required for **Body Signals AI recommendations** (insight, explanation, one thing to try). Also used for admin cabinet and referral completion. No trailing slash. If unset, you see rule-based suggestions and an error hint. | `https://pulseflow-app.vercel.app` |
 | **VITE_FIREBASE_API_KEY** | No* | Firebase Web app config. From Firebase Console → Project settings → Your apps → Web app. Needed for “Sign in with Google”. | (from Firebase config) |
-| **VITE_FIREBASE_AUTH_DOMAIN** | No* | Auth domain: use your **production app URL** so redirect lands on your app and `/_/firebase/init.json` is served. Must be in Firebase → Authorized domains. | `app.pulseflow.site` |
+| **VITE_FIREBASE_AUTH_DOMAIN** | No* | Use the **Firebase config value** (e.g. `your-project.firebaseapp.com`). Keeps the Google sign-in page opening correctly. Add the same domain in Firebase → Authorized domains. | `pulseflow-ca453.firebaseapp.com` |
 | **VITE_FIREBASE_PROJECT_ID** | No* | Firebase project ID. | `your-project-id` |
 | **VITE_FIREBASE_STORAGE_BUCKET** | No* | Firebase storage bucket. | `your-project.appspot.com` |
 | **VITE_FIREBASE_MESSAGING_SENDER_ID** | No* | Firebase messaging sender ID. | (numeric) |
