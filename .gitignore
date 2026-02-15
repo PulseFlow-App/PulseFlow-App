@@ -10,6 +10,9 @@ build/
 out/
 *.tsbuildinfo
 
+# Generated at build (Firebase init.json from env)
+apps/web/public/_/
+
 # Env
 .env
 .env.local

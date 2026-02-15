@@ -51,7 +51,7 @@ In `apps/web/.env` (and in Vercel for production), set:
 
 ```env
 VITE_FIREBASE_API_KEY=          # value of apiKey from Firebase config
-VITE_FIREBASE_AUTH_DOMAIN=      # value of authDomain
+VITE_FIREBASE_AUTH_DOMAIN=app.pulseflow.site   # production: your app URL (must match Authorized domains)
 VITE_FIREBASE_PROJECT_ID=       # value of projectId
 VITE_FIREBASE_STORAGE_BUCKET=   # value of storageBucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=  # value of messagingSenderId
@@ -68,7 +68,9 @@ VITE_FIREBASE_MEASUREMENT_ID=   # value of measurementId (optional)
 In **Authentication** → **Settings** → **Authorized domains**, add:
 
 - `localhost` (for dev)
-- `app.pulseflow.site` (or your production domain)
+- `app.pulseflow.site` (your production domain)
+
+Use the **same** domain as `VITE_FIREBASE_AUTH_DOMAIN` in production so the redirect and `/_/firebase/init.json` work.
 
 ---
 
@@ -77,6 +79,24 @@ In **Authentication** → **Settings** → **Authorized domains**, add:
 - **With Firebase config:** Login shows “Sign in with Google” only. No password.
 - **Without Firebase config:** Login shows “Continue with email” (demo mode, no backend).
 - User is stored in `AuthContext` (email + Firebase UID as userId). No Magic wallet is created; wallet connect is only on the Lab page.
+
+---
+
+## 6. 404 for `/_/firebase/init.json` (redirect not completing)
+
+If sign-in opens Google but then you see **`GET .../_/firebase/init.json 404 (Not Found)`** in the console and the redirect never completes:
+
+- The Auth redirect lands on **authDomain** (e.g. `pulseflow-xxx.firebaseapp.com`). The handler there requests `/_/firebase/init.json` from the same origin. That file must be served by whatever is deployed at that URL.
+
+**Fix (choose one):**
+
+1. **Use your app URL as auth domain**  
+   Set `VITE_FIREBASE_AUTH_DOMAIN` to your app’s URL (e.g. `your-app.vercel.app`). Add that domain in Firebase Console → **Authentication** → **Settings** → **Authorized domains**. Redeploy the web app. The build generates `_/firebase/init.json` from your env, so your app will serve it and the 404 goes away.
+
+2. **Deploy the app to Firebase Hosting**  
+   If you keep auth domain as `xxx.firebaseapp.com`, deploy the **same built app** (e.g. from `apps/web`) to **Firebase Hosting** for that project. The build already includes `public/_/firebase/init.json` (generated at build time), so the Hosting site will serve it.
+
+The web app’s **build** script runs `node scripts/generate-firebase-init.js` before Vite, so every build outputs `public/_/firebase/init.json` from your `VITE_FIREBASE_*` env. No extra step needed as long as the app (or its build output) is served at the auth domain.
 
 ---
 
