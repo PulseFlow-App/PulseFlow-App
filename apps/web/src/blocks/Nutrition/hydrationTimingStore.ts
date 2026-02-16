@@ -1,10 +1,14 @@
 /**
- * Hydration timing log (when user hydrates). MVP Nutrition Block.
- * See docs/nutrition-block-design.md. Connects to Body hydration 1-5 and energy.
+ * Hydration timing log (when user hydrates). Scoped by user.
  */
+import { getStorageSuffix } from '../../stores/currentUser';
 import type { HydrationTimingEntry, HydrationContext } from './types';
 
-const STORAGE_KEY = '@pulse/nutrition_hydration_timing';
+const STORAGE_KEY_PREFIX = '@pulse/nutrition_hydration_timing';
+
+function getStorageKey(): string {
+  return `${STORAGE_KEY_PREFIX}_${getStorageSuffix()}`;
+}
 
 function generateId(): string {
   return `hydration_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -12,7 +16,7 @@ function generateId(): string {
 
 function loadEntries(): HydrationTimingEntry[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey());
     if (raw) {
       const parsed = JSON.parse(raw) as HydrationTimingEntry[];
       if (Array.isArray(parsed)) return parsed;
@@ -24,7 +28,7 @@ function loadEntries(): HydrationTimingEntry[] {
 }
 
 function saveEntries(entries: HydrationTimingEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(getStorageKey(), JSON.stringify(entries));
 }
 
 export function getHydrationTimingEntries(): HydrationTimingEntry[] {

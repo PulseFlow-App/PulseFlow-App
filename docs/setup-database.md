@@ -29,7 +29,7 @@ postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
 ```
 
 - **Neon:** Sign up → Create project → Dashboard shows **Connection string**. Copy the **URI** (e.g. `postgresql://user:pass@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require`).
-- **Supabase:** In the project dashboard, click the **Connect** button (top of the page). Choose **Direct connection** or **Transaction** (pooler, port 6543 – better for serverless). Copy the URI and replace `[YOUR-PASSWORD]` with your database password (URL-encode `@`, `%`, `#` if needed). Alternative path: **Project Settings** (gear) → **Database** → scroll to **Connection string**.
+- **Supabase:** In the project dashboard, click **Connect** or go to **Project Settings** → **Database**. For the **Transaction** (pooler) URI: copy the full string and replace `[YOUR-PASSWORD]` with your **database password** (the one from Settings → Database, not the anon key). The pooler user is `postgres.PROJECT_REF` (e.g. `postgres.udfytafypqwaynbtwfxs`) — use the URI as shown, don’t mix the direct-connection user with the pooler host. If the password contains `@`, `#`, or `%`, URL-encode it (e.g. `@` → `%40`).
 - **Railway / Render:** After adding Postgres, the platform adds **`DATABASE_URL`** to your app’s environment; no manual copy needed if you deploy the API on the same project.
 
 ---

@@ -1,12 +1,18 @@
 /**
  * Body Signals - web store (localStorage). Same logic as mobile.
  * Optional AI via fetchAIInsights (backend at VITE_API_URL).
+ * Scoped by user so each Google account has its own body logs.
  */
+import { getStorageSuffix } from '../../stores/currentUser';
 import { fetchAIInsights } from './aiInsights';
 import type { BodyLogEntry, BodyPulseSnapshot, DailySignalsState, FactorImpact } from './types';
 
-const STORAGE_KEY = '@pulse/body_logs';
+const STORAGE_KEY_PREFIX = '@pulse/body_logs';
 const MAX_IMPROVEMENTS = 3;
+
+function getStorageKey(): string {
+  return `${STORAGE_KEY_PREFIX}_${getStorageSuffix()}`;
+}
 
 /** Remove em dashes from app/AI text so recommendations stay consistent. */
 function noEmDash(s: string): string {
@@ -23,7 +29,7 @@ function generateId(): string {
 
 function loadLogs(): BodyLogEntry[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey());
     if (raw) {
       const parsed = JSON.parse(raw) as BodyLogEntry[];
       if (Array.isArray(parsed)) return parsed;
@@ -35,14 +41,17 @@ function loadLogs(): BodyLogEntry[] {
 }
 
 function saveLogs(logs: BodyLogEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+  localStorage.setItem(getStorageKey(), JSON.stringify(logs));
 }
 
-let cache: BodyLogEntry[] | null = null;
+let cache: { key: string; data: BodyLogEntry[] } | null = null;
 
 function getLogs(): BodyLogEntry[] {
-  if (cache === null) cache = loadLogs();
-  return cache;
+  const key = getStorageKey();
+  if (cache?.key === key) return cache.data;
+  const data = loadLogs();
+  cache = { key, data };
+  return data;
 }
 
 export function getBodyLogs(): BodyLogEntry[] {
@@ -57,7 +66,7 @@ export function addBodyLog(entry: Omit<BodyLogEntry, 'id' | 'date'>): BodyLogEnt
   };
   const logs = getLogs();
   logs.unshift(newEntry);
-  cache = logs;
+  cache = { key: getStorageKey(), data: logs };
   saveLogs(logs);
   return newEntry;
 }

@@ -1,10 +1,14 @@
 /**
- * Meal timing log (MVP Nutrition Block).
- * See docs/nutrition-block-design.md. Connects to Body Signals (sleep, appetite, energy).
+ * Meal timing log (MVP Nutrition Block). Scoped by user.
  */
+import { getStorageSuffix } from '../../stores/currentUser';
 import type { MealTimingEntry } from './types';
 
-const STORAGE_KEY = '@pulse/nutrition_meal_timing';
+const STORAGE_KEY_PREFIX = '@pulse/nutrition_meal_timing';
+
+function getStorageKey(): string {
+  return `${STORAGE_KEY_PREFIX}_${getStorageSuffix()}`;
+}
 
 function generateId(): string {
   return `meal_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -12,7 +16,7 @@ function generateId(): string {
 
 function loadEntries(): MealTimingEntry[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey());
     if (raw) {
       const parsed = JSON.parse(raw) as MealTimingEntry[];
       if (Array.isArray(parsed)) return parsed;
@@ -24,7 +28,7 @@ function loadEntries(): MealTimingEntry[] {
 }
 
 function saveEntries(entries: MealTimingEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(getStorageKey(), JSON.stringify(entries));
 }
 
 export function getMealTimingEntries(): MealTimingEntry[] {

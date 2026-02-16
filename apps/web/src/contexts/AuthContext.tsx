@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth, googleAuthProvider, isFirebaseEnabled } from '../lib/firebase';
+import { setCurrentUserId } from '../stores/currentUser';
 
 export type User = {
   userId: string;
@@ -67,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (cancelled) return;
         if (credential?.user?.email) {
           const u = { userId: credential.user.uid, email: credential.user.email };
+          setCurrentUserId(u.userId);
           setUser(u);
         }
       })
@@ -76,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser?.email) {
         const u = { userId: firebaseUser.uid, email: firebaseUser.email };
+        setCurrentUserId(u.userId);
         setUser(u);
         if (API_BASE) {
           if (Date.now() - lastSyncFailureAt.current < AUTH_SYNC_BACKOFF_MS) {
@@ -109,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
         }
       } else {
+        setCurrentUserId(null);
         setUser(null);
         setAccessToken(null);
         try { localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
@@ -185,10 +189,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
   }, [user?.email]);
 
+  useEffect(() => {
+    setCurrentUserId(user?.userId ?? null);
+  }, [user?.userId]);
+
   const signIn = useCallback((email: string) => {
     const trimmed = email.trim().toLowerCase();
     if (!trimmed) return;
     const u: User = { userId: generateUserId(), email: trimmed };
+    setCurrentUserId(u.userId);
     setUser(u);
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ user: u }));
     if (API_BASE && Date.now() - lastSyncFailureAt.current >= AUTH_SYNC_BACKOFF_MS) {
@@ -221,6 +230,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((result) => {
         if (result?.user?.email) {
           const u = { userId: result.user.uid, email: result.user.email };
+          setCurrentUserId(u.userId);
           setUser(u);
           if (API_BASE && Date.now() - lastSyncFailureAt.current >= AUTH_SYNC_BACKOFF_MS) {
             fetch(`${API_BASE}/auth/sync`, {
@@ -263,6 +273,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (auth) {
       firebaseSignOut(auth).catch(() => {});
     }
+    setCurrentUserId(null);
     setUser(null);
     setAccessToken(null);
     localStorage.removeItem(STORAGE_KEY);

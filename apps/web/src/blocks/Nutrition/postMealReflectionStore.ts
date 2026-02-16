@@ -1,10 +1,14 @@
 /**
- * Post-meal reflection ("Food → Signal" loop). MVP Nutrition Block.
- * See docs/nutrition-block-design.md. Feeds pattern detection over time.
+ * Post-meal reflection ("Food → Signal" loop). Scoped by user.
  */
+import { getStorageSuffix } from '../../stores/currentUser';
 import type { PostMealReflectionEntry, PostMealFeeling } from './types';
 
-const STORAGE_KEY = '@pulse/nutrition_post_meal_reflections';
+const STORAGE_KEY_PREFIX = '@pulse/nutrition_post_meal_reflections';
+
+function getStorageKey(): string {
+  return `${STORAGE_KEY_PREFIX}_${getStorageSuffix()}`;
+}
 
 function generateId(): string {
   return `reflection_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -12,7 +16,7 @@ function generateId(): string {
 
 function loadEntries(): PostMealReflectionEntry[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey());
     if (raw) {
       const parsed = JSON.parse(raw) as PostMealReflectionEntry[];
       if (Array.isArray(parsed)) return parsed;
@@ -24,7 +28,7 @@ function loadEntries(): PostMealReflectionEntry[] {
 }
 
 function saveEntries(entries: PostMealReflectionEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(getStorageKey(), JSON.stringify(entries));
 }
 
 export function getPostMealReflections(): PostMealReflectionEntry[] {

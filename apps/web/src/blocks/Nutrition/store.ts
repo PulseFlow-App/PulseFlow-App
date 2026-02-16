@@ -1,10 +1,15 @@
 /**
  * Nutrition block: fridge log entries (freezer, main, veggie).
- * Stored in localStorage; no API yet.
+ * Stored in localStorage; scoped by user.
  */
+import { getStorageSuffix } from '../../stores/currentUser';
 import type { FridgeLogEntry, FridgePhoto } from './types';
 
-const STORAGE_KEY = '@pulse/nutrition_fridge_logs';
+const STORAGE_KEY_PREFIX = '@pulse/nutrition_fridge_logs';
+
+function getStorageKey(): string {
+  return `${STORAGE_KEY_PREFIX}_${getStorageSuffix()}`;
+}
 
 function generateId(): string {
   return `fridge_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -12,7 +17,7 @@ function generateId(): string {
 
 function loadEntries(): FridgeLogEntry[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey());
     if (raw) {
       const parsed = JSON.parse(raw) as FridgeLogEntry[];
       if (Array.isArray(parsed)) return parsed;
@@ -24,7 +29,7 @@ function loadEntries(): FridgeLogEntry[] {
 }
 
 function saveEntries(entries: FridgeLogEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(getStorageKey(), JSON.stringify(entries));
 }
 
 /** All fridge logs, newest first. */

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "build": "node -e \"require('fs').mkdirSync('public',{recursive:true})\""
+    "build": "node -e \"require('fs').mkdirSync('public',{recursive:true})\"",
+    "grant-points": "node scripts/grant-bonus-points.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

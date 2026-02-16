@@ -88,8 +88,8 @@ async function getUserPoints(userId) {
 }
 
 /** Points per streak day, per check-in, and per login (activity rewards). */
-const POINTS_PER_STREAK_DAY = 2;
-const POINTS_PER_CHECKIN = 1;
+const POINTS_PER_STREAK_DAY = 10;
+const POINTS_PER_CHECKIN = 30;
 const POINTS_PER_LOGIN = 1;
 const MAX_LOGINS_FOR_POINTS = 100;
 

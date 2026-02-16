@@ -1,9 +1,13 @@
 /**
  * App-wide usage streak: every day the user opens the app (e.g. visits dashboard) counts.
  * Streak = consecutive calendar days with at least one "app use" record, including today.
+ * Scoped by user so each Google account has its own streak.
  */
+import { getStorageSuffix } from './currentUser';
 
-const STORAGE_KEY = '@pulse/app_usage_dates';
+function getStorageKey(): string {
+  return `@pulse/app_usage_dates_${getStorageSuffix()}`;
+}
 
 function getTodayDateString(): string {
   return new Date().toISOString().slice(0, 10);
@@ -11,7 +15,7 @@ function getTodayDateString(): string {
 
 function loadDateStrings(): string[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey());
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) return parsed;
@@ -24,7 +28,7 @@ function loadDateStrings(): string[] {
 
 function saveDateStrings(dates: string[]): void {
   const unique = [...new Set(dates)].sort();
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(unique));
+  localStorage.setItem(getStorageKey(), JSON.stringify(unique));
 }
 
 /** Call when the user has "used" the app (e.g. landed on dashboard). Idempotent per day. */

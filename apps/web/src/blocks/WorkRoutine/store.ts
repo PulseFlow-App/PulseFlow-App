@@ -1,11 +1,16 @@
 /**
  * Work Routine: check-ins and narrative analysis.
  * Logic aligned with: work-routine-system-prompt.md. Notes describe reality; response must explain effect + leverage.
- * Work routine = cognitive load, focus quality, mental fatigue, environment, timing (not productivity advice).
+ * Scoped by user so each Google account has its own check-ins.
  */
+import { getStorageSuffix } from '../../stores/currentUser';
 import type { CheckInEntry, CheckInAnalysis, QuestionResponse, WorkDayMetrics } from './types';
 
-const STORAGE_KEY = '@pulse/work_routine_checkins';
+const STORAGE_KEY_PREFIX = '@pulse/work_routine_checkins';
+
+function getStorageKey(): string {
+  return `${STORAGE_KEY_PREFIX}_${getStorageSuffix()}`;
+}
 
 /** Work-note themes: concrete work patterns that require effect + leverage (no name-check only). */
 function getWorkNoteThemes(notes: string): string[] {
@@ -32,7 +37,7 @@ function generateId(): string {
 
 function loadEntries(): CheckInEntry[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey());
     if (raw) {
       const parsed = JSON.parse(raw) as CheckInEntry[];
       if (Array.isArray(parsed)) return parsed;
@@ -44,7 +49,7 @@ function loadEntries(): CheckInEntry[] {
 }
 
 function saveEntries(entries: CheckInEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(getStorageKey(), JSON.stringify(entries));
 }
 
 /** Replace local check-ins with a list (e.g. from server sync). Use after fetching from API. */

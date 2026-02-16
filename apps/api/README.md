@@ -23,6 +23,40 @@ Server runs at `http://localhost:3000`. Set `VITE_API_URL` in the web app (e.g. 
 | `CORS_ORIGINS` | No | Comma-separated allowed origins (alternative to CORS_ORIGIN). |
 | `PORT`       | No | Port (default 3000). Set by Railway/Render. |
 
+## Grant test points (by email)
+
+**Option A – Direct DB (no API server needed)**  
+With `DATABASE_URL` in `apps/api/.env` (or set in the shell):
+
+- **From repo root:**  
+  `node apps/api/scripts/grant-bonus-points.js lumina.envisions@gmail.com 100`
+- **From `apps/api`:**  
+  `node scripts/grant-bonus-points.js lumina.envisions@gmail.com 100`
+
+**Option B – Via API (no direct DB needed)**  
+If Option A fails with "Database login failed", use the API instead. In `apps/api/.env` set `ADMIN_API_KEY` (any secret string). Start the API in one terminal (`npm start`); the API will use `DATABASE_URL` from the same `.env`. In another terminal, from `apps/api`:
+
+```bash
+ADMIN_API_KEY=your-key npm run grant-points -- lumina.envisions@gmail.com 100
+```
+
+Or from repo root: `ADMIN_API_KEY=your-key node apps/api/scripts/grant-bonus-points.js lumina.envisions@gmail.com 100`
+
+**Option C – curl**  
+With the API running:
+
+```bash
+curl -X POST "$API_BASE/admin/points" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ADMIN_API_KEY" \
+  -d '{"email":"lumina.envisions@gmail.com","amount":100}'
+```
+
+The user must exist in `users` (signed in at least once).
+
+- **ENOTFOUND:** Fix the host in `DATABASE_URL` or resume a paused Supabase project.
+- **Database login failed (28P01):** Use **Option B** above (start API, then run the script with `ADMIN_API_KEY`) so the API does the DB connection; or fix the URI (Supabase: Transaction string, database password, URL-encode `@#%`). See [docs/setup-database.md](../docs/setup-database.md).
+
 ## Deploy
 
 1. **Railway**
