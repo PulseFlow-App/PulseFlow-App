@@ -197,7 +197,7 @@ export function generateInsights(
   let insight: string;
   let explanation: string;
   if (noteThemes.length > 0 && entry.notes?.trim()) {
-    insight = "Your note and today's signals are reflected in the suggestions below.";
+    insight = "Today's signals and context are reflected in the suggestions below.";
     explanation = reasonText ? `What's driving things: ${reasonText}.` : 'The table below shows what affects what.';
   } else if (trend === 'up') {
     insight = 'Your Pulse Score is up today. Small steps are adding up.';

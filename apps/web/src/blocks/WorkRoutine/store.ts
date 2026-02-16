@@ -157,7 +157,7 @@ function ruleBasedAnalysisFromMetrics(m: WorkDayMetrics): CheckInAnalysis {
       ];
       oneThing = 'Notice whether one earlier stop today or one short break earlier tomorrow changes how drained you feel. No extra load; just one recovery lever.';
     } else {
-      pattern = 'Your note points to a specific work pattern. Cognitive load and recovery windows are the main levers.';
+      pattern = 'Cognitive load and recovery windows are the main levers today. One specific lever below.';
       shapingLines = ['Task structure and breaks often shape focus and mental fatigue.', 'This looks cumulative, not acute.'];
       oneThing = 'Notice whether one short gap or break between blocks changes how focus holds later.';
     }

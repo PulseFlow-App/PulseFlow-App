@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { recordAppUsage, getAppStreak } from '../stores/appStreak';
 import { getBodyLogs } from '../blocks/BodySignals/store';
@@ -24,8 +24,17 @@ type PointsData = {
 
 export function Dashboard() {
   const { user, accessToken, signOut } = useAuth();
+  const location = useLocation();
   const [points, setPoints] = useState<PointsData | null>(null);
   const [pointsRefreshKey, setPointsRefreshKey] = useState(0);
+
+  // Force points refetch when landing from a check-in (so new activity points appear)
+  useEffect(() => {
+    if ((location.state as { refreshPoints?: boolean })?.refreshPoints) {
+      setPointsRefreshKey((k) => k + 1);
+      window.history.replaceState({}, document.title, location.pathname);
+    }
+  }, [location.state, location.pathname]);
 
   useEffect(() => {
     if (user) recordAppUsage();

@@ -82,6 +82,22 @@ export function BodySignalsResult() {
           </div>
         </div>
 
+        {!loadingAI && (
+          <div className={styles.ctaSection} role="region" aria-labelledby="result-next-heading">
+            <h2 id="result-next-heading" className={styles.ctaHeading}>What next?</h2>
+            <p className={styles.ctaText}>
+              This is your <strong>Body Pulse</strong> for today — a partial score. Add data from Work Routine and other blocks to get your <strong>full Pulse</strong>. When you’ve completed more blocks, you’ll see the aggregated Pulse from all your inputs.
+            </p>
+            <div className={styles.ctaButtons}>
+              <Link to="/dashboard/pulse?from=body-signals" className={styles.ctaPrimary}>
+                Save Pulse score
+              </Link>
+              <Link to="/dashboard" className={styles.ctaSecondary}>
+                Add more blocks
+              </Link>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

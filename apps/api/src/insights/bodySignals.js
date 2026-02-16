@@ -31,6 +31,7 @@ function getNoteThemes(notes) {
   if (/\b(party|parties|going out|drinks|alcohol|late night|night out)\b/.test(lower)) themes.push('party_late');
   if (/\b(travel|flight|flying|jet lag|trip|traveling)\b/.test(lower)) themes.push('travel');
   if (/\b(deadline|deadlines|big day|presentation|exam|interview)\b/.test(lower)) themes.push('deadline');
+  if (themes.includes('stress') && themes.includes('sleep')) themes.push('stress_sleep');
   return themes;
 }
 
@@ -136,19 +137,11 @@ function buildImprovements(entry, frictionPoints, noteThemes, factors) {
   return improvements.slice(0, MAX_IMPROVEMENTS);
 }
 
-// --- Narrative output: one pattern, one causal "why", one experiment (no repetition) ---
+// --- Narrative output: one pattern, one causal "why", one experiment. Never quote the user's note (interpretive grounding). ---
 
-function summarizeNote(notes) {
-  if (!notes || !notes.trim()) return null;
-  const s = notes.trim();
-  return s.length > 80 ? s.slice(0, 77) + '…' : s;
-}
-
-// Today's pattern: short sentences, note referenced, 2+ signals. Situation-aware when notes mention events/plans.
+// Today's pattern: short sentences, 2+ signals. Interpret note intent; never echo raw note or typos.
 function buildNarrativePattern(entry, trend, frictionPoints, noteThemes) {
   const e = entry || {};
-  const notes = (e.notes || '').trim();
-  const hasNote = notes.length > 0 && noteThemes.length > 0;
   const sleepQualityLow = e.sleepQuality != null && e.sleepQuality < 3;
   const stressMid = e.stress != null && e.stress >= 3 && e.stress <= 4;
   const stressHigh = e.stress != null && e.stress >= 4;
@@ -156,8 +149,10 @@ function buildNarrativePattern(entry, trend, frictionPoints, noteThemes) {
 
   const parts = [];
 
-  // Situational pattern when note describes events/plans (gym + party, travel, deadline)
-  if (noteThemes.includes('exercise') && noteThemes.includes('party_late')) {
+  // Stress → sleep (user describing stress disrupting sleep). Interpret; never quote the note.
+  if (noteThemes.includes('stress_sleep') || (noteThemes.includes('stress') && noteThemes.includes('sleep') && (stressHigh || stressMid || sleepQualityLow))) {
+    parts.push('Evening stress seems to be disrupting your sleep, which then lowers next-day energy.');
+  } else if (noteThemes.includes('exercise') && noteThemes.includes('party_late')) {
     parts.push('Training added physical load earlier. A late night will likely compress sleep and recovery. Energy tomorrow is the main risk, not today.');
   } else if (noteThemes.includes('exercise')) {
     parts.push('Physical load from training is the main lever today. Recovery (food, hydration, rest) will show up in energy and mood.');
@@ -175,11 +170,6 @@ function buildNarrativePattern(entry, trend, frictionPoints, noteThemes) {
     parts.push('Your signals point to mild strain around sleep and energy.');
   }
 
-  if (hasNote && !noteThemes.includes('exercise') && !noteThemes.includes('party_late') && !noteThemes.includes('travel') && !noteThemes.includes('deadline')) {
-    const noteSummary = summarizeNote(notes);
-    parts.push(`Your note about ${noteSummary} fits this.`);
-  }
-
   if (appetiteMid && (sleepQualityLow || noteThemes.includes('hunger') || noteThemes.includes('no_appetite'))) {
     parts.push('Appetite and digestion sitting in the middle suggests compensation rather than a problem.');
   } else if (sleepQualityLow && (stressMid || stressHigh)) {
@@ -193,7 +183,7 @@ function buildNarrativePattern(entry, trend, frictionPoints, noteThemes) {
   return parts.join(' ');
 }
 
-// What's shaping your Pulse score: bullet rhythm. Situation-aware when notes mention events/plans.
+// What's shaping your Pulse score: bullet rhythm. Pattern-specific closing when possible (no generic filler).
 function buildNarrativeWhy(entry, trend, frictionPoints, noteThemes) {
   const e = entry || {};
   const lines = [];
@@ -201,36 +191,42 @@ function buildNarrativeWhy(entry, trend, frictionPoints, noteThemes) {
   const stressHigh = e.stress != null && e.stress >= 4;
   const stressMid = e.stress != null && e.stress >= 3;
 
-  if (noteThemes.includes('exercise') && noteThemes.includes('party_late')) {
-    lines.push('Exercise increases recovery needs.');
-    lines.push('Shortened sleep after activity often shows up as lower energy and appetite the next day.');
-    lines.push('Stress is secondary here.');
-  } else if (noteThemes.includes('exercise')) {
-    lines.push('Physical load from training drives recovery needs.');
-    lines.push('Food, hydration, and rest will show up in energy and mood.');
-  } else if (noteThemes.includes('party_late') || noteThemes.includes('travel')) {
-    lines.push('Sleep and timing are the main levers.');
-    lines.push('Hydration and when you wind down often affect how tomorrow feels.');
-  } else if (noteThemes.includes('deadline')) {
-    lines.push('Cognitive and physical load from the day drive recovery needs.');
-    lines.push('Sleep and one clear break or stop time will shape tomorrow.');
-  }
-
-  const hasSituational = noteThemes.includes('exercise') || noteThemes.includes('party_late') || noteThemes.includes('travel') || noteThemes.includes('deadline');
-  if (sleepQualityLow || frictionPoints.includes('sleep')) {
-    if (!lines.length) lines.push('Sleep quality is the main driver today.');
-    if (!hasSituational) lines.push('Lower sleep quality often flattens energy and appetite.');
-  }
-  if (stressHigh || stressMid || frictionPoints.includes('stress')) {
-    lines.push('Stress may be adding background load.');
-  }
-  if ((e.energy != null && e.energy <= 2) || (e.mood != null && e.mood <= 2)) {
-    lines.push('Mood and energy are moving together.');
-  }
-  if (lines.length > 0) {
-    lines.push('This looks cumulative, not acute.');
+  const hasStressSleep = noteThemes.includes('stress_sleep') || (noteThemes.includes('stress') && noteThemes.includes('sleep') && (e.stress >= 3 || e.sleepQuality != null));
+  if (hasStressSleep) {
+    lines.push('Stress and sleep quality are tightly linked in your signals.');
+    lines.push('Lower sleep then reduces resilience the next day.');
+    lines.push('This pattern tends to repeat when evening stress stays high.');
   } else {
-    lines.push('Your signals are in a moderate range. One small experiment may move the needle.');
+    if (noteThemes.includes('exercise') && noteThemes.includes('party_late')) {
+      lines.push('Exercise increases recovery needs.');
+      lines.push('Shortened sleep after activity often shows up as lower energy and appetite the next day.');
+      lines.push('Stress is secondary here.');
+    } else if (noteThemes.includes('exercise')) {
+      lines.push('Physical load from training drives recovery needs.');
+      lines.push('Food, hydration, and rest will show up in energy and mood.');
+    } else if (noteThemes.includes('party_late') || noteThemes.includes('travel')) {
+      lines.push('Sleep and timing are the main levers.');
+      lines.push('Hydration and when you wind down often affect how tomorrow feels.');
+    } else if (noteThemes.includes('deadline')) {
+      lines.push('Cognitive and physical load from the day drive recovery needs.');
+      lines.push('Sleep and one clear break or stop time will shape tomorrow.');
+    }
+    const hasSituational = noteThemes.includes('exercise') || noteThemes.includes('party_late') || noteThemes.includes('travel') || noteThemes.includes('deadline');
+    if (sleepQualityLow || frictionPoints.includes('sleep')) {
+      if (!lines.length) lines.push('Sleep quality is the main driver today.');
+      if (!hasSituational) lines.push('Lower sleep quality often flattens energy and appetite.');
+    }
+    if (stressHigh || stressMid || frictionPoints.includes('stress')) {
+      lines.push('Stress may be adding background load.');
+    }
+    if ((e.energy != null && e.energy <= 2) || (e.mood != null && e.mood <= 2)) {
+      lines.push('Mood and energy are moving together.');
+    }
+    if (lines.length > 0) {
+      lines.push('This looks cumulative, not acute.');
+    } else {
+      lines.push('Your signals are in a moderate range. One small experiment may move the needle.');
+    }
   }
 
   return lines.map((line) => '• ' + line).join('\n');
@@ -259,6 +255,10 @@ function buildNarrativeOneThing(entry, frictionPoints, noteThemes) {
     return 'Notice whether one short break or a clear stop time today changes how sleep and tomorrow feel. Recovery after a big day matters.';
   }
 
+  if (noteThemes.includes('stress_sleep') || (noteThemes.includes('stress') && noteThemes.includes('sleep') && (stressHigh || sleepQualityLow))) {
+    return 'Reduce mental load before bed rather than trying to extend sleep. Timing of wind-down may matter more than duration.';
+  }
+
   if (noteThemes.includes('no_appetite')) {
     return 'Observe just one change: Eat a bit earlier or more evenly and check appetite tomorrow. Or notice whether deeper sleep reduces stress, even if total hours stay the same.';
   }
@@ -268,11 +268,11 @@ function buildNarrativeOneThing(entry, frictionPoints, noteThemes) {
   if (noteThemes.includes('digestion')) {
     return 'Observe just one change: Smaller meals and more time between eating and sleeping. Notice if digestion and energy feel different over the next few days.';
   }
-  if (noteThemes.includes('stress')) {
-    return 'Observe just one change: Notice whether deeper sleep reduces stress on days when sleep feels deeper, even if total hours stay the same.';
+  if (noteThemes.includes('stress') && !noteThemes.includes('sleep')) {
+    return 'Observe whether a short wind-down buffer before bed changes how sleep and next-day stress feel.';
   }
-  if (sleepQualityLow && stressHigh) {
-    return 'Observe just one change: Eat a bit earlier or more evenly and check appetite tomorrow. Or notice whether deeper sleep reduces stress, even if total hours stay the same.';
+  if (sleepQualityLow && stressHigh && !noteThemes.includes('stress_sleep')) {
+    return 'Reduce mental load before bed rather than trying to extend sleep. Wind-down timing may matter more than duration.';
   }
   if (sleepQualityLow) {
     return 'Observe just one change: Similar bed and wake times for a few days. Notice how energy and appetite respond.';

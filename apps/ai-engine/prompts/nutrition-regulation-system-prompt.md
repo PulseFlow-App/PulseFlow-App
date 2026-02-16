@@ -4,6 +4,8 @@ Nutrition in Pulse is **regulation support through timing, hydration, and recove
 
 **Reference:** Trusted sources (no medical claims): `trusted-sources-and-guardrails.md`. Nutrition: Harvard T.H. Chan, WHO Nutrition, NIH ODS. Use for general guidance only. No diet prescriptions.
 
+**Interpretive grounding (all blocks):** Apply the rules in `trusted-sources-and-guardrails.md` → “Interpretive Grounding (All Blocks)”. Never quote the user’s note or typos; interpret intent and respond in your own words. Identify cause vs outcome; respond to the cause. Use pattern-specific closing when possible.
+
 ---
 
 ## Recommendation Framework (Mandatory Order)

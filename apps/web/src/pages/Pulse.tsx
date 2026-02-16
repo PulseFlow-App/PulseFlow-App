@@ -87,7 +87,7 @@ export function Pulse() {
           </p>
         ) : (
           <p className={styles.ctaText} style={{ marginTop: 12, marginBottom: 0 }}>
-            Add another block to get a combined Pulse and richer insights.
+            This is your Pulse so far today. Add another block to get your full combined Pulse and richer insights.
           </p>
         )}
       </div>
@@ -193,9 +193,13 @@ export function Pulse() {
         </Link>
       </header>
       <main id="main" className={styles.main}>
-        <h1 className={styles.title}>Your Pulse</h1>
+        <h1 className={styles.title}>
+          {hasBoth ? 'Your full Pulse for today' : 'Your Pulse'}
+        </h1>
         <p className={styles.subtitle}>
-          Combined score from Body Signals and Work Routine
+          {hasBoth
+            ? 'Aggregated from Body Signals and Work Routine.'
+            : 'This score is partial. Add more blocks to get your full Pulse for today.'}
         </p>
 
         {scoreCardBlock}
