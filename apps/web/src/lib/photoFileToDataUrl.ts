@@ -21,7 +21,7 @@ export async function isHeicByMagicBytes(file: File): Promise<boolean> {
   const ftyp =
     u8[4] === 0x66 && u8[5] === 0x74 && u8[6] === 0x79 && u8[7] === 0x70; // "ftyp"
   if (!ftyp) return false;
-  const brand = String.fromCharCode(u8[8], u8[9], u8[10], u8[11]);
+  const brand = String.fromCharCode(u8[8] ?? 0, u8[9] ?? 0, u8[10] ?? 0, u8[11] ?? 0);
   return HEIC_BRANDS.has(brand);
 }
 

@@ -8,7 +8,7 @@ import { getLatestCheckIn } from '../WorkRoutine/store';
 import { getMealTimingForRange, getMealTimingForDate } from './mealTimingStore';
 import { getHydrationTimingForRange, getHydrationTimingForDate } from './hydrationTimingStore';
 import { getRecoverySituation } from './recoverySituation';
-import type { NutritionPatternBlock, NutritionStabilityLabel, NutritionSituationMode } from './types';
+import type { NutritionPatternBlock } from './types';
 
 const LOOKBACK_DAYS = 14;
 const WEEK_DAYS = 7;
@@ -20,7 +20,9 @@ function getToday(): string {
 /** True if time string (HH or HH:MM) is after 11:00 (late first meal). */
 function isLateFirstMeal(time: string | undefined): boolean {
   if (!time) return true;
-  const [h, m] = time.split(':').map((n) => parseInt(n, 10) || 0);
+  const parts = time.split(':').map((n) => parseInt(n, 10) || 0);
+  const h = parts[0] ?? 0;
+  const m = parts[1] ?? 0;
   return h > 11 || (h === 11 && m > 0);
 }
 
@@ -56,7 +58,6 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
   const bodyLogs = getBodyLogs().slice(0, 30);
   const todayBody = bodyLogs.find((e) => e.date === today);
   const mealTimings = getMealTimingForRange(LOOKBACK_DAYS);
-  const hydrationTimings = getHydrationTimingForRange(LOOKBACK_DAYS);
   const todayMeal = getMealTimingForDate(today);
   const todayHydration = getHydrationTimingForDate(today);
   const recovery = getRecoverySituation();
@@ -82,7 +83,6 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
   const lowAppetite = (todayBody?.appetite ?? 99) <= 2;
   const lowHydration = (todayBody?.hydration ?? 99) <= 2;
   const lateFirst = !todayMeal?.firstMealTime || isLateFirstMeal(todayMeal.firstMealTime);
-  const reactiveHydration = todayHydration?.when?.length === 0 && lowEnergy; // no hydration timing logged and energy low
   const workNotes = getLatestCheckIn()?.metrics?.notes ?? '';
   const backToBackCalls = /\b(back to back|calls all day|meetings all day)\b/.test(
     [todayBody?.notes, workNotes].filter(Boolean).join(' ').toLowerCase()
