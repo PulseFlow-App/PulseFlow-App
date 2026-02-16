@@ -40,7 +40,7 @@ export function NutritionOverview() {
           <p className={styles.patternText}>{block.pattern}</p>
           {block.influencing.length > 0 && (
             <>
-              <h3 className={styles.influencingHeading}>What&apos;s influencing it</h3>
+              <h3 className={styles.influencingHeading}>What connects</h3>
               <ul className={styles.insightsList}>
                 {block.influencing.map((line, i) => (
                   <li key={i}>{line}</li>
@@ -49,7 +49,7 @@ export function NutritionOverview() {
             </>
           )}
           <p className={styles.oneAdjustment}>
-            <strong>One smart adjustment:</strong> {block.oneAdjustment}
+            <strong>Smart leverage today:</strong> {block.oneAdjustment}
           </p>
         </div>
 

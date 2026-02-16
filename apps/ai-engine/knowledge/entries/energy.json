@@ -1,0 +1,63 @@
+[
+  {
+    "id": "energy_cumulative_load_01",
+    "block": "energy",
+    "topic": "Cumulative Fatigue",
+    "summary": "Energy dips often reflect accumulated sleep, stress, and metabolic load rather than a single event.",
+    "observed_patterns": [
+      "Multiple low signals → flattened energy",
+      "Sleep + stress + late meal → compound effect"
+    ],
+    "implication_logic": "If multiple low signals stack (sleep, stress, timing, hydration), energy flattens. Single levers may not be enough.",
+    "intervention_leverage": "Address earliest upstream factor (e.g. stress before sleep, hydration before afternoon).",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often", "tends to"],
+      "avoid": ["causes disease", "diagnosis", "you have fatigue"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["cumulative_fatigue", "low_energy", "multi_signal", "upstream"],
+    "references": []
+  },
+  {
+    "id": "energy_sleep_driven_01",
+    "block": "energy",
+    "topic": "Sleep-Driven Fatigue",
+    "summary": "Short or poor-quality sleep is associated with lower next-day energy and focus.",
+    "observed_patterns": [
+      "Low sleep quality → next-day energy dip",
+      "Short sleep → increased fatigue perception"
+    ],
+    "implication_logic": "If sleep was poor, energy and stress resilience the next day are often lower regardless of nutrition.",
+    "intervention_leverage": "Support recovery with timing and hydration; avoid adding load with late heavy meals.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often"],
+      "avoid": ["causes disorder", "sleep X hours"]
+    },
+    "evidence_level": "high",
+    "pattern_tags": ["sleep", "low_sleep", "fatigue", "energy", "recovery"],
+    "references": [
+      { "title": "Sleep and next-day function", "source": "Sleep Medicine", "year": 2019 }
+    ]
+  },
+  {
+    "id": "energy_glycemic_01",
+    "block": "energy",
+    "topic": "Glycemic Swings & Energy",
+    "summary": "Long gaps without eating and large, late meals can contribute to energy swings and afternoon dips.",
+    "observed_patterns": [
+      "Long morning gap → afternoon slump",
+      "Late first meal → flatter focus later"
+    ],
+    "implication_logic": "If first meal is delayed and energy is low, earlier fuel often stabilizes more than increasing portion size later.",
+    "intervention_leverage": "Earlier fuel tomorrow may stabilize energy more than larger portions later.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often", "can contribute"],
+      "avoid": ["blood sugar disease", "insulin resistance diagnosis", "eat X grams"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["glycemic", "late_first_meal", "low_energy", "meal_timing", "under_fueled"],
+    "references": [
+      { "title": "Meal timing and energy", "source": "PubMed", "year": 2020 }
+    ]
+  }
+]

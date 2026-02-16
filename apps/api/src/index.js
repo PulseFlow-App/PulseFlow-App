@@ -28,10 +28,11 @@ const corsOptions = corsOrigin
     : {}; // allow all when unset (e.g. dev)
 app.use(cors(corsOptions));
 
-// Limit JSON body size: 4MB for photo upload, 100kb for other routes
+// Limit JSON body size: 14mb for photo/recipe-from-fridge (3 images), 100kb for other routes
 app.use((req, res, next) => {
   const isPhotoUpload = req.method === 'POST' && req.path === '/users/me/photos';
-  express.json({ limit: isPhotoUpload ? '14mb' : '100kb' })(req, res, next);
+  const isRecipesFromFridge = req.method === 'POST' && req.path === '/insights/recipes-from-fridge';
+  express.json({ limit: isPhotoUpload || isRecipesFromFridge ? '14mb' : '100kb' })(req, res, next);
 });
 
 // Rate limits: stricter for auth/referrals to prevent brute force and abuse
@@ -469,6 +470,7 @@ app.post('/users/me/check-ins', authMiddleware, (req, res) => {
 
 // ----- Insights (note-aware, with factors) -----
 const { computeInsights } = require('./insights/bodySignals');
+const { callGemini } = require('./insights/recipesFromFridge');
 
 app.post('/insights/body-signals', (req, res) => {
   if (!security.isBodyWithinLimit(req, security.MAX_INSIGHTS_BODY_BYTES)) {
@@ -481,6 +483,25 @@ app.post('/insights/body-signals', (req, res) => {
   } catch (err) {
     console.error('insights/body-signals error', err);
     return res.status(500).json({ message: 'Insights failed' });
+  }
+});
+
+// ----- Recipes from fridge (vision: Gemini). Auth optional for MVP. -----
+app.post('/insights/recipes-from-fridge', async (req, res) => {
+  try {
+    const { images = [], notes } = req.body || {};
+    const list = Array.isArray(images) ? images : [];
+    if (list.length === 0) {
+      return res.status(400).json({ message: 'Send at least one image (dataUrl).' });
+    }
+    const result = await callGemini(list, notes);
+    if (result.error) {
+      return res.status(503).json({ message: result.error });
+    }
+    return res.json({ text: result.text });
+  } catch (err) {
+    console.error('recipes-from-fridge error', err);
+    return res.status(500).json({ message: 'Recipe generation failed' });
   }
 });
 

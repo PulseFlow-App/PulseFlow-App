@@ -435,3 +435,72 @@
 .insightsList li {
   margin-bottom: 4px;
 }
+
+/* Result page: pulse + next-step copy */
+.resultPulseCopy {
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+
+/* Recipe ideas from fridge (AI vision) */
+.recipeIdeasCard {
+  padding: 16px;
+  margin-bottom: 24px;
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 16px;
+}
+
+.recipeIdeasHeading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #fff;
+}
+
+.recipeIdeasIntro {
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.recipeIdeasButton {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 20px;
+  background: #3b82f6;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.recipeIdeasButton:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.recipeIdeasButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.recipeIdeasOutput {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.recipeIdeasPre {
+  font-size: 0.9375rem;
+  color: #e5e5e5;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+}

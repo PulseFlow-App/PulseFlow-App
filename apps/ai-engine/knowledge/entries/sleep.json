@@ -1,0 +1,74 @@
+[
+  {
+    "id": "sleep_consistency_01",
+    "block": "sleep",
+    "topic": "Sleep Regularity",
+    "summary": "Irregular sleep timing is associated with reduced sleep efficiency and increased fatigue.",
+    "mechanisms": [
+      "Circadian desynchronization",
+      "Hormonal rhythm instability"
+    ],
+    "observed_patterns": [
+      "Variable bedtime → unstable energy",
+      "Shifted sleep window → next-day drag"
+    ],
+    "implication_logic": "If bedtimes vary widely, stabilizing timing often improves energy before extending duration.",
+    "intervention_leverage": "Stabilize sleep timing before extending sleep duration.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often", "linked to"],
+      "avoid": ["causes disease", "prevents disorder", "sleep X hours"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["sleep_consistency", "bedtime", "circadian", "fatigue"],
+    "references": [
+      { "title": "Sleep regularity and health", "source": "Sleep Medicine Reviews", "year": 2018 }
+    ]
+  },
+  {
+    "id": "sleep_stress_bidirectional_01",
+    "block": "sleep",
+    "topic": "Sleep–Stress Interaction",
+    "summary": "Psychological stress can increase sleep onset latency and reduce sleep depth. Poor sleep can reduce stress resilience the next day.",
+    "mechanisms": [
+      "Elevated cortisol delays melatonin release",
+      "Increased cognitive arousal at night",
+      "Reduced slow-wave sleep"
+    ],
+    "observed_patterns": [
+      "Stress high → sleep quality low",
+      "Sleep quality low → next-day mood and resilience lower"
+    ],
+    "implication_logic": "If stress remains elevated into evening, sleep disruption is more likely.",
+    "intervention_leverage": "Reduce stress before bedtime rather than extending sleep duration.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "linked to"],
+      "avoid": ["causes disease", "prevents disorder"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["stress_sleep", "sleep_stress", "cortisol", "onset_latency", "sleep_quality"],
+    "references": [
+      { "title": "Stress and Sleep: Meta-Analysis", "source": "Sleep Medicine Reviews", "year": 2018 }
+    ]
+  },
+  {
+    "id": "sleep_late_meal_01",
+    "block": "sleep",
+    "topic": "Late Meal & Sleep Quality",
+    "summary": "Late-night eating is associated with later sleep onset and reduced sleep quality in some individuals.",
+    "observed_patterns": [
+      "Late last meal → delayed wind-down",
+      "Heavy late meal → lighter or more fragmented sleep"
+    ],
+    "implication_logic": "If last meal is often late, shifting it earlier may support sleep more than changing food choice.",
+    "intervention_leverage": "Try an earlier last meal on days when you want better sleep. Consistency matters more than perfection.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often"],
+      "avoid": ["causes", "prevents", "eat before X"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["late_meal", "late_last_meal", "sleep_quality", "meal_timing"],
+    "references": [
+      { "title": "Meal Timing and Circadian System", "source": "PMC", "year": 2017 }
+    ]
+  }
+]

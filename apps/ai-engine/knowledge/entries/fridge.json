@@ -1,0 +1,53 @@
+[
+  {
+    "id": "fridge_protein_completion_01",
+    "block": "fridge",
+    "topic": "Protein Adequacy",
+    "summary": "Meals containing adequate protein are associated with improved satiety. No gram targets; suggest adding a protein source when missing.",
+    "observed_patterns": [
+      "Meal without protein source → suggest adding one",
+      "Vegetables only → legumes, eggs, yogurt, tofu, or lean meats complete the meal"
+    ],
+    "implication_logic": "If detected ingredients lack a clear protein source, suggest adding one for satiety and balance.",
+    "intervention_leverage": "Add legumes, eggs, yogurt, tofu, or lean meats.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "suggest adding", "consider"],
+      "avoid": ["X grams protein", "medical claim", "diagnosis", "supplement"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["protein", "satiety", "recipe", "fridge", "ingredients"],
+    "references": [
+      { "title": "Harvard T.H. Chan Nutrition Source", "source": "Harvard" }
+    ]
+  },
+  {
+    "id": "fridge_fiber_01",
+    "block": "fridge",
+    "topic": "Fiber & Vegetable Density",
+    "summary": "Meals with vegetables and fiber are associated with better satiety and gut comfort. Suggest adding vegetables or whole grains when a meal is low in them.",
+    "implication_logic": "If the meal is low in vegetables or fiber, suggest one or two additions (e.g. leafy greens, beans, whole grain).",
+    "intervention_leverage": "Add vegetables, legumes, or whole grains to increase fiber and volume.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "suggest", "consider"],
+      "avoid": ["X grams fiber", "disease", "detox", "cleanse"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["fiber", "vegetables", "recipe", "fridge", "gut_health"],
+    "references": []
+  },
+  {
+    "id": "fridge_balance_01",
+    "block": "fridge",
+    "topic": "Balanced Plate (No Dosing)",
+    "summary": "Balanced meals with protein, vegetables, and optional whole grains support satiety and energy. No calorie or macro targets; qualitative suggestions only.",
+    "implication_logic": "If the suggested meal is skewed (e.g. all carbs, no vegetables), suggest one addition to balance.",
+    "intervention_leverage": "Suggest one addition (protein, vegetable, or whole grain) to round out the meal. No moral framing of food.",
+    "language_rules": {
+      "allowed": ["may", "consider", "suggest", "round out"],
+      "avoid": ["calories", "macros", "good vs bad food", "unhealthy"]
+    },
+    "evidence_level": "low",
+    "pattern_tags": ["balance", "recipe", "fridge", "satiety"],
+    "references": []
+  }
+]

@@ -1,0 +1,48 @@
+[
+  {
+    "id": "stress_evening_arousal_01",
+    "block": "stress",
+    "topic": "Evening Cognitive Arousal",
+    "summary": "Mental rumination before bed is associated with longer sleep onset latency.",
+    "mechanisms": [
+      "Elevated cortisol",
+      "Reduced parasympathetic activity"
+    ],
+    "observed_patterns": [
+      "High evening stress → difficulty falling asleep",
+      "Rumination at night → delayed sleep onset"
+    ],
+    "implication_logic": "If stress is high in evening logs, sleep difficulty may follow.",
+    "intervention_leverage": "Shift stress-reduction earlier in evening.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "linked to"],
+      "avoid": ["causes disease", "diagnosis", "treatment"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["evening_stress", "rumination", "sleep_onset", "arousal", "stress_sleep"],
+    "references": [
+      { "title": "Evening stress and sleep", "source": "Sleep Medicine Reviews", "year": 2018 }
+    ]
+  },
+  {
+    "id": "stress_digestion_01",
+    "block": "stress",
+    "topic": "Stress–Digestion Link",
+    "summary": "Stress can alter appetite and digestive comfort. Heavy meals during high stress may feel worse than lighter, easy options.",
+    "observed_patterns": [
+      "Stress high → appetite change (up or down)",
+      "Stress + heavy meal → discomfort or bloating"
+    ],
+    "implication_logic": "If stress is elevated and digestion is sensitive, lighter meals and hydration often help more than volume.",
+    "intervention_leverage": "Light, easy meals and steady hydration on high-stress days. No pressure on amount.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often", "some people notice"],
+      "avoid": ["IBS", "diagnosis", "good vs bad food"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["stress", "stress_digestion", "appetite", "high_stress"],
+    "references": [
+      { "title": "Gut-brain axis", "source": "High-level review" }
+    ]
+  }
+]

@@ -128,14 +128,34 @@ export type NutritionStabilityLabel =
 /** Situation mode for recommendation tone. */
 export type NutritionSituationMode = 'maintain' | 'adjust' | 'recovery' | 'no_data';
 
-/** Structured nutrition pattern block (Today's pattern / What's influencing / One adjustment). Canonical: nutrition-regulation-system-prompt.md */
+/** Pattern type for RAG/LLM: maps to apps/ai-engine/knowledge/nutrition/*.md. */
+export type NutritionPatternType =
+  | 'no_data'
+  | 'late_first_meal_low_energy'
+  | 'reactive_hydration'
+  | 'late_meal_low_sleep'
+  | 'stress_low_appetite'
+  | 'recovery_gym_day'
+  | 'recovery_party_night'
+  | 'recovery_overload'
+  | 'stable';
+
+/** Structured nutrition pattern block (Today's pattern / What connects / Smart leverage). Canonical: nutrition-regulation-system-prompt.md */
 export type NutritionPatternBlock = {
   /** One short interpretation. */
   pattern: string;
-  /** 2–3 causal bullet points. */
+  /** 2–3 causal bullet points (What connects). */
   influencing: string[];
-  /** One specific, contextual adjustment. */
+  /** One specific, contextual adjustment (Smart leverage today). */
   oneAdjustment: string;
   stabilityLabel: NutritionStabilityLabel;
   mode: NutritionSituationMode;
+  /** For RAG/LLM: which knowledge chunk(s) apply. */
+  pattern_type: NutritionPatternType;
+  /** Short driver tags (e.g. late_first_meal, low_energy). */
+  drivers: string[];
+  /** Work/life context when available (e.g. "back to back calls"). */
+  context: string;
+  /** For future LLM: first/last meal times today (HH:MM or empty). */
+  nutrition_logs?: { firstMeal?: string; lastMeal?: string };
 };

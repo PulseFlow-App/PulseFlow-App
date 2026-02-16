@@ -1,0 +1,129 @@
+[
+  {
+    "id": "nutrition_meal_timing_01",
+    "block": "nutrition",
+    "topic": "Meal Timing & Circadian Alignment",
+    "summary": "Eating later in the evening is associated with reduced glucose tolerance and altered circadian rhythm markers. Regular meal timing is associated with more stable energy and appetite regulation.",
+    "mechanisms": [
+      "Delayed insulin sensitivity peak",
+      "Circadian clock misalignment"
+    ],
+    "observed_patterns": [
+      "Late dinner → heavier morning fatigue",
+      "Late first meal → afternoon energy dip",
+      "Irregular meals → fluctuating energy"
+    ],
+    "implication_logic": "If dinner is frequently late, next-morning energy may feel flatter. If first meal is delayed, afternoon focus often dips.",
+    "intervention_leverage": "Shift last meal earlier rather than reducing calories. Earlier first fuel often stabilizes energy more than larger portions later.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "linked to", "often", "can influence"],
+      "avoid": ["causes disease", "prevents disorder", "eat at X o'clock", "fasting protocol"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["late_dinner", "late_first_meal", "irregular_meals", "circadian", "meal_timing"],
+    "references": [
+      { "title": "Meal Timing Regulates the Human Circadian System", "source": "PMC", "year": 2017 },
+      { "title": "Circadian Rhythms and Meal Timing", "source": "PubMed", "year": 2020 }
+    ]
+  },
+  {
+    "id": "nutrition_hydration_01",
+    "block": "nutrition",
+    "topic": "Hydration & Cognitive Energy",
+    "summary": "Mild dehydration is associated with decreased alertness and increased fatigue perception. Hydration timing matters: proactive intake earlier in the day is often associated with more stable afternoon energy.",
+    "mechanisms": [
+      "Reduced cerebral blood flow",
+      "Increased perceived effort"
+    ],
+    "observed_patterns": [
+      "Low water intake → afternoon dip",
+      "Delayed hydration → reactive rather than preventive",
+      "Busy days → lower fluid intake"
+    ],
+    "implication_logic": "If hydration is low or delayed, perceived fatigue may increase even without sleep deficit.",
+    "intervention_leverage": "Improve hydration earlier in the day. Timing may matter more than quantity.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "linked to", "often"],
+      "avoid": ["causes disease", "drink X glasses", "you are dehydrated"]
+    },
+    "evidence_level": "high",
+    "pattern_tags": ["hydration", "reactive_hydration", "low_hydration", "cognitive_energy", "busy_day"],
+    "references": [
+      { "title": "Dehydration Impairs Cognitive Performance", "source": "ACSM", "year": 2018 },
+      { "title": "Hydration and Cognitive Performance", "source": "PMC", "year": 2014 }
+    ]
+  },
+  {
+    "id": "nutrition_stress_digestion_01",
+    "block": "nutrition",
+    "topic": "Stress & Appetite / Digestion",
+    "summary": "Stress alters appetite patterns and digestive comfort. High stress may reduce or increase appetite; heavy meals during stress may feel uncomfortable.",
+    "mechanisms": [
+      "Stress physiology and gut-brain axis",
+      "Appetite irregularity under load"
+    ],
+    "observed_patterns": [
+      "High stress → appetite drop or irregularity",
+      "Stress + heavy meal → discomfort",
+      "Light, easy meals → often better tolerated on high-stress days"
+    ],
+    "implication_logic": "If stress is high and appetite is low, forcing volume may add load. Small, easy meals and hydration often help more.",
+    "intervention_leverage": "One small meal or snack and hydration earlier. No pressure on amount.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "tends to", "some people notice"],
+      "avoid": ["IBS", "diagnosis", "treatment", "good vs bad food"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["stress", "stress_appetite", "stress_digestion", "high_stress", "low_appetite"],
+    "references": [
+      { "title": "APA stress physiology summaries", "source": "APA" },
+      { "title": "Gut-brain axis reviews", "source": "High-level review" }
+    ]
+  },
+  {
+    "id": "nutrition_recovery_01",
+    "block": "nutrition",
+    "topic": "Recovery Nutrition",
+    "summary": "Post-exercise and overload contexts (poor sleep, travel, late night) benefit from timing and hydration over volume. Delayed nutrition after training may increase next-day fatigue.",
+    "observed_patterns": [
+      "Gym day → timing and hydration matter more than volume",
+      "Party night → lighter meal and hydration support next-day energy",
+      "Poor sleep + stress → earlier last meal and hydration help"
+    ],
+    "implication_logic": "If recovery demand is high, prioritize timing and hydration rather than optimizing meal size or macros.",
+    "intervention_leverage": "Prioritize one pre-event meal and hydration; keep late meal lighter to support sleep and tomorrow's energy.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often", "support recovery"],
+      "avoid": ["X grams protein", "supplement", "dosing", "calorie target"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["recovery", "gym_day", "party_night", "travel", "poor_sleep", "recovery_overload"],
+    "references": [
+      { "title": "ACSM position stands", "source": "ACSM" },
+      { "title": "ISSN position stands", "source": "ISSN" }
+    ]
+  },
+  {
+    "id": "nutrition_protein_satiety_01",
+    "block": "nutrition",
+    "topic": "Protein & Satiety (Macro-Light)",
+    "summary": "Protein at meals is associated with more stable satiety and fewer sharp hunger swings. Skipping or very low protein may increase appetite variability. No gram targets; focus on pattern.",
+    "observed_patterns": [
+      "Protein at meals → more stable satiety",
+      "Skipping breakfast protein → appetite swings later",
+      "Balanced meals → more stable energy than extremes"
+    ],
+    "implication_logic": "If under-fueled or appetite is swinging, earlier fuel with some protein often helps more than increasing portion size later.",
+    "intervention_leverage": "Earlier fuel with balanced meal; consistency and timing matter more than optimizing single nutrients.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often", "tends to support"],
+      "avoid": ["X g protein", "calorie target", "macro count", "supplement"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["protein", "satiety", "under_fueled", "appetite_swings", "balanced_meal"],
+    "references": [
+      { "title": "Harvard T.H. Chan Nutrition Source", "source": "Harvard" },
+      { "title": "Dietary Guidelines for Americans", "source": "USDA" }
+    ]
+  }
+]

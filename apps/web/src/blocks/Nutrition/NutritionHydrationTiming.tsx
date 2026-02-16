@@ -42,7 +42,7 @@ export function NutritionHydrationTiming() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setHydrationTimingForDate(date, { when, notes: notes.trim() || undefined });
-    navigate('/dashboard', { replace: true });
+    navigate('/dashboard/nutrition/result', { replace: true, state: { from: 'hydration' } });
   };
 
   return (

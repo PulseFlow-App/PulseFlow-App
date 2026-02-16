@@ -47,7 +47,7 @@ export function NutritionMealTiming() {
       proteinAtBreakfast,
       proteinAtLastMeal,
     });
-    navigate('/dashboard', { replace: true });
+    navigate('/dashboard/nutrition/result', { replace: true, state: { from: 'meal-timing' } });
   };
 
   return (

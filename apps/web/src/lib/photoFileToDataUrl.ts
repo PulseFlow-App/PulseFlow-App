@@ -1,7 +1,9 @@
 /**
  * Read a photo file as a data URL. Converts HEIC/HEIF (iPhone) to JPEG in the browser so it can be displayed and uploaded.
+ * Uses heic2any first (native support where available), then heic-decode (WASM) fallback for desktop browsers.
  */
 import heic2any from 'heic2any';
+import decode from 'heic-decode';
 
 const HEIC_TYPES = ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'];
 
@@ -34,15 +36,48 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
-/** User-facing message when HEIC conversion fails (e.g. unsupported on this browser/device). */
+/** User-facing message when HEIC conversion fails after trying both methods. */
 export const HEIC_CONVERSION_ERROR_MESSAGE =
   'HEIC conversion failed. Convert to JPEG on your device or use a JPEG/PNG image.';
 
-async function tryHeicConversion(blob: Blob): Promise<string> {
+/** Convert HEIC using heic2any (uses native browser support; works in Safari, some Chrome). */
+async function tryHeic2Any(blob: Blob): Promise<string> {
   const result = await heic2any({ blob, toType: 'image/jpeg', quality: 1 });
   const out = Array.isArray(result) ? result[0] : result;
   if (!out) throw new Error(HEIC_CONVERSION_ERROR_MESSAGE);
   return blobToDataUrl(out);
+}
+
+/** Convert HEIC using heic-decode (WASM) + canvas. Works in desktop Chrome/Firefox/Edge where native HEIC isn't available. */
+async function tryHeicDecodeWasm(buffer: ArrayBuffer): Promise<string> {
+  const { width, height, data } = await decode({ buffer });
+  const canvas =
+    typeof OffscreenCanvas !== 'undefined'
+      ? new OffscreenCanvas(width, height)
+      : Object.assign(document.createElement('canvas'), { width, height });
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error(HEIC_CONVERSION_ERROR_MESSAGE);
+  const imageData = new ImageData(data, width, height);
+  ctx.putImageData(imageData, 0, 0);
+  const blob = await new Promise<Blob | null>((resolve) => {
+    if (canvas instanceof OffscreenCanvas) {
+      canvas.convertToBlob({ type: 'image/jpeg', quality: 0.92 }).then(resolve);
+    } else {
+      (canvas as HTMLCanvasElement).toBlob((b) => resolve(b), 'image/jpeg', 0.92);
+    }
+  });
+  if (!blob) throw new Error(HEIC_CONVERSION_ERROR_MESSAGE);
+  return blobToDataUrl(blob);
+}
+
+async function tryHeicConversion(blob: Blob): Promise<string> {
+  try {
+    return await tryHeic2Any(blob);
+  } catch {
+    // Fallback: WASM decoder (works on desktop without native HEIC support)
+    const buffer = await blob.arrayBuffer();
+    return tryHeicDecodeWasm(buffer);
+  }
 }
 
 /**

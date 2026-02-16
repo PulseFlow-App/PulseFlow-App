@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { recordAppUsage, getAppStreak } from '../stores/appStreak';
 import { getBodyLogs } from '../blocks/BodySignals/store';
@@ -7,6 +7,7 @@ import { getCheckIns, setCheckInsFromServer } from '../blocks/WorkRoutine/store'
 import { startNotificationChecks, stopNotificationChecks } from '../stores/notifications';
 import { BlockCard } from '../components/BlockCard';
 import { AppFooter } from '../components/AppFooter';
+import { NextStepModal } from '../components/NextStepModal';
 import { BLOCKS } from '../blocks/registry';
 import styles from './Dashboard.module.css';
 
@@ -22,17 +23,25 @@ type PointsData = {
   totalPoints: number;
 };
 
+type LocationState = { refreshPoints?: boolean; showSubmitModal?: boolean; modalVariant?: 'nutrition' };
+
 export function Dashboard() {
   const { user, accessToken, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [points, setPoints] = useState<PointsData | null>(null);
   const [pointsRefreshKey, setPointsRefreshKey] = useState(0);
+  const locationState = location.state as LocationState;
+  const showSubmitModal = locationState?.showSubmitModal ?? false;
+  const modalVariant = locationState?.modalVariant ?? 'default';
 
   // Force points refetch when landing from a check-in (so new activity points appear)
   useEffect(() => {
-    if ((location.state as { refreshPoints?: boolean })?.refreshPoints) {
+    const state = location.state as LocationState;
+    if (state?.refreshPoints) {
       setPointsRefreshKey((k) => k + 1);
-      window.history.replaceState({}, document.title, location.pathname);
+      const next: LocationState = { ...state, refreshPoints: false };
+      window.history.replaceState(next, document.title, location.pathname);
     }
   }, [location.state, location.pathname]);
 
@@ -90,7 +99,8 @@ export function Dashboard() {
       return;
     }
     let cancelled = false;
-    const url = `${API_BASE}/users/me/points?streak=${encodeURIComponent(streak)}&checkIns=${encodeURIComponent(checkInsCount)}`;
+    const latestCount = getBodyLogs().length + getCheckIns().length;
+    const url = `${API_BASE}/users/me/points?streak=${encodeURIComponent(streak)}&checkIns=${encodeURIComponent(latestCount)}`;
     fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
@@ -195,6 +205,12 @@ export function Dashboard() {
 
         <AppFooter />
       </main>
+      <NextStepModal
+        isOpen={showSubmitModal}
+        onDashboard
+        variant={modalVariant === 'nutrition' ? 'nutrition' : 'default'}
+        onClose={() => navigate(location.pathname, { replace: true, state: {} })}
+      />
     </div>
   );
 }

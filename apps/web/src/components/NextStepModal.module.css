@@ -1,0 +1,77 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.content {
+  position: relative;
+  background: #0f1419;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+}
+
+.body {
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.primary {
+  display: block;
+  text-align: center;
+  padding: 14px 20px;
+  background: #3b82f6;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 12px;
+  border: none;
+}
+
+.primary:hover {
+  background: #2563eb;
+}
+
+.secondary {
+  display: block;
+  text-align: center;
+  padding: 10px;
+  background: transparent;
+  color: #3b82f6;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+}
+
+.secondary:hover {
+  text-decoration: underline;
+}

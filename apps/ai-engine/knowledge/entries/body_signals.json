@@ -1,0 +1,37 @@
+[
+  {
+    "id": "body_signals_cross_loop_01",
+    "block": "body_signals",
+    "topic": "Cross-Signal Loops",
+    "summary": "Body signals (sleep, energy, stress, appetite, hydration) influence each other. Addressing the earliest upstream driver often breaks the loop more effectively than treating the most visible symptom.",
+    "observed_patterns": [
+      "Stress high → sleep low → next-day energy low",
+      "Late meal → sleep quality down → next-day energy flat",
+      "Low hydration + busy day → afternoon fatigue"
+    ],
+    "implication_logic": "If multiple signals are off, identify the driver that feeds the others (e.g. evening stress before sleep, meal timing before sleep quality).",
+    "intervention_leverage": "Intervene at the earliest leverage point in the loop (e.g. reduce stress before bed rather than only extending sleep).",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often", "can influence"],
+      "avoid": ["causes disease", "diagnosis", "treatment", "quote user note verbatim"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["cross_signal", "loop", "stress_sleep", "upstream", "body_signals"],
+    "references": []
+  },
+  {
+    "id": "body_signals_interpretation_01",
+    "block": "body_signals",
+    "topic": "Interpreting User Notes",
+    "summary": "User notes reflect intent and context, not medical history. Interpret cause vs outcome; respond to cause. Do not quote typos or raw note text.",
+    "implication_logic": "If a note mentions stress and poor sleep, treat stress as potential driver of sleep rather than describing the note back.",
+    "intervention_leverage": "Respond with mechanism-based interpretation and one contextual adjustment; use pattern-specific closing.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often", "your signals suggest"],
+      "avoid": ["Your note says", "You wrote", "quote user text", "diagnosis"]
+    },
+    "evidence_level": "low",
+    "pattern_tags": ["interpretation", "notes", "narrative"],
+    "references": []
+  }
+]

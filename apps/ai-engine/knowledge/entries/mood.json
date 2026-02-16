@@ -1,0 +1,42 @@
+[
+  {
+    "id": "mood_sleep_link_01",
+    "block": "mood",
+    "topic": "Sleep–Mood Link",
+    "summary": "Poor or short sleep is associated with lower next-day mood and stress resilience.",
+    "observed_patterns": [
+      "Sleep quality low → next-day mood lower",
+      "Irregular sleep → mood variability"
+    ],
+    "implication_logic": "If sleep was poor, mood and resilience the next day may be lower. Improving sleep timing often helps before targeting mood alone.",
+    "intervention_leverage": "Stabilize sleep timing and reduce evening stress before adding mood-specific interventions.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often", "linked to"],
+      "avoid": ["causes depression", "diagnosis", "treatment"]
+    },
+    "evidence_level": "high",
+    "pattern_tags": ["mood", "sleep", "sleep_mood", "stress_resilience"],
+    "references": [
+      { "title": "Sleep and mood meta-analysis", "source": "Sleep Medicine Reviews", "year": 2018 }
+    ]
+  },
+  {
+    "id": "mood_stress_resilience_01",
+    "block": "mood",
+    "topic": "Stress Resilience & Mood",
+    "summary": "High stress can reduce mood stability. Recovery (sleep, timing, hydration) supports resilience.",
+    "observed_patterns": [
+      "High stress → mood more variable",
+      "Recovery (sleep, rhythm) → more stable mood"
+    ],
+    "implication_logic": "If stress is high, mood may dip; addressing upstream (sleep, rhythm) often supports mood more than mood-focused advice alone.",
+    "intervention_leverage": "Address sleep and stress first; consistency in timing and recovery supports mood.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often"],
+      "avoid": ["causes disorder", "diagnosis", "antidepressant"]
+    },
+    "evidence_level": "moderate",
+    "pattern_tags": ["mood", "stress", "resilience", "high_stress"],
+    "references": []
+  }
+]

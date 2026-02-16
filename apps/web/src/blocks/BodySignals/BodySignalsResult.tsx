@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ScoreRing } from '../../components/ScoreRing';
+import { NextStepModal } from '../../components/NextStepModal';
 import { computeBodyPulse, computeBodyPulseAsync } from './store';
 import { getExplanationBullets, SignalIcon } from './signalIcons';
 import type { BodyPulseSnapshot } from './types';
@@ -28,6 +29,7 @@ function ExplanationWithIcons({ explanation }: { explanation: string }) {
 export function BodySignalsResult() {
   const [pulse, setPulse] = useState<BodyPulseSnapshot>(() => computeBodyPulse());
   const [loadingAI, setLoadingAI] = useState(true);
+  const [showNextStepModal, setShowNextStepModal] = useState(false);
 
   useEffect(() => {
     setPulse(computeBodyPulse());
@@ -36,6 +38,10 @@ export function BodySignalsResult() {
       .then(setPulse)
       .finally(() => setLoadingAI(false));
   }, []);
+
+  useEffect(() => {
+    if (!loadingAI) setShowNextStepModal(true);
+  }, [loadingAI]);
 
   return (
     <div className={styles.page}>
@@ -82,23 +88,11 @@ export function BodySignalsResult() {
           </div>
         </div>
 
-        {!loadingAI && (
-          <div className={styles.ctaSection} role="region" aria-labelledby="result-next-heading">
-            <h2 id="result-next-heading" className={styles.ctaHeading}>What next?</h2>
-            <p className={styles.ctaText}>
-              This is your <strong>Body Pulse</strong> for today — a partial score. Add data from Work Routine and other blocks to get your <strong>full Pulse</strong>. When you’ve completed more blocks, you’ll see the aggregated Pulse from all your inputs.
-            </p>
-            <div className={styles.ctaButtons}>
-              <Link to="/dashboard/pulse?from=body-signals" className={styles.ctaPrimary}>
-                Save Pulse score
-              </Link>
-              <Link to="/dashboard" className={styles.ctaSecondary}>
-                Add more blocks
-              </Link>
-            </div>
-          </div>
-        )}
       </main>
+      <NextStepModal
+        isOpen={showNextStepModal}
+        onClose={() => setShowNextStepModal(false)}
+      />
     </div>
   );
 }

@@ -74,6 +74,9 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
       oneAdjustment: 'Log just one meal time or hydration moment today. That\'s enough to start detecting patterns.',
       stabilityLabel: 'no_data',
       mode: 'no_data',
+      pattern_type: 'no_data',
+      drivers: [],
+      context: '',
     };
   }
 
@@ -95,6 +98,12 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
 
   // ——— Recovery mode ———
   if (overload || recovery === 'gym_day' || recovery === 'party_night') {
+    const pattern_type =
+      recovery === 'party_night'
+        ? 'recovery_party_night'
+        : recovery === 'gym_day'
+          ? 'recovery_gym_day'
+          : 'recovery_overload';
     const pattern =
       recovery === 'party_night'
         ? 'Late night planned with possible sleep squeeze. Recovery and light digestion matter more than volume.'
@@ -106,6 +115,10 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
     ];
     if (lowSleep) influencing.push('Poor sleep increases next-day sensitivity to late or heavy meals.');
     if (recovery === 'party_night') influencing.push('Lighter meal before and hydration during can ease tomorrow.');
+    const drivers: string[] = [recovery];
+    if (lowSleep) drivers.push('low_sleep');
+    if (highStress) drivers.push('high_stress');
+    if (lowEnergy) drivers.push('low_energy');
     return {
       pattern,
       influencing,
@@ -117,6 +130,16 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
             : 'Hydration earlier in the day and an earlier last meal may help more than changing what you eat.',
       stabilityLabel: 'recovery_needed',
       mode: 'recovery',
+      pattern_type,
+      drivers,
+      context: backToBackCalls ? 'back to back calls' : '',
+      nutrition_logs:
+        todayMeal?.firstMealTime || todayMeal?.lastMealTime
+          ? {
+              firstMeal: todayMeal.firstMealTime,
+              lastMeal: todayMeal.lastMealTime,
+            }
+          : undefined,
     };
   }
 
@@ -131,6 +154,13 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
       oneAdjustment: 'Earlier fuel tomorrow may stabilize energy more than increasing portion size.',
       stabilityLabel: 'under_fueled',
       mode: 'adjust',
+      pattern_type: 'late_first_meal_low_energy',
+      drivers: ['late_first_meal', 'low_energy'],
+      context: backToBackCalls ? 'back to back calls' : '',
+      nutrition_logs:
+        todayMeal.firstMealTime || todayMeal.lastMealTime
+          ? { firstMeal: todayMeal.firstMealTime, lastMeal: todayMeal.lastMealTime }
+          : undefined,
     };
   }
 
@@ -145,6 +175,9 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
       oneAdjustment: 'Move hydration earlier tomorrow. Timing may matter more than quantity.',
       stabilityLabel: 'compensating',
       mode: 'adjust',
+      pattern_type: 'reactive_hydration',
+      drivers: ['low_hydration', 'low_energy'].concat(backToBackCalls ? ['busy_day'] : []),
+      context: backToBackCalls ? 'back to back calls' : '',
     };
   }
 
@@ -160,6 +193,13 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
       oneAdjustment: 'Try an earlier last meal on days when you want better sleep. Consistency matters more than perfection.',
       stabilityLabel: 'compensating',
       mode: 'adjust',
+      pattern_type: 'late_meal_low_sleep',
+      drivers: ['late_last_meal', 'low_sleep'],
+      context: backToBackCalls ? 'back to back calls' : '',
+      nutrition_logs:
+        todayMeal?.firstMealTime || todayMeal?.lastMealTime
+          ? { firstMeal: todayMeal.firstMealTime, lastMeal: todayMeal.lastMealTime }
+          : undefined,
     };
   }
 
@@ -174,6 +214,9 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
       oneAdjustment: 'One small meal or snack and hydration earlier. No pressure on amount.',
       stabilityLabel: 'compensating',
       mode: 'adjust',
+      pattern_type: 'stress_low_appetite',
+      drivers: ['high_stress', 'low_appetite'],
+      context: backToBackCalls ? 'back to back calls' : '',
     };
   }
 
@@ -187,6 +230,13 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
     oneAdjustment: 'Keep first and last meal within your usual window. Consistency matters more than perfection on stable days.',
     stabilityLabel: 'stable',
     mode: 'maintain',
+    pattern_type: 'stable',
+    drivers: [],
+    context: backToBackCalls ? 'back to back calls' : '',
+    nutrition_logs:
+      todayMeal?.firstMealTime || todayMeal?.lastMealTime
+        ? { firstMeal: todayMeal.firstMealTime, lastMeal: todayMeal.lastMealTime }
+        : undefined,
   };
 }
 

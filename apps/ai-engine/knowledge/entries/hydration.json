@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hydration_cognitive_01",
+    "block": "hydration",
+    "topic": "Hydration & Cognitive Performance",
+    "summary": "Mild dehydration is associated with decreased alertness and increased fatigue perception. Proactive hydration earlier in the day is often associated with more stable afternoon energy.",
+    "mechanisms": [
+      "Reduced cerebral blood flow",
+      "Increased perceived effort"
+    ],
+    "observed_patterns": [
+      "Low hydration → afternoon dip",
+      "Delayed hydration → reactive rather than preventive",
+      "Busy or call-heavy days → lower intake"
+    ],
+    "implication_logic": "If hydration is low or started after energy dropped, perceived fatigue may increase. On busy days, earlier sips often reduce afternoon drag.",
+    "intervention_leverage": "Move hydration earlier. Timing may matter more than quantity.",
+    "language_rules": {
+      "allowed": ["may", "associated with", "often", "linked to"],
+      "avoid": ["causes disease", "drink X glasses", "you are dehydrated"]
+    },
+    "evidence_level": "high",
+    "pattern_tags": ["hydration", "reactive_hydration", "cognitive", "busy_day", "low_energy"],
+    "references": [
+      { "title": "Dehydration Impairs Cognitive Performance", "source": "ACSM", "year": 2018 },
+      { "title": "Hydration and Cognitive Performance", "source": "PMC", "year": 2014 }
+    ]
+  }
+]
