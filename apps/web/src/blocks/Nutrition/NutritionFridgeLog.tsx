@@ -103,7 +103,7 @@ export function NutritionFridgeLog() {
         notes: notes.trim() || undefined,
       };
       addFridgeLog(entry);
-      navigate('/dashboard/nutrition', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong. Try again.';
       setSubmitError(message);

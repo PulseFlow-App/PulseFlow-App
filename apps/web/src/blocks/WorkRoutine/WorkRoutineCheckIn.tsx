@@ -126,7 +126,7 @@ export function WorkRoutineCheckIn() {
         body: JSON.stringify(entry),
       }).catch(() => {});
     }
-    navigate('/dashboard/pulse?from=work-routine', { replace: true });
+    navigate('/dashboard', { replace: true });
   };
 
   return (

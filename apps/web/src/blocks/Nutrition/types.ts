@@ -115,3 +115,27 @@ export type RecoverySituation =
   | 'deadline_day'
   | 'poor_sleep_night'
   | 'normal';
+
+/** Stability label for nutrition (regulation support: stability vs friction). */
+export type NutritionStabilityLabel =
+  | 'stable'
+  | 'compensating'
+  | 'under_fueled'
+  | 'overloaded'
+  | 'recovery_needed'
+  | 'no_data';
+
+/** Situation mode for recommendation tone. */
+export type NutritionSituationMode = 'maintain' | 'adjust' | 'recovery' | 'no_data';
+
+/** Structured nutrition pattern block (Today's pattern / What's influencing / One adjustment). Canonical: nutrition-regulation-system-prompt.md */
+export type NutritionPatternBlock = {
+  /** One short interpretation. */
+  pattern: string;
+  /** 2–3 causal bullet points. */
+  influencing: string[];
+  /** One specific, contextual adjustment. */
+  oneAdjustment: string;
+  stabilityLabel: NutritionStabilityLabel;
+  mode: NutritionSituationMode;
+};

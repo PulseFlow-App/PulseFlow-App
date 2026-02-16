@@ -25,6 +25,7 @@ type PointsData = {
 export function Dashboard() {
   const { user, accessToken, signOut } = useAuth();
   const [points, setPoints] = useState<PointsData | null>(null);
+  const [pointsRefreshKey, setPointsRefreshKey] = useState(0);
 
   useEffect(() => {
     if (user) recordAppUsage();
@@ -69,6 +70,12 @@ export function Dashboard() {
   const checkInsCount = getBodyLogs().length + getCheckIns().length;
 
   useEffect(() => {
+    const onFocus = () => setPointsRefreshKey((k) => k + 1);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => document.removeEventListener('visibilitychange', onFocus);
+  }, []);
+
+  useEffect(() => {
     if (!user || !accessToken || !API_BASE) {
       setPoints(null);
       return;
@@ -89,7 +96,7 @@ export function Dashboard() {
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [user, accessToken, streak, checkInsCount]);
+  }, [user, accessToken, streak, checkInsCount, pointsRefreshKey]);
 
   const activeBlocks = BLOCKS.filter((b) => ACTIVE_IDS.includes(b.id));
   const comingSoonBlocks = BLOCKS.filter((b) => COMING_SOON_IDS.includes(b.id));

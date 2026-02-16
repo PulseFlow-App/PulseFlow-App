@@ -87,16 +87,24 @@ async function getUserPoints(userId) {
   return { referralPoints: r, bonusPoints: b, activityPoints: a, totalPoints: r + b + a, loginCount: Number(rows[0].login_count) || 0 };
 }
 
-/** Points per streak day and per check-in (activity rewards). */
+/** Points per streak day, per check-in, and per login (activity rewards). */
 const POINTS_PER_STREAK_DAY = 2;
 const POINTS_PER_CHECKIN = 1;
+const POINTS_PER_LOGIN = 1;
+const MAX_LOGINS_FOR_POINTS = 100;
 
-/** Set activity points from current streak and check-in count. Replaces previous activity points. */
+/** Set activity points from streak, check-in count, and login count. Replaces previous activity points. */
 async function setActivityPoints(userId, streak, checkIns) {
   if (!pool || !userId) return;
   const s = Math.max(0, Math.min(Number(streak) || 0, 365));
   const c = Math.max(0, Math.min(Number(checkIns) || 0, 50000));
-  const activityPoints = s * POINTS_PER_STREAK_DAY + c * POINTS_PER_CHECKIN;
+  const { rows } = await pool.query(
+    'SELECT COALESCE(login_count, 0) AS login_count FROM users WHERE id = $1',
+    [userId]
+  );
+  const loginCount = rows[0] ? Math.min(Number(rows[0].login_count) || 0, MAX_LOGINS_FOR_POINTS) : 0;
+  const activityPoints =
+    s * POINTS_PER_STREAK_DAY + c * POINTS_PER_CHECKIN + loginCount * POINTS_PER_LOGIN;
   await pool.query(
     'UPDATE users SET activity_points = $1 WHERE id = $2',
     [activityPoints, userId]

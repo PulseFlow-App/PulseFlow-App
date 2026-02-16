@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { RecoveryContextCard } from './RecoveryContextCard';
-import { getNutritionPatternInsights, getWeeklyNutritionStability } from './patternInsights';
+import { getNutritionPatternBlock, getWeeklyNutritionStability } from './patternInsights';
 import styles from './Nutrition.module.css';
 
 export function NutritionOverview() {
-  const insights = getNutritionPatternInsights();
+  const block = getNutritionPatternBlock();
   const stability = getWeeklyNutritionStability();
 
   return (
@@ -18,7 +18,7 @@ export function NutritionOverview() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Nutrition</h1>
           <p className={styles.subtitle}>
-            Meal timing, hydration, and fridge photos connect to your Pulse. We use your body signals and work routine so suggestions match your energy, sleep, and context.
+            Regulation support through timing, hydration, and recovery. We use your body signals and work routine so suggestions match your energy, sleep, and context.
           </p>
         </div>
 
@@ -33,18 +33,25 @@ export function NutritionOverview() {
           </p>
         </div>
 
-        {insights.length > 0 && (
-          <div className={styles.insightsCard} role="region" aria-labelledby="insights-heading">
-            <h2 id="insights-heading" className={styles.insightsHeading}>
-              Pattern insights
-            </h2>
-            <ul className={styles.insightsList}>
-              {insights.map((text, i) => (
-                <li key={i}>{text}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <div className={styles.insightsCard} role="region" aria-labelledby="pattern-heading">
+          <h2 id="pattern-heading" className={styles.insightsHeading}>
+            {block.mode === 'no_data' ? "Today's insight" : "Today's nutrition pattern"}
+          </h2>
+          <p className={styles.patternText}>{block.pattern}</p>
+          {block.influencing.length > 0 && (
+            <>
+              <h3 className={styles.influencingHeading}>What&apos;s influencing it</h3>
+              <ul className={styles.insightsList}>
+                {block.influencing.map((line, i) => (
+                  <li key={i}>{line}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          <p className={styles.oneAdjustment}>
+            <strong>One smart adjustment:</strong> {block.oneAdjustment}
+          </p>
+        </div>
 
         <Link to="/dashboard/nutrition/meal-timing" className={styles.button}>
           Meal timing
