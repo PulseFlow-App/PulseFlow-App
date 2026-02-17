@@ -312,20 +312,19 @@ app.post('/admin/points', adminMiddleware, async (req, res) => {
   }
 });
 
-// ----- User: get my points (auth). Optional ?streak=&checkIns= to update activity points from app. -----
+// ----- User: get my points (auth). Activity points use DB counts (check-ins + body logs) + optional ?streak= from app. -----
 app.get('/users/me/points', authMiddleware, async (req, res) => {
   if (db.hasDb()) {
     try {
-      const streak = req.query.streak;
-      const checkIns = req.query.checkIns;
-      if (streak !== undefined && checkIns !== undefined) {
-        const s = parseInt(streak, 10);
-        const c = parseInt(checkIns, 10);
-        if (Number.isInteger(s) && Number.isInteger(c) && s >= 0 && c >= 0) {
-          await db.setActivityPoints(req.user.userId, s, c);
-        }
-      }
-      const points = await db.getUserPoints(req.user.userId);
+      const userId = req.user.userId;
+      const streakRaw = req.query.streak;
+      const streak = Number.isInteger(parseInt(streakRaw, 10)) && parseInt(streakRaw, 10) >= 0
+        ? parseInt(streakRaw, 10)
+        : 0;
+      const { checkInCount, bodyLogCount } = await db.getActivityCounts(userId);
+      const totalCheckIns = checkInCount + bodyLogCount;
+      await db.setActivityPoints(userId, streak, totalCheckIns);
+      const points = await db.getUserPoints(userId);
       return res.json(points);
     } catch (err) {
       console.error('users/me/points error', err);
@@ -398,9 +397,15 @@ app.post('/users/me/body-logs', authMiddleware, async (req, res) => {
   if (Buffer.byteLength(payloadStr, 'utf8') > security.MAX_BODY_LOG_PAYLOAD_BYTES) {
     return res.status(413).json({ message: 'Payload too large' });
   }
+  const dateStr = typeof raw.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.date.trim())
+    ? raw.date.trim()
+    : new Date().toISOString().slice(0, 10);
+  const idStr = typeof raw.id === 'string' && raw.id.trim().length > 0 && raw.id.length <= 128
+    ? raw.id.trim()
+    : generateId();
   const log = {
-    id: generateId(),
-    date: new Date().toISOString().slice(0, 10),
+    id: idStr,
+    date: dateStr,
     userId: req.user.userId,
     ...payload,
   };

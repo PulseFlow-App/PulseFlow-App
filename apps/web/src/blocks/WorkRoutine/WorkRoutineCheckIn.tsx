@@ -126,7 +126,7 @@ export function WorkRoutineCheckIn() {
         body: JSON.stringify(entry),
       }).catch(() => {});
     }
-    navigate('/dashboard', { state: { refreshPoints: true, showSubmitModal: true }, replace: true });
+    navigate('/dashboard/work-routine/done', { state: { refreshPoints: true }, replace: true });
   };
 
   return (

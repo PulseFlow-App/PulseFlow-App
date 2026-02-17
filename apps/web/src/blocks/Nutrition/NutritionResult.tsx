@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { getNutritionPatternBlock, getWeeklyNutritionStability } from './patternInsights';
 import { getLatestFridgeLog } from './store';
 import { getApiUrl } from '../../lib/apiUrl';
+import { NextStepModal } from '../../components/NextStepModal';
 import styles from './Nutrition.module.css';
 
 type FromSource = 'fridge' | 'meal-timing' | 'hydration';
@@ -91,6 +92,12 @@ export function NutritionResult() {
     rawFrom === 'meal-timing' || rawFrom === 'hydration' ? rawFrom : 'fridge';
   const block = getNutritionPatternBlock();
   const stability = getWeeklyNutritionStability();
+  const [showNextStepModal, setShowNextStepModal] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowNextStepModal(true), 500);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <div className={styles.page}>
@@ -152,6 +159,11 @@ export function NutritionResult() {
           Go to other blocks
         </Link>
       </main>
+      <NextStepModal
+        isOpen={showNextStepModal}
+        onClose={() => setShowNextStepModal(false)}
+        onDashboard={false}
+      />
     </div>
   );
 }

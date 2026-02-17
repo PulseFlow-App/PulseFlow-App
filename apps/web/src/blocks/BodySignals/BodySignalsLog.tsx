@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { addBodyLog } from './store';
 import styles from './BodySignals.module.css';
 
+const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/, '') || '';
+
 export function BodySignalsLog() {
   const navigate = useNavigate();
+  const { accessToken } = useAuth();
   const [sleepHours, setSleepHours] = useState(7);
   const [sleepQuality, setSleepQuality] = useState(3);
   const [energy, setEnergy] = useState(3);
@@ -18,7 +22,7 @@ export function BodySignalsLog() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addBodyLog({
+    const entry = addBodyLog({
       sleepHours,
       sleepQuality,
       energy,
@@ -30,7 +34,17 @@ export function BodySignalsLog() {
       weight: weight ? parseFloat(weight) : undefined,
       notes: notes.trim() || undefined,
     });
-    navigate('/dashboard', { replace: true });
+    if (API_BASE && accessToken) {
+      fetch(`${API_BASE}/users/me/body-logs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(entry),
+      }).catch(() => {});
+    }
+    navigate('/dashboard/body-signals/result', { replace: true });
   };
 
   return (

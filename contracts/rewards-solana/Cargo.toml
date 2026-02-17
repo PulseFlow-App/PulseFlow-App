@@ -1,0 +1,6 @@
+[workspace]
+members = ["programs/reward_vault"]
+resolver = "2"
+
+[profile.release]
+overflow-checks = true

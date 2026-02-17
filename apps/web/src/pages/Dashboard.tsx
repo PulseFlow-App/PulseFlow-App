@@ -84,6 +84,33 @@ export function Dashboard() {
     return () => { cancelled = true; };
   }, [user, accessToken]);
 
+  // Sync body logs to API so they count toward activity points
+  useEffect(() => {
+    if (!user || !accessToken || !API_BASE) return;
+    let cancelled = false;
+    fetch(`${API_BASE}/users/me/body-logs`, { headers: { Authorization: `Bearer ${accessToken}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled) return;
+        const server = Array.isArray(data?.logs) ? data.logs : [];
+        const serverIds = new Set(server.map((l: { id?: string }) => l.id));
+        const local = getBodyLogs();
+        const localOnly = local.filter((e) => e.id && !serverIds.has(e.id));
+        localOnly.forEach((entry) => {
+          fetch(`${API_BASE}/users/me/body-logs`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(entry),
+          }).catch(() => {});
+        });
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user, accessToken]);
+
   const streak = getAppStreak();
   const checkInsCount = getBodyLogs().length + getCheckIns().length;
 

@@ -217,6 +217,18 @@ async function createBodyLog(log) {
   return log;
 }
 
+/** Count work routine check-ins and body logs for activity points (server source of truth). */
+async function getActivityCounts(userId) {
+  if (!pool || !userId) return { checkInCount: 0, bodyLogCount: 0 };
+  const [checkInRes, bodyLogRes] = await Promise.all([
+    pool.query('SELECT COUNT(*) AS n FROM work_routine_checkins WHERE user_id = $1', [userId]),
+    pool.query('SELECT COUNT(*) AS n FROM body_logs WHERE user_id = $1', [userId]),
+  ]);
+  const checkInCount = Math.max(0, parseInt(checkInRes.rows[0]?.n ?? '0', 10));
+  const bodyLogCount = Math.max(0, parseInt(bodyLogRes.rows[0]?.n ?? '0', 10));
+  return { checkInCount, bodyLogCount };
+}
+
 /** Work routine check-ins: list by user, optional date range. */
 async function getCheckIns(userId, from, to) {
   if (!pool) return [];
@@ -272,5 +284,6 @@ module.exports = {
   createBodyLog,
   getCheckIns,
   createCheckIn,
+  getActivityCounts,
   listUsers,
 };

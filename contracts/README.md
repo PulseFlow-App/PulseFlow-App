@@ -5,6 +5,8 @@ This directory holds **locking and integration logic** for the Pulse token. The 
 ## Contents
 
 - `staking/` — Locking logic for Premium access (read-only chain interaction with existing $PULSE; users lock tokens for as long as they want the paid tier)
+- `rewards/` — Optional **EVM** vault (Solidity) to hold $PULSE or wrapped token and pay out when users redeem app points.
+- `rewards-solana/` — **Solana** Reward Vault program: owner can `deposit` and `transfer_to` (for $PULSE on Solana). See [Points and Redemption](../docs/points-and-redemption.md).
 
 ## Token Utility
 

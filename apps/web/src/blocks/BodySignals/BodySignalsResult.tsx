@@ -40,7 +40,10 @@ export function BodySignalsResult() {
   }, []);
 
   useEffect(() => {
-    if (!loadingAI) setShowNextStepModal(true);
+    if (!loadingAI) {
+      const t = setTimeout(() => setShowNextStepModal(true), 500);
+      return () => clearTimeout(t);
+    }
   }, [loadingAI]);
 
   return (

@@ -11,6 +11,7 @@ import { BodySignalsTrends } from './blocks/BodySignals/BodySignalsTrends';
 import { WorkRoutineOverview } from './blocks/WorkRoutine/WorkRoutineOverview';
 import { WorkRoutineCheckIn } from './blocks/WorkRoutine/WorkRoutineCheckIn';
 import { WorkRoutineTrends } from './blocks/WorkRoutine/WorkRoutineTrends';
+import { WorkRoutineDone } from './blocks/WorkRoutine/WorkRoutineDone';
 import { NutritionOverview } from './blocks/Nutrition/NutritionOverview';
 import { NutritionFridgeLog } from './blocks/Nutrition/NutritionFridgeLog';
 import { NutritionMealTiming } from './blocks/Nutrition/NutritionMealTiming';
@@ -107,6 +108,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <WorkRoutineCheckIn />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/work-routine/done"
+        element={
+          <ProtectedRoute>
+            <WorkRoutineDone />
           </ProtectedRoute>
         }
       />
