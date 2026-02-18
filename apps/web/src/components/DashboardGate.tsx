@@ -1,13 +1,13 @@
 import { useWallet } from '../contexts/WalletContext';
-import { SimpleDashboard } from '../pages/SimpleDashboard';
 import { Dashboard } from '../pages/Dashboard';
+import { EmailOnlyReferral } from '../pages/EmailOnlyReferral';
 
 /**
- * Renders SimpleDashboard when user has no wallet (Google-only),
- * full Dashboard when wallet is connected (privileged tier).
+ * Wallet connected → full dashboard (points, blocks, everything).
+ * Email only (no wallet) → referral links only; no dashboard, no points.
  */
 export function DashboardGate() {
   const { walletPublicKey } = useWallet();
   if (walletPublicKey) return <Dashboard />;
-  return <SimpleDashboard />;
+  return <EmailOnlyReferral />;
 }

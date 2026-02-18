@@ -1,0 +1,135 @@
+.page {
+  min-height: 100dvh;
+  background-color: #0a0e14;
+  color: #fff;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoImg {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profileLink {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.profileLink:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.profileBtn {
+  font-size: 0.9375rem;
+  color: #3b82f6;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.profileBtn:hover {
+  text-decoration: underline;
+}
+
+.main {
+  padding: 24px;
+  padding-bottom: 48px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.heading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.muted {
+  font-size: 0.875rem;
+  color: #737373;
+  margin: 0 0 16px;
+  line-height: 1.4;
+}
+
+.referralSection {
+  margin-bottom: 32px;
+}
+
+.inviteLink {
+  display: inline-block;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.inviteLink:hover {
+  text-decoration: underline;
+}
+
+.walletSection {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.connectBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.connectBtn:hover {
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.connectBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

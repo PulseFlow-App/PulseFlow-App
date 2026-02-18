@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useWallet } from '../contexts/WalletContext';
 import { AppFooter } from '../components/AppFooter';
 import styles from './Login.module.css';
 
@@ -9,6 +10,7 @@ const REFERRAL_STORAGE_KEY = '@pulse/referral_code';
 export function Login() {
   const [searchParams] = useSearchParams();
   const { user, signIn, signInWithGoogle, isGoogleAuth } = useAuth();
+  const { walletPublicKey, connect, disconnect, isWalletAvailable, isLoading: walletLoading } = useWallet();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -58,12 +60,11 @@ export function Login() {
         <img src="/icons/icon-192.png?v=2" alt="Pulse" className={styles.logo} />
         <h1 className={styles.title}>Pulse</h1>
         <p className={styles.subtitle}>
-          {isGoogleAuth
-            ? 'Sign in with Google. No password needed.'
-            : 'Your daily wellness and routine pulse.'}
+          Sign in or connect your wallet to continue.
         </p>
 
-        {isGoogleAuth ? (
+        {/* Google */}
+        {isGoogleAuth && (
           <>
             <button
               type="button"
@@ -75,30 +76,67 @@ export function Login() {
             </button>
             {error && <p className={styles.error}>{error}</p>}
           </>
-        ) : (
-          <form onSubmit={handleEmailSubmit} className={styles.form}>
-            <label className={styles.label} htmlFor="email">
-              Email (demo)
-            </label>
-            <input
-              id="email"
-              type="email"
-              className={styles.input}
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setError(null);
-              }}
-              placeholder="you@example.com"
-              autoComplete="email"
-              autoFocus
-            />
-            {error && <p className={styles.error}>{error}</p>}
-            <button type="submit" className={styles.button}>
-              Continue
-            </button>
-          </form>
         )}
+
+        {isGoogleAuth && <p className={styles.divider}>or</p>}
+
+        {/* Email */}
+        <form onSubmit={handleEmailSubmit} className={styles.form}>
+          <label className={styles.label} htmlFor="email">
+            Email (demo)
+          </label>
+          <input
+            id="email"
+            type="email"
+            className={styles.input}
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError(null);
+            }}
+            placeholder="you@example.com"
+            autoComplete="email"
+            autoFocus={!isGoogleAuth}
+          />
+          {error && <p className={styles.error}>{error}</p>}
+          <button type="submit" className={styles.button}>
+            Continue with email
+          </button>
+        </form>
+
+        <p className={styles.divider}>or</p>
+
+        {/* Wallet */}
+        <div className={styles.walletBlock}>
+          {walletPublicKey ? (
+            <div className={styles.walletConnected}>
+              <span className={styles.walletAddress} title={walletPublicKey}>
+                {walletPublicKey.slice(0, 4)}…{walletPublicKey.slice(-4)}
+              </span>
+              <button type="button" onClick={disconnect} className={styles.walletDisconnect}>
+                Disconnect
+              </button>
+            </div>
+          ) : isWalletAvailable ? (
+            <button
+              type="button"
+              className={styles.buttonSecondary}
+              onClick={connect}
+              disabled={walletLoading}
+            >
+              {walletLoading ? 'Connecting…' : 'Connect wallet'}
+            </button>
+          ) : (
+            <a
+              href="https://phantom.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.buttonSecondary}
+            >
+              Get Phantom wallet
+            </a>
+          )}
+        </div>
 
         {!isGoogleAuth && (
           <p className={styles.hint}>

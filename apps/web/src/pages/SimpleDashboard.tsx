@@ -5,6 +5,7 @@ import { getAppStreak } from '../stores/appStreak';
 import { getBodyLogs } from '../blocks/BodySignals/store';
 import { getCheckIns } from '../blocks/WorkRoutine/store';
 import { AppFooter } from '../components/AppFooter';
+import { WalletIndicator } from '../components/WalletIndicator';
 import styles from './Dashboard.module.css';
 
 /**
@@ -25,6 +26,7 @@ export function SimpleDashboard() {
           <h1 className={styles.logo}>Pulse</h1>
         </div>
         <nav className={styles.nav}>
+          <WalletIndicator compact className={styles.headerWallet} />
           <Link to="/dashboard/profile" className={styles.profileLink}>
             {user?.email}
           </Link>

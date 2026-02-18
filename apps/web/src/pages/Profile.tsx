@@ -53,21 +53,26 @@ export function Profile() {
         </section>
 
         <section className={styles.section} aria-labelledby="wallet-heading">
-          <h2 id="wallet-heading" className={styles.sectionTitle}>Wallet</h2>
+          <h2 id="wallet-heading" className={styles.sectionTitle}>Wallet & account linking</h2>
           <div className={styles.card}>
             {walletPublicKey ? (
               <>
-                <p className={styles.label}>Connected</p>
+                <p className={styles.label}>Wallet connected</p>
                 <p className={styles.value} style={{ wordBreak: 'break-all', fontSize: '0.875rem' }}>
                   {walletPublicKey.slice(0, 4)}…{walletPublicKey.slice(-4)}
                 </p>
+                <p className={styles.muted}>
+                  This wallet is linked to this session. Coming soon: sync wallet with this email account so points and identity stay in one place.
+                </p>
                 <button type="button" onClick={disconnect} className={styles.walletBtn}>
-                  Disconnect
+                  Disconnect wallet
                 </button>
               </>
             ) : (
               <>
-                <p className={styles.muted}>Connect a Solana wallet for the full dashboard, leaderboard, and rewards.</p>
+                <p className={styles.muted}>
+                  Connect a Solana wallet for on-chain rewards and daily check-in. You can link it to this email account later so everything stays in sync.
+                </p>
                 {isWalletAvailable ? (
                   <button type="button" onClick={connect} disabled={isLoading} className={styles.walletBtn}>
                     {isLoading ? 'Connecting…' : 'Connect wallet'}

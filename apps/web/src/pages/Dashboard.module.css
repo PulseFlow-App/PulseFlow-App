@@ -39,6 +39,10 @@
   gap: 16px;
 }
 
+.headerWallet {
+  margin-right: 4px;
+}
+
 .profileLink {
   font-size: 0.875rem;
   color: #a3a3a3;

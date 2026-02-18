@@ -8,6 +8,7 @@ import { startNotificationChecks, stopNotificationChecks } from '../stores/notif
 import { BlockCard } from '../components/BlockCard';
 import { AppFooter } from '../components/AppFooter';
 import { NextStepModal } from '../components/NextStepModal';
+import { WalletIndicator } from '../components/WalletIndicator';
 import { BLOCKS } from '../blocks/registry';
 import styles from './Dashboard.module.css';
 
@@ -159,6 +160,7 @@ export function Dashboard() {
           <h1 className={styles.logo}>Pulse</h1>
         </div>
         <nav className={styles.nav}>
+          <WalletIndicator compact className={styles.headerWallet} />
           <Link to="/dashboard/profile" className={styles.profileLink}>
             {user?.email}
           </Link>
