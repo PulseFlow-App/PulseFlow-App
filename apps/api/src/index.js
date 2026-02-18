@@ -282,9 +282,9 @@ app.get('/admin/users', adminMiddleware, async (req, res) => {
   }
 });
 
-// ----- Admin: grant bonus points to a user (userId or email) -----
+// ----- Admin: grant bonus points to a user (userId, email, or wallet) -----
 app.post('/admin/points', adminMiddleware, async (req, res) => {
-  const { userId, email, amount } = req.body || {};
+  const { userId, email, wallet, amount } = req.body || {};
   const points = security.validatePointsAmount(amount);
   if (points == null) {
     return res.status(400).json({ message: 'Positive amount required (max ' + security.MAX_ADMIN_POINTS + ')' });
@@ -300,8 +300,15 @@ app.post('/admin/points', adminMiddleware, async (req, res) => {
       if (u) id = u.userId;
     }
   }
+  if (!id && wallet) {
+    const walletVal = security.validateWallet(wallet);
+    if (walletVal) {
+      const u = await db.getUserByWallet(walletVal);
+      if (u) id = u.userId;
+    }
+  }
   if (!id) {
-    return res.status(400).json({ message: 'userId or email required' });
+    return res.status(400).json({ message: 'userId, email, or wallet required' });
   }
   try {
     await db.addBonusPoints(id, points);

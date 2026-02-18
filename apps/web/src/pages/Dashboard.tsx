@@ -224,7 +224,7 @@ export function Dashboard() {
             <span className={styles.breakdownValue}>{referralPoints}</span>
           </div>
           <div className={styles.breakdownRow}>
-            <span className={styles.breakdownLabel}>Reward points (admin)</span>
+            <span className={styles.breakdownLabel}>Other Rewards</span>
             <span className={styles.breakdownValue}>{bonusPoints}</span>
           </div>
         </section>

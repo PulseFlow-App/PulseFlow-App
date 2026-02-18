@@ -1,10 +1,30 @@
 /**
  * Postgres DB layer for Pulse API.
  * When DATABASE_URL is set, uses pg Pool; otherwise the API uses in-memory storage.
+ * If DATABASE_PASSWORD is set, it is injected into the URL (URL-encoded) so the password
+ * can contain @ # % etc. without breaking the connection string.
  */
 const { Pool } = require('pg');
 
-const connectionString = process.env.DATABASE_URL;
+function buildConnectionString() {
+  let url = process.env.DATABASE_URL;
+  const pass = process.env.DATABASE_PASSWORD;
+  if (!url || typeof url !== 'string') return null;
+  url = url.trim();
+  if (pass != null && String(pass).trim() !== '') {
+    try {
+      const u = new URL(url.replace(/^postgres(ql)?:\/\//, 'https://'));
+      const encoded = encodeURIComponent(String(pass).trim());
+      const auth = u.username ? `${u.username}:${encoded}` : encoded;
+      return `postgresql://${auth}@${u.hostname}${u.port ? ':' + u.port : ''}${u.pathname || '/postgres'}${u.search || ''}`;
+    } catch (_) {
+      return url;
+    }
+  }
+  return url;
+}
+
+const connectionString = buildConnectionString();
 // Default: accept Supabase/pooler certs (avoids SELF_SIGNED_CERT_IN_CHAIN on Vercel). Set DATABASE_SSL_REJECT_UNAUTHORIZED=true for strict verification.
 const sslRejectUnauthorized = process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === 'true' || process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === '1';
 const pool = connectionString
@@ -36,6 +56,16 @@ async function getUserByEmail(email) {
     [email]
   );
   return rows[0] ? { userId: rows[0].id, email: rows[0].email, passwordHash: rows[0].password_hash } : null;
+}
+
+/** Get user by wallet address (users.wallet). */
+async function getUserByWallet(wallet) {
+  if (!pool || !wallet) return null;
+  const { rows } = await pool.query(
+    'SELECT id, email FROM users WHERE wallet = $1',
+    [wallet]
+  );
+  return rows[0] ? { userId: rows[0].id, email: rows[0].email } : null;
 }
 
 /** Check if a user exists by id (e.g. referrer must exist before awarding referral points). */
@@ -271,6 +301,7 @@ module.exports = {
   hasDb,
   ping,
   getUserByEmail,
+  getUserByWallet,
   userExistsById,
   createUser,
   createReferral,

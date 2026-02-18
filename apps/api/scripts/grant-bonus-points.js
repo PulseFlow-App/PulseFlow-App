@@ -1,28 +1,50 @@
 #!/usr/bin/env node
 /**
- * One-off: grant bonus points to a user by email (for testing).
+ * One-off: grant bonus points to a user by email or wallet address.
  *
- * Mode 1 – Direct DB (no API needed): set DATABASE_URL. Loads .env from apps/api when run from repo root.
- *   DATABASE_URL=postgres://... node apps/api/scripts/grant-bonus-points.js lumina.envisions@gmail.com 100
- *   Or from apps/api: node scripts/grant-bonus-points.js lumina.envisions@gmail.com 100
+ * Mode 1 – Direct DB (no API needed): set DATABASE_URL.
+ *   node apps/api/scripts/grant-bonus-points.js lumina.envisions@gmail.com 100
+ *   node apps/api/scripts/grant-bonus-points.js 9W43BrCfv9rK7Q9Tw3mdfdxsBAmurDumGrQMakAaKpN8 20
  *
  * Mode 2 – Via API: set API_BASE and ADMIN_API_KEY, and have the API server running.
- *   API_BASE=http://localhost:3000 ADMIN_API_KEY=... node apps/api/scripts/grant-bonus-points.js lumina.envisions@gmail.com 100
+ *   API_BASE=http://localhost:3000 ADMIN_API_KEY=... node apps/api/scripts/grant-bonus-points.js <email|wallet> <amount>
  */
 const path = require('path');
-// Load apps/api/.env when run from repo root (e.g. node apps/api/scripts/...)
+// Load apps/api/.env (script-relative and cwd so it works from repo root or apps/api)
 try {
   require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+  if (process.cwd() !== path.dirname(path.join(__dirname, '..'))) {
+    require('dotenv').config({ path: path.join(process.cwd(), '.env') });
+  }
 } catch (_) {}
 
 const base = process.env.API_BASE || 'http://localhost:3000';
 const adminKey = process.env.ADMIN_API_KEY;
-const databaseUrl = process.env.DATABASE_URL;
-const email = process.argv[2];
+
+function buildDatabaseUrl() {
+  let url = process.env.DATABASE_URL;
+  const pass = process.env.DATABASE_PASSWORD;
+  if (!url || typeof url !== 'string') return null;
+  url = url.trim();
+  if (pass != null && String(pass).trim() !== '') {
+    try {
+      const u = new URL(url.replace(/^postgres(ql)?:\/\//, 'https://'));
+      const encoded = encodeURIComponent(String(pass).trim());
+      const auth = u.username ? `${u.username}:${encoded}` : encoded;
+      return `postgresql://${auth}@${u.hostname}${u.port ? ':' + u.port : ''}${u.pathname || '/postgres'}${u.search || ''}`;
+    } catch (_) {
+      return url;
+    }
+  }
+  return url;
+}
+
+let databaseUrl = buildDatabaseUrl();
+const identifier = process.argv[2]; // email or wallet address
 const amount = process.argv[3];
 
-if (!email || !amount) {
-  console.error('Usage: node scripts/grant-bonus-points.js <email> <amount>');
+if (!identifier || !amount) {
+  console.error('Usage: node scripts/grant-bonus-points.js <email|wallet> <amount>');
   console.error('  Set DATABASE_URL for direct DB (no API), or API_BASE + ADMIN_API_KEY for HTTP.');
   process.exit(1);
 }
@@ -33,15 +55,25 @@ if (!Number.isInteger(points) || points <= 0) {
   process.exit(1);
 }
 
-const trimmedEmail = email.trim().toLowerCase();
+const isEmail = identifier.includes('@');
+const trimmedEmail = isEmail ? identifier.trim().toLowerCase() : null;
+const wallet = isEmail ? null : identifier.trim();
 
 async function runViaDb() {
   const { Pool } = require('pg');
-  const pool = new Pool({ connectionString: databaseUrl });
+  let url = databaseUrl;
   try {
-    const userRes = await pool.query('SELECT id FROM users WHERE email = $1', [trimmedEmail]);
+    const parsed = new URL(url.replace(/^postgres(ql)?:\/\//, 'https://'));
+    console.error('DB: connecting to', parsed.hostname + ':' + (parsed.port || '5432'), '(user:', (parsed.username || '?') + ')');
+  } catch (_) {}
+  const pool = new Pool({ connectionString: url });
+  try {
+    const byEmail = isEmail;
+    const userRes = byEmail
+      ? await pool.query('SELECT id FROM users WHERE email = $1', [trimmedEmail])
+      : await pool.query('SELECT id FROM users WHERE wallet = $1', [wallet]);
     if (userRes.rows.length === 0) {
-      console.error('No user found with email:', trimmedEmail);
+      console.error('No user found with', byEmail ? 'email:' : 'wallet:', byEmail ? trimmedEmail : wallet);
       process.exit(1);
     }
     const userId = userRes.rows[0].id;
@@ -52,8 +84,9 @@ async function runViaDb() {
     console.log('OK: Points granted userId:', userId, 'amount:', points);
   } catch (err) {
     if (err.code === '28P01') {
-      console.error('Database login failed: wrong user or password in DATABASE_URL.');
-      console.error('Update apps/api/.env with the correct Postgres URL (e.g. from Supabase/Neon dashboard).');
+      console.error('Database login failed: wrong user or password.');
+      console.error('Option A: In apps/api/.env set DATABASE_PASSWORD=your_actual_password (same line as DATABASE_URL with user but no password, e.g. postgresql://user@host:5432/postgres). Password can contain any characters.');
+      console.error('Option B: Reset password in Supabase (Project Settings → Database) to letters/numbers only, then put it in DATABASE_URL=postgresql://user:NEW_PASS@host:5432/postgres');
     } else if (err.code === 'ENOTFOUND' || err.cause?.code === 'ENOTFOUND') {
       console.error('Cannot reach database host (DNS failed). Check DATABASE_URL in apps/api/.env:');
       console.error('  - Copy the exact connection string from Supabase (Project Settings → Database) or Neon.');
@@ -68,6 +101,7 @@ async function runViaDb() {
 }
 
 async function runViaApi() {
+  const body = isEmail ? { email: trimmedEmail, amount: points } : { wallet, amount: points };
   let res;
   try {
     res = await fetch(`${base.replace(/\/$/, '')}/admin/points`, {
@@ -76,16 +110,13 @@ async function runViaApi() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${adminKey}`,
       },
-      body: JSON.stringify({ email: trimmedEmail, amount: points }),
+      body: JSON.stringify(body),
     });
   } catch (err) {
     if (err.cause?.code === 'ECONNREFUSED' || err.code === 'ECONNREFUSED') {
-      console.error('Cannot reach the API (connection refused). Start the API first in another terminal:');
-      console.error('  cd apps/api && npm start');
-      console.error('Then run this command again.');
-    } else {
-      console.error(err.message || err);
+      return false; // caller can fall back to DB
     }
+    console.error(err.message || err);
     process.exit(1);
   }
   const data = await res.json().catch(() => ({}));
@@ -94,12 +125,21 @@ async function runViaApi() {
     process.exit(1);
   }
   console.log('OK:', data.message, 'userId:', data.userId, 'amount:', data.amount);
+  return true;
 }
 
 async function run() {
-  // Prefer API when ADMIN_API_KEY is set (Option B); otherwise use direct DB if DATABASE_URL set.
   if (adminKey) {
-    await runViaApi();
+    const ok = await runViaApi();
+    if (!ok && databaseUrl) {
+      console.warn('API unreachable; using database directly.');
+      await runViaDb();
+    } else if (!ok) {
+      console.error('Cannot reach the API (connection refused). Start the API or set DATABASE_URL:');
+      console.error('  cd apps/api && npm start');
+      console.error('  or set DATABASE_URL in apps/api/.env for direct DB.');
+      process.exit(1);
+    }
   } else if (databaseUrl) {
     await runViaDb();
   } else {
