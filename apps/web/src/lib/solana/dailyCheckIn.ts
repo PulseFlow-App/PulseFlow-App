@@ -231,7 +231,7 @@ export async function submitDailyCheckIn(): Promise<{ success: boolean; error?: 
   if (!wallet?.publicKey) {
     return { success: false, error: 'Wallet not connected' };
   }
-  const { programId, rpc } = getSolanaConfig();
+  const { programId } = getSolanaConfig();
   if (!programId) {
     return { success: false, error: 'Rewards program not configured' };
   }
