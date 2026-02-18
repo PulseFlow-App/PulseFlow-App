@@ -5,8 +5,16 @@
   color: #fff;
 }
 
-.header {
+.header,
+.headerRow {
   margin-bottom: 24px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .back {
@@ -47,6 +55,59 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 20px;
   margin-bottom: 24px;
+}
+
+.onChainTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #fff;
+}
+
+.onChainText {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  margin: 0 0 16px;
+  line-height: 1.45;
+}
+
+.onChainButton {
+  display: inline-block;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #0a0e14;
+  background: #22c55e;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.onChainButton:hover {
+  background: #16a34a;
+}
+
+.onChainButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.onChainActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.onChainSuccess {
+  font-size: 0.875rem;
+  color: #22c55e;
+}
+
+.onChainError {
+  font-size: 0.875rem;
+  color: #f87171;
 }
 
 .scoreSection {

@@ -1,8 +1,10 @@
 # Reward Vault (Solana)
 
-Solana program for **$PULSE** (or any SPL token) reward payouts. The vault holds tokens; only the **owner** can deposit and transfer to recipients (e.g. when fulfilling points redemptions from your backend).
+Solana program for **$PULSE** (or any SPL token) reward payouts and **on-chain points** redeemable for tokens.
 
-Points and who may redeem stay in your API; this program only holds and sends tokens.
+- The vault holds tokens; the **owner** can deposit and transfer to recipients.
+- **On-chain points**: users can **earn** points without your API (e.g. **daily check-in**: connect wallet, call the program once per cooldown). Owner can also **credit** points to user PDAs. Users **redeem** points for tokens at a configurable rate.
+- So points can be tracked **fully on-chain** (wallet = identity); no API or DB required for earning.
 
 ## Requirements
 
@@ -64,6 +66,24 @@ anchor deploy --provider.cluster mainnet
 
 4. Save the printed **program ID**; you need it to call `initialize` and for any client/script.
 
+### After deploy: initialize vault + daily config (one script)
+
+From the **web app** you can run a script that (1) optionally creates a new SPL mint on devnet if you don’t have one, (2) calls **initialize**, (3) calls **init_daily_config** (e.g. 10 points per check-in, 24h cooldown).
+
+1. In `apps/web/.env` set at least:
+   - `VITE_REWARD_PROGRAM_ID=<your deployed program ID>`
+   - `VITE_SOLANA_RPC=https://api.devnet.solana.com` (for devnet)
+   - Optionally `VITE_PULSE_MINT=<mint>`; if omitted, the script creates a new devnet token and prints its mint for you to add.
+2. Ensure your deployer keypair has devnet SOL: `solana airdrop 2 --url devnet` (or use [faucet.solana.com](https://faucet.solana.com)).
+3. Run:
+
+```bash
+cd apps/web
+npm run init-reward-vault
+```
+
+The script uses the keypair at `~/.config/solana/id.json`. If it created a new mint, add the printed `VITE_PULSE_MINT=...` to `apps/web/.env` and restart the app so daily check-in and points work.
+
 ## 3. Get the $PULSE mint address
 
 $PULSE on Solana: [Pump.fun coin page](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump). On that page (or in any Solana explorer for the token), copy the **token mint address** (base58). You will pass this as `mint` when calling `initialize`.
@@ -111,14 +131,29 @@ await program.methods
   .rpc();
 ```
 
-After `initialize` succeeds, the vault PDA and its token account exist. You can then **deposit** (owner sends tokens to the vault ATA) and **transfer_to** (owner sends from vault ATA to a recipient).
+After `initialize` succeeds, the vault PDA and its token account exist. Then:
+
+1. Call **set_redemption_rate** (e.g. `100` for 100 points = 1 token).
+2. Call **init_daily_config** (e.g. 30 points per daily check-in, 86400 sec cooldown) so users can earn on-chain.
+3. **Deposit** (owner sends tokens to the vault ATA).
+4. Users **daily_check_in** (connect wallet, sign once per cooldown) to earn points, or owner **credit_points** to top up.
+5. User **redeem** (user signs; program deducts points and sends tokens to their ATA).
+
+Example: derive points PDA for a user (for crediting or reading balance):
+
+```ts
+const [pointsPda] = PublicKey.findProgramAddressSync(
+  [Buffer.from("points"), vaultPda.toBuffer(), userWallet.toBuffer()],
+  programId
+);
+```
 
 ## Instructions
 
 ### `initialize(owner, mint)`
 
 - Creates the vault PDA (seeds: `["vault", mint]`) and a token account (ATA) owned by that PDA.
-- Call **once per token mint** (e.g. once for $PULSE).
+- Call **once per token mint** (e.g. once for $PULSE). Sets redemption rate to 0 until you call `set_redemption_rate`.
 - **Accounts:** owner (signer), mint, vault (init), vault_token_account (init ATA, authority = vault), token_program, associated_token_program, system_program.
 
 ### `deposit(amount)`
@@ -128,14 +163,54 @@ After `initialize` succeeds, the vault PDA and its token account exist. You can 
 
 ### `transfer_to(amount)`
 
-- Owner sends `amount` from the vault’s token account to a recipient’s token account (e.g. when fulfilling a redemption).
+- Owner sends `amount` from the vault’s token account to a recipient’s token account (manual payouts).
 - **Accounts:** owner (signer), vault, vault_token_account, recipient_token_account, token_program.
 
-## Flow
+### `set_redemption_rate(points_per_token)`
 
-1. Deploy the program and run `initialize` with your wallet as owner and $PULSE mint address.
-2. As owner, **deposit** $PULSE into the vault (transfer from your wallet to the vault ATA).
-3. When a user redeems points in your app, backend records it and you (or an admin) call **transfer_to** with the user’s Solana token account and the amount to send.
+- Owner sets how many points equal one full token. E.g. `100` means 100 points = 1 token (1e decimals).
+- **Accounts:** owner (signer), vault.
+
+### `init_daily_config(daily_check_in_points, cooldown_secs)`
+
+- Owner enables **on-chain earning**: users get `daily_check_in_points` (e.g. 30) once per `cooldown_secs` (e.g. 86400 = 24h). No API needed.
+- **Accounts:** owner (signer), vault, config (init_if_needed), system_program.
+
+### `daily_check_in()`
+
+- **User** signs; if cooldown has elapsed (or first time), program credits points to their points account. Creates points + daily_claim PDAs if needed (user pays rent). Use this when the app shows “Connect wallet to earn” — balance is on-chain.
+- **Accounts:** user (signer), vault, config, daily_claim (init_if_needed), points_account (init_if_needed), system_program.
+
+### `credit_points(amount)`
+
+- Owner credits **on-chain points** to a user. Creates the user’s points PDA if it doesn’t exist (seeds: `["points", vault.key(), user.key()]`).
+- **Accounts:** owner (signer), vault, user (pubkey used for PDA), points_account (init_if_needed), system_program.
+
+### `redeem(points_amount)`
+
+- **User** signs; program deducts `points_amount` from their points account and transfers tokens from the vault to their token account at the vault’s redemption rate. User must have an ATA for the vault mint.
+- **Accounts:** user (signer), vault, mint, points_account, vault_token_account, user_token_account, token_program.
+
+## Earning points without the API
+
+If your app or API shows **0 points** (e.g. DB not set, user not synced, or streak/check-ins not sent), users can still earn on-chain:
+
+1. **Connect wallet** in the app (e.g. Phantom, Solflare).
+2. Owner has called **init_daily_config** (e.g. `30` points, `86400` sec cooldown).
+3. User calls **daily_check_in** once per cooldown window; the program credits points to their **on-chain** points account. Balance is readable from the chain (points PDA); no API needed.
+4. User can **redeem** those points for $PULSE as usual.
+
+So **wallet = identity**: points are tracked by wallet pubkey on-chain. You can show balance in the app by fetching the points account (see PDA example above) instead of (or in addition to) `GET /users/me/points`.
+
+## Flow (on-chain points → token)
+
+1. Deploy the program and run **initialize** with your wallet as owner and $PULSE mint address.
+2. Call **set_redemption_rate** (e.g. `100` for 100 points = 1 $PULSE).
+3. Call **init_daily_config** (e.g. 30 points, 86400 cooldown) so users can earn by daily check-in.
+4. As owner, **deposit** $PULSE into the vault.
+5. Users earn: **daily_check_in** (on-chain) and/or **credit_points** (owner, e.g. from API).
+6. User calls **redeem(points_amount)**; program deducts points and sends tokens to their ATA.
+7. Optional: **transfer_to** for manual payouts.
 
 ## $PULSE mint
 
@@ -145,9 +220,11 @@ $PULSE lives on Solana (e.g. [Pump.fun](https://pump.fun)); use its mint address
 
 ### `anchor build` fails with "no such command: build-sbf"
 
-Anchor runs `cargo build-sbf` under the hood. That subcommand is provided by the Solana CLI; Cargo finds it by looking for a `cargo-build-sbf` binary on your `PATH`.
+Anchor needs `cargo-build-sbf`, which comes with the **full Solana CLI**. The Homebrew `solana` package often **does not** include it — use the **official installer** instead (see below).
 
-- **If you installed Solana via Homebrew:**  
+- **If you already use the official installer:** ensure its `bin` is first on PATH, e.g. `export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"`, then run `anchor build` again.
+
+- **If you installed Solana via Homebrew only:**  
   Ensure Solana’s `bin` directory is on your `PATH` **before** your Cargo bin (so Cargo sees `cargo-build-sbf`):
 
   ```bash
@@ -162,11 +239,21 @@ Anchor runs `cargo build-sbf` under the hood. That subcommand is provided by the
   1. **Manual tarball:**  
      Download the [Solana release tarball](https://github.com/solana-labs/solana/releases) for your OS (e.g. `solana-release-aarch64-apple-darwin.tar.bz2` for Apple Silicon), extract it, and add the extracted `bin` folder to the **front** of your `PATH`. That `bin` includes both `solana` and `cargo-build-sbf`.
 
-  2. **Official install script** (if your network allows):  
-     `sh -c "$(curl -sSfL https://release.solana.com/stable/install)"`  
-     Then use the path it prints (e.g. `~/.local/share/solana/install/active_release/bin`) and prepend it to `PATH`.
+  2. **Official install script (recommended):**  
+     ```bash
+     sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+     export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+     cd contracts/rewards-solana && anchor build
+     ```  
+     Add the `export PATH=...` line to your `~/.zshrc` so it persists.
 
 After fixing `PATH`, run `anchor build` from `contracts/rewards-solana` again.
+
+## Notes
+
+- **Existing vaults:** If you already deployed a vault before on-chain points were added, the account layout changed (new `points_per_token` field). Re-initialize with a new vault or deploy a new program ID for the updated program.
+- **Points PDA:** Each user has one points account per vault (seeds: `["points", vault_pda, user_pubkey]`). Use the same vault PDA when crediting and when the user redeems.
+- **Reading balance:** Fetch the `PointsAccount` (points PDA) from the chain to show on-chain balance in your app; no API call needed.
 
 ## See also
 

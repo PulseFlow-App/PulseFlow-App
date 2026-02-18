@@ -1,6 +1,6 @@
 # Points and $PULSE Redemption
 
-Points are earned in the app (check-ins, streak, referrals, admin bonus). They are stored in the **API database** and displayed in the app. Later, you can make points **redeemable for $PULSE** that you send from your own funds.
+Points are earned in the app (check-ins, streak, referrals, admin bonus). They can live in the **API database** and/or **on-chain** (Solana). On-chain points are **redeemable for $PULSE** directly from the Reward Vault program.
 
 ---
 
@@ -14,43 +14,53 @@ Points are earned in the app (check-ins, streak, referrals, admin bonus). They a
 - **Referral points:** When a referral is completed (see referrals flow).
 - **Bonus points:** Admin grants via `POST /admin/points`.
 
-So **points are fully backend-driven**; no smart contract is required for issuance.
+So **points are fully backend-driven** for issuance; you can keep the API as source of truth and **sync** balances on-chain when users want to redeem.
+
+---
+
+## Why might the API show 0 points?
+
+Common reasons `GET /users/me/points` returns zeros:
+
+- **No database:** `DATABASE_URL` is unset or wrong; the API falls back to zeros.
+- **User not in DB:** The JWT’s user id doesn’t match a row in `users`, or the user was never created (e.g. auth/sync didn’t run).
+- **Activity not synced:** Activity points come from **check-ins** and **body logs** in the DB. If the app doesn’t call `POST /users/me/check-ins` or `POST /users/me/body-logs`, or `streak`/`checkIns` aren’t sent with the points request, activity (and total) can be 0.
+- **Tables/columns missing:** `users` needs `activity_points`, `referral_points`, `bonus_points` (see [setup-database.md](./setup-database.md)).
+
+**Alternative: earn on-chain (no API).** Use the Solana Reward Vault’s **daily check-in**: users connect their **wallet** and call `daily_check_in` once per cooldown (e.g. 24h). Points are stored on-chain in a PDA; you can show balance by reading that account from the chain. See `contracts/rewards-solana/README.md` — section “Earning points without the API”.
 
 ---
 
 ## Redemption: options
 
-You said you want points to be **redeemable for $PULSE**, which you will **manually send from your own funds**. Two simple options:
+### Option A: On-chain points (recommended)
 
-### Option A: Manual send (no contract)
+The **Solana Reward Vault** (`contracts/rewards-solana/`) supports **on-chain points** that users redeem for tokens:
 
-1. In the app, user connects or enters a **wallet address** (e.g. in Profile) and can request **“Redeem X points for $PULSE”**.
-2. Backend records the redemption request (user id, amount, wallet, status: pending).
-3. You (owner) see pending redemptions (e.g. in Admin or a small dashboard), then **send $PULSE** from your wallet to the user’s wallet (Pump.fun / Solana).
-4. You mark the redemption as fulfilled in the backend; backend deducts points from the user.
+1. Owner sets a **redemption rate** (e.g. 100 points = 1 $PULSE) via `set_redemption_rate`.
+2. Owner **deposits** $PULSE into the vault and **credits** points to users' on-chain PDAs via `credit_points(user, amount)`. You can credit from your backend when users earn points (e.g. after check-ins or referrals).
+3. **User** calls `redeem(points_amount)`; the program deducts points and sends $PULSE to their token account. No manual send or backend call needed for the actual payout.
 
-No smart contract: you just hold $PULSE in your wallet and send it when you fulfill.
+See `contracts/rewards-solana/README.md` for instructions: `initialize`, `set_redemption_rate`, `deposit`, `credit_points`, `redeem`.
 
-### Option B: Reward vault contract (optional)
+### Option B: Manual send (no on-chain points)
 
-If you prefer to **pre-fund a vault** and pay out from there (e.g. for accounting or to separate “reward treasury” from your main wallet):
+1. User connects or enters a **wallet address** and requests redeem X points for $PULSE.
+2. Backend records the request and you (owner) **send $PULSE** from your wallet or from the vault via `transfer_to`.
+3. Backend deducts points from the user in the DB.
 
-1. Deploy a **vault** that holds **$PULSE** and has an **owner** (you) who can **deposit** and **transferTo(recipient, amount)**.
-2. You deposit $PULSE into the vault. When a user redeems, you (or an admin tool) call the vault to transfer the agreed amount to the user’s wallet. Points are still deducted in the **backend** when you mark the redemption fulfilled.
+### Option C: EVM vault
 
-The contract is only a **treasury**: it doesn’t need to know about “points” or “app users”; the backend stays the source of truth.
-
-- **$PULSE on Solana (Pump.fun):** Use the **Solana** Reward Vault in `contracts/rewards-solana/`. It’s an Anchor program: owner can `deposit` (transfer tokens into the vault) and `transfer_to` (send from vault to a recipient’s token account). See `contracts/rewards-solana/README.md` for build and deploy.
-- **EVM (wrapped/bridged $PULSE):** Use the Solidity vault in `contracts/rewards/` (`RewardVault.sol`).
+For wrapped/bridged $PULSE on EVM, use `contracts/rewards/` (`RewardVault.sol`). That vault is treasury-only (no on-chain points).
 
 ---
 
 ## Summary
 
-| What              | Where it lives | Contract needed? |
-|-------------------|----------------|------------------|
-| **Issuing points**| API + DB       | No               |
-| **Storing points**| API + DB       | No               |
-| **Redeeming**     | You send $PULSE to user’s wallet | No (manual) or optional vault (Solana or EVM) |
+| What              | Where it lives | Notes |
+|-------------------|----------------|--------|
+| **Issuing points**| API + DB       | Check-ins, streak, referrals, admin bonus |
+| **Storing points**| API + DB and/or on-chain (Solana) | Sync to chain when you credit for redemption |
+| **Redeeming**     | User calls `redeem` on Solana, or manual send | On-chain: trustless; manual: you send $PULSE and deduct in API |
 
-So you can **keep the current “points in DB” design** and add redemption as: **backend records redemption request → you send $PULSE manually (or from a vault contract)**. If you want a vault, see `contracts/rewards/` for a minimal EVM example you can adapt or mirror on Solana.
+Using **on-chain points** in the Solana vault gives users a single, trustless redemption flow: they sign `redeem` and receive $PULSE to their wallet at the configured rate.

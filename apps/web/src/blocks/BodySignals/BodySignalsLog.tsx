@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { WalletIndicator } from '../../components/WalletIndicator';
 import { addBodyLog } from './store';
 import styles from './BodySignals.module.css';
 
@@ -49,10 +50,11 @@ export function BodySignalsLog() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
+      <header className={styles.headerRow}>
         <Link to="/dashboard/body-signals" className={styles.back}>
           ← Body Signals
         </Link>
+        <WalletIndicator compact />
       </header>
       <main id="main" className={styles.main}>
         <div className={styles.blockHeader}>

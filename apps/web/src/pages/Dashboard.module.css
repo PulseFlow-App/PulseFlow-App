@@ -212,3 +212,47 @@
   margin: 0 0 12px;
 }
 
+/* Simple dashboard: unlock full Pulse (connect wallet) */
+.upgradeCard {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.upgradeTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #fff;
+}
+
+.upgradeText {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  margin: 0 0 16px;
+  line-height: 1.45;
+}
+
+.upgradeButton {
+  display: inline-block;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #0a0e14;
+  background: #22c55e;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.upgradeButton:hover {
+  background: #16a34a;
+}
+
+.upgradeButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+

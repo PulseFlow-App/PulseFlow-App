@@ -6,10 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/generate-firebase-init.js && tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "init-reward-vault": "node scripts/init-reward-vault.mjs"
   },
   "dependencies": {
     "@iconify/react": "^5.0.2",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
     "firebase": "^12.8.0",
     "heic-decode": "^2.1.0",
     "heic2any": "^0.0.4",

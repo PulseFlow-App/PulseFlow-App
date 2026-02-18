@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useWallet } from '../contexts/WalletContext';
 import {
   getNotificationsEnabled,
   setNotificationsEnabled,
@@ -12,6 +13,7 @@ import styles from './Profile.module.css';
 
 export function Profile() {
   const { user, signOut } = useAuth();
+  const { walletPublicKey, connect, disconnect, isWalletAvailable, isLoading } = useWallet();
   const [notificationsOn, setNotificationsOn] = useState(getNotificationsEnabled());
   const [notifyPermission, setNotifyPermission] = useState<NotificationPermission | null>(null);
 
@@ -47,6 +49,36 @@ export function Profile() {
             <p className={styles.label}>Email</p>
             <p className={styles.value}>{user.email}</p>
             <p className={styles.muted}>User ID: {user.userId}</p>
+          </div>
+        </section>
+
+        <section className={styles.section} aria-labelledby="wallet-heading">
+          <h2 id="wallet-heading" className={styles.sectionTitle}>Wallet</h2>
+          <div className={styles.card}>
+            {walletPublicKey ? (
+              <>
+                <p className={styles.label}>Connected</p>
+                <p className={styles.value} style={{ wordBreak: 'break-all', fontSize: '0.875rem' }}>
+                  {walletPublicKey.slice(0, 4)}…{walletPublicKey.slice(-4)}
+                </p>
+                <button type="button" onClick={disconnect} className={styles.walletBtn}>
+                  Disconnect
+                </button>
+              </>
+            ) : (
+              <>
+                <p className={styles.muted}>Connect a Solana wallet for the full dashboard, leaderboard, and rewards.</p>
+                {isWalletAvailable ? (
+                  <button type="button" onClick={connect} disabled={isLoading} className={styles.walletBtn}>
+                    {isLoading ? 'Connecting…' : 'Connect wallet'}
+                  </button>
+                ) : (
+                  <a href="https://phantom.app/" target="_blank" rel="noopener noreferrer" className={styles.walletBtn}>
+                    Get Phantom
+                  </a>
+                )}
+              </>
+            )}
           </div>
         </section>
 

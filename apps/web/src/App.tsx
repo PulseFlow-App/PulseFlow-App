@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { Login } from './pages/Login';
-import { Dashboard } from './pages/Dashboard';
+import { DashboardGate } from './components/DashboardGate';
 import { BlockPlaceholder } from './pages/BlockPlaceholder';
 import { BodySignalsOverview } from './blocks/BodySignals/BodySignalsOverview';
 import { BodySignalsLog } from './blocks/BodySignals/BodySignalsLog';
@@ -51,7 +51,7 @@ export default function App() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <DashboardGate />
           </ProtectedRoute>
         }
       />

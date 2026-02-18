@@ -130,3 +130,26 @@
 .signOut:hover {
   text-decoration: underline;
 }
+
+.walletBtn {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #0a0e14;
+  background: #22c55e;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.walletBtn:hover {
+  background: #16a34a;
+}
+
+.walletBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

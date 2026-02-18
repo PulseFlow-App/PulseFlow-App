@@ -5,8 +5,16 @@
   color: #fff;
 }
 
-.header {
+.header,
+.headerRow {
   margin-bottom: 24px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .back {

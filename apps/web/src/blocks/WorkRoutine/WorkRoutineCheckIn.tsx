@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { WalletIndicator } from '../../components/WalletIndicator';
 import { addWorkDayCheckIn } from './store';
 import type { WorkDayMetrics, WorkspaceType, MeetingLoad } from './types';
 import { MAX_PHOTO_BYTES, MAX_PHOTO_LABEL, getDataUrlDecodedBytes } from '../../lib/photoLimit';
@@ -131,10 +132,11 @@ export function WorkRoutineCheckIn() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
+      <header className={styles.headerRow}>
         <Link to="/dashboard/work-routine" className={styles.back}>
           ← Work Routine
         </Link>
+        <WalletIndicator compact />
       </header>
       <main id="main" className={styles.main}>
         <div className={styles.blockHeader}>
