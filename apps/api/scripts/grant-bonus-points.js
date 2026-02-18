@@ -69,14 +69,24 @@ async function runViaDb() {
   const pool = new Pool({ connectionString: url });
   try {
     const byEmail = isEmail;
-    const userRes = byEmail
+    let userRes = byEmail
       ? await pool.query('SELECT id FROM users WHERE email = $1', [trimmedEmail])
       : await pool.query('SELECT id FROM users WHERE wallet = $1', [wallet]);
-    if (userRes.rows.length === 0) {
+    let userId;
+    if (userRes.rows.length > 0) {
+      userId = userRes.rows[0].id;
+    } else if (!byEmail && wallet) {
+      userId = `wallet_${wallet.slice(0, 12)}_${Date.now().toString(36)}`;
+      const placeholderEmail = `wallet.${wallet.slice(0, 8)}.${Date.now()}@pulse.local`;
+      await pool.query(
+        'INSERT INTO users (id, email, password_hash, wallet, last_seen_at) VALUES ($1, $2, $3, $4, NOW())',
+        [userId, placeholderEmail, 'wallet-only', wallet]
+      );
+      console.error('Created wallet-only user:', userId);
+    } else {
       console.error('No user found with', byEmail ? 'email:' : 'wallet:', byEmail ? trimmedEmail : wallet);
       process.exit(1);
     }
-    const userId = userRes.rows[0].id;
     await pool.query(
       'UPDATE users SET bonus_points = COALESCE(bonus_points, 0) + $1 WHERE id = $2',
       [points, userId]
