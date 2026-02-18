@@ -4,6 +4,7 @@ import { getNutritionPatternBlock, getWeeklyNutritionStability } from './pattern
 import { getLatestFridgeLog } from './store';
 import { getApiUrl } from '../../lib/apiUrl';
 import { NextStepModal } from '../../components/NextStepModal';
+import { useHasWallet } from '../../contexts/WalletContext';
 import styles from './Nutrition.module.css';
 
 type FromSource = 'fridge' | 'meal-timing' | 'hydration';
@@ -86,6 +87,7 @@ function RecipeIdeasSection() {
 }
 
 export function NutritionResult() {
+  const hasWallet = useHasWallet();
   const location = useLocation();
   const rawFrom = (location.state as { from?: FromSource })?.from;
   const from: FromSource =
@@ -143,7 +145,13 @@ export function NutritionResult() {
           </p>
         </section>
 
-        {from === 'fridge' && <RecipeIdeasSection />}
+        {from === 'fridge' && hasWallet && <RecipeIdeasSection />}
+        {from === 'fridge' && !hasWallet && (
+          <section className={styles.stabilityCard} role="region" aria-labelledby="recipe-gate-heading">
+            <h2 id="recipe-gate-heading" className={styles.stabilityHeading}>Recipe ideas</h2>
+            <p className={styles.stabilityText}>Connect your wallet to unlock AI recipe ideas from your fridge photos.</p>
+          </section>
+        )}
 
         <p className={styles.resultPulseCopy}>
           Your Pulse gets more precise as you add more blocks (Body Signals, Work Routine, Nutrition). View it now or keep logging to refine it.

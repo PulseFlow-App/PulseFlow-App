@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { NextStepModal } from '../../components/NextStepModal';
 import { WalletIndicator } from '../../components/WalletIndicator';
-import { useWallet } from '../../contexts/WalletContext';
+import { useWallet, useHasPulseLabAccess } from '../../contexts/WalletContext';
 import { useOnChainDailyCheckIn } from '../../hooks/useOnChainDailyCheckIn';
 import styles from './WorkRoutine.module.css';
 
 export function WorkRoutineDone() {
   const [showModal, setShowModal] = useState(false);
   const { walletPublicKey, connect, isWalletAvailable, isLoading } = useWallet();
+  const hasPulseLabAccess = useHasPulseLabAccess();
   const { trigger, status, error, canCheckIn } = useOnChainDailyCheckIn();
 
   useEffect(() => {
@@ -76,6 +77,15 @@ export function WorkRoutineDone() {
             </div>
           )}
         </section>
+        {walletPublicKey && !hasPulseLabAccess && (
+          <section className={styles.card} aria-label="Pulse Lab">
+            <h2 className={styles.onChainTitle}>Pulse Lab</h2>
+            <p className={styles.onChainText}>
+              Hold $PULSE to unlock Pulse Lab: experiments, raw dashboards, and early access.
+            </p>
+            <Link to="/lab" className={styles.onChainButton}>Unlock Pulse Lab</Link>
+          </section>
+        )}
       </main>
       <NextStepModal
         isOpen={showModal}
