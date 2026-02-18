@@ -1,13 +1,9 @@
-import { useWallet } from '../contexts/WalletContext';
 import { Dashboard } from '../pages/Dashboard';
-import { EmailOnlyReferral } from '../pages/EmailOnlyReferral';
 
 /**
- * Wallet connected → full dashboard (points, blocks, everything).
- * Email only (no wallet) → referral links only; no dashboard, no points.
+ * All logged-in users see the dashboard. Wallet is not required to use the app.
+ * Connect wallet to unlock advanced metrics, insights, and on-chain rewards.
  */
 export function DashboardGate() {
-  const { walletPublicKey } = useWallet();
-  if (walletPublicKey) return <Dashboard />;
-  return <EmailOnlyReferral />;
+  return <Dashboard />;
 }

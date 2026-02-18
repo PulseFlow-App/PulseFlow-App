@@ -43,6 +43,60 @@
   gap: 4px;
 }
 
+.emailActions {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.inlineForm {
+  margin: 0;
+}
+
+.inlineForm .button,
+.inlineForm .buttonSecondary {
+  margin-top: 0;
+}
+
+.emailActionsOr {
+  font-size: 0.875rem;
+  color: #737373;
+}
+
+.codeSent {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  margin: 12px 0 0;
+}
+
+.codeActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.codeActions .button {
+  margin-top: 0;
+}
+
+.linkButton {
+  font-size: 0.875rem;
+  color: #737373;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 0;
+  align-self: flex-start;
+}
+
+.linkButton:hover {
+  color: #a3a3a3;
+  text-decoration: underline;
+}
+
 .label {
   font-size: 0.875rem;
   font-weight: 500;

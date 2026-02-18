@@ -9,9 +9,11 @@ const REFERRAL_STORAGE_KEY = '@pulse/referral_code';
 
 export function Login() {
   const [searchParams] = useSearchParams();
-  const { user, signIn, signInWithGoogle, isGoogleAuth } = useAuth();
+  const { user, signIn, signInWithGoogle, sendLoginCode, verifyLoginCode, isGoogleAuth } = useAuth();
   const { walletPublicKey, connect, disconnect, isWalletAvailable, isLoading: walletLoading } = useWallet();
   const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [codeSent, setCodeSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -51,7 +53,43 @@ export function Login() {
       return;
     }
     signIn(trimmed);
-    // Redirect happens via "if (user) return <Navigate to=/dashboard />" after state updates
+  };
+
+  const handleSendCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    const trimmed = email.trim();
+    if (!trimmed) {
+      setError('Email is required');
+      return;
+    }
+    setLoading(true);
+    try {
+      await sendLoginCode(trimmed);
+      setCodeSent(true);
+      setCode('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (!code.trim()) {
+      setError('Enter the code we sent to your email');
+      return;
+    }
+    setLoading(true);
+    try {
+      await verifyLoginCode(email.trim(), code);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid code');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -81,12 +119,12 @@ export function Login() {
         {isGoogleAuth && <p className={styles.divider}>or</p>}
 
         {/* Email */}
-        <form onSubmit={handleEmailSubmit} className={styles.form}>
-          <label className={styles.label} htmlFor="email">
-            Email (demo)
+        <div className={styles.form}>
+          <label className={styles.label} htmlFor="login-email">
+            Email
           </label>
           <input
-            id="email"
+            id="login-email"
             type="email"
             className={styles.input}
             value={email}
@@ -97,12 +135,60 @@ export function Login() {
             placeholder="you@example.com"
             autoComplete="email"
             autoFocus={!isGoogleAuth}
+            disabled={codeSent}
           />
+          {!codeSent ? (
+            <>
+              <div className={styles.emailActions}>
+                <form onSubmit={handleEmailSubmit} className={styles.inlineForm}>
+                  <button type="submit" className={styles.button}>
+                    Continue with email
+                  </button>
+                </form>
+                <span className={styles.emailActionsOr}>or</span>
+                <form onSubmit={handleSendCode} className={styles.inlineForm}>
+                  <button type="submit" className={styles.buttonSecondary} disabled={loading}>
+                    {loading ? 'Sending…' : 'Send me a code'}
+                  </button>
+                </form>
+              </div>
+            </>
+          ) : (
+            <form onSubmit={handleVerifyCode} className={styles.form}>
+              <p className={styles.codeSent}>We sent a code to {email}. Enter it below.</p>
+              <label className={styles.label} htmlFor="login-code">
+                Code
+              </label>
+              <input
+                id="login-code"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                className={styles.input}
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value.replace(/\D/g, '').slice(0, 8));
+                  setError(null);
+                }}
+                placeholder="000000"
+                maxLength={8}
+              />
+              <div className={styles.codeActions}>
+                <button type="submit" className={styles.button} disabled={loading}>
+                  {loading ? 'Verifying…' : 'Verify and sign in'}
+                </button>
+                <button
+                  type="button"
+                  className={styles.linkButton}
+                  onClick={() => { setCodeSent(false); setCode(''); setError(null); }}
+                >
+                  Use a different email
+                </button>
+              </div>
+            </form>
+          )}
           {error && <p className={styles.error}>{error}</p>}
-          <button type="submit" className={styles.button}>
-            Continue with email
-          </button>
-        </form>
+        </div>
 
         <p className={styles.divider}>or</p>
 

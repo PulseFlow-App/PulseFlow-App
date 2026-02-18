@@ -8,7 +8,8 @@ import { startNotificationChecks, stopNotificationChecks } from '../stores/notif
 import { BlockCard } from '../components/BlockCard';
 import { AppFooter } from '../components/AppFooter';
 import { NextStepModal } from '../components/NextStepModal';
-import { WalletIndicator } from '../components/WalletIndicator';
+import { WalletDropdown } from '../components/WalletDropdown';
+import { useWallet } from '../contexts/WalletContext';
 import { BLOCKS } from '../blocks/registry';
 import styles from './Dashboard.module.css';
 
@@ -28,6 +29,7 @@ type LocationState = { refreshPoints?: boolean; showSubmitModal?: boolean; modal
 
 export function Dashboard() {
   const { user, accessToken, signOut } = useAuth();
+  const { walletPublicKey } = useWallet();
   const location = useLocation();
   const navigate = useNavigate();
   const [points, setPoints] = useState<PointsData | null>(null);
@@ -160,7 +162,7 @@ export function Dashboard() {
           <h1 className={styles.logo}>Pulse</h1>
         </div>
         <nav className={styles.nav}>
-          <WalletIndicator compact className={styles.headerWallet} />
+          <WalletDropdown className={styles.headerWallet} />
           <Link to="/dashboard/profile" className={styles.profileLink}>
             {user?.email}
           </Link>
@@ -199,6 +201,18 @@ export function Dashboard() {
             Invite friends
           </Link>
         </div>
+
+        {!walletPublicKey && (
+          <section className={styles.walletRecommend} aria-label="Connect wallet">
+            <div className={styles.walletRecommendCard}>
+              <p className={styles.walletRecommendTitle}>Get the full experience</p>
+              <p className={styles.walletRecommendText}>
+                Connect your wallet to unlock advanced metrics, insights, on-chain points, and rewards. All inputs stay available either way.
+              </p>
+              <WalletDropdown />
+            </div>
+          </section>
+        )}
 
         <section className={styles.pointsBreakdown} aria-label="Points breakdown">
           <div className={styles.breakdownRow}>

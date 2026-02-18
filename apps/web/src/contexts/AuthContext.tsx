@@ -12,6 +12,10 @@ type AuthContextValue = {
   user: User | null;
   accessToken: string | null;
   signIn: (email: string) => void;
+  /** Send login code to email (stub: no backend yet; UI can show code step). */
+  sendLoginCode: (email: string) => Promise<void>;
+  /** Verify code and sign in (stub: any 4+ digit code signs in with email when API not implemented). */
+  verifyLoginCode: (email: string, code: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   /** Redirect flow only (use if popup fails or is blocked). */
   signInWithGoogleRedirect: () => void;
@@ -223,6 +227,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const sendLoginCode = useCallback(async (email: string) => {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed) return;
+    if (API_BASE) {
+      const r = await fetch(`${API_BASE}/auth/code/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed }),
+      });
+      if (r.ok) return;
+      const data = await r.json().catch(() => ({}));
+      throw new Error(data?.message || 'Failed to send code');
+    }
+    await new Promise((resolve) => setTimeout(resolve, 600));
+  }, []);
+
+  const verifyLoginCode = useCallback(async (email: string, code: string) => {
+    const trimmed = email.trim().toLowerCase();
+    const codeTrim = code.trim().replace(/\s/g, '');
+    if (!trimmed || !codeTrim) throw new Error('Email and code required');
+    if (API_BASE) {
+      const r = await fetch(`${API_BASE}/auth/code/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed, code: codeTrim }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data?.message || 'Invalid code');
+      if (data?.accessToken) {
+        setAccessToken(data.accessToken);
+        try { localStorage.setItem(TOKEN_KEY, data.accessToken); } catch { /* ignore */ }
+      }
+      const u: User = { userId: data?.userId || generateUserId(), email: trimmed };
+      setCurrentUserId(u.userId);
+      setUser(u);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ user: u }));
+      return;
+    }
+    if (codeTrim.length < 4) throw new Error('Enter the code we sent');
+    signIn(trimmed);
+  }, [signIn]);
+
   const signInWithGoogle = useCallback((): Promise<void> => {
     if (!auth) return Promise.reject(new Error('Auth not configured'));
     // Try popup first (works more reliably when redirect/auth domain is misconfigured). Fallback to redirect if popup blocked.
@@ -285,6 +331,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     accessToken,
     signIn,
+    sendLoginCode,
+    verifyLoginCode,
     signInWithGoogle,
     signInWithGoogleRedirect,
     signOut,
