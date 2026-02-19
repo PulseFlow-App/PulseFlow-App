@@ -131,6 +131,31 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.installHint {
+  margin: 0;
+  padding: 6px 14px 10px;
+  font-size: 0.8125rem;
+  color: #a3a3a3;
+  line-height: 1.35;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.installLinkPrimary {
+  display: block;
+  padding: 12px 14px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.12);
+  text-align: center;
+  text-decoration: none;
+}
+
+.installLinkPrimary:hover {
+  background: rgba(34, 197, 94, 0.18);
+  color: #2dd872;
+}
+
 .installLink {
   display: block;
   padding: 10px 14px;

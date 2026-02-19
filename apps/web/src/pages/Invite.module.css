@@ -25,6 +25,13 @@
   margin: 0 0 32px;
 }
 
+.hint {
+  font-size: 0.8125rem;
+  color: #737373;
+  line-height: 1.4;
+  margin: 0 0 24px;
+}
+
 .section {
   margin-bottom: 28px;
 }

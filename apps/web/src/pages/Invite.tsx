@@ -38,6 +38,9 @@ export function Invite() {
         <p className={styles.subtitle}>
           A friend invited you to Pulse. Sign in to get started.
         </p>
+        <p className={styles.hint}>
+          If you opened this from WhatsApp or another in-app browser and sign-in fails, open this link in Safari or Chrome instead.
+        </p>
 
         {isGoogleAuth ? (
           <button

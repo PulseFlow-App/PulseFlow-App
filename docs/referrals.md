@@ -1,6 +1,16 @@
 # Referrals: why you might not see points
 
-When someone signs up using your invite link, you earn **100 referral points**. If points don’t show up, check the following.
+When someone **completes sign-in** using your invite link, you earn **100 referral points**. Points are only granted when the referred person has fully signed in (their app calls `POST /referrals/complete` after auth). If they see an error and never finish sign-in, no points are awarded.
+
+## Referral link opened but friend couldn’t sign in
+
+If a friend opens your link and gets **“Unable to process request due to missing initial state”** (or similar), that’s usually:
+
+- **In-app browsers** (e.g. WhatsApp, Instagram): sign-in redirects can fail because of storage partitioning.  
+  **Fix:** Ask them to open the invite link in **Safari or Chrome** (copy the link and paste in the browser), then sign in again.
+- **Firebase** shows this when `signInWithRedirect` is used in a context where `sessionStorage` is inaccessible or cleared.
+
+So: **points only count when they complete sign-in.** If they didn’t, you won’t see referral points, and that’s expected.
 
 ## 1. API must use a database
 

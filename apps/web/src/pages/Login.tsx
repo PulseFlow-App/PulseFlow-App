@@ -69,7 +69,10 @@ export function Login() {
       setCodeSent(true);
       setCode('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send code');
+      const msg = err instanceof Error ? err.message : 'Failed to send code';
+      setError(msg.includes('not configured') || msg.includes('404')
+        ? "Email codes aren't set up on this server. Use «Continue with email» to sign in without a code."
+        : msg);
     } finally {
       setLoading(false);
     }

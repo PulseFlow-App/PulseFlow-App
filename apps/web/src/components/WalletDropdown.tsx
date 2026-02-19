@@ -74,8 +74,9 @@ export function WalletDropdown({ className }: Props) {
     );
   }
 
-  // No wallet extension: show "Connect wallet" that expands to install options (Phantom, Solflare, etc.)
+  // No wallet extension: show "Connect wallet" that expands to install / open-in-app options
   const [showInstall, setShowInstall] = useState(false);
+  const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   useEffect(() => {
     if (!showInstall) return;
     const close = (e: MouseEvent) => {
@@ -109,7 +110,24 @@ export function WalletDropdown({ className }: Props) {
           </button>
           {showInstall && (
             <div className={styles.installMenu} role="menu">
-              <span className={styles.installLabel}>Install a Solana wallet</span>
+              {isMobile && (
+                <>
+                  <span className={styles.installLabel}>On mobile: open this site in Phantom</span>
+                  <p className={styles.installHint}>
+                    In Phantom, tap Menu → Browser, then go to this site to connect.
+                  </p>
+                  <a
+                    href="https://phantom.app/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.installLinkPrimary}
+                    role="menuitem"
+                  >
+                    Open Phantom
+                  </a>
+                </>
+              )}
+              <span className={styles.installLabel}>{isMobile ? 'Or install a wallet' : 'Install a Solana wallet'}</span>
               <a
                 href="https://phantom.app/"
                 target="_blank"

@@ -219,6 +219,11 @@ export function Dashboard() {
         )}
 
         <section className={styles.pointsBreakdown} aria-label="Points breakdown">
+          {!walletPublicKey && (
+            <p className={styles.pointsWalletNote}>
+              Account points. Connect a wallet to redeem on-chain.
+            </p>
+          )}
           <div className={styles.breakdownRow}>
             <span className={styles.breakdownLabel}>Points earned</span>
             <span className={styles.breakdownValue}>{activityPoints}</span>

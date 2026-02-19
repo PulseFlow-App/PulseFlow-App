@@ -238,6 +238,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (r.ok) return;
       const data = await r.json().catch(() => ({}));
+      if (r.status === 404) throw new Error('Email code sign-in is not configured on this server');
       throw new Error(data?.message || 'Failed to send code');
     }
     await new Promise((resolve) => setTimeout(resolve, 600));
