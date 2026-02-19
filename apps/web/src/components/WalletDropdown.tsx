@@ -74,8 +74,19 @@ export function WalletDropdown({ className }: Props) {
     );
   }
 
+  // No wallet extension: show "Connect wallet" that expands to install options (Phantom, Solflare, etc.)
+  const [showInstall, setShowInstall] = useState(false);
+  useEffect(() => {
+    if (!showInstall) return;
+    const close = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setShowInstall(false);
+    };
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [showInstall]);
+
   return (
-    <div className={[styles.wrap, className].filter(Boolean).join(' ')}>
+    <div className={[styles.wrap, className].filter(Boolean).join(' ')} ref={ref}>
       {isWalletAvailable ? (
         <button
           type="button"
@@ -86,14 +97,49 @@ export function WalletDropdown({ className }: Props) {
           {isLoading ? 'Connecting…' : 'Connect wallet'}
         </button>
       ) : (
-        <a
-          href="https://phantom.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.connectBtn}
-        >
-          Get Phantom
-        </a>
+        <>
+          <button
+            type="button"
+            className={styles.connectBtn}
+            onClick={() => setShowInstall((v) => !v)}
+            aria-expanded={showInstall}
+            aria-haspopup="true"
+          >
+            Connect wallet
+          </button>
+          {showInstall && (
+            <div className={styles.installMenu} role="menu">
+              <span className={styles.installLabel}>Install a Solana wallet</span>
+              <a
+                href="https://phantom.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.installLink}
+                role="menuitem"
+              >
+                Phantom
+              </a>
+              <a
+                href="https://solflare.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.installLink}
+                role="menuitem"
+              >
+                Solflare
+              </a>
+              <a
+                href="https://backpack.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.installLink}
+                role="menuitem"
+              >
+                Backpack
+              </a>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

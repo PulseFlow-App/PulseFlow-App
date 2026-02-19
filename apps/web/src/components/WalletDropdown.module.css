@@ -106,3 +106,42 @@
   opacity: 0.7;
   cursor: not-allowed;
 }
+
+.installMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  min-width: 160px;
+  padding: 8px 0;
+  background: #161b22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+
+.installLabel {
+  display: block;
+  padding: 8px 14px;
+  font-size: 0.6875rem;
+  color: #737373;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.installLink {
+  display: block;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  color: #22c55e;
+  background: none;
+  text-align: left;
+  text-decoration: none;
+}
+
+.installLink:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #2dd872;
+}

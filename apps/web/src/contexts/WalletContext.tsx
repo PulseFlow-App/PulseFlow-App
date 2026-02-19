@@ -26,7 +26,7 @@ type WalletContextValue = {
   connect: () => Promise<void>;
   /** Disconnect and clear stored address. */
   disconnect: () => void;
-  /** True if Phantom (or injected) is available. */
+  /** True if a Solana wallet (Phantom, Solflare, etc.) is available to connect. */
   isWalletAvailable: boolean;
   /** Refresh PULSE balance (e.g. after redeem). */
   refreshPulseBalance: () => Promise<void>;
@@ -46,9 +46,12 @@ declare global {
   }
 }
 
+/** Any Solana-compatible wallet (Phantom, Solflare, Backpack, etc.) that injects window.solana (Wallet Standard). */
 function getInjectedWallet() {
   if (typeof window === 'undefined') return null;
-  return window.solana?.isPhantom ? window.solana : null;
+  const w = window.solana;
+  if (!w || typeof w.connect !== 'function') return null;
+  return w;
 }
 
 export function WalletProvider({ children }: { children: ReactNode }) {

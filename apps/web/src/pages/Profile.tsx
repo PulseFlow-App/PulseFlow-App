@@ -78,8 +78,8 @@ export function Profile() {
                     {isLoading ? 'Connecting…' : 'Connect wallet'}
                   </button>
                 ) : (
-                  <a href="https://phantom.app/" target="_blank" rel="noopener noreferrer" className={styles.walletBtn}>
-                    Get Phantom
+                  <a href="https://phantom.app/" target="_blank" rel="noopener noreferrer" className={styles.walletBtn} title="Phantom, Solflare, or any Solana wallet">
+                    Connect wallet
                   </a>
                 )}
               </>

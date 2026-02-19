@@ -218,8 +218,9 @@ export function Login() {
               target="_blank"
               rel="noopener noreferrer"
               className={styles.buttonSecondary}
+              title="Phantom, Solflare, or any Solana wallet"
             >
-              Get Phantom wallet
+              Connect wallet
             </a>
           )}
         </div>

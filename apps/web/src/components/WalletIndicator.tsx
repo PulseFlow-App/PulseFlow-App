@@ -47,8 +47,9 @@ export function WalletIndicator({ compact, className }: Props) {
           target="_blank"
           rel="noopener noreferrer"
           className={styles.connect}
+          title="Install Phantom, Solflare, or any Solana wallet"
         >
-          Get Phantom
+          Connect wallet
         </a>
       )}
     </div>

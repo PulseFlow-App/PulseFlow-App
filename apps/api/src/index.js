@@ -332,13 +332,13 @@ app.get('/users/me/points', authMiddleware, async (req, res) => {
       const totalCheckIns = checkInCount + bodyLogCount;
       await db.setActivityPoints(userId, streak, totalCheckIns);
       const points = await db.getUserPoints(userId);
-      return res.json(points);
+      return res.json({ ...points, checkIns: totalCheckIns });
     } catch (err) {
       console.error('users/me/points error', err);
       return res.status(500).json({ message: 'Failed to load points' });
     }
   }
-  return res.json({ referralPoints: 0, bonusPoints: 0, activityPoints: 0, totalPoints: 0, loginCount: 0 });
+  return res.json({ referralPoints: 0, bonusPoints: 0, activityPoints: 0, totalPoints: 0, loginCount: 0, checkIns: 0 });
 });
 
 // ----- User photos (upload + serve). Max 3 MB per image; stored in-memory. -----

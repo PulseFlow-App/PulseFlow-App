@@ -84,8 +84,9 @@ export function SimpleDashboard() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.upgradeButton}
+                  title="Phantom, Solflare, or any Solana wallet"
                 >
-                  Get Phantom wallet
+                  Connect wallet
                 </a>
               )}
             </div>

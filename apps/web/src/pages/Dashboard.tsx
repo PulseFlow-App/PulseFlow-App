@@ -23,6 +23,8 @@ type PointsData = {
   bonusPoints: number;
   activityPoints: number;
   totalPoints: number;
+  /** Check-ins + body logs count from server (same source used for points). */
+  checkIns?: number;
 };
 
 type LocationState = { refreshPoints?: boolean; showSubmitModal?: boolean; modalVariant?: 'nutrition' };
@@ -115,7 +117,8 @@ export function Dashboard() {
   }, [user, accessToken]);
 
   const streak = getAppStreak();
-  const checkInsCount = getBodyLogs().length + getCheckIns().length;
+  const localCheckIns = getBodyLogs().length + getCheckIns().length;
+  const checkInsCount = typeof points?.checkIns === 'number' ? points.checkIns : localCheckIns;
 
   useEffect(() => {
     const onFocus = () => setPointsRefreshKey((k) => k + 1);
@@ -140,6 +143,7 @@ export function Dashboard() {
             bonusPoints: data.bonusPoints ?? 0,
             activityPoints: data.activityPoints ?? 0,
             totalPoints: data.totalPoints ?? 0,
+            checkIns: typeof data.checkIns === 'number' ? data.checkIns : undefined,
           });
         }
       })
@@ -227,6 +231,9 @@ export function Dashboard() {
             <span className={styles.breakdownLabel}>Other Rewards</span>
             <span className={styles.breakdownValue}>{bonusPoints}</span>
           </div>
+          <p className={styles.pointsHow}>
+            Points earned = day streak (10/day) + check-ins & body logs (30 each) + logins (1 each, max 100). Referral and Other Rewards are added on top.
+          </p>
         </section>
 
         <section className={styles.section}>

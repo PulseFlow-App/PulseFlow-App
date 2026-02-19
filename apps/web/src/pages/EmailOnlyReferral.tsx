@@ -59,7 +59,7 @@ export function EmailOnlyReferral() {
               rel="noopener noreferrer"
               className={styles.connectBtn}
             >
-              Get Phantom wallet
+              Connect wallet
             </a>
           )}
         </section>

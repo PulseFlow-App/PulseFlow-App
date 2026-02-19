@@ -51,7 +51,7 @@ export function Lab() {
                     rel="noopener noreferrer"
                     className={styles.gateButton}
                   >
-                    Get Phantom wallet
+                    Connect wallet
                   </a>
                 )}
               </>

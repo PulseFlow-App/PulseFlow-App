@@ -55,7 +55,7 @@ export function WorkRoutineDone() {
                 rel="noopener noreferrer"
                 className={styles.onChainButton}
               >
-                Get Phantom wallet
+                Connect wallet
               </a>
             )
           ) : (
