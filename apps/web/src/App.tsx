@@ -196,6 +196,7 @@ export default function App() {
       <Route path="/disclaimer" element={<Disclaimer />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/lab" element={<Lab />} />
+      <Route path="/invite" element={<Invite />} />
       <Route path="/invite/:code" element={<Invite />} />
       <Route
         path="/dashboard/invite"
