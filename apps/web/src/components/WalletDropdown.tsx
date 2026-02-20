@@ -10,7 +10,7 @@ type Props = {
  * Wallet menu in header: click to open dropdown with address, copy, disconnect, switch wallet.
  */
 export function WalletDropdown({ className }: Props) {
-  const { walletPublicKey, connect, disconnect, isWalletAvailable, isLoading } = useWallet();
+  const { walletPublicKey, connect, disconnect, isWalletAvailable, isLoading, connectError } = useWallet();
   const [open, setOpen] = useState(false);
   const [showInstall, setShowInstall] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -87,16 +87,17 @@ export function WalletDropdown({ className }: Props) {
 
   return (
     <div className={[styles.wrap, className].filter(Boolean).join(' ')} ref={ref}>
-      {isWalletAvailable ? (
-        <button
-          type="button"
-          className={styles.connectBtn}
-          onClick={connect}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Connecting…' : 'Connect wallet'}
-        </button>
-      ) : (
+      <div className={styles.connectRow}>
+        {isWalletAvailable ? (
+          <button
+            type="button"
+            className={styles.connectBtn}
+            onClick={connect}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Connecting…' : 'Connect wallet'}
+          </button>
+        ) : (
         <>
           <button
             type="button"
@@ -157,6 +158,12 @@ export function WalletDropdown({ className }: Props) {
             </div>
           )}
         </>
+      )}
+      </div>
+      {connectError && (
+        <p className={styles.connectError} role="alert">
+          {connectError}
+        </p>
       )}
     </div>
   );

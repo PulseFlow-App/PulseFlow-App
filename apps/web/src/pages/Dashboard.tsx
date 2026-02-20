@@ -188,18 +188,30 @@ export function Dashboard() {
 
         <section className={styles.statsStrip} aria-label="Your stats">
           <div className={styles.statItem}>
-            <span className={styles.statNumber}>{streak}</span>
+            <span className={styles.statNumber}>{walletPublicKey ? streak : '—'}</span>
             <span className={styles.statLabel}>Day streak</span>
           </div>
           <div className={styles.statItem}>
-            <span className={styles.statNumber}>{checkInsCount}</span>
+            <span className={styles.statNumber}>{walletPublicKey ? checkInsCount : '—'}</span>
             <span className={styles.statLabel}>Check-ins</span>
           </div>
           <div className={styles.statItem}>
-            <span className={styles.statNumber}>{totalPoints}</span>
+            <span className={styles.statNumber}>{walletPublicKey ? totalPoints : '—'}</span>
             <span className={styles.statLabel}>Total points</span>
           </div>
         </section>
+
+        {!walletPublicKey && (
+          <section className={styles.walletRecommend} aria-label="Connect wallet to see points">
+            <div className={styles.walletRecommendCard}>
+              <p className={styles.walletRecommendTitle}>Connect your wallet to see your points</p>
+              <p className={styles.walletRecommendText}>
+                Your points, check-in count, and on-chain rewards are available once you connect a Solana wallet (Phantom, Solflare, or any compatible wallet).
+              </p>
+              <WalletDropdown />
+            </div>
+          </section>
+        )}
 
         <div className={styles.inviteRow}>
           <Link to={user ? '/dashboard/invite' : '/invite'} className={styles.inviteLink}>
@@ -207,35 +219,23 @@ export function Dashboard() {
           </Link>
         </div>
 
-        {!walletPublicKey && (
-          <section className={styles.walletRecommend} aria-label="Connect wallet">
-            <div className={styles.walletRecommendCard}>
-              <p className={styles.walletRecommendTitle}>Get the full experience</p>
-              <p className={styles.walletRecommendText}>
-                Connect your wallet to unlock advanced metrics, insights, on-chain points, and rewards. All inputs stay available either way.
-              </p>
-              <WalletDropdown />
-            </div>
-          </section>
-        )}
-
         <section className={styles.pointsBreakdown} aria-label="Points breakdown">
           {!walletPublicKey && (
             <p className={styles.pointsWalletNote}>
-              Account points. Connect a wallet to redeem on-chain.
+              Connect a wallet above to see your points and redeem on-chain.
             </p>
           )}
           <div className={styles.breakdownRow}>
             <span className={styles.breakdownLabel}>Points earned</span>
-            <span className={styles.breakdownValue}>{activityPoints}</span>
+            <span className={styles.breakdownValue}>{walletPublicKey ? activityPoints : '—'}</span>
           </div>
           <div className={styles.breakdownRow}>
             <span className={styles.breakdownLabel}>Referral points</span>
-            <span className={styles.breakdownValue}>{referralPoints}</span>
+            <span className={styles.breakdownValue}>{walletPublicKey ? referralPoints : '—'}</span>
           </div>
           <div className={styles.breakdownRow}>
             <span className={styles.breakdownLabel}>Other Rewards</span>
-            <span className={styles.breakdownValue}>{bonusPoints}</span>
+            <span className={styles.breakdownValue}>{walletPublicKey ? bonusPoints : '—'}</span>
           </div>
           <div className={styles.howToEarnWrap}>
             <button

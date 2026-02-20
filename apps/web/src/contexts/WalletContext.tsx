@@ -30,6 +30,8 @@ type WalletContextValue = {
   isWalletAvailable: boolean;
   /** Refresh PULSE balance (e.g. after redeem). */
   refreshPulseBalance: () => Promise<void>;
+  /** User-friendly error after a failed connect (e.g. Phantom service worker disconnected). Clear on next attempt. */
+  connectError: string | null;
 };
 
 const WalletContext = createContext<WalletContextValue | null>(null);
@@ -64,6 +66,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   });
   const [holdsPulse, setHoldsPulse] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
 
   const isWalletAvailable = !!getInjectedWallet();
 
@@ -108,6 +111,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       window.open('https://phantom.app/', '_blank');
       return;
     }
+    setConnectError(null);
     setIsLoading(true);
     try {
       const { publicKey } = await wallet.connect();
@@ -119,7 +123,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         // ignore
       }
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Wallet connect error:', err);
+      const message = err instanceof Error ? err.message : String(err);
+      const isDisconnected =
+        /disconnected port|Receiving end does not exist|connection/i.test(message) ||
+        (err instanceof Error && err.cause != null);
+      setConnectError(
+        isDisconnected
+          ? 'Wallet extension may be locked or restarting. Unlock Phantom (or your wallet), then try again, or refresh the page.'
+          : 'Connection failed. Unlock your wallet and try again.'
+      );
+      if (import.meta.env.DEV) console.warn('Wallet connect error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -130,6 +143,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     wallet?.disconnect?.().catch(() => {});
     setWalletPublicKey(null);
     setHoldsPulse(false);
+    setConnectError(null);
     try {
       localStorage.removeItem(WALLET_STORAGE_KEY);
     } catch {
@@ -145,6 +159,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     disconnect,
     isWalletAvailable,
     refreshPulseBalance,
+    connectError,
   };
 
   return (
