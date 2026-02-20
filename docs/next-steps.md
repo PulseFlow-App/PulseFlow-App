@@ -17,12 +17,13 @@ Prioritized list after the policy-safe redesign (Premium = IAP, $PULSE off-app).
 
 ---
 
-## 2. Premium: subscription and backend
+## 2. Premium: subscription and backend (fiat)
 
-- [ ] **Backend:** add a **subscription** endpoint (e.g. `GET /users/me/subscription`) so the app can restore premium on login (your own subscription record or receipt).
-- [ ] **Web / future clients:** if you add paid Premium (e.g. Stripe, IAP in a future native app), call the backend to set/restore premium; app shows premium state from API.
+- [x] **Backend:** `GET /subscription/status` (auth required) returns `{ hasActiveSubscription }`; stub returns `false` until you wire Stripe/IAP.
+- [ ] **Fiat integration:** Stripe (or IAP) webhooks/receipts set subscription status per user; backend reads it in `GET /subscription/status`. App gates **advanced recommendations** on this (not wallet).
+- [ ] **Web / future clients:** app already calls `GET /subscription/status` via `SubscriptionContext`; when you add payment, set status from webhooks and optionally call `refresh()` after checkout return.
 
-**Docs:** [App Store copy](./app-store-copy.md)
+**Docs:** [Fiat subscription integration](./fiat-subscription-integration.md) | [Recommendation tiers](../apps/ai-engine/prompts/recommendation-tiers.md) | [App Store copy](./app-store-copy.md)
 
 ---
 

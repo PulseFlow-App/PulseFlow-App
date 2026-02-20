@@ -36,6 +36,7 @@ export function Dashboard() {
   const navigate = useNavigate();
   const [points, setPoints] = useState<PointsData | null>(null);
   const [pointsRefreshKey, setPointsRefreshKey] = useState(0);
+  const [howToEarnOpen, setHowToEarnOpen] = useState(false);
   const locationState = location.state as LocationState;
   const showSubmitModal = locationState?.showSubmitModal ?? false;
   const modalVariant = locationState?.modalVariant ?? 'default';
@@ -236,9 +237,36 @@ export function Dashboard() {
             <span className={styles.breakdownLabel}>Other Rewards</span>
             <span className={styles.breakdownValue}>{bonusPoints}</span>
           </div>
-          <p className={styles.pointsHow}>
-            Points earned = day streak (10/day) + check-ins & body logs (30 each) + logins (1 each, max 100). Referral and Other Rewards are added on top.
-          </p>
+          <div className={styles.howToEarnWrap}>
+            <button
+              type="button"
+              className={styles.howToEarnTrigger}
+              onClick={() => setHowToEarnOpen((v) => !v)}
+              aria-expanded={howToEarnOpen}
+              aria-controls="how-to-earn-content"
+              id="how-to-earn-label"
+            >
+              <span>How to earn</span>
+              <span className={styles.howToEarnChevron} aria-hidden>
+                {howToEarnOpen ? '▲' : '▼'}
+              </span>
+            </button>
+            <div
+              id="how-to-earn-content"
+              role="region"
+              aria-labelledby="how-to-earn-label"
+              className={styles.howToEarnContent}
+              hidden={!howToEarnOpen}
+            >
+              <ul className={styles.howToEarnList}>
+                <li><strong>Day streak</strong> — 10 points per day you keep your streak.</li>
+                <li><strong>Check-ins & body logs</strong> — 30 points each (work routine check-ins and body signals).</li>
+                <li><strong>Logins</strong> — 1 point per login, up to 100 total.</li>
+                <li><strong>Referrals</strong> — 100 points when someone signs up using your invite link.</li>
+                <li><strong>Other Rewards</strong> — for activity or community contributions (granted by the team).</li>
+              </ul>
+            </div>
+          </div>
         </section>
 
         <section className={styles.section}>

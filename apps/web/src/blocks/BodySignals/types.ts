@@ -42,6 +42,7 @@ export type BodyPulseSnapshot = {
   trend: 'up' | 'down' | 'stable';
   insight: string;
   explanation: string;
+  /** [0] = basic (everyone), [1] = advanced (wallet users only). See recommendation-tiers.md */
   improvements: string[];
   /** What is affecting what (from API or rule-based) */
   factors?: FactorImpact[];

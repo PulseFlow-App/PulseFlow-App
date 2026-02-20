@@ -222,10 +222,10 @@ function buildNarrativeWhy(entry, trend, frictionPoints, noteThemes) {
     if ((e.energy != null && e.energy <= 2) || (e.mood != null && e.mood <= 2)) {
       lines.push('Mood and energy are moving together.');
     }
-    if (lines.length > 0) {
-      lines.push('This looks cumulative, not acute.');
-    } else {
-      lines.push('Your signals are in a moderate range. One small experiment may move the needle.');
+    if (lines.length > 0 && !hasStressSleep && !hasSituational) {
+      lines.push('This pattern tends to be cumulative rather than a single event.');
+    } else if (lines.length === 0) {
+      lines.push('Your signals are in a moderate range. One concrete lever (e.g. sleep timing or one break) is enough to notice a difference.');
     }
   }
 
@@ -260,34 +260,71 @@ function buildNarrativeOneThing(entry, frictionPoints, noteThemes) {
   }
 
   if (noteThemes.includes('no_appetite')) {
-    return 'Observe just one change: Eat a bit earlier or more evenly and check appetite tomorrow. Or notice whether deeper sleep reduces stress, even if total hours stay the same.';
+    return 'Eat a bit earlier or in smaller, even steps today; notice whether appetite shows up more consistently over the next day or two. If stress is high, one light meal when you notice a small window of hunger is enough.';
   }
   if (noteThemes.includes('hunger')) {
-    return 'Observe just one change: Eat a bit earlier or more evenly and check appetite tomorrow. Or notice whether deeper sleep reduces stress, even if total hours stay the same.';
+    return 'Try a balanced first meal a bit earlier tomorrow; notice how energy and hunger cues look over the next few days.';
   }
   if (noteThemes.includes('digestion')) {
-    return 'Observe just one change: Smaller meals and more time between eating and sleeping. Notice if digestion and energy feel different over the next few days.';
+    return 'Smaller meals and more time between eating and lying down. Notice if digestion and energy feel different over the next few days.';
   }
   if (noteThemes.includes('stress') && !noteThemes.includes('sleep')) {
-    return 'Observe whether a short wind-down buffer before bed changes how sleep and next-day stress feel.';
+    return 'Add a short wind-down buffer (e.g. 15–20 min) before bed; notice whether sleep and next-day stress feel different over the next few nights.';
   }
   if (sleepQualityLow && stressHigh && !noteThemes.includes('stress_sleep')) {
-    return 'Reduce mental load before bed rather than trying to extend sleep. Wind-down timing may matter more than duration.';
+    return 'Reduce mental load in the 30 minutes before bed rather than trying to extend sleep; notice whether sleep onset improves over the next few nights.';
   }
   if (sleepQualityLow) {
-    return 'Observe just one change: Similar bed and wake times for a few days. Notice how energy and appetite respond.';
+    return 'Try similar bed and wake times for the next few nights; notice how energy and appetite respond.';
   }
   if (frictionPoints.includes('hydration')) {
-    return 'Observe just one change: Small sips throughout the day. See if energy or how you feel after meals shifts.';
+    return 'Sip water earlier in the day (e.g. before midday); notice whether afternoon energy or how you feel after meals shifts.';
   }
   if (frictionPoints.includes('energy')) {
-    return 'Observe just one change: One short break or a few minutes of light movement. See how it shows up in your next check-in.';
+    return 'Try one short break or a few minutes of light movement today; notice whether energy or focus in your next check-in improves.';
+  }
+  if (frictionPoints.includes('sleep')) {
+    return 'Try similar bed and wake times for the next few nights; notice how energy and appetite respond.';
+  }
+  if (frictionPoints.includes('hydration')) {
+    return 'Sip water a bit earlier in the day (e.g. before midday); notice whether afternoon energy or focus shifts.';
   }
 
-  return 'Observe just one change: Sleep timing, meal timing, or a short break. See which one moves your score.';
+  return 'Pick one lever: similar sleep times, earlier first sip of water, or one short break. Try it for a few days and notice how your next check-in feels.';
 }
 
-// Main: narrative output (pattern, why, one thing). No table, no repeated insight.
+// Optional second lever (advanced tier, wallet users). Must add new information; do not repeat basic.
+function buildNarrativeAdvanced(entry, frictionPoints, noteThemes, basicOneThing) {
+  const e = entry || {};
+  const sleepQualityLow = e.sleepQuality != null && e.sleepQuality < 3;
+  const stressHigh = e.stress != null && e.stress >= 4;
+
+  // Stress–sleep: basic = stress before bed; advanced = sleep timing consistency to support it
+  if (noteThemes.includes('stress_sleep') || (noteThemes.includes('stress') && noteThemes.includes('sleep') && (stressHigh || sleepQualityLow))) {
+    return 'Over the next few nights, keep bed and wake times within a narrow window; consistency supports the wind-down effect.';
+  }
+  // Multiple friction: if basic was sleep, add hydration or break as second lever
+  if (frictionPoints.includes('sleep') && frictionPoints.includes('hydration') && basicOneThing && basicOneThing.toLowerCase().includes('sleep')) {
+    return 'Sip water earlier in the day (e.g. before midday); it often supports energy and focus so evening wind-down is easier.';
+  }
+  if (frictionPoints.includes('stress') && frictionPoints.includes('energy') && basicOneThing && basicOneThing.toLowerCase().includes('stress')) {
+    return 'One short break or a clear stop time today can reduce carryover load; notice how it shows up in tomorrow\'s check-in.';
+  }
+  // Exercise + party: basic = recovery before party; advanced = what to notice next 2–3 days
+  if (noteThemes.includes('exercise') && noteThemes.includes('party_late')) {
+    return 'Over the next 2–3 days, notice how energy and appetite respond; that tells you whether recovery levers are enough.';
+  }
+  if (noteThemes.includes('sleep') && sleepQualityLow && basicOneThing && !basicOneThing.toLowerCase().includes('similar')) {
+    return 'Try similar bed and wake times for the next few nights; notice how energy and appetite respond.';
+  }
+  if (frictionPoints.includes('hydration') && basicOneThing && !basicOneThing.toLowerCase().includes('water') && !basicOneThing.toLowerCase().includes('sip')) {
+    return 'Sip water earlier in the day (e.g. before midday); notice whether afternoon energy or focus shifts.';
+  }
+
+  return null;
+}
+
+// Main: narrative output (pattern, why, basic + optional advanced). improvements[0]=basic, [1]=advanced (wallet only).
 function computeInsights(body) {
   const entry = body.entry || {};
   const trend = body.trend === 'up' || body.trend === 'down' ? body.trend : 'stable';
@@ -296,12 +333,17 @@ function computeInsights(body) {
   const noteThemes = getNoteThemes(entry.notes);
   const pattern = buildNarrativePattern(entry, trend, frictionPoints, noteThemes);
   const why = buildNarrativeWhy(entry, trend, frictionPoints, noteThemes);
-  const oneThing = buildNarrativeOneThing(entry, frictionPoints, noteThemes);
+  const basic = buildNarrativeOneThing(entry, frictionPoints, noteThemes);
+  const advanced = basic ? buildNarrativeAdvanced(entry, frictionPoints, noteThemes, basic) : null;
+
+  const improvements = [];
+  if (basic) improvements.push(basic);
+  if (advanced) improvements.push(advanced);
 
   return {
     insight: pattern,
     explanation: why,
-    improvements: oneThing ? [oneThing] : [],
+    improvements,
     factors: [], // Narrative replaces table; no duplicate "what's affecting" list
   };
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ScoreRing } from '../../components/ScoreRing';
 import { NextStepModal } from '../../components/NextStepModal';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useHasWallet } from '../../contexts/WalletContext';
 import { computeBodyPulse, computeBodyPulseAsync } from './store';
 import { getExplanationBullets, SignalIcon } from './signalIcons';
@@ -28,6 +29,7 @@ function ExplanationWithIcons({ explanation }: { explanation: string }) {
 }
 
 export function BodySignalsResult() {
+  const { hasActiveSubscription } = useSubscription();
   const hasWallet = useHasWallet();
   const [pulse, setPulse] = useState<BodyPulseSnapshot>(() => computeBodyPulse());
   const [loadingAI, setLoadingAI] = useState(true);
@@ -84,20 +86,23 @@ export function BodySignalsResult() {
                 )}
                 {pulse.improvements.length > 0 && (
                   <section className={styles.narrativeSection} aria-labelledby="result-one-heading">
-                    <h2 id="result-one-heading" className={styles.narrativeHeading}>A small thing to try</h2>
+                    <h2 id="result-one-heading" className={styles.narrativeHeading}>How to improve</h2>
                     <p className={styles.oneThing}>{pulse.improvements[0]}</p>
                   </section>
                 )}
-                {hasWallet && pulse.improvements.length > 1 && (
+                {hasActiveSubscription && pulse.improvements.length > 1 && (
                   <section className={styles.narrativeSection} aria-labelledby="result-advanced-heading">
-                    <h2 id="result-advanced-heading" className={styles.narrativeHeading}>Another angle</h2>
+                    <h2 id="result-advanced-heading" className={styles.narrativeHeading}>Another angle (advanced)</h2>
                     <p className={styles.oneThing}>{pulse.improvements[1]}</p>
                   </section>
                 )}
-                {!hasWallet && !loadingAI && (
-                  <section className={styles.narrativeSection} aria-labelledby="result-wallet-cta-heading">
-                    <h2 id="result-wallet-cta-heading" className={styles.narrativeHeading}>Get more</h2>
-                    <p className={styles.insight}>Connect your wallet to unlock advanced insights and on-chain points.</p>
+                {!hasActiveSubscription && !loadingAI && (
+                  <section className={styles.narrativeSection} aria-labelledby="result-subscription-cta-heading">
+                    <h2 id="result-subscription-cta-heading" className={styles.narrativeHeading}>Get more</h2>
+                    <p className={styles.insight}>
+                      <strong>Upgrade to Premium</strong> for advanced recommendations (a second lever tailored to your signals).
+                      {!hasWallet && ' Connect your wallet for on-chain points and rewards.'}
+                    </p>
                   </section>
                 )}
               </>

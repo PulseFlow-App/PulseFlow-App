@@ -254,13 +254,62 @@
   color: #fff;
 }
 
-.pointsHow {
-  margin: 12px 0 0;
+.howToEarnWrap {
+  margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 0.75rem;
+}
+
+.howToEarnTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 0;
+  font-size: 0.8125rem;
   color: #737373;
-  line-height: 1.4;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.howToEarnTrigger:hover {
+  color: #a3a3a3;
+}
+
+.howToEarnChevron {
+  font-size: 0.625rem;
+  opacity: 0.8;
+}
+
+.howToEarnContent {
+  padding: 8px 0 4px;
+}
+
+.howToEarnContent[hidden] {
+  display: none;
+}
+
+.howToEarnList {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.8125rem;
+  color: #a3a3a3;
+  line-height: 1.55;
+}
+
+.howToEarnList li {
+  margin-bottom: 6px;
+}
+
+.howToEarnList li:last-child {
+  margin-bottom: 0;
+}
+
+.howToEarnList strong {
+  color: #e5e5e5;
+  font-weight: 600;
 }
 
 .section {

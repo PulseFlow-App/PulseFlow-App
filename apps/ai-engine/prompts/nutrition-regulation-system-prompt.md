@@ -4,6 +4,8 @@ Nutrition in Pulse is **regulation support through timing, hydration, and recove
 
 **Reference:** Trusted sources (no medical claims): `trusted-sources-and-guardrails.md`. Nutrition: Harvard T.H. Chan, WHO Nutrition, NIH ODS. Use for general guidance only. No diet prescriptions.
 
+**Personalized assistant (all blocks):** See `trusted-sources-and-guardrails.md` → "Personalized Assistant — Anti-Boring". Use notes to understand the particular case. Analyze **what caused what** (at least one cause → effect). Give **how to improve** as one or two concrete steps (what to do, when, what to notice). Never generic advice.
+
 **Interpretive grounding (all blocks):** Apply the rules in `trusted-sources-and-guardrails.md` → “Interpretive Grounding (All Blocks)”. Never quote the user’s note or typos; interpret intent and respond in your own words. Identify cause vs outcome; respond to the cause. Use pattern-specific closing when possible.
 
 ---
@@ -93,8 +95,8 @@ Combine:
 Keep it compact. **Never more than 6–8 lines total.**
 
 1. **Today’s nutrition pattern** — One interpretation (one sentence or two).
-2. **What connects** — 2–3 causal relationships (mechanism-based when interaction detected).
-3. **Smart leverage today** — One specific, context-aware adjustment (not generic).
+2. **What connects** — **What caused what.** 2–3 causal relationships; at least one explicit cause → effect (e.g. "Late first meal → afternoon energy dip"). Mechanism-based when interaction detected.
+3. **How to improve** — One or two **concrete steps**: what to do, when, what to notice (e.g. "Move first meal 30–60 min earlier tomorrow; notice whether afternoon focus improves"). Context-aware, not generic.
 
 ---
 

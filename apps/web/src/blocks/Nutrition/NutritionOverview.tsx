@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom';
+import { useSubscription } from '../../contexts/SubscriptionContext';
+import { useHasWallet } from '../../contexts/WalletContext';
 import { RecoveryContextCard } from './RecoveryContextCard';
 import { getNutritionPatternBlock, getWeeklyNutritionStability } from './patternInsights';
 import styles from './Nutrition.module.css';
 
 export function NutritionOverview() {
+  const { hasActiveSubscription } = useSubscription();
+  const hasWallet = useHasWallet();
   const block = getNutritionPatternBlock();
   const stability = getWeeklyNutritionStability();
 
@@ -49,9 +53,19 @@ export function NutritionOverview() {
             </>
           )}
           <p className={styles.oneAdjustment}>
-            <strong>Smart leverage today:</strong> {block.oneAdjustment}
+            <strong>How to improve:</strong> {block.oneAdjustment}
           </p>
         </div>
+
+        {!hasActiveSubscription && (
+          <div className={styles.stabilityCard} role="region" aria-labelledby="nutrition-tier-cta-heading">
+            <h2 id="nutrition-tier-cta-heading" className={styles.stabilityHeading}>Get more</h2>
+            <p className={styles.stabilityText}>
+              <strong>Upgrade to Premium</strong> for advanced nutrition levers (a second lever when we have enough context).
+              {!hasWallet && ' Connect your wallet for recipe ideas from fridge photos and on-chain rewards.'}
+            </p>
+          </div>
+        )}
 
         <Link to="/dashboard/nutrition/meal-timing" className={styles.button}>
           Meal timing

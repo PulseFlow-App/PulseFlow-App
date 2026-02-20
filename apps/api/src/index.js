@@ -517,7 +517,14 @@ app.post('/insights/recipes-from-fridge', async (req, res) => {
   }
 });
 
-// ----- Premium (stub) -----
+// ----- Subscription status (fiat: Stripe/IAP). Advanced recommendations gated on this. -----
+app.get('/subscription/status', authMiddleware, (req, res) => {
+  // TODO: when fiat is integrated, read from DB (e.g. db.getSubscriptionStatus(req.user.userId))
+  // and return true when user has active subscription (set by Stripe webhook or IAP receipt).
+  return res.json({ hasActiveSubscription: false });
+});
+
+// ----- Premium (stub: legacy wallet-based check; use /subscription/status for advanced recommendations) -----
 app.get('/premium/status', (req, res) => {
   const wallet = req.query.wallet;
   if (!wallet) return res.json({ isPremium: false });

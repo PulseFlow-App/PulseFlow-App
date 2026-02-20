@@ -12,7 +12,9 @@ type Props = {
 export function WalletDropdown({ className }: Props) {
   const { walletPublicKey, connect, disconnect, isWalletAvailable, isLoading } = useWallet();
   const [open, setOpen] = useState(false);
+  const [showInstall, setShowInstall] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   useEffect(() => {
     if (!open) return;
@@ -22,6 +24,15 @@ export function WalletDropdown({ className }: Props) {
     document.addEventListener('click', close);
     return () => document.removeEventListener('click', close);
   }, [open]);
+
+  useEffect(() => {
+    if (!showInstall) return;
+    const close = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setShowInstall(false);
+    };
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [showInstall]);
 
   const copyAddress = () => {
     if (walletPublicKey) {
@@ -73,18 +84,6 @@ export function WalletDropdown({ className }: Props) {
       </div>
     );
   }
-
-  // No wallet extension: show "Connect wallet" that expands to install / open-in-app options
-  const [showInstall, setShowInstall] = useState(false);
-  const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  useEffect(() => {
-    if (!showInstall) return;
-    const close = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setShowInstall(false);
-    };
-    document.addEventListener('click', close);
-    return () => document.removeEventListener('click', close);
-  }, [showInstall]);
 
   return (
     <div className={[styles.wrap, className].filter(Boolean).join(' ')} ref={ref}>
