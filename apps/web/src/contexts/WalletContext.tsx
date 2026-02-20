@@ -125,8 +125,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       const isDisconnected =
-        /disconnected port|Receiving end does not exist|connection/i.test(message) ||
-        (err instanceof Error && err.cause != null);
+        /disconnected port|Receiving end does not exist|connection/i.test(message);
       setConnectError(
         isDisconnected
           ? 'Wallet extension may be locked or restarting. Unlock Phantom (or your wallet), then try again, or refresh the page.'
