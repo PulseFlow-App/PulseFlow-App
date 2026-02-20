@@ -186,88 +186,84 @@ export function Dashboard() {
           </Link>
         </section>
 
-        <section className={styles.statsStrip} aria-label="Your stats">
-          <div className={styles.statItem}>
-            <span className={styles.statNumber}>{walletPublicKey ? streak : '—'}</span>
-            <span className={styles.statLabel}>Day streak</span>
-          </div>
-          <div className={styles.statItem}>
-            <span className={styles.statNumber}>{walletPublicKey ? checkInsCount : '—'}</span>
-            <span className={styles.statLabel}>Check-ins</span>
-          </div>
-          <div className={styles.statItem}>
-            <span className={styles.statNumber}>{walletPublicKey ? totalPoints : '—'}</span>
-            <span className={styles.statLabel}>Total points</span>
-          </div>
-        </section>
+        {/* Rewards/points section: only visible when wallet is connected. Rest of app (blocks, submit, etc.) is always available. */}
+        {walletPublicKey && (
+          <>
+            <section className={styles.statsStrip} aria-label="Your stats">
+              <div className={styles.statItem}>
+                <span className={styles.statNumber}>{streak}</span>
+                <span className={styles.statLabel}>Day streak</span>
+              </div>
+              <div className={styles.statItem}>
+                <span className={styles.statNumber}>{checkInsCount}</span>
+                <span className={styles.statLabel}>Check-ins</span>
+              </div>
+              <div className={styles.statItem}>
+                <span className={styles.statNumber}>{totalPoints}</span>
+                <span className={styles.statLabel}>Total points</span>
+              </div>
+            </section>
 
-        {!walletPublicKey && (
-          <section className={styles.walletRecommend} aria-label="Connect wallet to see points">
-            <div className={styles.walletRecommendCard}>
-              <p className={styles.walletRecommendTitle}>Connect your wallet to see your points</p>
-              <p className={styles.walletRecommendText}>
-                Your points, check-in count, and on-chain rewards are available once you connect a Solana wallet (Phantom, Solflare, or any compatible wallet).
-              </p>
-              <WalletDropdown />
+            <div className={styles.inviteRow}>
+              <Link to={user ? '/dashboard/invite' : '/invite'} className={styles.inviteLink}>
+                Invite friends
+              </Link>
             </div>
-          </section>
+
+            <section className={styles.pointsBreakdown} aria-label="Points breakdown">
+              <div className={styles.breakdownRow}>
+                <span className={styles.breakdownLabel}>Points earned</span>
+                <span className={styles.breakdownValue}>{activityPoints}</span>
+              </div>
+              <div className={styles.breakdownRow}>
+                <span className={styles.breakdownLabel}>Referral points</span>
+                <span className={styles.breakdownValue}>{referralPoints}</span>
+              </div>
+              <div className={styles.breakdownRow}>
+                <span className={styles.breakdownLabel}>Other Rewards</span>
+                <span className={styles.breakdownValue}>{bonusPoints}</span>
+              </div>
+              <div className={styles.howToEarnWrap}>
+                <button
+                  type="button"
+                  className={styles.howToEarnTrigger}
+                  onClick={() => setHowToEarnOpen((v) => !v)}
+                  aria-expanded={howToEarnOpen}
+                  aria-controls="how-to-earn-content"
+                  id="how-to-earn-label"
+                >
+                  <span>How to earn</span>
+                  <span className={styles.howToEarnChevron} aria-hidden>
+                    {howToEarnOpen ? '▲' : '▼'}
+                  </span>
+                </button>
+                <div
+                  id="how-to-earn-content"
+                  role="region"
+                  aria-labelledby="how-to-earn-label"
+                  className={styles.howToEarnContent}
+                  hidden={!howToEarnOpen}
+                >
+                  <ul className={styles.howToEarnList}>
+                    <li><strong>Day streak</strong> — 10 points per day you keep your streak.</li>
+                    <li><strong>Check-ins & body logs</strong> — 30 points each (work routine check-ins and body signals).</li>
+                    <li><strong>Logins</strong> — 1 point per login, up to 100 total.</li>
+                    <li><strong>Referrals</strong> — 100 points when someone signs up using your invite link.</li>
+                    <li><strong>Other Rewards</strong> — for activity or community contributions (granted by the team).</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+          </>
         )}
 
-        <div className={styles.inviteRow}>
-          <Link to={user ? '/dashboard/invite' : '/invite'} className={styles.inviteLink}>
-            Invite friends
-          </Link>
-        </div>
-
-        <section className={styles.pointsBreakdown} aria-label="Points breakdown">
-          {!walletPublicKey && (
-            <p className={styles.pointsWalletNote}>
-              Connect a wallet above to see your points and redeem on-chain.
-            </p>
-          )}
-          <div className={styles.breakdownRow}>
-            <span className={styles.breakdownLabel}>Points earned</span>
-            <span className={styles.breakdownValue}>{walletPublicKey ? activityPoints : '—'}</span>
+        {!walletPublicKey && (
+          <div className={styles.inviteRow}>
+            <Link to={user ? '/dashboard/invite' : '/invite'} className={styles.inviteLink}>
+              Invite friends
+            </Link>
           </div>
-          <div className={styles.breakdownRow}>
-            <span className={styles.breakdownLabel}>Referral points</span>
-            <span className={styles.breakdownValue}>{walletPublicKey ? referralPoints : '—'}</span>
-          </div>
-          <div className={styles.breakdownRow}>
-            <span className={styles.breakdownLabel}>Other Rewards</span>
-            <span className={styles.breakdownValue}>{walletPublicKey ? bonusPoints : '—'}</span>
-          </div>
-          <div className={styles.howToEarnWrap}>
-            <button
-              type="button"
-              className={styles.howToEarnTrigger}
-              onClick={() => setHowToEarnOpen((v) => !v)}
-              aria-expanded={howToEarnOpen}
-              aria-controls="how-to-earn-content"
-              id="how-to-earn-label"
-            >
-              <span>How to earn</span>
-              <span className={styles.howToEarnChevron} aria-hidden>
-                {howToEarnOpen ? '▲' : '▼'}
-              </span>
-            </button>
-            <div
-              id="how-to-earn-content"
-              role="region"
-              aria-labelledby="how-to-earn-label"
-              className={styles.howToEarnContent}
-              hidden={!howToEarnOpen}
-            >
-              <ul className={styles.howToEarnList}>
-                <li><strong>Day streak</strong> — 10 points per day you keep your streak.</li>
-                <li><strong>Check-ins & body logs</strong> — 30 points each (work routine check-ins and body signals).</li>
-                <li><strong>Logins</strong> — 1 point per login, up to 100 total.</li>
-                <li><strong>Referrals</strong> — 100 points when someone signs up using your invite link.</li>
-                <li><strong>Other Rewards</strong> — for activity or community contributions (granted by the team).</li>
-              </ul>
-            </div>
-          </div>
-        </section>
+        )}
 
         <section className={styles.section}>
           {activeBlocks.map((block) => (
