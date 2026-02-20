@@ -11,6 +11,10 @@
   justify-content: center;
 }
 
+.progressRing {
+  transition: stroke-dashoffset 0.6s ease-out, stroke 0.3s ease;
+}
+
 .center {
   position: absolute;
   display: flex;

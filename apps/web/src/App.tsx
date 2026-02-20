@@ -27,6 +27,7 @@ import { Profile } from './pages/Profile';
 import { Pulse } from './pages/Pulse';
 import { Invite } from './pages/Invite';
 import { ShareInvite } from './pages/ShareInvite';
+import { DashboardActivity } from './pages/DashboardActivity';
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/" replace />;
@@ -52,6 +53,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <DashboardGate />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/activity"
+        element={
+          <ProtectedRoute>
+            <DashboardActivity />
           </ProtectedRoute>
         }
       />

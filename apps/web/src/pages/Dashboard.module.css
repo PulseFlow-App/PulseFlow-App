@@ -148,9 +148,16 @@
   color: #22c55e;
 }
 
+.heroScoreWrap {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
 .pulseLink {
   display: inline-block;
-  margin-top: 16px;
   font-size: 0.9375rem;
   font-weight: 500;
   color: #3b82f6;
@@ -159,6 +166,29 @@
 
 .pulseLink:hover {
   text-decoration: underline;
+}
+
+.viewDashboardBtn {
+  display: inline-block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0a0e14;
+  background: #22c55e;
+  border-radius: 8px;
+  padding: 10px 20px;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.viewDashboardBtn:hover {
+  background: #16a34a;
+}
+
+.activityTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 20px;
+  color: #fff;
 }
 
 .statsStrip {

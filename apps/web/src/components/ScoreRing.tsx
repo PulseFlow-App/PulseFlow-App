@@ -39,6 +39,7 @@ export function ScoreRing({ score, label = 'Pulse', size = DEFAULT_SIZE }: Score
             strokeWidth={STROKE}
           />
           <circle
+            className={styles.progressRing}
             cx={cx}
             cy={cy}
             r={r}
