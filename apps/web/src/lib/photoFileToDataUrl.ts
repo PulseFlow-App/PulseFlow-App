@@ -55,7 +55,7 @@ async function tryHeicDecodeWasm(buffer: ArrayBuffer): Promise<string> {
     typeof OffscreenCanvas !== 'undefined'
       ? new OffscreenCanvas(width, height)
       : Object.assign(document.createElement('canvas'), { width, height });
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D | null;
   if (!ctx) throw new Error(HEIC_CONVERSION_ERROR_MESSAGE);
   const imageData = new ImageData(data, width, height);
   ctx.putImageData(imageData, 0, 0);
