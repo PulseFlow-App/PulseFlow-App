@@ -64,3 +64,9 @@ export function getHydrationTimingForRange(days: number): HydrationTimingEntry[]
     .filter((e) => e.date >= cutoffStr)
     .sort((a, b) => b.date.localeCompare(a.date));
 }
+
+/** Whether the user has logged hydration timing today. */
+export function hasHydrationTimingToday(): boolean {
+  const today = new Date().toISOString().slice(0, 10);
+  return getHydrationTimingForDate(today) !== undefined;
+}

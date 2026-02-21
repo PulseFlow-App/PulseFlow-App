@@ -64,3 +64,9 @@ export function getMealTimingForRange(days: number): MealTimingEntry[] {
     .filter((e) => e.date >= cutoffStr)
     .sort((a, b) => b.date.localeCompare(a.date));
 }
+
+/** Whether the user has logged meal timing today. */
+export function hasMealTimingToday(): boolean {
+  const today = new Date().toISOString().slice(0, 10);
+  return getMealTimingForDate(today) !== undefined;
+}

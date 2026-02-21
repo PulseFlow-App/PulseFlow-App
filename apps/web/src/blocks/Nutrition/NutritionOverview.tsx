@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom';
-import { useSubscription } from '../../contexts/SubscriptionContext';
-import { useHasWallet } from '../../contexts/WalletContext';
-import { RecoveryContextCard } from './RecoveryContextCard';
+import { ScoreRing } from '../../components/ScoreRing';
+import { getAggregatedPulse } from '../../stores/combinedPulse';
 import styles from './Nutrition.module.css';
 
 export function NutritionOverview() {
-  const { hasActiveSubscription } = useSubscription();
-  const hasWallet = useHasWallet();
+  const aggregated = getAggregatedPulse();
 
   return (
     <div className={styles.page}>
@@ -19,22 +17,19 @@ export function NutritionOverview() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Nutrition</h1>
           <p className={styles.subtitle}>
-            Regulation support through timing, hydration, and recovery. We use your body signals and work routine so suggestions match your energy, sleep, and context.
+            {aggregated.hasData
+              ? 'Your pulse from body and work data'
+              : 'Log body data and work check-ins to see your pulse'}
           </p>
         </div>
-
-        <RecoveryContextCard />
-
-        {!hasActiveSubscription && (
-          <div className={styles.stabilityCard} role="region" aria-labelledby="nutrition-tier-cta-heading">
-            <h2 id="nutrition-tier-cta-heading" className={styles.stabilityHeading}>Get more</h2>
-            <p className={styles.stabilityText}>
-              <strong>Upgrade to Premium</strong> for advanced nutrition levers (a second lever when we have enough context).
-              {!hasWallet && ' Connect your wallet for recipe ideas from fridge photos and on-chain rewards.'}
-            </p>
+        <div className={styles.card}>
+          <div className={styles.scoreSection}>
+            <ScoreRing
+              score={aggregated.hasData ? aggregated.score : 0}
+              label={aggregated.hasData ? 'Aggregated Pulse' : 'No data yet'}
+            />
           </div>
-        )}
-
+        </div>
         <Link to="/dashboard/nutrition/meal-timing" className={styles.button}>
           Meal timing
         </Link>

@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { getLatestFridgeLog } from './store';
+import { getMealTimingForDate } from './mealTimingStore';
 import { getApiUrl } from '../../lib/apiUrl';
+import { ScoreRing } from '../../components/ScoreRing';
+import { getCombinedPulse, hasBodyTodayCheck, hasRoutineTodayCheck, hasNutritionTodayCheck } from '../../stores/combinedPulse';
 import { WhatNextSection } from '../../components/WhatNextSection';
 import { useHasWallet } from '../../contexts/WalletContext';
 import styles from './Nutrition.module.css';
+import pulseStyles from '../../pages/Pulse.module.css';
 
 type FromSource = 'fridge' | 'meal-timing' | 'hydration';
 
@@ -13,6 +17,31 @@ const SOURCE_LABELS: Record<FromSource, string> = {
   'meal-timing': 'Meal timing saved',
   hydration: 'Hydration timing saved',
 };
+
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** Short recommendations from today's meal timing data. */
+function getMealTimingTips(): string[] {
+  const today = todayStr();
+  const entry = getMealTimingForDate(today);
+  if (!entry) return [];
+  const tips: string[] = [];
+  if (entry.lateNightEating) {
+    tips.push('Consider an earlier last meal to support sleep.');
+  }
+  if (entry.biggestMeal === 'evening') {
+    tips.push('Having your biggest meal earlier in the day can help energy and sleep.');
+  }
+  if (entry.proteinAtBreakfast === false) {
+    tips.push('Protein at breakfast can help steady energy.');
+  }
+  if (entry.proteinAtLastMeal === false && entry.lateNightEating) {
+    tips.push('A little protein at your last meal may help with satiety and sleep.');
+  }
+  return tips;
+}
 
 function RecipeIdeasSection() {
   const [loading, setLoading] = useState(false);
@@ -92,6 +121,28 @@ export function NutritionResult() {
   const from: FromSource =
     rawFrom === 'meal-timing' || rawFrom === 'hydration' ? rawFrom : 'fridge';
 
+  const pulse = getCombinedPulse();
+  const hasBody = hasBodyTodayCheck();
+  const hasRoutine = hasRoutineTodayCheck();
+  const hasNutrition = hasNutritionTodayCheck();
+  const blockCount = pulse.blockCount;
+  const hasBoth = hasBody && hasRoutine;
+  const bodyShare = hasBoth ? 50 : pulse.body !== null ? 100 : 0;
+  const routineShare = hasBoth ? 50 : pulse.routine !== null ? 100 : 0;
+  const bodyScore = pulse.body ?? 0;
+  const routineScore = pulse.routine ?? 0;
+
+  const mealTips = from === 'meal-timing' ? getMealTimingTips() : [];
+
+  const scoreCardLabel =
+    blockCount === 3
+      ? 'Your Pulse (all 3 blocks)'
+      : hasBoth
+        ? 'Combined Pulse (2 blocks)'
+        : pulse.body !== null
+          ? 'Body Pulse'
+          : 'Work Pulse';
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -103,9 +154,84 @@ export function NutritionResult() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>{SOURCE_LABELS[from]}</h1>
           <p className={styles.subtitle}>
-            Here’s your result from this block. Below: go to the main dashboard to add other blocks and get combined recommendations (2 or 3 blocks).
+            Here’s your result from this block. See your aggregated pulse below, then add more nutrition data or go to the main dashboard for combined recommendations.
           </p>
         </div>
+
+        {/* Recommendations from this check-in */}
+        {from === 'meal-timing' && (
+          <section className={styles.card} role="region" aria-labelledby="nutrition-tips-heading">
+            <h2 id="nutrition-tips-heading" className={styles.recommendationsHeading}>
+              {mealTips.length > 0 ? 'Recommendations' : 'Saved'}
+            </h2>
+            {mealTips.length > 0 ? (
+              <ul className={styles.recommendationsList}>
+                {mealTips.map((tip, i) => (
+                  <li key={i}>{tip}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className={styles.recommendationsBody}>
+                Your meal timing is saved. Add hydration, fridge photos, or other blocks on the main dashboard for combined recommendations and your full Pulse.
+              </p>
+            )}
+          </section>
+        )}
+        {from === 'hydration' && (
+          <section className={styles.card} role="region" aria-labelledby="hydration-saved-heading">
+            <h2 id="hydration-saved-heading" className={styles.recommendationsHeading}>
+              Saved
+            </h2>
+            <p className={styles.recommendationsBody}>
+              Your hydration timing is saved. Add meal timing, fridge photos, or body signals and work routine to get combined recommendations and your full Pulse.
+            </p>
+          </section>
+        )}
+
+        {/* Aggregated pulse (same diagram as Body Signals / Work Routine / Pulse page) */}
+        {pulse.combined !== null && (
+          <div id="pulse-score" className={pulseStyles.scoreCard}>
+            <ScoreRing score={pulse.combined} label={scoreCardLabel} />
+            <div className={pulseStyles.diagramSection}>
+              <h3 className={pulseStyles.diagramHeading}>What made it this way</h3>
+              <div className={pulseStyles.diagramBar} aria-hidden="true">
+                {pulse.body !== null && (
+                  <div
+                    className={`${pulseStyles.diagramSegment} ${pulseStyles.diagramSegmentBody} ${!hasBoth ? pulseStyles.diagramSegmentSolo : ''}`}
+                    style={{ width: `${bodyShare}%` }}
+                  />
+                )}
+                {pulse.routine !== null && (
+                  <div
+                    className={`${pulseStyles.diagramSegment} ${pulseStyles.diagramSegmentRoutine} ${!hasBoth ? pulseStyles.diagramSegmentSolo : ''}`}
+                    style={{ width: `${routineShare}%` }}
+                  />
+                )}
+              </div>
+              <div className={pulseStyles.diagramLegend}>
+                {pulse.body !== null && (
+                  <span className={pulseStyles.diagramLegendItem}>
+                    <span className={`${pulseStyles.diagramLegendDot} ${pulseStyles.diagramLegendDotBody}`} aria-hidden />
+                    Body Signals: {bodyScore}%
+                  </span>
+                )}
+                {pulse.routine !== null && (
+                  <span className={pulseStyles.diagramLegendItem}>
+                    <span className={`${pulseStyles.diagramLegendDot} ${pulseStyles.diagramLegendDotRoutine}`} aria-hidden />
+                    Work Routine: {routineScore}%
+                  </span>
+                )}
+              </div>
+              {hasNutrition && (
+                <p className={pulseStyles.aggregationText} style={{ marginTop: 12, marginBottom: 0 }}>
+                  {blockCount === 3
+                    ? 'Recommendations use all three blocks: Body Signals, Work Routine, and Nutrition.'
+                    : 'Add more blocks on the main dashboard to get combined recommendations.'}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {from === 'fridge' && hasWallet && <RecipeIdeasSection />}
         {from === 'fridge' && !hasWallet && (

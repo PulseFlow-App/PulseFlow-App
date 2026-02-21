@@ -5,6 +5,8 @@
 import { hasBodyToday, getTodayBodyScore, getBodyLogs, calculatePulseScore } from '../blocks/BodySignals/store';
 import { hasRoutineToday, getTodayRoutineScore, getCheckIns, getScoreForCheckIn } from '../blocks/WorkRoutine/store';
 import { hasFridgeLogToday } from '../blocks/Nutrition/store';
+import { hasMealTimingToday } from '../blocks/Nutrition/mealTimingStore';
+import { hasHydrationTimingToday } from '../blocks/Nutrition/hydrationTimingStore';
 
 export type CombinedPulseSource = 'body' | 'routine' | 'nutrition';
 
@@ -21,7 +23,8 @@ export type CombinedPulseResult = {
 export function getCombinedPulse(): CombinedPulseResult {
   const body = getTodayBodyScore();
   const routine = getTodayRoutineScore();
-  const hasNutrition = hasFridgeLogToday();
+  const hasNutrition =
+    hasFridgeLogToday() || hasMealTimingToday() || hasHydrationTimingToday();
   const sources: CombinedPulseSource[] = [];
   if (body !== null) sources.push('body');
   if (routine !== null) sources.push('routine');
@@ -78,5 +81,5 @@ export function hasRoutineTodayCheck(): boolean {
 }
 
 export function hasNutritionTodayCheck(): boolean {
-  return hasFridgeLogToday();
+  return hasFridgeLogToday() || hasMealTimingToday() || hasHydrationTimingToday();
 }
