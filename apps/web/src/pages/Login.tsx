@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useWallet } from '../contexts/WalletContext';
+import { getPhantomBrowseUrl, isMobile } from '../lib/solana/phantomBrowse';
 import { AppFooter } from '../components/AppFooter';
 import styles from './Login.module.css';
 
@@ -101,7 +102,7 @@ export function Login() {
         <img src="/icons/icon-192.png?v=2" alt="Pulse" className={styles.logo} />
         <h1 className={styles.title}>Pulse</h1>
         <p className={styles.subtitle}>
-          Sign in or connect your wallet to continue.
+          Sign in to continue.
         </p>
 
         {/* Google */}
@@ -193,7 +194,7 @@ export function Login() {
           {error && <p className={styles.error}>{error}</p>}
         </div>
 
-        <p className={styles.divider}>or</p>
+        <p className={styles.divider}>Optional: connect a Solana wallet (for rewards)</p>
 
         {/* Wallet */}
         <div className={styles.walletBlock}>
@@ -217,7 +218,7 @@ export function Login() {
             </button>
           ) : (
             <a
-              href="https://phantom.app/"
+              href={isMobile() ? getPhantomBrowseUrl() : 'https://phantom.app/'}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.buttonSecondary}

@@ -100,10 +100,10 @@ export function DashboardActivity() {
           </div>
           <nav className={styles.nav}>
             <WalletDropdown className={styles.headerWallet} />
-            <Link to="/dashboard/profile" className={styles.profileLink}>
+            <Link to="/dashboard/profile" className={`${styles.profileLink} ${styles.navProfile}`}>
               {user?.email}
             </Link>
-            <button type="button" onClick={signOut} className={styles.profileBtn}>
+            <button type="button" onClick={signOut} className={`${styles.profileBtn} ${styles.navSignOut}`}>
               Sign out
             </button>
           </nav>
@@ -136,10 +136,10 @@ export function DashboardActivity() {
         </div>
         <nav className={styles.nav}>
           <WalletDropdown className={styles.headerWallet} />
-          <Link to="/dashboard/profile" className={styles.profileLink}>
+          <Link to="/dashboard/profile" className={`${styles.profileLink} ${styles.navProfile}`}>
             {user?.email}
           </Link>
-          <button type="button" onClick={signOut} className={styles.profileBtn}>
+          <button type="button" onClick={signOut} className={`${styles.profileBtn} ${styles.navSignOut}`}>
             Sign out
           </button>
         </nav>

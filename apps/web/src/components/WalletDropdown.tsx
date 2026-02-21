@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useWallet } from '../contexts/WalletContext';
+import { getPhantomBrowseUrl, isMobile } from '../lib/solana/phantomBrowse';
 import styles from './WalletDropdown.module.css';
 
 type Props = {
@@ -14,7 +15,7 @@ export function WalletDropdown({ className }: Props) {
   const [open, setOpen] = useState(false);
   const [showInstall, setShowInstall] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const mobile = isMobile();
 
   useEffect(() => {
     if (!open) return;
@@ -110,24 +111,24 @@ export function WalletDropdown({ className }: Props) {
           </button>
           {showInstall && (
             <div className={styles.installMenu} role="menu">
-              {isMobile && (
+              {mobile && (
                 <>
-                  <span className={styles.installLabel}>On mobile: open this site in Phantom</span>
+                  <span className={styles.installLabel}>Open Pulse in Phantom to connect</span>
                   <p className={styles.installHint}>
-                    In Phantom, tap Menu → Browser, then go to this site to connect.
+                    This will open the Phantom app with Pulse loaded so you can connect your wallet.
                   </p>
                   <a
-                    href="https://phantom.app/"
+                    href={getPhantomBrowseUrl()}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.installLinkPrimary}
                     role="menuitem"
                   >
-                    Open Phantom
+                    Open in Phantom
                   </a>
                 </>
               )}
-              <span className={styles.installLabel}>{isMobile ? 'Or install a wallet' : 'Install a Solana wallet'}</span>
+              <span className={styles.installLabel}>{mobile ? 'Or install a wallet' : 'Install a Solana wallet'}</span>
               <a
                 href="https://phantom.app/"
                 target="_blank"

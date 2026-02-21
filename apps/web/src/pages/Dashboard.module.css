@@ -64,6 +64,20 @@
   min-width: 0;
 }
 
+/* On mobile: show profile & sign out before wallet so "Connect wallet" isn’t the first thing */
+@media (max-width: 519px) {
+  .navProfile {
+    order: 1;
+  }
+  .navSignOut {
+    order: 2;
+  }
+  .headerWallet {
+    order: 3;
+    margin-right: 0;
+  }
+}
+
 @media (min-width: 520px) {
   .nav {
     gap: 16px;

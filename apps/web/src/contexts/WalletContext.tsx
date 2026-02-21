@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { PublicKey } from '@solana/web3.js';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
+import { getPhantomBrowseUrl, isMobile } from '../lib/solana/phantomBrowse';
 
 const WALLET_STORAGE_KEY = '@pulse/connected_wallet';
 
@@ -108,7 +109,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const connect = useCallback(async () => {
     const wallet = getInjectedWallet();
     if (!wallet) {
-      window.open('https://phantom.app/', '_blank');
+      if (isMobile()) {
+        window.location.href = getPhantomBrowseUrl();
+      } else {
+        window.open('https://phantom.app/', '_blank');
+      }
       return;
     }
     setConnectError(null);
