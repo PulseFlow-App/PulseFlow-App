@@ -121,6 +121,19 @@
   cursor: not-allowed;
 }
 
+.phantomLink {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #737373;
+  text-decoration: none;
+}
+
+.phantomLink:hover {
+  color: #22c55e;
+  text-decoration: underline;
+}
+
 .installMenu {
   position: absolute;
   top: 100%;

@@ -2,14 +2,11 @@ import { Link } from 'react-router-dom';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useHasWallet } from '../../contexts/WalletContext';
 import { RecoveryContextCard } from './RecoveryContextCard';
-import { getNutritionPatternBlock, getWeeklyNutritionStability } from './patternInsights';
 import styles from './Nutrition.module.css';
 
 export function NutritionOverview() {
   const { hasActiveSubscription } = useSubscription();
   const hasWallet = useHasWallet();
-  const block = getNutritionPatternBlock();
-  const stability = getWeeklyNutritionStability();
 
   return (
     <div className={styles.page}>
@@ -27,35 +24,6 @@ export function NutritionOverview() {
         </div>
 
         <RecoveryContextCard />
-
-        <div className={styles.stabilityCard} role="region" aria-labelledby="stability-heading">
-          <h2 id="stability-heading" className={styles.stabilityHeading}>
-            This week
-          </h2>
-          <p className={styles.stabilityText}>
-            {stability.daysLogged} day{stability.daysLogged !== 1 ? 's' : ''} logged (meal or hydration). {stability.label}
-          </p>
-        </div>
-
-        <div className={styles.insightsCard} role="region" aria-labelledby="pattern-heading">
-          <h2 id="pattern-heading" className={styles.insightsHeading}>
-            {block.mode === 'no_data' ? "Today's insight" : "Today's nutrition pattern"}
-          </h2>
-          <p className={styles.patternText}>{block.pattern}</p>
-          {block.influencing.length > 0 && (
-            <>
-              <h3 className={styles.influencingHeading}>What connects</h3>
-              <ul className={styles.insightsList}>
-                {block.influencing.map((line, i) => (
-                  <li key={i}>{line}</li>
-                ))}
-              </ul>
-            </>
-          )}
-          <p className={styles.oneAdjustment}>
-            <strong>How to improve:</strong> {block.oneAdjustment}
-          </p>
-        </div>
 
         {!hasActiveSubscription && (
           <div className={styles.stabilityCard} role="region" aria-labelledby="nutrition-tier-cta-heading">

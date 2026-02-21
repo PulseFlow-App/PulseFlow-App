@@ -1,6 +1,8 @@
 /**
- * Today's context from Body + Work Routine. Shown on Nutrition overview and fridge/recipe flow.
+ * Today's context from Body + Work Routine. Only shown when user has logged both blocks today.
+ * Used on Nutrition overview and fridge/recipe flow.
  */
+import { hasBodyTodayCheck, hasRoutineTodayCheck } from '../../stores/combinedPulse';
 import { getRecoverySituation } from './recoverySituation';
 import type { RecoverySituation } from './types';
 import styles from './Nutrition.module.css';
@@ -24,6 +26,10 @@ const TIPS: Record<RecoverySituation, string> = {
 };
 
 export function RecoveryContextCard() {
+  const hasBody = hasBodyTodayCheck();
+  const hasRoutine = hasRoutineTodayCheck();
+  if (!hasBody || !hasRoutine) return null;
+
   const situation = getRecoverySituation();
   const label = LABELS[situation];
   const tip = TIPS[situation];

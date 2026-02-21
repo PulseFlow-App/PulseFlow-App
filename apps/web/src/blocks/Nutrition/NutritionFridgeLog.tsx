@@ -4,7 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { addFridgeLog } from './store';
 import { RecoveryContextCard } from './RecoveryContextCard';
 import type { FridgePhoto, FridgeSlot } from './types';
-import { MAX_PHOTO_BYTES, MAX_PHOTO_LABEL, getDataUrlDecodedBytes } from '../../lib/photoLimit';
+import { compressDataUrlToMaxBytes } from '../../lib/compressImageToLimit';
+import { MAX_PHOTO_BYTES, getDataUrlDecodedBytes } from '../../lib/photoLimit';
 import { photoFileToDataUrl, isHeicFile } from '../../lib/photoFileToDataUrl';
 import styles from './Nutrition.module.css';
 
@@ -70,14 +71,13 @@ export function NutritionFridgeLog() {
       return;
     }
     photoFileToDataUrl(file)
-      .then((dataUrl) => {
+      .then(async (dataUrl) => {
         const bytes = getDataUrlDecodedBytes(dataUrl);
-        if (bytes > MAX_PHOTO_BYTES) {
-          setErrors((e) => ({ ...e, [slot]: `Max ${MAX_PHOTO_LABEL} per image.` }));
-          setter(null);
-          return;
-        }
-        setter(dataUrl);
+        const finalUrl =
+          bytes > MAX_PHOTO_BYTES
+            ? await compressDataUrlToMaxBytes(dataUrl, MAX_PHOTO_BYTES)
+            : dataUrl;
+        setter(finalUrl);
       })
       .catch((err) => {
         setErrors((e) => ({ ...e, [slot]: err instanceof Error ? err.message : 'Could not load image. Try JPEG or PNG.' }));
@@ -146,7 +146,7 @@ export function NutritionFridgeLog() {
           {SLOTS.map(({ key, label }) => (
             <div key={key} className={styles.slotSection}>
               <div className={styles.slotLabel}>{label}</div>
-              <p className={styles.hint}>Optional. JPEG, PNG, WebP, or HEIC (iPhone).</p>
+              <p className={styles.hint}>Optional. JPEG, PNG, WebP, or HEIC (iPhone). Large photos are auto-compressed.</p>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"

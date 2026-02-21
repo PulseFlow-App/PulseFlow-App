@@ -1,19 +1,19 @@
+/**
+ * Wallet UI: connect button (opens wallet-adapter modal) or connected address menu.
+ * Uses useWallet() from our WalletContext (adapter-backed) and useWalletModal() to open the modal.
+ */
 import { useState, useRef, useEffect } from 'react';
+import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useWallet } from '../contexts/WalletContext';
 import { getPhantomBrowseUrl, isMobile } from '../lib/solana/phantomBrowse';
 import styles from './WalletDropdown.module.css';
 
-type Props = {
-  className?: string;
-};
+type Props = { className?: string };
 
-/**
- * Wallet menu in header: click to open dropdown with address, copy, disconnect, switch wallet.
- */
 export function WalletDropdown({ className }: Props) {
-  const { walletPublicKey, connect, disconnect, isWalletAvailable, isLoading, connectError } = useWallet();
+  const { walletPublicKey, disconnect, isLoading } = useWallet();
+  const { setVisible } = useWalletModal();
   const [open, setOpen] = useState(false);
-  const [showInstall, setShowInstall] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const mobile = isMobile();
 
@@ -26,14 +26,7 @@ export function WalletDropdown({ className }: Props) {
     return () => document.removeEventListener('click', close);
   }, [open]);
 
-  useEffect(() => {
-    if (!showInstall) return;
-    const close = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setShowInstall(false);
-    };
-    document.addEventListener('click', close);
-    return () => document.removeEventListener('click', close);
-  }, [showInstall]);
+  const openModal = () => setVisible(true);
 
   const copyAddress = () => {
     if (walletPublicKey) {
@@ -45,7 +38,7 @@ export function WalletDropdown({ className }: Props) {
   const handleSwitchWallet = () => {
     setOpen(false);
     disconnect();
-    setTimeout(() => connect(), 100);
+    setTimeout(openModal, 100);
   };
 
   if (walletPublicKey) {
@@ -89,82 +82,24 @@ export function WalletDropdown({ className }: Props) {
   return (
     <div className={[styles.wrap, className].filter(Boolean).join(' ')} ref={ref}>
       <div className={styles.connectRow}>
-        {isWalletAvailable ? (
-          <button
-            type="button"
-            className={styles.connectBtn}
-            onClick={connect}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Connecting…' : 'Connect wallet'}
-          </button>
-        ) : (
-        <>
-          <button
-            type="button"
-            className={styles.connectBtn}
-            onClick={() => setShowInstall((v) => !v)}
-            aria-expanded={showInstall}
-            aria-haspopup="true"
-          >
-            Connect wallet
-          </button>
-          {showInstall && (
-            <div className={styles.installMenu} role="menu">
-              {mobile && (
-                <>
-                  <span className={styles.installLabel}>Open Pulse in Phantom to connect</span>
-                  <p className={styles.installHint}>
-                    This will open the Phantom app with Pulse loaded so you can connect your wallet.
-                  </p>
-                  <a
-                    href={getPhantomBrowseUrl()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.installLinkPrimary}
-                    role="menuitem"
-                  >
-                    Open in Phantom
-                  </a>
-                </>
-              )}
-              <span className={styles.installLabel}>{mobile ? 'Or install a wallet' : 'Install a Solana wallet'}</span>
-              <a
-                href="https://phantom.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.installLink}
-                role="menuitem"
-              >
-                Phantom
-              </a>
-              <a
-                href="https://solflare.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.installLink}
-                role="menuitem"
-              >
-                Solflare
-              </a>
-              <a
-                href="https://backpack.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.installLink}
-                role="menuitem"
-              >
-                Backpack
-              </a>
-            </div>
-          )}
-        </>
-      )}
+        <button
+          type="button"
+          className={styles.connectBtn}
+          onClick={openModal}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Connecting…' : 'Connect wallet'}
+        </button>
       </div>
-      {connectError && (
-        <p className={styles.connectError} role="alert">
-          {connectError}
-        </p>
+      {mobile && (
+        <a
+          href={getPhantomBrowseUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.phantomLink}
+        >
+          Or open in Phantom
+        </a>
       )}
     </div>
   );

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { getNutritionPatternBlock, getWeeklyNutritionStability } from './patternInsights';
 import { getLatestFridgeLog } from './store';
 import { getApiUrl } from '../../lib/apiUrl';
 import { NextStepModal } from '../../components/NextStepModal';
@@ -92,8 +91,6 @@ export function NutritionResult() {
   const rawFrom = (location.state as { from?: FromSource })?.from;
   const from: FromSource =
     rawFrom === 'meal-timing' || rawFrom === 'hydration' ? rawFrom : 'fridge';
-  const block = getNutritionPatternBlock();
-  const stability = getWeeklyNutritionStability();
   const [showNextStepModal, setShowNextStepModal] = useState(false);
 
   useEffect(() => {
@@ -115,35 +112,6 @@ export function NutritionResult() {
             Here’s your analysis and recommendations. Add more data to get a more precise Pulse.
           </p>
         </div>
-
-        <section className={styles.stabilityCard} role="region" aria-labelledby="result-stability-heading">
-          <h2 id="result-stability-heading" className={styles.stabilityHeading}>
-            This week
-          </h2>
-          <p className={styles.stabilityText}>
-            {stability.daysLogged} day{stability.daysLogged !== 1 ? 's' : ''} logged (meal or hydration). {stability.label}
-          </p>
-        </section>
-
-        <section className={styles.insightsCard} role="region" aria-labelledby="result-pattern-heading">
-          <h2 id="result-pattern-heading" className={styles.insightsHeading}>
-            {block.mode === 'no_data' ? "Today's insight" : "Analysis & recommendations"}
-          </h2>
-          <p className={styles.patternText}>{block.pattern}</p>
-          {block.influencing.length > 0 && (
-            <>
-              <h3 className={styles.influencingHeading}>What&apos;s influencing it</h3>
-              <ul className={styles.insightsList}>
-                {block.influencing.map((line, i) => (
-                  <li key={i}>{line}</li>
-                ))}
-              </ul>
-            </>
-          )}
-          <p className={styles.oneAdjustment}>
-            <strong>Trick to try:</strong> {block.oneAdjustment}
-          </p>
-        </section>
 
         {from === 'fridge' && hasWallet && <RecipeIdeasSection />}
         {from === 'fridge' && !hasWallet && (

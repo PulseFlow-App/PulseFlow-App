@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useWallet } from '../contexts/WalletContext';
-import { getPhantomBrowseUrl, isMobile } from '../lib/solana/phantomBrowse';
 import { AppFooter } from '../components/AppFooter';
 import styles from './Login.module.css';
 
@@ -11,7 +10,7 @@ const REFERRAL_STORAGE_KEY = '@pulse/referral_code';
 export function Login() {
   const [searchParams] = useSearchParams();
   const { user, signIn, signInWithGoogle, sendLoginCode, verifyLoginCode, isGoogleAuth } = useAuth();
-  const { walletPublicKey, connect, disconnect, isWalletAvailable, isLoading: walletLoading } = useWallet();
+  const { walletPublicKey, connect, disconnect, isLoading: walletLoading } = useWallet();
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
@@ -207,7 +206,7 @@ export function Login() {
                 Disconnect
               </button>
             </div>
-          ) : isWalletAvailable ? (
+          ) : (
             <button
               type="button"
               className={styles.buttonSecondary}
@@ -216,16 +215,6 @@ export function Login() {
             >
               {walletLoading ? 'Connecting…' : 'Connect wallet'}
             </button>
-          ) : (
-            <a
-              href={isMobile() ? getPhantomBrowseUrl() : 'https://phantom.app/'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.buttonSecondary}
-              title="Phantom, Solflare, or any Solana wallet"
-            >
-              Connect wallet
-            </a>
           )}
         </div>
 

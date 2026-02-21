@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { WalletIndicator } from '../../components/WalletIndicator';
 import { addWorkDayCheckIn } from './store';
 import type { WorkDayMetrics, WorkspaceType, MeetingLoad } from './types';
+import { compressDataUrlToMaxBytes } from '../../lib/compressImageToLimit';
 import { MAX_PHOTO_BYTES, MAX_PHOTO_LABEL, getDataUrlDecodedBytes } from '../../lib/photoLimit';
 import { photoFileToDataUrl, isHeicFile } from '../../lib/photoFileToDataUrl';
 import styles from './WorkRoutine.module.css';
@@ -60,14 +61,14 @@ export function WorkRoutineCheckIn() {
       return;
     }
     photoFileToDataUrl(file)
-      .then((dataUrl) => {
+      .then(async (dataUrl) => {
         const bytes = getDataUrlDecodedBytes(dataUrl);
-        if (bytes > MAX_PHOTO_BYTES) {
-          setPhotoError(`Image too large. Maximum size is ${MAX_PHOTO_LABEL}.`);
-          setPhotoDataUrl(null);
-          return;
-        }
-        setPhotoDataUrl(dataUrl);
+        const finalUrl =
+          bytes > MAX_PHOTO_BYTES
+            ? await compressDataUrlToMaxBytes(dataUrl, MAX_PHOTO_BYTES)
+            : dataUrl;
+        setPhotoError(null);
+        setPhotoDataUrl(finalUrl);
       })
       .catch((err) => {
         setPhotoError(err instanceof Error ? err.message : 'Could not load image. Try JPEG or PNG.');
