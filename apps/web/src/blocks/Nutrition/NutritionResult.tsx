@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { getLatestFridgeLog } from './store';
 import { getApiUrl } from '../../lib/apiUrl';
-import { NextStepModal } from '../../components/NextStepModal';
+import { WhatNextSection } from '../../components/WhatNextSection';
 import { useHasWallet } from '../../contexts/WalletContext';
 import styles from './Nutrition.module.css';
 
@@ -91,12 +91,6 @@ export function NutritionResult() {
   const rawFrom = (location.state as { from?: FromSource })?.from;
   const from: FromSource =
     rawFrom === 'meal-timing' || rawFrom === 'hydration' ? rawFrom : 'fridge';
-  const [showNextStepModal, setShowNextStepModal] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setShowNextStepModal(true), 500);
-    return () => clearTimeout(t);
-  }, []);
 
   return (
     <div className={styles.page}>
@@ -109,7 +103,7 @@ export function NutritionResult() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>{SOURCE_LABELS[from]}</h1>
           <p className={styles.subtitle}>
-            Here’s your analysis and recommendations. Add more data to get a more precise Pulse.
+            Here’s your result from this block. Below: go to the main dashboard to add other blocks and get combined recommendations (2 or 3 blocks).
           </p>
         </div>
 
@@ -121,25 +115,8 @@ export function NutritionResult() {
           </section>
         )}
 
-        <p className={styles.resultPulseCopy}>
-          Your Pulse gets more precise as you add more blocks (Body Signals, Work Routine, Nutrition). View it now or keep logging to refine it.
-        </p>
-
-        <Link to="/dashboard/pulse" className={styles.button}>
-          View Pulse score
-        </Link>
-        <Link to="/dashboard/nutrition" className={styles.buttonSecondary}>
-          Add more nutrition data
-        </Link>
-        <Link to="/dashboard" className={styles.buttonSecondary}>
-          Go to other blocks
-        </Link>
+        <WhatNextSection variant="nutrition" />
       </main>
-      <NextStepModal
-        isOpen={showNextStepModal}
-        onClose={() => setShowNextStepModal(false)}
-        onDashboard={false}
-      />
     </div>
   );
 }

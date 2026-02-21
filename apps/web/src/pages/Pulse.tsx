@@ -5,6 +5,7 @@ import {
   getCombinedPulse,
   hasBodyTodayCheck,
   hasRoutineTodayCheck,
+  hasNutritionTodayCheck,
 } from '../stores/combinedPulse';
 import { computeBodyPulseAsync } from '../blocks/BodySignals/store';
 import type { BodyPulseSnapshot } from '../blocks/BodySignals/types';
@@ -19,21 +20,39 @@ export function Pulse() {
   const pulse = getCombinedPulse();
   const hasBody = hasBodyTodayCheck();
   const hasRoutine = hasRoutineTodayCheck();
+  const hasNutrition = hasNutritionTodayCheck();
+  const blockCount = pulse.blockCount;
+  const hasAllThree = blockCount === 3;
 
   const [bodySnapshot, setBodySnapshot] = useState<BodyPulseSnapshot | null>(null);
   const [loadingBody, setLoadingBody] = useState(false);
 
   const showOfferWorkRoutine = hasBody && !hasRoutine;
   const showOfferBodySignals = from === 'work-routine' && !hasBody && hasRoutine;
+  const showOfferNutrition = (hasBody || hasRoutine) && !hasNutrition;
 
   const bodyScore = pulse.body ?? 0;
   const routineScore = pulse.routine ?? 0;
-  const hasBoth = pulse.sources.length === 2;
+  const hasBoth = hasBody && hasRoutine;
   const bodyShare = hasBoth ? 50 : pulse.body !== null ? 100 : 0;
   const routineShare = hasBoth ? 50 : pulse.routine !== null ? 100 : 0;
 
-  const scoreCardLabel = hasBoth ? 'Combined Pulse' : pulse.body !== null ? 'Body Pulse' : 'Work Pulse';
+  const scoreCardLabel = hasAllThree
+    ? 'Your Pulse (all 3 blocks)'
+    : hasBoth
+      ? 'Combined Pulse (2 blocks)'
+      : pulse.body !== null
+        ? 'Body Pulse'
+        : 'Work Pulse';
   const routineEntry = hasRoutine ? getLatestCheckIn() : undefined;
+
+  const blockNames = (count: number) => {
+    const names: string[] = [];
+    if (hasBody) names.push('Body Signals');
+    if (hasRoutine) names.push('Work Routine');
+    if (hasNutrition) names.push('Nutrition');
+    return names.slice(0, count).join(' and ');
+  };
 
   useEffect(() => {
     if (!hasBody) {
@@ -81,23 +100,31 @@ export function Pulse() {
             </span>
           )}
         </div>
-        {hasBoth ? (
-          <p className={styles.aggregationText}>
-            Body Signals contributed {bodyScore}% and Work Routine contributed {routineScore}%. Your combined Pulse is {pulse.combined}, the average of both. More data gives a clearer picture.
-          </p>
-        ) : (
+        {blockCount === 1 && (
           <p className={styles.ctaText} style={{ marginTop: 12, marginBottom: 0 }}>
-            This is your Pulse so far today. Add another block to get your full combined Pulse and richer insights.
+            Based on {blockNames(1)} only. Add another block to get combined recommendations that use more of your inputs.
+          </p>
+        )}
+        {blockCount === 2 && (
+          <p className={styles.aggregationText}>
+            Recommendations below use your {blockNames(2)} inputs. Your score combines Body Signals and Work Routine. Add the third block (Nutrition) for recommendations based on all your data.
+          </p>
+        )}
+        {hasAllThree && (
+          <p className={styles.aggregationText}>
+            Recommendations below are based on all three blocks: Body Signals, Work Routine, and Nutrition. This is your full Pulse for today.
           </p>
         )}
       </div>
 
-      {/* Narrative: one combined flow when both, else body or routine only */}
+      {/* Narrative: 1-, 2-, or 3-block recommendations */}
       {(hasBody || hasRoutine) && (
         <div className={styles.narrativeBlock}>
-          {hasBoth && (
+          {blockCount >= 2 && (
             <p className={styles.narrativeIntro}>
-              Body and work both feed your Pulse today. Below: what’s shaping it and one thing to try.
+              {blockCount === 2
+                ? `Based on your ${blockNames(2)}: what’s shaping your Pulse and one thing to try.`
+                : 'Based on all your inputs: what’s shaping your Pulse and one thing to try.'}
             </p>
           )}
           {hasBody && (
@@ -153,11 +180,19 @@ export function Pulse() {
               )}
             </section>
           )}
-          {hasBoth && (bodySnapshot?.improvements?.[0] || routineEntry?.analysis?.oneThing) && (
+          {(hasBoth || hasAllThree) && (bodySnapshot?.improvements?.[0] || routineEntry?.analysis?.oneThing) && (
             <section className={styles.narrativeSection} aria-labelledby="pulse-one-heading">
               <h2 id="pulse-one-heading" className={styles.narrativeHeading}>One thing to try</h2>
               <p className={styles.narrativeOneThing}>
                 {bodySnapshot?.improvements?.[0] ?? routineEntry?.analysis?.oneThing}
+              </p>
+            </section>
+          )}
+          {hasNutrition && blockCount >= 2 && (
+            <section className={styles.narrativeSection} aria-labelledby="pulse-nutrition-heading">
+              <h2 id="pulse-nutrition-heading" className={styles.narrativeHeading}>From Nutrition</h2>
+              <p className={styles.narrativeText}>
+                You logged fridge or nutrition today. Together with body and work data, this gives a fuller picture for your Pulse.
               </p>
             </section>
           )}
@@ -167,19 +202,24 @@ export function Pulse() {
     </div>
   ) : null;
 
-  const emptyStateBlock = pulse.combined === null ? (
+  const emptyStateBlock = blockCount === 0 ? (
     <div className={styles.emptyState}>
       <p className={styles.emptyHeading}>No Pulse yet today</p>
       <p className={styles.emptyText}>
-        Log Body Signals or complete a Work Routine check-in to see your
-        Pulse. Doing both gives you the best combined score and insights.
+        Log at least one block to see your Pulse. Add more blocks to get combined recommendations (2 blocks) or full recommendations using all three (Body Signals, Work Routine, Nutrition).
       </p>
       <div className={styles.emptyLinks}>
         <Link to="/dashboard/body-signals/log" className={styles.emptyLink}>
-          Log Body Signals
+          Body Signals
         </Link>
         <Link to="/dashboard/work-routine/checkin" className={styles.emptyLink}>
-          Work Routine check-in
+          Work Routine
+        </Link>
+        <Link to="/dashboard/nutrition" className={styles.emptyLink}>
+          Nutrition
+        </Link>
+        <Link to="/dashboard" className={styles.emptyLink}>
+          Main dashboard
         </Link>
       </div>
     </div>
@@ -194,12 +234,20 @@ export function Pulse() {
       </header>
       <main id="main" className={styles.main}>
         <h1 className={styles.title}>
-          {hasBoth ? 'Your full Pulse for today' : 'Your Pulse'}
+          {hasAllThree
+            ? 'Your Pulse (all 3 blocks)'
+            : blockCount === 2
+              ? 'Your Pulse (2 blocks)'
+              : 'Your Pulse'}
         </h1>
         <p className={styles.subtitle}>
-          {hasBoth
-            ? 'Aggregated from Body Signals and Work Routine.'
-            : 'This score is partial. Add more blocks to get your full Pulse for today.'}
+          {blockCount === 0
+            ? 'Log at least one block to see your Pulse and recommendations.'
+            : blockCount === 1
+              ? `Based on ${blockNames(1)}. Add more blocks for combined recommendations.`
+              : blockCount === 2
+                ? `Recommendations below use your ${blockNames(2)}. Add the third block for full Pulse.`
+                : 'Recommendations below are based on Body Signals, Work Routine, and Nutrition.'}
         </p>
 
         {scoreCardBlock}
@@ -216,9 +264,9 @@ export function Pulse() {
               <Link to="/dashboard/work-routine/checkin" className={styles.ctaPrimary}>
                 Log work routine
               </Link>
-              <a href="#pulse-score" className={styles.ctaSecondary}>
-                See my Pulse anyway
-              </a>
+              <Link to="/dashboard" className={styles.ctaSecondary}>
+                Continue with other blocks
+              </Link>
             </div>
           </div>
         )}
@@ -229,16 +277,48 @@ export function Pulse() {
               Add Body Signals for your best Pulse
             </h2>
             <p className={styles.ctaText}>
-              You logged work routine today. Adding sleep, energy, and mood will give you a combined Pulse and better insights: how body and work connect.
+              You logged work routine today. Adding sleep, energy, and mood will give you combined recommendations: how body and work connect.
             </p>
             <div className={styles.ctaButtons}>
               <Link to="/dashboard/body-signals/log" className={styles.ctaPrimary}>
                 Add Body Signals
               </Link>
-              <a href="#pulse-score" className={styles.ctaSecondary}>
-                See my Pulse anyway
-              </a>
+              <Link to="/dashboard" className={styles.ctaSecondary}>
+                Continue with other blocks
+              </Link>
             </div>
+          </div>
+        )}
+
+        {showOfferNutrition && (
+          <div className={styles.ctaCard} role="region" aria-labelledby="cta-heading-nut">
+            <h2 id="cta-heading-nut" className={styles.ctaHeading}>
+              Add Nutrition for your full Pulse
+            </h2>
+            <p className={styles.ctaText}>
+              You have Body Signals and Work Routine. Log fridge or nutrition to get recommendations based on all three blocks.
+            </p>
+            <div className={styles.ctaButtons}>
+              <Link to="/dashboard/nutrition" className={styles.ctaPrimary}>
+                Log Nutrition
+              </Link>
+              <Link to="/dashboard" className={styles.ctaSecondary}>
+                Go to main dashboard
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {blockCount >= 1 && (
+          <div className={styles.continueBlock}>
+            <p className={styles.ctaText}>
+              {blockCount < 3
+                ? 'Continue with other blocks on the main dashboard to get recommendations based on more of your data.'
+                : 'Go back to the dashboard to log more or update your inputs.'}
+            </p>
+            <Link to="/dashboard" className={styles.ctaPrimary}>
+              {blockCount < 3 ? 'Continue with other blocks' : 'Go to main dashboard'}
+            </Link>
           </div>
         )}
 

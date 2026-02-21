@@ -1,26 +1,31 @@
 /**
- * Combined Pulse: aggregates Body Signals and Work Routine for today.
- * Also provides aggregated pulse across all log-ins and check-ins.
+ * Combined Pulse: aggregates Body Signals, Work Routine, and Nutrition for today.
+ * Used for 1/2/3-block progressive recommendations on the Pulse page.
  */
 import { hasBodyToday, getTodayBodyScore, getBodyLogs, calculatePulseScore } from '../blocks/BodySignals/store';
 import { hasRoutineToday, getTodayRoutineScore, getCheckIns, getScoreForCheckIn } from '../blocks/WorkRoutine/store';
+import { hasFridgeLogToday } from '../blocks/Nutrition/store';
 
-export type CombinedPulseSource = 'body' | 'routine';
+export type CombinedPulseSource = 'body' | 'routine' | 'nutrition';
 
 export type CombinedPulseResult = {
   body: number | null;
   routine: number | null;
-  /** Combined score: average when both, else the single source. */
+  /** Combined score: average of body + routine when both; nutrition does not contribute a number. */
   combined: number | null;
   sources: CombinedPulseSource[];
+  /** 1, 2, or 3 — how many blocks have data today. */
+  blockCount: number;
 };
 
 export function getCombinedPulse(): CombinedPulseResult {
   const body = getTodayBodyScore();
   const routine = getTodayRoutineScore();
+  const hasNutrition = hasFridgeLogToday();
   const sources: CombinedPulseSource[] = [];
   if (body !== null) sources.push('body');
   if (routine !== null) sources.push('routine');
+  if (hasNutrition) sources.push('nutrition');
 
   let combined: number | null = null;
   if (body !== null && routine !== null) {
@@ -31,7 +36,13 @@ export function getCombinedPulse(): CombinedPulseResult {
     combined = routine;
   }
 
-  return { body, routine, combined, sources };
+  return {
+    body,
+    routine,
+    combined,
+    sources,
+    blockCount: sources.length,
+  };
 }
 
 /** Aggregated pulse from all body log-ins and all work routine check-ins. */
@@ -64,4 +75,8 @@ export function hasBodyTodayCheck(): boolean {
 
 export function hasRoutineTodayCheck(): boolean {
   return hasRoutineToday();
+}
+
+export function hasNutritionTodayCheck(): boolean {
+  return hasFridgeLogToday();
 }

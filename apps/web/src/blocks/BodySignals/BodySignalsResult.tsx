@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ScoreRing } from '../../components/ScoreRing';
-import { NextStepModal } from '../../components/NextStepModal';
+import { WhatNextSection } from '../../components/WhatNextSection';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useHasWallet } from '../../contexts/WalletContext';
 import { computeBodyPulse, computeBodyPulseAsync } from './store';
@@ -33,7 +33,6 @@ export function BodySignalsResult() {
   const hasWallet = useHasWallet();
   const [pulse, setPulse] = useState<BodyPulseSnapshot>(() => computeBodyPulse());
   const [loadingAI, setLoadingAI] = useState(true);
-  const [showNextStepModal, setShowNextStepModal] = useState(false);
 
   useEffect(() => {
     setPulse(computeBodyPulse());
@@ -42,13 +41,6 @@ export function BodySignalsResult() {
       .then(setPulse)
       .finally(() => setLoadingAI(false));
   }, []);
-
-  useEffect(() => {
-    if (!loadingAI) {
-      const t = setTimeout(() => setShowNextStepModal(true), 500);
-      return () => clearTimeout(t);
-    }
-  }, [loadingAI]);
 
   return (
     <div className={styles.page}>
@@ -59,7 +51,9 @@ export function BodySignalsResult() {
       </header>
       <main id="main" className={styles.main}>
         <h1 className={styles.title}>Your Body Pulse</h1>
-        <p className={styles.subtitle}>Here’s your result from today’s check-in.</p>
+        <p className={styles.subtitle}>
+          Here’s your result from this block. Below: what next — go to the main dashboard to add other blocks and get combined recommendations.
+        </p>
 
         <div className={styles.card}>
           <div className={styles.scoreSection}>
@@ -110,11 +104,8 @@ export function BodySignalsResult() {
           </div>
         </div>
 
+        <WhatNextSection />
       </main>
-      <NextStepModal
-        isOpen={showNextStepModal}
-        onClose={() => setShowNextStepModal(false)}
-      />
     </div>
   );
 }

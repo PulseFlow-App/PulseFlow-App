@@ -121,17 +121,12 @@
   cursor: not-allowed;
 }
 
-.phantomLink {
-  display: block;
-  margin-top: 6px;
+.mobileHint {
+  margin: 6px 0 0;
   font-size: 0.75rem;
   color: #737373;
-  text-decoration: none;
-}
-
-.phantomLink:hover {
-  color: #22c55e;
-  text-decoration: underline;
+  line-height: 1.35;
+  max-width: 260px;
 }
 
 .installMenu {

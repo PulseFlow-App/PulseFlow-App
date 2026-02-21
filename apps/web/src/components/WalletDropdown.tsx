@@ -5,7 +5,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useWallet } from '../contexts/WalletContext';
-import { getPhantomBrowseUrl, isMobile } from '../lib/solana/phantomBrowse';
+import { isMobile } from '../lib/solana/phantomBrowse';
 import styles from './WalletDropdown.module.css';
 
 type Props = { className?: string };
@@ -91,15 +91,10 @@ export function WalletDropdown({ className }: Props) {
           {isLoading ? 'Connecting…' : 'Connect wallet'}
         </button>
       </div>
-      {mobile && (
-        <a
-          href={getPhantomBrowseUrl()}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.phantomLink}
-        >
-          Or open in Phantom
-        </a>
+      {mobile && (import.meta.env.VITE_WALLETCONNECT_PROJECT_ID as string)?.trim() && (
+        <p className={styles.mobileHint}>
+          Choose WalletConnect to open your wallet app, sign, then return here.
+        </p>
       )}
     </div>
   );

@@ -190,6 +190,16 @@
   background: #3b82f6;
 }
 
+.continueBlock {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.continueBlock .ctaText {
+  margin-bottom: 12px;
+}
+
 .emptyState {
   text-align: center;
   padding: 32px 20px;

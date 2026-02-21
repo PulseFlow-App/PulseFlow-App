@@ -1,21 +1,14 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { NextStepModal } from '../../components/NextStepModal';
+import { WhatNextSection } from '../../components/WhatNextSection';
 import { WalletIndicator } from '../../components/WalletIndicator';
 import { useWallet, useHasPulseLabAccess } from '../../contexts/WalletContext';
 import { useOnChainDailyCheckIn } from '../../hooks/useOnChainDailyCheckIn';
 import styles from './WorkRoutine.module.css';
 
 export function WorkRoutineDone() {
-  const [showModal, setShowModal] = useState(false);
   const { walletPublicKey, connect, isWalletAvailable, isLoading } = useWallet();
   const hasPulseLabAccess = useHasPulseLabAccess();
   const { trigger, status, error, canCheckIn } = useOnChainDailyCheckIn();
-
-  useEffect(() => {
-    const t = setTimeout(() => setShowModal(true), 400);
-    return () => clearTimeout(t);
-  }, []);
 
   return (
     <div className={styles.page}>
@@ -29,7 +22,7 @@ export function WorkRoutineDone() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Check-in saved</h1>
           <p className={styles.subtitle}>
-            Your work day is logged. See your Pulse score or add more blocks (Body Signals, Nutrition) for a stronger signal.
+            Here’s your result from this block. Below: go to the main dashboard to add other blocks and get combined recommendations (2 or 3 blocks).
           </p>
         </div>
 
@@ -86,12 +79,9 @@ export function WorkRoutineDone() {
             <Link to="/lab" className={styles.onChainButton}>Unlock Pulse Lab</Link>
           </section>
         )}
+
+        <WhatNextSection />
       </main>
-      <NextStepModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onDashboard={false}
-      />
     </div>
   );
 }
