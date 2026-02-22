@@ -70,8 +70,10 @@ export function updateMealPhotoAnalysis(
   const entries = loadEntries();
   const idx = entries.findIndex((e) => e.id === id);
   if (idx === -1) return;
+  const existing = entries[idx];
+  if (!existing) return;
   entries[idx] = {
-    ...entries[idx],
+    ...existing,
     analysis: analysis ?? undefined,
     error,
   };

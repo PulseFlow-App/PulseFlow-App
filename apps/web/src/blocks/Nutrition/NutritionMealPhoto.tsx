@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { getBodyLogs } from '../BodySignals/store';
 import { getApiUrl } from '../../lib/apiUrl';
 import { getMealPhotosForDate, addMealPhoto, updateMealPhotoAnalysis } from './mealPhotoStore';
@@ -127,7 +127,6 @@ function MealPhotoCard({
 }
 
 export function NutritionMealPhoto() {
-  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const today = todayStr();
   const [entries, setEntries] = useState<MealPhotoEntry[]>(() => getMealPhotosForDate(today));

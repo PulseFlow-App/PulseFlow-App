@@ -57,7 +57,7 @@ function drawCircle(
   lines.slice(0, 2).forEach((l, i) => doc.text(l, x, y + r + 8 + i * 3.5, { align: 'center' }));
 }
 
-function wrapText(doc: jsPDF, text: string, x: number, maxW: number): string[] {
+function wrapText(doc: jsPDF, text: string, _x: number, maxW: number): string[] {
   const lines: string[] = [];
   const parts = text.split(/\s+/);
   let line = '';
@@ -103,13 +103,14 @@ function renderPage1(doc: jsPDF, report: DailyReportJson): void {
     const cx = i === 0 ? cx1 : i === 1 ? cx2 : cx3;
     const bs = report.pulse_summary.block_scores[key];
     if (!bs) return;
-    drawCircle(doc, cx, circleY, smallR, bs.score, names[key], bs.label || '');
+    drawCircle(doc, cx, circleY, smallR, bs.score, names[key] ?? key, bs.label || '');
   });
 
   const combinedY = 95;
   const bigR = 22;
   const overall = report.pulse_summary.overall_score ?? 0;
-  drawCircle(doc, PAGE_W / 2, combinedY, bigR, overall, 'Your Pulse', report.report_date);
+  const reportDateStr = report.report_date ?? '';
+  drawCircle(doc, PAGE_W / 2, combinedY, bigR, overall, 'Your Pulse', reportDateStr);
 
   doc.setTextColor(...COLORS.black);
   doc.setFontSize(8);
@@ -141,11 +142,11 @@ function renderPage1(doc: jsPDF, report: DailyReportJson): void {
     const pillY = y + 4;
     const pillH = 6;
     for (let i = 0; i < pills.length; i++) {
-      const w = Math.min(doc.getTextWidth(pills[i]) + 8, 50);
+      const w = Math.min(doc.getTextWidth(pills[i] ?? '') + 8, 50);
       doc.setFillColor(...COLORS.lightGray);
       doc.roundedRect(pillX, pillY - pillH / 2, w, pillH, 1, 1, 'F');
       doc.setTextColor(...COLORS.black);
-      doc.text(pills[i].slice(0, 20), pillX + 4, pillY + 1);
+      doc.text((pills[i] ?? '').slice(0, 20), pillX + 4, pillY + 1);
       pillX += w + 4;
       if (i < pills.length - 1) {
         doc.setFontSize(6);
@@ -158,7 +159,6 @@ function renderPage1(doc: jsPDF, report: DailyReportJson): void {
 }
 
 function signalsTable(doc: jsPDF, signals: Record<string, unknown>, startY: number): number {
-  const col1 = 50;
   const col2 = 120;
   let y = startY;
   doc.setFontSize(8);
