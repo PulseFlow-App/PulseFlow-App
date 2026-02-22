@@ -33,6 +33,7 @@ export function Pulse() {
   const [loadingBody, setLoadingBody] = useState(false);
   const [aggregation, setAggregation] = useState<AggregationResult | null>(null);
   const [loadingAggregation, setLoadingAggregation] = useState(false);
+  const [aggregationError, setAggregationError] = useState<string | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
 
@@ -86,8 +87,17 @@ export function Pulse() {
     }
     setLoadingAggregation(true);
     setAggregation(null);
+    setAggregationError(null);
     fetchPulseAggregation(apiBase, bodySnapshot)
       .then(setAggregation)
+      .catch((err: Error & { status?: number }) => {
+        setAggregation(null);
+        setAggregationError(
+          err?.status === 503
+            ? 'Insights temporarily unavailable. Try again later.'
+            : 'Could not load insights.'
+        );
+      })
       .finally(() => setLoadingAggregation(false));
   }, [blockCount, bodySnapshot?.date, hasBody, hasRoutine, hasNutrition]);
 
@@ -123,7 +133,11 @@ export function Pulse() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setReportError("Couldn't generate report — try again.");
+        setReportError(
+          res.status === 503
+            ? 'Report service is temporarily unavailable. Try again later.'
+            : "Couldn't generate report — try again."
+        );
         return;
       }
       const report = data as DailyReportJson;
@@ -186,6 +200,9 @@ export function Pulse() {
           {blockCount >= 2 && loadingAggregation && (
             <p className={styles.bodyLoading}>Getting your combined Pulse…</p>
           )}
+          {blockCount >= 2 && aggregationError && !loadingAggregation && (
+            <p className={styles.bodyLoading} role="alert">{aggregationError}</p>
+          )}
           {blockCount >= 2 && aggregation && !loadingAggregation && (
             <>
               {aggregation.pulse_score_framing && (
@@ -234,7 +251,7 @@ export function Pulse() {
               )}
             </>
           )}
-          {((!aggregation && !loadingAggregation) || blockCount === 1) && (
+          {((!aggregation && !loadingAggregation && !aggregationError) || blockCount === 1) && (
             <>
               {blockCount >= 2 && (
                 <p className={styles.narrativeIntro}>

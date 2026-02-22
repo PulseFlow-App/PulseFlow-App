@@ -5,8 +5,8 @@ import { getMealTimingForDate, hasMealTimingToday } from './mealTimingStore';
 import { hasHydrationTimingToday, getHydrationTimingForDate } from './hydrationTimingStore';
 import { hasReflectionsToday } from './postMealReflectionStore';
 import { getPostMealReflections } from './postMealReflectionStore';
-import { hasMealPhotosToday, getMealPhotoInsightsForDate } from './mealPhotoStore';
-import { hasFridgePhotoToday } from './fridgePhotoStore';
+import { getMealPhotoInsightsForDate } from './mealPhotoStore';
+import { NutritionProgressChecklist } from './NutritionProgressChecklist';
 import { setNutritionInsightsForDate } from './nutritionInsightsStore';
 import { getApiUrl } from '../../lib/apiUrl';
 import { getFullAccessForTesting } from '../../lib/featureFlags';
@@ -28,50 +28,6 @@ const SOURCE_LABELS: Record<FromSource, string> = {
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
-}
-
-/** Required = meal timing + hydration. Optional = reflections, meal photos, fridge. Checklist updates reactively from stores. */
-function NutritionProgressChecklist() {
-  const mealDone = hasMealTimingToday();
-  const hydrationDone = hasHydrationTimingToday();
-  const reflectionsDone = hasReflectionsToday();
-  const mealPhotosDone = hasMealPhotosToday();
-  const fridgeDone = hasFridgePhotoToday();
-
-  return (
-    <section className={styles.progressCard} role="region" aria-labelledby="nutrition-progress-heading">
-      <h2 id="nutrition-progress-heading" className={styles.progressHeading}>
-        Nutrition block
-      </h2>
-      <ul className={styles.progressList}>
-        <li className={styles.progressItem}>
-          {mealDone ? <span className={styles.progressDone} aria-hidden>✓</span> : <span className={styles.progressDot} aria-hidden>○</span>}
-          <span>Meal timing</span>
-          {mealDone ? <span className={styles.progressLabel}>Done</span> : <Link to="/dashboard/nutrition/meal-timing" className={styles.progressLink}>Log now</Link>}
-        </li>
-        <li className={styles.progressItem}>
-          {hydrationDone ? <span className={styles.progressDone} aria-hidden>✓</span> : <span className={styles.progressDot} aria-hidden>○</span>}
-          <span>Hydration timing</span>
-          {hydrationDone ? <span className={styles.progressLabel}>Done</span> : <Link to="/dashboard/nutrition/hydration" className={styles.progressLink}>Log now</Link>}
-        </li>
-        <li className={styles.progressItem}>
-          {reflectionsDone ? <span className={styles.progressDone} aria-hidden>✓</span> : <span className={styles.progressDot} aria-hidden>○</span>}
-          <span>Post-meal reflections</span>
-          {reflectionsDone ? <span className={styles.progressLabel}>Done</span> : <Link to="/dashboard/nutrition/reflections" className={styles.progressLinkOptional}>Add</Link>}
-        </li>
-        <li className={styles.progressItem}>
-          {mealPhotosDone ? <span className={styles.progressDone} aria-hidden>✓</span> : <span className={styles.progressDot} aria-hidden>○</span>}
-          <span>Meal photos</span>
-          {mealPhotosDone ? <span className={styles.progressLabel}>Done</span> : <Link to="/dashboard/nutrition/meal-photo" className={styles.progressLinkOptional}>Add</Link>}
-        </li>
-        <li className={styles.progressItem}>
-          {fridgeDone ? <span className={styles.progressDone} aria-hidden>✓</span> : <span className={styles.progressDot} aria-hidden>○</span>}
-          <span>Fridge photos</span>
-          {fridgeDone ? <span className={styles.progressLabel}>Done</span> : <Link to="/dashboard/nutrition/fridge-photo" className={styles.progressLinkOptional}>Add</Link>}
-        </li>
-      </ul>
-    </section>
-  );
 }
 
 function RecipeIdeasSection() {
@@ -210,6 +166,7 @@ export function NutritionResult() {
   const hasRequiredForUnlock = mealDone && hydrationDone && reflectionsDone;
 
   const [loadingAI, setLoadingAI] = useState(false);
+  const [nutritionInsightsError, setNutritionInsightsError] = useState<string | null>(null);
   const [aiOutput, setAiOutput] = useState<{ pattern: string; shaping: string; oneThing: string; aggregation_handoff?: Record<string, unknown> | null } | null>(null);
 
   const pulse = getCombinedPulse();
@@ -221,14 +178,17 @@ export function NutritionResult() {
   useEffect(() => {
     if (!hasRequiredForUnlock) {
       setAiOutput(null);
+      setNutritionInsightsError(null);
       return;
     }
     const apiBase = getApiUrl();
     if (!apiBase) {
       setAiOutput(null);
+      setNutritionInsightsError(null);
       return;
     }
     setLoadingAI(true);
+    setNutritionInsightsError(null);
     const nutrition = buildNutritionPayload();
     const bodyHandoff = getBodyHandoff();
     const workHandoff = getWorkHandoff();
@@ -241,7 +201,18 @@ export function NutritionResult() {
         work_handoff: workHandoff,
       }),
     })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => {
+        if (!res.ok) {
+          setNutritionInsightsError(
+            res.status === 503
+              ? 'Recommendations temporarily unavailable. Your data is saved.'
+              : 'Could not load recommendations.'
+          );
+          setAiOutput(null);
+          return null;
+        }
+        return res.json();
+      })
       .then((data) => {
         if (data && typeof data.pattern === 'string') {
           const pattern = data.pattern.trim();
@@ -254,7 +225,10 @@ export function NutritionResult() {
           setAiOutput(null);
         }
       })
-      .catch(() => setAiOutput(null))
+      .catch(() => {
+        setNutritionInsightsError('Could not load recommendations.');
+        setAiOutput(null);
+      })
       .finally(() => setLoadingAI(false));
   }, [hasRequiredForUnlock, optionalDataVersion]);
 
@@ -289,11 +263,10 @@ export function NutritionResult() {
           </p>
         </div>
 
+        <NutritionProgressChecklist />
+
         {!hasRequiredForUnlock && (
-          <>
-            <NutritionProgressChecklist />
-            <WhatNextSection variant="nutrition" />
-          </>
+          <WhatNextSection variant="nutrition" />
         )}
 
         {hasRequiredForUnlock && (
@@ -310,6 +283,8 @@ export function NutritionResult() {
               </div>
               {loadingAI ? (
                 <p className={styles.aiLoading}>Getting your pattern…</p>
+              ) : nutritionInsightsError ? (
+                <p className={styles.aiLoading} role="alert">{nutritionInsightsError}</p>
               ) : (
                 showAiBlock && (
                   <>

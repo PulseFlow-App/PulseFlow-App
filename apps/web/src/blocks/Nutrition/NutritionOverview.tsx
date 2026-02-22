@@ -1,12 +1,18 @@
 import { Link } from 'react-router-dom';
 import { PulseScoreCard } from '../../components/PulseScore';
-import { getAllTimeNutritionPulse } from '../../stores/combinedPulse';
+import { hasMealTimingToday } from './mealTimingStore';
+import { hasHydrationTimingToday } from './hydrationTimingStore';
+import { hasReflectionsToday } from './postMealReflectionStore';
+import { NutritionProgressChecklist } from './NutritionProgressChecklist';
 import styles from './Nutrition.module.css';
 
 const NUTRITION_BLOCK_SCORE_DEFAULT = 80;
 
 export function NutritionOverview() {
-  const pulse = getAllTimeNutritionPulse();
+  const mealDone = hasMealTimingToday();
+  const hydrationDone = hasHydrationTimingToday();
+  const reflectionsDone = hasReflectionsToday();
+  const hasRequiredForScore = mealDone && hydrationDone && reflectionsDone;
 
   return (
     <div className={styles.page}>
@@ -19,22 +25,23 @@ export function NutritionOverview() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Nutrition</h1>
           <p className={styles.subtitle}>
-            {pulse.hasData
-              ? 'Your nutrition data (pulse score coming soon)'
-              : 'Log meal timing, hydration, and fridge to see your pulse'}
+            Complete meal timing, hydration, and post-meal reflection to see your Nutrition Pulse. Meal photos and fridge are optional.
           </p>
         </div>
-        <div className={styles.card}>
-          <div className={styles.scoreSection}>
-            <PulseScoreCard
-              variant="block-only"
-              score={pulse.hasData ? NUTRITION_BLOCK_SCORE_DEFAULT : 0}
-              label={pulse.hasData ? 'Nutrition Pulse' : 'No data yet'}
-              blockKey="nutrition"
-              compact
-            />
+        <NutritionProgressChecklist />
+        {hasRequiredForScore && (
+          <div className={styles.card}>
+            <div className={styles.scoreSection}>
+              <PulseScoreCard
+                variant="block-only"
+                score={NUTRITION_BLOCK_SCORE_DEFAULT}
+                label="Nutrition Pulse"
+                blockKey="nutrition"
+                compact
+              />
+            </div>
           </div>
-        </div>
+        )}
         <Link to="/dashboard/nutrition/meal-timing" className={styles.button}>
           Meal timing
         </Link>

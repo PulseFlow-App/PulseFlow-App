@@ -4,9 +4,10 @@
  */
 import { hasBodyToday, getTodayBodyScore, getBodyLogs, calculatePulseScore } from '../blocks/BodySignals/store';
 import { hasRoutineToday, getTodayRoutineScore, getCheckIns, getScoreForCheckIn } from '../blocks/WorkRoutine/store';
-import { hasFridgeLogToday, getFridgeLogs } from '../blocks/Nutrition/store';
+import { getFridgeLogs } from '../blocks/Nutrition/store';
 import { hasMealTimingToday, getMealTimingEntries } from '../blocks/Nutrition/mealTimingStore';
 import { hasHydrationTimingToday, getHydrationTimingEntries } from '../blocks/Nutrition/hydrationTimingStore';
+import { hasReflectionsToday } from '../blocks/Nutrition/postMealReflectionStore';
 
 export type CombinedPulseSource = 'body' | 'routine' | 'nutrition';
 
@@ -23,8 +24,7 @@ export type CombinedPulseResult = {
 export function getCombinedPulse(): CombinedPulseResult {
   const body = getTodayBodyScore();
   const routine = getTodayRoutineScore();
-  const hasNutrition =
-    hasFridgeLogToday() || hasMealTimingToday() || hasHydrationTimingToday();
+  const hasNutrition = hasNutritionTodayCheck();
   const sources: CombinedPulseSource[] = [];
   if (body !== null) sources.push('body');
   if (routine !== null) sources.push('routine');
@@ -114,7 +114,7 @@ export function hasRoutineTodayCheck(): boolean {
   return hasRoutineToday();
 }
 
-/** Nutrition "done today" = required sub-components only (meal timing + hydration). Optional (fridge, reflections) don't gate. */
+/** Nutrition "done today" = required: meal timing + hydration + post-meal reflection. Optional: meal photos, fridge. */
 export function hasNutritionTodayCheck(): boolean {
-  return hasMealTimingToday() && hasHydrationTimingToday();
+  return hasMealTimingToday() && hasHydrationTimingToday() && hasReflectionsToday();
 }

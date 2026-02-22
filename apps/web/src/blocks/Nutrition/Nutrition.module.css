@@ -123,6 +123,18 @@
   color: #737373;
 }
 
+.progressRequired {
+  font-size: 0.75rem;
+  color: #737373;
+  font-weight: 400;
+}
+
+.progressOptional {
+  font-size: 0.75rem;
+  color: #737373;
+  font-weight: 400;
+}
+
 .progressLabel {
   margin-left: auto;
   font-size: 0.8125rem;

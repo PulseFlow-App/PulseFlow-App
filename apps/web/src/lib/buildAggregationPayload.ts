@@ -146,7 +146,11 @@ export async function fetchPulseAggregation(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const err = new Error('Pulse aggregation failed') as Error & { status?: number };
+    err.status = res.status;
+    throw err;
+  }
   const data = await res.json().catch(() => null);
   if (!data || typeof data.what_connects !== 'string') return null;
   return {
