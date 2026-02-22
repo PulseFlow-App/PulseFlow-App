@@ -14,6 +14,64 @@ function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** Bounded time picker: hours 0-23, minutes 0-59 (no infinite scroll). */
+function TimeSelect({
+  id,
+  value,
+  onChange,
+  'aria-label': ariaLabel,
+}: {
+  id: string;
+  value: string;
+  onChange: (v: string) => void;
+  'aria-label'?: string;
+}) {
+  const [h, m] = value
+    ? value.split(':').map((s) => parseInt(s, 10))
+    : [null, null];
+  const hour = h != null && h >= 0 && h <= 23 ? h : 0;
+  const minute = m != null && m >= 0 && m <= 59 ? m : 0;
+
+  const setHour = (newH: number) => {
+    onChange(`${String(newH).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
+  };
+  const setMinute = (newM: number) => {
+    onChange(`${String(hour).padStart(2, '0')}:${String(newM).padStart(2, '0')}`);
+  };
+
+  return (
+    <div className={styles.timeSelectRow} aria-label={ariaLabel}>
+      <select
+        id={`${id}-hour`}
+        className={styles.timeSelect}
+        value={hour}
+        onChange={(e) => setHour(Number(e.target.value))}
+        aria-label={ariaLabel ? `${ariaLabel} hour` : undefined}
+      >
+        {Array.from({ length: 24 }, (_, i) => (
+          <option key={i} value={i}>
+            {String(i).padStart(2, '0')}
+          </option>
+        ))}
+      </select>
+      <span className={styles.timeSelectSep}>:</span>
+      <select
+        id={`${id}-minute`}
+        className={styles.timeSelect}
+        value={minute}
+        onChange={(e) => setMinute(Number(e.target.value))}
+        aria-label={ariaLabel ? `${ariaLabel} minute` : undefined}
+      >
+        {Array.from({ length: 60 }, (_, i) => (
+          <option key={i} value={i}>
+            {String(i).padStart(2, '0')}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 export function NutritionMealTiming() {
   const navigate = useNavigate();
   const date = todayStr();
@@ -66,28 +124,24 @@ export function NutritionMealTiming() {
         </div>
         <form onSubmit={handleSubmit}>
           <div className={styles.slotSection}>
-            <label className={styles.slotLabel} htmlFor="first-meal">
+            <label className={styles.slotLabel} id="first-meal-label">
               First meal (time)
             </label>
-            <input
+            <TimeSelect
               id="first-meal"
-              type="time"
-              className={styles.timeInput}
-              value={firstMealTime}
-              onChange={(e) => setFirstMealTime(e.target.value)}
+              value={firstMealTime || '08:00'}
+              onChange={(v) => setFirstMealTime(v)}
               aria-label="Time of first meal"
             />
           </div>
           <div className={styles.slotSection}>
-            <label className={styles.slotLabel} htmlFor="last-meal">
+            <label className={styles.slotLabel} id="last-meal-label">
               Last meal (time)
             </label>
-            <input
+            <TimeSelect
               id="last-meal"
-              type="time"
-              className={styles.timeInput}
-              value={lastMealTime}
-              onChange={(e) => setLastMealTime(e.target.value)}
+              value={lastMealTime || '19:00'}
+              onChange={(v) => setLastMealTime(v)}
               aria-label="Time of last meal"
             />
           </div>

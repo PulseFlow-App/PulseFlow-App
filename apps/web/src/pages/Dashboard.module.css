@@ -172,9 +172,14 @@
 
 .pulseRings {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
-  gap: 24px 32px;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .pulseRingItem {
@@ -182,6 +187,13 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pulseRingItem > *:first-child {
+  transform: scale(0.72);
+  transform-origin: top center;
 }
 
 .pulseRingLabel {

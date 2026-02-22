@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ScoreRing } from '../../components/ScoreRing';
+import { PulseScoreCard } from '../../components/PulseScore';
 import { getAllTimeRoutinePulse } from '../../stores/combinedPulse';
 import styles from './WorkRoutine.module.css';
 
@@ -24,9 +24,12 @@ export function WorkRoutineOverview() {
         </div>
         <div className={styles.card}>
           <div className={styles.scoreSection}>
-            <ScoreRing
+            <PulseScoreCard
+              variant="block-only"
               score={pulse.hasData ? pulse.score : 0}
-              label={pulse.hasData ? 'All Time Work Routine Pulse' : 'No data yet'}
+              label={pulse.hasData ? 'All Time Work Pulse' : 'No data yet'}
+              blockKey="work"
+              compact
             />
           </div>
         </div>

@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
-import { ScoreRing } from '../../components/ScoreRing';
+import { PulseScoreCard } from '../../components/PulseScore';
 import { getAllTimeNutritionPulse } from '../../stores/combinedPulse';
 import styles from './Nutrition.module.css';
+
+const NUTRITION_BLOCK_SCORE_DEFAULT = 80;
 
 export function NutritionOverview() {
   const pulse = getAllTimeNutritionPulse();
@@ -24,9 +26,12 @@ export function NutritionOverview() {
         </div>
         <div className={styles.card}>
           <div className={styles.scoreSection}>
-            <ScoreRing
-              score={pulse.hasData ? pulse.score : 0}
-              label={pulse.hasData ? 'All Time Nutrition Pulse' : 'No data yet'}
+            <PulseScoreCard
+              variant="block-only"
+              score={pulse.hasData ? NUTRITION_BLOCK_SCORE_DEFAULT : 0}
+              label={pulse.hasData ? 'Nutrition Pulse' : 'No data yet'}
+              blockKey="nutrition"
+              compact
             />
           </div>
         </div>
@@ -38,6 +43,9 @@ export function NutritionOverview() {
         </Link>
         <Link to="/dashboard/nutrition/reflections" className={styles.buttonSecondary}>
           Post-meal reflection
+        </Link>
+        <Link to="/dashboard/nutrition/meal-photo" className={styles.buttonSecondary}>
+          Meal photo
         </Link>
         <Link to="/dashboard/nutrition/fridge" className={styles.buttonSecondary}>
           Log fridge photos

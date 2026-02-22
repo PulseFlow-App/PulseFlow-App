@@ -37,10 +37,13 @@ export function WorkRoutineDone() {
   const isToday = latest && latest.timestamp.slice(0, 10) === new Date().toISOString().slice(0, 10);
   const score = getTodayRoutineScore();
 
+  const [apiError, setApiError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!API_BASE || !latest || !isToday || !latest.metrics) return;
     setLoadingAI(true);
     setAiAnalysis(undefined);
+    setApiError(null);
     const work = latest.metrics;
     const bodyEntry = getTodayBodyEntry();
     fetch(`${API_BASE}/insights/work-routine`, {
@@ -49,7 +52,11 @@ export function WorkRoutineDone() {
       body: JSON.stringify({ work, body_entry: bodyEntry }),
     })
       .then((res) => {
-        if (!res.ok) return null;
+        if (!res.ok) {
+          if (res.status === 503) setApiError('Recommendations temporarily unavailable.');
+          else setApiError('Could not load recommendations.');
+          return null;
+        }
         return res.json();
       })
       .then((data) => {
@@ -65,12 +72,11 @@ export function WorkRoutineDone() {
           updateLatestCheckInAnalysis(analysis);
           setAiAnalysis(analysis);
         } else {
-          updateLatestCheckInAnalysis(null);
           setAiAnalysis(null);
         }
       })
       .catch(() => {
-        updateLatestCheckInAnalysis(null);
+        setApiError('Could not load recommendations.');
         setAiAnalysis(null);
       })
       .finally(() => setLoadingAI(false));
@@ -127,6 +133,10 @@ export function WorkRoutineDone() {
           </div>
           {loadingAI ? (
             <p className={styles.aiLoading}>Getting your pattern…</p>
+          ) : apiError ? (
+            <p className={styles.aiLoading} role="alert">
+              {apiError} Your check-in is saved. You can view trends or go to your Pulse.
+            </p>
           ) : showInsightBlock ? (
               <>
                 {pattern && (

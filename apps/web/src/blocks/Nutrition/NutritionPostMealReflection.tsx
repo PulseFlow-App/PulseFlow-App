@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   getPostMealReflections,
   addPostMealReflection,
+  hasReflectionsToday,
 } from './postMealReflectionStore';
+import { hasMealTimingToday } from './mealTimingStore';
+import { hasHydrationTimingToday } from './hydrationTimingStore';
 import type { PostMealFeeling } from './types';
 import styles from './Nutrition.module.css';
 
@@ -30,6 +33,7 @@ function feelingLabel(f: PostMealFeeling): string {
 }
 
 export function NutritionPostMealReflection() {
+  const navigate = useNavigate();
   const [reflectionsKey, setReflectionsKey] = useState(0);
   const reflections = useMemo(
     () => getPostMealReflections(),
@@ -49,6 +53,9 @@ export function NutritionPostMealReflection() {
     setReflectionsKey((k) => k + 1);
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 2000);
+    if (hasMealTimingToday() && hasHydrationTimingToday() && hasReflectionsToday()) {
+      navigate('/dashboard/nutrition/result', { replace: true, state: { from: 'reflections' } });
+    }
   };
 
   return (

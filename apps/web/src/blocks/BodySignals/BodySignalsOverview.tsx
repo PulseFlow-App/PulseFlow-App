@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ScoreRing } from '../../components/ScoreRing';
+import { PulseScoreCard } from '../../components/PulseScore';
 import { getAllTimeBodyPulse } from '../../stores/combinedPulse';
 import styles from './BodySignals.module.css';
 
@@ -24,9 +24,12 @@ export function BodySignalsOverview() {
         </div>
         <div className={styles.card}>
           <div className={styles.scoreSection}>
-            <ScoreRing
+            <PulseScoreCard
+              variant="block-only"
               score={pulse.hasData ? pulse.score : 0}
-              label={pulse.hasData ? 'All Time Body Signals Pulse' : 'No data yet'}
+              label={pulse.hasData ? 'All Time Body Pulse' : 'No data yet'}
+              blockKey="body"
+              compact
             />
           </div>
         </div>

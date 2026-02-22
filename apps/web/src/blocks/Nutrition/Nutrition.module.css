@@ -540,6 +540,28 @@
   border-radius: 12px;
 }
 
+.timeSelectRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeSelect {
+  padding: 10px 12px;
+  font-size: 1rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  min-width: 72px;
+}
+
+.timeSelectSep {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
 .textInput {
   width: 100%;
   padding: 12px;
