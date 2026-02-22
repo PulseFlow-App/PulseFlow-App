@@ -275,6 +275,7 @@ export async function computeBodyPulseAsync(): Promise<BodyPulseSnapshot> {
       insight: noEmDash(r.insight),
       explanation: noEmDash(r.explanation),
       improvements: r.improvements.slice(0, MAX_IMPROVEMENTS).map(noEmDash),
+      primary_driver: r.primary_driver?.trim() || undefined,
       factors: r.factors?.length ? r.factors : ruleBased.factors,
       insightsSource: 'api',
       date: ruleBased.date,

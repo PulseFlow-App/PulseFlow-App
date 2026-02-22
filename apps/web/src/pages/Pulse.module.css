@@ -190,6 +190,10 @@
   background: #3b82f6;
 }
 
+.diagramLegendDotNutrition {
+  background: #f59e0b;
+}
+
 .continueBlock {
   margin-top: 24px;
   padding-top: 20px;
@@ -217,6 +221,20 @@
 .reportDownload:hover {
   color: #a3a3a3;
   border-color: rgba(255, 255, 255, 0.2);
+}
+
+.reportDownload:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.reportToast {
+  margin-top: 8px;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.12);
+  border-radius: 10px;
 }
 
 .emptyState {

@@ -114,6 +114,12 @@
   text-align: center;
 }
 
+.aiLoading {
+  font-size: 0.8125rem;
+  color: #737373;
+  margin: 0;
+}
+
 .stats {
   display: flex;
   justify-content: space-around;

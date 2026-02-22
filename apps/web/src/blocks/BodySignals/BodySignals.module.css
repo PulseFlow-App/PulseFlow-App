@@ -171,6 +171,14 @@
   max-width: 100%;
 }
 
+/* Match Work/Nutrition block: same recommendation and premium gate text style */
+.narrativeText {
+  font-size: 0.9375rem;
+  color: #fff;
+  margin: 0;
+  line-height: 1.55;
+}
+
 .ctaSection {
   background: rgba(59, 130, 246, 0.08);
   border: 1px solid rgba(59, 130, 246, 0.25);

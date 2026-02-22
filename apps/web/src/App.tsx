@@ -17,6 +17,8 @@ import { NutritionFridgeLog } from './blocks/Nutrition/NutritionFridgeLog';
 import { NutritionMealTiming } from './blocks/Nutrition/NutritionMealTiming';
 import { NutritionPostMealReflection } from './blocks/Nutrition/NutritionPostMealReflection';
 import { NutritionHydrationTiming } from './blocks/Nutrition/NutritionHydrationTiming';
+import { NutritionMealPhoto } from './blocks/Nutrition/NutritionMealPhoto';
+import { NutritionFridgePhoto } from './blocks/Nutrition/NutritionFridgePhoto';
 import { NutritionResult } from './blocks/Nutrition/NutritionResult';
 import { Terms } from './pages/Terms';
 import { Privacy } from './pages/Privacy';
@@ -173,6 +175,22 @@ export default function App() {
         element={
           <ProtectedRoute>
             <NutritionHydrationTiming />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/nutrition/meal-photo"
+        element={
+          <ProtectedRoute>
+            <NutritionMealPhoto />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/nutrition/fridge-photo"
+        element={
+          <ProtectedRoute>
+            <NutritionFridgePhoto />
           </ProtectedRoute>
         }
       />

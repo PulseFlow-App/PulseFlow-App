@@ -42,8 +42,10 @@ export type BodyPulseSnapshot = {
   trend: 'up' | 'down' | 'stable';
   insight: string;
   explanation: string;
-  /** [0] = basic (everyone), [1] = advanced (wallet users only). See recommendation-tiers.md */
+  /** [0] = one free recommendation (everyone), [1] = second (Premium). See recommendation-tiers.md */
   improvements: string[];
+  /** Root driver from AI (e.g. "sleep", "hydration"); used in premium gate when present */
+  primary_driver?: string;
   /** What is affecting what (from API or rule-based) */
   factors?: FactorImpact[];
   /** When insights came from API vs rule-based fallback */

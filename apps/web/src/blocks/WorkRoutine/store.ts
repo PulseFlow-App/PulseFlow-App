@@ -302,6 +302,26 @@ export function getLatestCheckIn(): CheckInEntry | undefined {
   return entries[0];
 }
 
+/** Overwrite the latest check-in's analysis (e.g. after AI response). Pass null to clear narrative (silent fail). */
+export function updateLatestCheckInAnalysis(analysis: CheckInAnalysis | null): void {
+  const entries = loadEntries();
+  const latest = entries[0];
+  if (!latest) return;
+  if (latest.timestamp.slice(0, 10) !== TODAY()) return;
+  const empty: CheckInAnalysis = {
+    assessment: '',
+    quickWins: [],
+    pattern: '',
+    shaping: '',
+    oneThing: '',
+  };
+  entries[0] = {
+    ...latest,
+    analysis: analysis ?? empty,
+  };
+  saveEntries(entries);
+}
+
 const TODAY = (): string => new Date().toISOString().slice(0, 10);
 
 /** True if the latest check-in is from today (by date). */

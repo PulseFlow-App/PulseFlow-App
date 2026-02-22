@@ -1,23 +1,87 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ScoreRing } from '../../components/ScoreRing';
 import { WhatNextSection } from '../../components/WhatNextSection';
-import { WalletIndicator } from '../../components/WalletIndicator';
-import { useWallet, useHasPulseLabAccess } from '../../contexts/WalletContext';
-import { useOnChainDailyCheckIn } from '../../hooks/useOnChainDailyCheckIn';
 import { useSubscription } from '../../contexts/SubscriptionContext';
-import { getLatestCheckIn, getTodayRoutineScore } from './store';
+import { getBodyLogs } from '../BodySignals/store';
+import { getLatestCheckIn, getTodayRoutineScore, updateLatestCheckInAnalysis } from './store';
+import type { CheckInAnalysis } from './types';
 import styles from './WorkRoutine.module.css';
 
+const API_BASE = (import.meta.env.VITE_API_URL as string)?.trim()?.replace(/\/$/, '') || '';
+
+function getTodayBodyEntry(): Record<string, unknown> | undefined {
+  const today = new Date().toISOString().slice(0, 10);
+  const logs = getBodyLogs();
+  const entry = logs.find((l) => l.date === today);
+  if (!entry) return undefined;
+  return {
+    date: entry.date,
+    sleepHours: entry.sleepHours,
+    sleepQuality: entry.sleepQuality,
+    energy: entry.energy,
+    mood: entry.mood,
+    hydration: entry.hydration,
+    stress: entry.stress,
+    appetite: entry.appetite,
+    digestion: entry.digestion,
+    notes: entry.notes,
+  };
+}
+
 export function WorkRoutineDone() {
-  const { walletPublicKey, connect, isWalletAvailable, isLoading } = useWallet();
-  const hasPulseLabAccess = useHasPulseLabAccess();
   const { hasActiveSubscription } = useSubscription();
-  const { trigger, status, error, canCheckIn } = useOnChainDailyCheckIn();
+  const [loadingAI, setLoadingAI] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<CheckInAnalysis | null | undefined>(undefined);
 
   const latest = getLatestCheckIn();
   const isToday = latest && latest.timestamp.slice(0, 10) === new Date().toISOString().slice(0, 10);
   const score = getTodayRoutineScore();
-  const analysis = isToday ? latest?.analysis : null;
+
+  useEffect(() => {
+    if (!API_BASE || !latest || !isToday || !latest.metrics) return;
+    setLoadingAI(true);
+    setAiAnalysis(undefined);
+    const work = latest.metrics;
+    const bodyEntry = getTodayBodyEntry();
+    fetch(`${API_BASE}/insights/work-routine`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ work, body_entry: bodyEntry }),
+    })
+      .then((res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then((data) => {
+        if (data && typeof data.pattern === 'string') {
+          const analysis: CheckInAnalysis = {
+            assessment: '',
+            quickWins: [],
+            pattern: data.pattern.trim(),
+            shaping: typeof data.shaping === 'string' ? data.shaping.trim() : '',
+            oneThing: typeof data.oneThing === 'string' ? data.oneThing.trim() : '',
+          };
+          updateLatestCheckInAnalysis(analysis);
+          setAiAnalysis(analysis);
+        } else {
+          updateLatestCheckInAnalysis(null);
+          setAiAnalysis(null);
+        }
+      })
+      .catch(() => {
+        updateLatestCheckInAnalysis(null);
+        setAiAnalysis(null);
+      })
+      .finally(() => setLoadingAI(false));
+  }, [API_BASE, isToday, latest?.id]);
+
+  const analysis =
+    aiAnalysis !== undefined
+      ? aiAnalysis
+      : isToday
+        ? latest?.analysis
+        : null;
   const pattern = analysis?.pattern ?? '';
   const shaping = analysis?.shaping ?? '';
   const oneThing = analysis?.oneThing ?? '';
@@ -29,13 +93,14 @@ export function WorkRoutineDone() {
         .filter(Boolean)
     : [];
 
+  const showInsightBlock = analysis && (pattern || shapingBullets.length > 0 || oneThing);
+
   return (
     <div className={styles.page}>
       <header className={styles.headerRow}>
         <Link to="/dashboard/work-routine" className={styles.back}>
           ← Work Routine
         </Link>
-        <WalletIndicator compact />
       </header>
       <main id="main" className={styles.main}>
         <div className={styles.blockHeader}>
@@ -52,95 +117,45 @@ export function WorkRoutineDone() {
               label={score !== null ? 'Your Work Pulse' : 'No data yet'}
             />
           </div>
-          {analysis && (
-            <>
-              {pattern && (
-                <section className={styles.narrativeSection} aria-labelledby="work-pattern-heading">
-                  <h2 id="work-pattern-heading" className={styles.narrativeHeading}>Today’s pattern</h2>
-                  <p className={styles.narrativeText}>{pattern}</p>
-                </section>
-              )}
-              {shapingBullets.length > 0 && (
-                <section className={styles.narrativeSection} aria-labelledby="work-shaping-heading">
-                  <h2 id="work-shaping-heading" className={styles.narrativeHeading}>What’s shaped your work signals</h2>
-                  <ul className={styles.shapingList}>
-                    {shapingBullets.map((line, i) => (
-                      <li key={i} className={styles.shapingItem}>{line}</li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-              {oneThing && (
-                <section className={styles.narrativeSection} aria-labelledby="work-one-heading">
-                  <h2 id="work-one-heading" className={styles.narrativeHeading}>One thing to try</h2>
-                  <p className={styles.narrativeText}>{oneThing}</p>
-                </section>
-              )}
-              {!hasActiveSubscription && oneThing && (
-                <section className={styles.narrativeSection} aria-labelledby="work-get-more-heading">
-                  <h2 id="work-get-more-heading" className={styles.narrativeHeading}>Get more</h2>
-                  <p className={styles.narrativeText}>
-                    <strong>Upgrade to Premium</strong> for your second recommendation (a structured recovery pattern) based on your specific load and break data.
-                  </p>
-                </section>
-              )}
-            </>
+          {loadingAI ? (
+            <p className={styles.aiLoading}>Getting your pattern…</p>
+          ) : (
+            showInsightBlock && (
+              <>
+                {pattern && (
+                  <section className={styles.narrativeSection} aria-labelledby="work-pattern-heading">
+                    <h2 id="work-pattern-heading" className={styles.narrativeHeading}>Today’s pattern</h2>
+                    <p className={styles.narrativeText}>{pattern}</p>
+                  </section>
+                )}
+                {shapingBullets.length > 0 && (
+                  <section className={styles.narrativeSection} aria-labelledby="work-shaping-heading">
+                    <h2 id="work-shaping-heading" className={styles.narrativeHeading}>What’s shaping your work signals</h2>
+                    <ul className={styles.shapingList}>
+                      {shapingBullets.map((line, i) => (
+                        <li key={i} className={styles.shapingItem}>{line}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+                {oneThing && (
+                  <section className={styles.narrativeSection} aria-labelledby="work-one-heading">
+                    <h2 id="work-one-heading" className={styles.narrativeHeading}>One thing to try</h2>
+                    <p className={styles.narrativeText}>{oneThing}</p>
+                  </section>
+                )}
+                {!hasActiveSubscription && oneThing && (
+                  <section className={styles.narrativeSection} aria-labelledby="work-get-more-heading">
+                    <h2 id="work-get-more-heading" className={styles.narrativeHeading}>Get more</h2>
+                    <p className={styles.narrativeText}>
+                      Upgrade to Premium for a structured recovery pattern based on your specific load and break data.
+                    </p>
+                  </section>
+                )}
+              </>
+            )
           )}
         </div>
-
-        <section className={styles.card} aria-label="On-chain rewards">
-          <h2 className={styles.onChainTitle}>Earn on-chain points</h2>
-          <p className={styles.onChainText}>
-            Connect your wallet to earn points on-chain and redeem them for $PULSE. You can do one daily check-in per day.
-          </p>
-          {!walletPublicKey ? (
-            isWalletAvailable ? (
-              <button
-                type="button"
-                onClick={connect}
-                disabled={isLoading}
-                className={styles.onChainButton}
-              >
-                {isLoading ? 'Connecting…' : 'Connect wallet'}
-              </button>
-            ) : (
-              <a
-                href="https://phantom.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.onChainButton}
-              >
-                Connect wallet
-              </a>
-            )
-          ) : (
-            <div className={styles.onChainActions}>
-              <button
-                type="button"
-                onClick={() => trigger()}
-                disabled={!canCheckIn || status === 'loading'}
-                className={styles.onChainButton}
-              >
-                {status === 'loading' ? 'Signing…' : status === 'success' ? 'Done' : 'Daily check-in on-chain'}
-              </button>
-              {status === 'success' && (
-                <span className={styles.onChainSuccess}>Points credited.</span>
-              )}
-              {status === 'error' && error && (
-                <span className={styles.onChainError} role="alert">{error}</span>
-              )}
-            </div>
-          )}
-        </section>
-        {walletPublicKey && !hasPulseLabAccess && (
-          <section className={styles.card} aria-label="Pulse Lab">
-            <h2 className={styles.onChainTitle}>Pulse Lab</h2>
-            <p className={styles.onChainText}>
-              Hold $PULSE to unlock Pulse Lab: experiments, raw dashboards, and early access.
-            </p>
-            <Link to="/lab" className={styles.onChainButton}>Unlock Pulse Lab</Link>
-          </section>
-        )}
 
         <WhatNextSection />
       </main>

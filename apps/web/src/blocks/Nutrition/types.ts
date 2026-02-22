@@ -107,6 +107,49 @@ export type PostMealReflectionEntry = {
   notes?: string;
 };
 
+/** Meal photo AI response (three sections from meal-photo-system-prompt). */
+export type MealPhotoAnalysis = {
+  whatsOnPlate: string;
+  approximateNutrition: string;
+  oneSuggestion: string;
+};
+
+/** One submitted meal photo and its AI response (or error). Stored per day. */
+export type MealPhotoEntry = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  timestamp: string; // ISO, submission time
+  /** dataUrl for display and retry; keep under size limit. */
+  dataUrl: string;
+  /** Filled after successful API call; undefined when error or pending. */
+  analysis?: MealPhotoAnalysis;
+  /** True when API failed; user can tap to retry. */
+  error?: boolean;
+};
+
+/** One meal suggestion from fridge photo AI. */
+export type FridgePhotoMeal = {
+  name: string;
+  description: string;
+  steps: string[];
+  signalConnection?: string;
+};
+
+/** Fridge photo AI response (one photo per day). */
+export type FridgePhotoAnalysis = {
+  whatsVisible: string;
+  meals: FridgePhotoMeal[];
+};
+
+/** Single fridge photo entry for the day (replaced if user submits again). */
+export type FridgePhotoEntry = {
+  date: string; // YYYY-MM-DD
+  dataUrl: string;
+  timestamp: string; // ISO
+  analysis?: FridgePhotoAnalysis;
+  error?: boolean;
+};
+
 /** Situational recovery mode (derived from Body + Work Routine; not a user log). */
 export type RecoverySituation =
   | 'gym_day'

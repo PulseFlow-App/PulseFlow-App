@@ -25,12 +25,14 @@ export function WhatNextSection({ variant = 'default' }: WhatNextSectionProps) {
         <Link to="/dashboard" className={styles.primary}>
           Go to main dashboard
         </Link>
-        <Link to="/dashboard/pulse" className={styles.secondary}>
-          View Pulse score
-        </Link>
         {isNutrition && (
           <Link to="/dashboard/nutrition" className={styles.secondary}>
             Add more nutrition data
+          </Link>
+        )}
+        {!isNutrition && (
+          <Link to="/dashboard/pulse" className={styles.secondary}>
+            View Pulse score
           </Link>
         )}
       </div>

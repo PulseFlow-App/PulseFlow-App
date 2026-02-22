@@ -7,6 +7,8 @@ export * from './store';
 export * from './mealTimingStore';
 export * from './postMealReflectionStore';
 export * from './hydrationTimingStore';
+export * from './mealPhotoStore';
+export * from './fridgePhotoStore';
 export * from './prompts/recipeFromFridge';
 export { getNutritionPatternInsights, getWeeklyNutritionStability } from './patternInsights';
 export { getPulseContextForRecipes } from './pulseContextForRecipes';

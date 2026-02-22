@@ -80,21 +80,21 @@ export function BodySignalsResult() {
                 )}
                 {pulse.improvements.length > 0 && (
                   <section className={styles.narrativeSection} aria-labelledby="result-one-heading">
-                    <h2 id="result-one-heading" className={styles.narrativeHeading}>How to improve</h2>
-                    <p className={styles.oneThing}>{pulse.improvements[0]}</p>
+                    <h2 id="result-one-heading" className={styles.narrativeHeading}>One thing to try</h2>
+                    <p className={styles.narrativeText}>{pulse.improvements[0]}</p>
                   </section>
                 )}
                 {hasActiveSubscription && pulse.improvements.length > 1 && (
                   <section className={styles.narrativeSection} aria-labelledby="result-advanced-heading">
-                    <h2 id="result-advanced-heading" className={styles.narrativeHeading}>Another angle (advanced)</h2>
-                    <p className={styles.oneThing}>{pulse.improvements[1]}</p>
+                    <h2 id="result-advanced-heading" className={styles.narrativeHeading}>Second recommendation (Premium)</h2>
+                    <p className={styles.narrativeText}>{pulse.improvements[1]}</p>
                   </section>
                 )}
-                {!hasActiveSubscription && !loadingAI && (
+                {!hasActiveSubscription && pulse.improvements.length > 0 && !loadingAI && (
                   <section className={styles.narrativeSection} aria-labelledby="result-subscription-cta-heading">
                     <h2 id="result-subscription-cta-heading" className={styles.narrativeHeading}>Get more</h2>
-                    <p className={styles.insight}>
-                      <strong>Upgrade to Premium</strong> for advanced recommendations (a second lever tailored to your signals).
+                    <p className={styles.narrativeText}>
+                      Upgrade to Premium for your second recommendation — a targeted adjustment based on your {pulse.primary_driver || 'signals'} pattern.
                       {!hasWallet && ' Connect your wallet for on-chain points and rewards.'}
                     </p>
                   </section>

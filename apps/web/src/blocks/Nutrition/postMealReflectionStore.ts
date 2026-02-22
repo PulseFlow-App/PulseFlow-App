@@ -60,3 +60,9 @@ export function getPostMealReflectionsForRange(days: number): PostMealReflection
   cutoff.setDate(cutoff.getDate() - days);
   return loadEntries().filter((e) => new Date(e.date) >= cutoff);
 }
+
+/** Whether the user has logged at least one post-meal reflection today. */
+export function hasReflectionsToday(): boolean {
+  const today = new Date().toISOString().slice(0, 10);
+  return loadEntries().some((e) => e.date === today);
+}

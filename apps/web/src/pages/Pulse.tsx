@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { ScoreRing } from '../components/ScoreRing';
 import {
@@ -11,6 +11,10 @@ import { computeBodyPulseAsync } from '../blocks/BodySignals/store';
 import type { BodyPulseSnapshot } from '../blocks/BodySignals/types';
 import { getExplanationBullets, SignalIcon } from '../blocks/BodySignals/signalIcons';
 import { getLatestCheckIn } from '../blocks/WorkRoutine/store';
+import { getApiUrl } from '../lib/apiUrl';
+import { buildDailyReportPayload } from '../lib/buildDailyReportPayload';
+import { reportPdfToBlob } from '../lib/reportPdf';
+import type { DailyReportJson } from '../lib/reportTypes';
 import styles from './Pulse.module.css';
 
 export function Pulse() {
@@ -26,6 +30,8 @@ export function Pulse() {
 
   const [bodySnapshot, setBodySnapshot] = useState<BodyPulseSnapshot | null>(null);
   const [loadingBody, setLoadingBody] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
 
   const showOfferWorkRoutine = hasBody && !hasRoutine;
   const showOfferBodySignals = from === 'work-routine' && !hasBody && hasRoutine;
@@ -67,6 +73,62 @@ export function Pulse() {
       .finally(() => setLoadingBody(false));
   }, [hasBody]);
 
+  useEffect(() => {
+    if (!reportError) return;
+    const t = setTimeout(() => setReportError(null), 5000);
+    return () => clearTimeout(t);
+  }, [reportError]);
+
+  const handleDownloadReport = useCallback(async () => {
+    const apiBase = getApiUrl();
+    if (!apiBase) {
+      setReportError("Couldn't generate report — try again.");
+      return;
+    }
+    let snapshot = bodySnapshot;
+    if (hasBody && !snapshot) {
+      try {
+        snapshot = await computeBodyPulseAsync();
+      } catch {
+        setReportError("Couldn't generate report — try again.");
+        return;
+      }
+    }
+    setReportError(null);
+    setReportLoading(true);
+    try {
+      const payload = buildDailyReportPayload(snapshot);
+      const res = await fetch(`${apiBase}/report/daily`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setReportError("Couldn't generate report — try again.");
+        return;
+      }
+      const report = data as DailyReportJson;
+      const blob = reportPdfToBlob(report);
+      const filename = `PulseFlow-Report-${report.report_date ?? new Date().toISOString().slice(0, 10)}.pdf`;
+      const file = new File([blob], filename, { type: 'application/pdf' });
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({ title: 'PulseFlow Daily Report', files: [file] });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch {
+      setReportError("Couldn't generate report — try again.");
+    } finally {
+      setReportLoading(false);
+    }
+  }, [bodySnapshot, hasBody]);
+
   const scoreCardBlock = pulse.combined !== null ? (
     <div id="pulse-score" className={styles.scoreCard}>
       <ScoreRing score={pulse.combined} label={scoreCardLabel} />
@@ -97,6 +159,12 @@ export function Pulse() {
             <span className={styles.diagramLegendItem}>
               <span className={`${styles.diagramLegendDot} ${styles.diagramLegendDotRoutine}`} aria-hidden />
               Work Routine: {routineScore}%
+            </span>
+          )}
+          {hasNutrition && (
+            <span className={styles.diagramLegendItem}>
+              <span className={`${styles.diagramLegendDot} ${styles.diagramLegendDotNutrition}`} aria-hidden />
+              Nutrition: logged
             </span>
           )}
         </div>
@@ -330,13 +398,12 @@ export function Pulse() {
             <button
               type="button"
               className={styles.reportDownload}
-              onClick={() => {
-                // TODO: call report generation endpoint (daily-report-system-prompt), then PDF renderer
-                window.alert('Daily report download is coming soon. The report will include your Pulse summary, block details, and recommendations.');
-              }}
+              disabled={reportLoading}
+              onClick={handleDownloadReport}
             >
-              Download today’s report
+              {reportLoading ? 'Generating your report...' : "Download today's report"}
             </button>
+            {reportError && <p className={styles.reportToast} role="alert">{reportError}</p>}
           </div>
         )}
 

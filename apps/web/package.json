@@ -20,6 +20,7 @@
     "firebase": "^12.8.0",
     "heic-decode": "^2.1.0",
     "heic2any": "^0.0.4",
+    "jspdf": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.0"

@@ -9,6 +9,8 @@ export type AIInsightsResult = {
   insight: string;
   explanation: string;
   improvements: string[];
+  /** Root driver from AI; used in premium gate when present */
+  primary_driver?: string;
   factors?: FactorImpact[];
 };
 
@@ -49,11 +51,13 @@ function parseAIResponse(text: string): AIInsightsResult | null {
           .slice(0, MAX_IMPROVEMENTS)
       : [];
     const factors = parseFactors(p.factors);
+    const primary_driver = typeof p.primary_driver === 'string' ? p.primary_driver.trim() : undefined;
     if (!insight && !explanation && improvements.length === 0 && factors.length === 0) return null;
     return {
       insight: insight || 'Your signals are in. Small tweaks may help.',
       explanation: explanation || 'Focus on one or two suggestions below.',
       improvements,
+      primary_driver: primary_driver || undefined,
       factors: factors.length ? factors : undefined,
     };
   } catch {

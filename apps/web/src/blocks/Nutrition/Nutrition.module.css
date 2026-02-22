@@ -159,6 +159,182 @@
   color: #525252;
 }
 
+.aiLoading {
+  font-size: 0.8125rem;
+  color: #737373;
+  margin: 0;
+}
+
+.narrativeSection {
+  margin-bottom: 1.25rem;
+}
+
+.narrativeSection:last-child {
+  margin-bottom: 0;
+}
+
+.narrativeHeading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #737373;
+  margin: 0 0 8px;
+}
+
+.narrativeText {
+  font-size: 0.9375rem;
+  color: #fff;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.shapingList {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  line-height: 1.5;
+}
+
+.shapingItem {
+  margin-bottom: 6px;
+}
+
+.hiddenInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mealPhotoList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.mealPhotoCard {
+  background: rgba(23, 23, 23, 0.6);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+}
+
+.mealPhotoTime {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #737373;
+  margin: 0 0 12px;
+}
+
+.mealPhotoImage {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background: #1a1a1a;
+}
+
+.mealPhotoRetry {
+  font-size: 0.875rem;
+  color: #3b82f6;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  margin: 0;
+}
+
+.mealPhotoRetry:hover {
+  color: #60a5fa;
+}
+
+.fridgePhotoResult {
+  margin-top: 24px;
+}
+
+.fridgePhotoResult .mealPhotoImage {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background: #1a1a1a;
+}
+
+.fridgePhotoError {
+  font-size: 0.9375rem;
+  color: #f87171;
+  margin: 0 0 16px;
+}
+
+.fridgeMealCards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.fridgeMealCard {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px;
+}
+
+.fridgeMealName {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #fff;
+}
+
+.fridgeMealDescription {
+  font-size: 0.9375rem;
+  color: #e5e5e5;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.fridgeMealSteps {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  line-height: 1.5;
+}
+
+.fridgeMealSteps li {
+  margin-bottom: 4px;
+}
+
+.fridgeMealSignal {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  margin: 0 0 12px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.fridgeMealRecipeBtn {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #3b82f6;
+  background: none;
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.fridgeMealRecipeBtn:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
 .button {
   display: flex;
   align-items: center;

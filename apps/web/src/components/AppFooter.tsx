@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useHasPulseLabAccess, useHasWallet } from '../contexts/WalletContext';
+import { getFullAccessForTesting } from '../lib/featureFlags';
 import styles from './AppFooter.module.css';
 
 export function AppFooter() {
   const hasWallet = useHasWallet();
   const hasLabAccess = useHasPulseLabAccess();
+  const fullAccessForTesting = getFullAccessForTesting();
+  const showLabAsUnlocked = hasLabAccess || fullAccessForTesting;
   return (
     <footer className={styles.footer}>
       <nav className={styles.links} aria-label="Legal and information">
@@ -15,7 +18,7 @@ export function AppFooter() {
         <Link to="/disclaimer" className={styles.link}>Disclaimer</Link>
         <span className={styles.sep}>·</span>
         <Link to="/lab" className={styles.link}>
-          {hasLabAccess ? 'Pulse Lab' : hasWallet ? 'Unlock Pulse Lab' : 'Join the ecosystem'}
+          {showLabAsUnlocked ? 'Pulse Lab' : hasWallet ? 'Unlock Pulse Lab' : 'Join the ecosystem'}
         </Link>
       </nav>
       <p className={styles.copyright}>

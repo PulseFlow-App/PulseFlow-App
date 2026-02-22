@@ -28,11 +28,13 @@ const corsOptions = corsOrigin
     : {}; // allow all when unset (e.g. dev)
 app.use(cors(corsOptions));
 
-// Limit JSON body size: 14mb for photo/recipe-from-fridge (3 images), 100kb for other routes
+// Limit JSON body size: 14mb for photo/recipe-from-fridge (3 images), 500kb for report/daily, 100kb for other routes
 app.use((req, res, next) => {
   const isPhotoUpload = req.method === 'POST' && req.path === '/users/me/photos';
   const isRecipesFromFridge = req.method === 'POST' && req.path === '/insights/recipes-from-fridge';
-  express.json({ limit: isPhotoUpload || isRecipesFromFridge ? '14mb' : '100kb' })(req, res, next);
+  const isReportDaily = req.method === 'POST' && req.path === '/report/daily';
+  const limit = isPhotoUpload || isRecipesFromFridge ? '14mb' : isReportDaily ? '500kb' : '100kb';
+  express.json({ limit })(req, res, next);
 });
 
 // Rate limits: stricter for auth/referrals to prevent brute force and abuse
@@ -483,6 +485,11 @@ app.post('/users/me/check-ins', authMiddleware, (req, res) => {
 // ----- Insights (note-aware, with factors) -----
 const { computeInsights } = require('./insights/bodySignals');
 const { callGemini } = require('./insights/recipesFromFridge');
+const { computeWorkRoutineInsights } = require('./insights/workRoutine');
+const { computeNutritionInsights } = require('./insights/nutrition');
+const { computeMealPhotoInsights } = require('./insights/mealPhoto');
+const { computeFridgePhotoInsights } = require('./insights/fridgePhoto');
+const { generateDailyReport } = require('./report/dailyReport');
 
 app.post('/insights/body-signals', (req, res) => {
   if (!security.isBodyWithinLimit(req, security.MAX_INSIGHTS_BODY_BYTES)) {
@@ -514,6 +521,96 @@ app.post('/insights/recipes-from-fridge', async (req, res) => {
   } catch (err) {
     console.error('recipes-from-fridge error', err);
     return res.status(500).json({ message: 'Recipe generation failed' });
+  }
+});
+
+// ----- Work routine insights (Gemini). Auth optional for MVP. -----
+app.post('/insights/work-routine', async (req, res) => {
+  try {
+    const { work, body_entry: bodyEntry } = req.body || {};
+    if (!work || typeof work !== 'object') {
+      return res.status(400).json({ message: 'Send work block data (object).' });
+    }
+    const result = await computeWorkRoutineInsights(work, bodyEntry);
+    if (result.error) {
+      return res.status(503).json({ message: result.error });
+    }
+    return res.json(result);
+  } catch (err) {
+    console.error('insights/work-routine error', err);
+    return res.status(500).json({ message: 'Work routine insights failed' });
+  }
+});
+
+// ----- Meal photo analysis (Gemini vision). Auth optional for MVP. -----
+app.post('/insights/meal-photo', async (req, res) => {
+  try {
+    const { image, body_signals: bodySignals } = req.body || {};
+    if (!image || typeof image !== 'string') {
+      return res.status(400).json({ message: 'Send image (data URL or base64).' });
+    }
+    const result = await computeMealPhotoInsights(image, bodySignals);
+    if (result.error) {
+      return res.status(503).json({ message: result.error });
+    }
+    return res.json(result);
+  } catch (err) {
+    console.error('insights/meal-photo error', err);
+    return res.status(500).json({ message: 'Meal photo analysis failed' });
+  }
+});
+
+// ----- Fridge photo analysis (Gemini vision). One photo per day. -----
+app.post('/insights/fridge-photo', async (req, res) => {
+  try {
+    const { image, body_signals: bodySignals } = req.body || {};
+    if (!image || typeof image !== 'string') {
+      return res.status(400).json({ message: 'Send image (data URL or base64).' });
+    }
+    const result = await computeFridgePhotoInsights(image, bodySignals);
+    if (result.error) {
+      return res.status(503).json({ message: result.error });
+    }
+    return res.json(result);
+  } catch (err) {
+    console.error('insights/fridge-photo error', err);
+    return res.status(500).json({ message: 'Fridge photo analysis failed' });
+  }
+});
+
+// ----- Daily report (compile block outputs into report JSON via AI). -----
+app.post('/report/daily', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    if (!payload || typeof payload !== 'object') {
+      return res.status(400).json({ message: 'Send report payload (block outputs for today).' });
+    }
+    const result = await generateDailyReport(payload);
+    if (result.error) {
+      return res.status(503).json({ message: result.error });
+    }
+    return res.json(result);
+  } catch (err) {
+    console.error('report/daily error', err);
+    return res.status(500).json({ message: 'Report generation failed' });
+  }
+});
+
+// ----- Nutrition insights (Gemini). Auth optional for MVP. -----
+app.post('/insights/nutrition', async (req, res) => {
+  try {
+    const { nutrition, body_handoff: bodyHandoff, work_handoff: workHandoff } = req.body || {};
+    if (!nutrition || typeof nutrition !== 'object') {
+      return res.status(400).json({ message: 'Send nutrition block data (object).' });
+    }
+    const result = await computeNutritionInsights(nutrition, bodyHandoff, workHandoff);
+    if (result.error) {
+      return res.status(503).json({ message: result.error });
+    }
+    return res.json(result);
+  } catch (err) {
+    console.error('insights/nutrition error', err);
+    return res.status(500).json({ message: 'Nutrition insights failed' });
   }
 });
 

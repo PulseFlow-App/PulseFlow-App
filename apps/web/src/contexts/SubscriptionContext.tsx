@@ -1,6 +1,7 @@
 /**
  * Subscription status (fiat: Stripe/IAP). Gates advanced recommendations.
  * See docs/fiat-subscription-integration.md and recommendation-tiers.md.
+ * When VITE_FULL_ACCESS_FOR_TESTING=true, everyone is treated as subscribed (for testing / invite testers).
  */
 import {
   createContext,
@@ -12,6 +13,7 @@ import {
 } from 'react';
 import { useAuth } from './AuthContext';
 import { getApiUrl } from '../lib/apiUrl';
+import { getFullAccessForTesting } from '../lib/featureFlags';
 
 type SubscriptionContextValue = {
   /** True when user has an active paid subscription (from GET /subscription/status). */
@@ -26,13 +28,14 @@ const SubscriptionContext = createContext<SubscriptionContextValue | null>(null)
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const { user, accessToken } = useAuth();
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [hasActiveSubscriptionFromApi, setHasActiveSubscriptionFromApi] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const fullAccessForTesting = getFullAccessForTesting();
 
   const fetchStatus = useCallback(async () => {
     const apiBase = getApiUrl();
     if (!user || !accessToken || !apiBase) {
-      setHasActiveSubscription(false);
+      setHasActiveSubscriptionFromApi(false);
       setIsLoading(false);
       return;
     }
@@ -43,12 +46,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       });
       if (res.ok) {
         const data = (await res.json()) as { hasActiveSubscription?: boolean };
-        setHasActiveSubscription(Boolean(data?.hasActiveSubscription));
+        setHasActiveSubscriptionFromApi(Boolean(data?.hasActiveSubscription));
       } else {
-        setHasActiveSubscription(false);
+        setHasActiveSubscriptionFromApi(false);
       }
     } catch {
-      setHasActiveSubscription(false);
+      setHasActiveSubscriptionFromApi(false);
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +66,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, [fetchStatus]);
 
   const value: SubscriptionContextValue = {
-    hasActiveSubscription,
+    hasActiveSubscription: fullAccessForTesting || hasActiveSubscriptionFromApi,
     isLoading,
     refresh,
   };
