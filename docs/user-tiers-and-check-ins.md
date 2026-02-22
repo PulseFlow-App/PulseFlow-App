@@ -8,7 +8,7 @@ Sign-in is by **email or Google** (and optionally **wallet**). **Wallet never ga
 
 - **App access**: Only **login** (email or Google) is required. No wallet required to use the app.
 - **Dashboard**: All logged-in users see the full dashboard (block cards, points breakdown, invite).
-- **All inputs**: Body Signals (log, check-in), Work Routine (check-in), Nutrition (fridge, meal timing, hydration, reflection)—all available to every logged-in user.
+- **All inputs**: Body Signals (log, check-in), Work Routine (check-in), Nutrition (fridge, meal timing, hydration, reflection) -all available to every logged-in user.
 - **Recommendations and insights**: Body Pulse result (pattern, “what’s shaping your Pulse,” “one thing to try”), nutrition results, and other AI insights are shown to everyone. No wallet required.
 
 Users without a wallet see a **“Get the full experience”** card on the dashboard recommending they connect a wallet; they can ignore it and use all inputs and recommendations.

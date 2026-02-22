@@ -5,19 +5,19 @@ Last updated: 2026-01-27
 ## Active Technologies
 
 ### Web (PWA)
-- **Vite** + **React 19** + **TypeScript** — `apps/web`
-- **React Router** — Routes: `/`, `/dashboard`, `/lab`, `/admin`, `/terms`, `/privacy`, `/disclaimer`
-- **vite-plugin-pwa** — Manifest, service worker, install prompt
-- **CSS Modules** — Component-level styles
+- **Vite** + **React 19** + **TypeScript**  - `apps/web`
+- **React Router**  - Routes: `/`, `/dashboard`, `/lab`, `/admin`, `/terms`, `/privacy`, `/disclaimer`
+- **vite-plugin-pwa**  - Manifest, service worker, install prompt
+- **CSS Modules**  - Component-level styles
 
 ### Backend
-- **Node.js** with **Express** — `apps/api`
-- **PostgreSQL** (optional) — When `DATABASE_URL` is set; otherwise in-memory
-- **JWT** — Auth; **ADMIN_API_KEY** — Admin cabinet (`GET /admin/users`)
+- **Node.js** with **Express**  - `apps/api`
+- **PostgreSQL** (optional)  - When `DATABASE_URL` is set; otherwise in-memory
+- **JWT**  - Auth; **ADMIN_API_KEY**  - Admin cabinet (`GET /admin/users`)
 
 ### AI
-- **OpenAI API** (optional) — Body Signals insights when `VITE_API_URL` points to API with `POST /insights/body-signals`
-- **Rule-based fallback** — When API or key is unset, web app uses local rules
+- **OpenAI API** (optional)  - Body Signals insights when `VITE_API_URL` points to API with `POST /insights/body-signals`
+- **Rule-based fallback**  - When API or key is unset, web app uses local rules
 
 ### Token / Locking
 - **$PULSE** on Solana (Pump.fun). Users **lock** tokens for as long as they want the paid tier (see `/lab`, `docs/where-locking-happens.md`).
@@ -41,11 +41,11 @@ docs/                    # Vision, product, deploy, env vars, etc.
 ## Commands
 
 ### Web (PWA)
-- `cd apps/web && npm install && npm run dev` — Dev server at http://localhost:5173
-- `npm run build` — Production build to `dist/`
+- `cd apps/web && npm install && npm run dev`  - Dev server at http://localhost:5173
+- `npm run build`  - Production build to `dist/`
 
 ### API
-- `cd apps/api && npm install && npm run dev` — Dev server (default port 3000)
+- `cd apps/api && npm install && npm run dev`  - Dev server (default port 3000)
 
 ### Database
 - Set `DATABASE_URL` for persistent users and body logs; otherwise in-memory.

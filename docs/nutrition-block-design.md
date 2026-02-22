@@ -1,4 +1,4 @@
-# Nutrition Block — Design (Pulse-Connected)
+# Nutrition Block  - Design (Pulse-Connected)
 
 Nutrition inside Pulse is **not** “snap fridge → get recipes.” It connects to **body signals, recovery, energy, work routine, and sleep** in layers: **Awareness → Pattern detection → Adjustment → Personalization over time.**
 
@@ -19,7 +19,7 @@ Nutrition inside Pulse is **not** “snap fridge → get recipes.” It connects
 | **1. Awareness** | User logs meal timing, hydration timing, post-meal feel, situational context. |
 | **2. Pattern detection** | System correlates with sleep, stress, workload, workout days. |
 | **3. Adjustment** | Contextual suggestions: recovery support, light digestion, energy stabilization. |
-| **4. Personalization** | “Your system tends to…” — metabolic and behavioral patterns over time. |
+| **4. Personalization** | “Your system tends to…”  - metabolic and behavioral patterns over time. |
 
 ---
 
@@ -91,12 +91,12 @@ Uses Work Routine + Body Signals + Nutrition timing to be **contextual**.
 
 | Concept | Description |
 |--------|-------------|
-| **Smart grocery suggestions** | Foods that support sleep timing, stabilize appetite, easy recovery, workday snacks — from fatigue/stress/gym patterns. |
+| **Smart grocery suggestions** | Foods that support sleep timing, stabilize appetite, easy recovery, workday snacks  - from fatigue/stress/gym patterns. |
 | **Weekly Nutrition Stability Score** | Regularity, meal-timing consistency, hydration stability, appetite predictability. Stability > perfection. |
 | **Energy crash detector** | If energy low + hunger high + stress moderate + sleep short → detect crash pattern; e.g. “Your energy dips often appear 3–4h after late first meals.” |
 | **Macro-free protein awareness** | Protein at breakfast? (y/n). Protein at last meal? (y/n). Simple, powerful for energy. |
 | **Nutrition Load score** | Heavy vs light digestion day; recovery support day; stability day. Digestive load affects sleep, stress, energy. |
-| **Personal metabolic profile (premium)** | “Your system tends to…” — responds to earlier meals, sensitive to late-night eating, appetite spikes after poor sleep, etc. |
+| **Personal metabolic profile (premium)** | “Your system tends to…”  - responds to earlier meals, sensitive to late-night eating, appetite spikes after poor sleep, etc. |
 
 ---
 
@@ -107,8 +107,8 @@ Uses Work Routine + Body Signals + Nutrition timing to be **contextual**.
 | Meal timing | Sleep quality, energy, appetite | Day intensity, breaks | Timing insights, crash risk |
 | Appetite (already in Body) | Sleep, stress, energy | Load, focus | Appetite pattern insights |
 | Hydration timing | Hydration 1–5, energy | Busy vs deep-work days | Hydration intelligence |
-| Post-meal feel | Energy, digestion | — | Food→signal patterns |
-| Fridge + note | Energy, stress, digestion | — | Recipe/grocery suggestions |
+| Post-meal feel | Energy, digestion | - | Food→signal patterns |
+| Fridge + note | Energy, stress, digestion | - | Recipe/grocery suggestions |
 | Recovery mode | Sleep, energy, stress | Workload, notes (gym, deadline) | Situational meal suggestions |
 
 ---
@@ -118,7 +118,7 @@ Uses Work Routine + Body Signals + Nutrition timing to be **contextual**.
 - **Meal timing log (per day):** firstMealTime?, lastMealTime?, biggestMeal?, lateNightEating?
 - **Hydration timing (optional):** when they hydrate (multi-select or tags).
 - **Post-meal reflection:** mealLogId? or date+time, feeling (energized/heavy/sleepy/focused/bloated).
-- **Recovery mode:** Derived from Body + Work Routine (gym, party, travel, deadline, poor sleep); no separate “recovery log” required for MVP — situational flags from existing blocks.
+- **Recovery mode:** Derived from Body + Work Routine (gym, party, travel, deadline, poor sleep); no separate “recovery log” required for MVP  - situational flags from existing blocks.
 
 Fridge logs (existing) stay; they become one input among many for suggestions.
 
@@ -142,4 +142,4 @@ Fridge logs (existing) stay; they become one input among many for suggestions.
 ## Summary
 
 - **Fridge snaps:** Fun, not the core. One input for recipes/grocery.
-- **Core:** Meal timing, appetite patterns, hydration timing, post-meal reflection, recovery mode — all wired to Body Signals and Work Routine so Nutrition feels **intelligent and contextual**, not generic.
+- **Core:** Meal timing, appetite patterns, hydration timing, post-meal reflection, recovery mode  - all wired to Body Signals and Work Routine so Nutrition feels **intelligent and contextual**, not generic.

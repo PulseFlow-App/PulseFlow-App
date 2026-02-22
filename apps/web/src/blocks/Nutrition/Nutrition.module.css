@@ -81,6 +81,84 @@
   line-height: 1.5;
 }
 
+.progressCard {
+  background: rgba(23, 23, 23, 0.6);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.progressHeading {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #a3a3a3;
+  margin: 0 0 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.progressList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.progressItem {
+  display: flex;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 8px 0;
+  font-size: 0.9375rem;
+  color: #e5e5e5;
+  flex-wrap: wrap;
+}
+
+.progressDone {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.progressDot {
+  color: #737373;
+}
+
+.progressLabel {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  color: #737373;
+}
+
+.progressLink {
+  margin-left: auto;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #22c55e;
+  text-decoration: none;
+}
+
+.progressLink:hover {
+  text-decoration: underline;
+}
+
+.progressLinkOptional {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  color: #737373;
+  text-decoration: none;
+}
+
+.progressLinkOptional:hover {
+  color: #22c55e;
+  text-decoration: underline;
+}
+
+.progressLabelOptional {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: #525252;
+}
+
 .button {
   display: flex;
   align-items: center;

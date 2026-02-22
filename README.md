@@ -4,7 +4,7 @@ Pulse is a **data-first wellness platform** that turns everyday lifestyle inputs
 
 Most health apps overwhelm people with numbers, charts, and disconnected tools. Pulse does the opposite. It connects food, movement, recovery, and body metrics into a **single daily signal** that helps people make better decisions without constant tracking or analysis.
 
-At the core of Pulse is the **Daily Pulse score** — a simple number from 0 to 100 that reflects how the user's body is responding on a given day. As users log meals, movement, sleep, mood, or body data, the score adapts in real time. Over time, Pulse learns **personal baselines** instead of relying on generic averages.
+At the core of Pulse is the **Daily Pulse score**  - a simple number from 0 to 100 that reflects how the user's body is responding on a given day. As users log meals, movement, sleep, mood, or body data, the score adapts in real time. Over time, Pulse learns **personal baselines** instead of relying on generic averages.
 
 ---
 
@@ -12,16 +12,16 @@ At the core of Pulse is the **Daily Pulse score** — a simple number from 0 to 
 
 Pulse helps users make sense of daily inputs:
 
-- **Fridge → Meals** — Upload photos of fridge contents to receive meal suggestions based on available ingredients and personal goals
-- **Movement → Performance** — Turn workouts and activity into performance and recovery signals rather than raw metrics
-- **Body → Feedback** — Track weight, sleep, mood, and optional smart scale data without obsessing over daily fluctuations
-- **Labs & patterns** — Upload test results (e.g. blood panels, body composition) to explore patterns and trends *(non-medical, educational insights only)*
+- **Fridge → Meals**  - Upload photos of fridge contents to receive meal suggestions based on available ingredients and personal goals
+- **Movement → Performance**  - Turn workouts and activity into performance and recovery signals rather than raw metrics
+- **Body → Feedback**  - Track weight, sleep, mood, and optional smart scale data without obsessing over daily fluctuations
+- **Labs & patterns**  - Upload test results (e.g. blood panels, body composition) to explore patterns and trends *(non-medical, educational insights only)*
 
 ---
 
 ## Premium Access
 
-Premium features are unlocked by **holding and locking Pulse tokens ($PULSE)** (lock for as long as you want the paid tier). The token exists on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump) — no token contract to create.
+Premium features are unlocked by **holding and locking Pulse tokens ($PULSE)** (lock for as long as you want the paid tier). The token exists on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump)  - no token contract to create.
 
 **Premium includes:**
 
@@ -53,7 +53,7 @@ Pulse is built with **privacy and user ownership** as core principles:
 
 Pulse is not a medical product and not a fitness gadget.
 
-It is an **everyday system** for understanding your own rhythm, reducing noise, and making better decisions consistently — powered by your data, shaped by your habits, and adapted to you over time.
+It is an **everyday system** for understanding your own rhythm, reducing noise, and making better decisions consistently  - powered by your data, shaped by your habits, and adapted to you over time.
 
 > **Pulse is a signal.**
 
@@ -74,15 +74,15 @@ It is an **everyday system** for understanding your own rhythm, reducing noise, 
 
 **Other references:**
 
-- [Data model & privacy](data-model/privacy.md) — Data ownership and consent rules
-- [Contracts](contracts/README.md) — Locking logic (token lives on Pump.fun; no contract to deploy)
+- [Data model & privacy](data-model/privacy.md)  - Data ownership and consent rules
+- [Contracts](contracts/README.md)  - Locking logic (token lives on Pump.fun; no contract to deploy)
 
 ---
 
 ## Run the apps
 
-- **Web (PWA):** `cd apps/web && npm install && npm run dev` — see [Deploy](docs/deploy.md) to ship.
-- **API:** `cd apps/api && npm install && npm run dev` — see [Deploy](docs/deploy.md) for Vercel.
+- **Web (PWA):** `cd apps/web && npm install && npm run dev`  - see [Deploy](docs/deploy.md) to ship.
+- **API:** `cd apps/api && npm install && npm run dev`  - see [Deploy](docs/deploy.md) for Vercel.
 
 ---
 
@@ -91,7 +91,7 @@ It is an **everyday system** for understanding your own rhythm, reducing noise, 
 ```
 pulse/
 ├── apps/
-│   ├── web/                    # PWA (Vite + React) — login, dashboard, Body Signals, Work Routine, Lab
+│   ├── web/                    # PWA (Vite + React)  - login, dashboard, Body Signals, Work Routine, Lab
 │   │   ├── public/icons/       # PWA icons (icon-192.png, icon-512.png)
 │   │   └── src/                # pages, components, contexts, blocks/registry
 │   ├── api/                    # Backend (Express, Postgres or in-memory)
@@ -129,11 +129,11 @@ pulse/
 
 ### Why this structure works
 
-- **AI is not glued to the UI** — The reasoning engine can evolve independently.
-- **Features are modular** — Meals, fitness, blood data, fridge photos can grow without chaos.
-- **User data is first-class** — Clear schemas, normalization, and a privacy layer.
-- **Token logic is isolated** — No pollution of core product logic.
-- **Future-proof** — Browser extension, wearable sync, or native clients can plug in later.
+- **AI is not glued to the UI**  - The reasoning engine can evolve independently.
+- **Features are modular**  - Meals, fitness, blood data, fridge photos can grow without chaos.
+- **User data is first-class**  - Clear schemas, normalization, and a privacy layer.
+- **Token logic is isolated**  - No pollution of core product logic.
+- **Future-proof**  - Browser extension, wearable sync, or native clients can plug in later.
 
 ---
 
@@ -156,7 +156,7 @@ features/meals/
 
 This repo uses **Spec Kit** for spec-driven development. Specifications, plans, and tasks live under:
 
-- [`.specify/specs/001-pulse-platform/`](.specify/specs/001-pulse-platform/) — Spec, plan, data model, contracts, tasks
+- [`.specify/specs/001-pulse-platform/`](.specify/specs/001-pulse-platform/)  - Spec, plan, data model, contracts, tasks
 
 ---
 

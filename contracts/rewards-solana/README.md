@@ -24,14 +24,14 @@ Install these **before** `anchor build` (Anchor uses the Solana toolchain to com
 
 **If the Solana install script fails with SSL (e.g. `curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL`):**
 
-- **Option A — Homebrew (macOS):**  
+- **Option A  - Homebrew (macOS):**  
   `brew install solana`  
   Then ensure `solana` and the directory that contains `cargo-build-sbf` are on your `PATH` (run `brew list solana` or `which solana` to confirm).
 
-- **Option B — Manual download:**  
+- **Option B  - Manual download:**  
   Open [Solana releases](https://github.com/solana-labs/solana/releases) in a browser, download the tarball for your OS (e.g. `solana-release-aarch64-apple-darwin.tar.bz2` for Apple Silicon), extract it, and add the `bin` folder to your `PATH`.
 
-- **Option C — Different network:**  
+- **Option C  - Different network:**  
   Try from another network or with VPN disabled; some networks or proxies break the script’s HTTPS connection.
 
 ## 1. Build
@@ -178,7 +178,7 @@ const [pointsPda] = PublicKey.findProgramAddressSync(
 
 ### `daily_check_in()`
 
-- **User** signs; if cooldown has elapsed (or first time), program credits points to their points account. Creates points + daily_claim PDAs if needed (user pays rent). Use this when the app shows “Connect wallet to earn” — balance is on-chain.
+- **User** signs; if cooldown has elapsed (or first time), program credits points to their points account. Creates points + daily_claim PDAs if needed (user pays rent). Use this when the app shows “Connect wallet to earn”  - balance is on-chain.
 - **Accounts:** user (signer), vault, config, daily_claim (init_if_needed), points_account (init_if_needed), system_program.
 
 ### `credit_points(amount)`
@@ -220,7 +220,7 @@ $PULSE lives on Solana (e.g. [Pump.fun](https://pump.fun)); use its mint address
 
 ### `anchor build` fails with "no such command: build-sbf"
 
-Anchor needs `cargo-build-sbf`, which comes with the **full Solana CLI**. The Homebrew `solana` package often **does not** include it — use the **official installer** instead (see below).
+Anchor needs `cargo-build-sbf`, which comes with the **full Solana CLI**. The Homebrew `solana` package often **does not** include it  - use the **official installer** instead (see below).
 
 - **If you already use the official installer:** ensure its `bin` is first on PATH, e.g. `export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"`, then run `anchor build` again.
 
@@ -257,4 +257,4 @@ After fixing `PATH`, run `anchor build` from `contracts/rewards-solana` again.
 
 ## See also
 
-- [Points and Redemption](../../docs/points-and-redemption.md) — how points and redemption work with the API and this vault.
+- [Points and Redemption](../../docs/points-and-redemption.md)  - how points and redemption work with the API and this vault.

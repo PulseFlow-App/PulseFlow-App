@@ -373,6 +373,18 @@
   white-space: pre-line;
 }
 
+.shapingList {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.9375rem;
+  color: #a3a3a3;
+  line-height: 1.5;
+}
+
+.shapingItem {
+  margin-bottom: 6px;
+}
+
 .hint {
   font-size: 0.875rem;
   color: #737373;

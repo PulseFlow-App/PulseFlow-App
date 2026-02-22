@@ -3,7 +3,7 @@
 **Topic:** Protein and Energy / Satiety (No Macro Counting)
 
 **Evidence summary:**  
-Protein at meals is associated with more stable satiety and fewer sharp hunger swings. Skipping protein at meals (e.g. breakfast) may increase appetite variability and reactive hunger later. Balanced meals—without prescribing grams—often support more stable energy than very low-protein or highly irregular eating. Focus on pattern (protein at meals, consistency) not targets. No calorie or macro counting.
+Protein at meals is associated with more stable satiety and fewer sharp hunger swings. Skipping protein at meals (e.g. breakfast) may increase appetite variability and reactive hunger later. Balanced meals -without prescribing grams -often support more stable energy than very low-protein or highly irregular eating. Focus on pattern (protein at meals, consistency) not targets. No calorie or macro counting.
 
 **Relationships:**
 

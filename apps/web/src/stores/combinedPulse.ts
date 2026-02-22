@@ -16,7 +16,7 @@ export type CombinedPulseResult = {
   /** Combined score: average of body + routine when both; nutrition does not contribute a number. */
   combined: number | null;
   sources: CombinedPulseSource[];
-  /** 1, 2, or 3 — how many blocks have data today. */
+  /** 1, 2, or 3: how many blocks have data today. */
   blockCount: number;
 };
 
@@ -114,6 +114,7 @@ export function hasRoutineTodayCheck(): boolean {
   return hasRoutineToday();
 }
 
+/** Nutrition "done today" = required sub-components only (meal timing + hydration). Optional (fridge, reflections) don't gate. */
 export function hasNutritionTodayCheck(): boolean {
-  return hasFridgeLogToday() || hasMealTimingToday() || hasHydrationTimingToday();
+  return hasMealTimingToday() && hasHydrationTimingToday();
 }

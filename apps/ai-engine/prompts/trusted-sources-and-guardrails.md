@@ -1,4 +1,4 @@
-# Pulse — Trusted Sources & Ingestion Guardrails
+# Pulse -Trusted Sources & Ingestion Guardrails
 
 Canonical reference for teaching the AI across blocks (Body Signals, Work Routine, future). Use **educational summaries only**. Never dosage, treatment, or diagnosis language.
 
@@ -20,7 +20,7 @@ Canonical reference for teaching the AI across blocks (Body Signals, Work Routin
 |---|--------|---------|-----|
 | 4 | **Yerkes–Dodson Law** | Stress and performance; arousal/cognitive load | https://en.wikipedia.org/wiki/Yerkes–Dodson_law |
 | 5 | **APA – Stress** | Attention, cognitive load, stress–sleep–task interaction | https://www.apa.org/topics/stress |
-| 6 | **Harvard Business Review** | Focus, multitasking, neuroscience (search: HBR focus neuroscience multitasking) | — |
+| 6 | **Harvard Business Review** | Focus, multitasking, neuroscience (search: HBR focus neuroscience multitasking) | -|
 
 ---
 
@@ -51,7 +51,7 @@ Canonical reference for teaching the AI across blocks (Body Signals, Work Routin
 | 13 | **Cognitive Load Theory** | Mental load and performance (high-level summaries) | https://en.wikipedia.org/wiki/Cognitive_load |
 | 14 | **OSHA – Ergonomics** | Workplace factors, comfort, fatigue | https://www.osha.gov/ergonomics |
 | 15 | **Cornell Ergonomics Web** | Posture, workstation, comfort, focus | http://ergo.human.cornell.edu |
-| 16 | **Microsoft Research** | Productivity, work habits, human factors (search: Microsoft Research productivity multitasking) | — |
+| 16 | **Microsoft Research** | Productivity, work habits, human factors (search: Microsoft Research productivity multitasking) | -|
 
 ---
 
@@ -89,7 +89,7 @@ Language rules:
 
 ---
 
-## Personalized Assistant — Anti-Boring (All Blocks)
+## Personalized Assistant -Anti-Boring (All Blocks)
 
 **Goal:** A **personalized assistant in your pocket**. Use **notes and, when helpful, one short follow-up question** to understand the **particular case**, then answer **specifically** to that situation.
 

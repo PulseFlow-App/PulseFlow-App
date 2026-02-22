@@ -22,7 +22,7 @@ People already generate massive amounts of personal data: food photos, workouts,
 
 Pulse turns these **inputs into signals**, not charts.
 
-At the center is a **Daily Pulse Score (0–100)** — a personal, adaptive indicator of how aligned today is with the user's baseline and goals.
+At the center is a **Daily Pulse Score (0–100)**  - a personal, adaptive indicator of how aligned today is with the user's baseline and goals.
 
 **Input**: User description: "Build Pulse, a data-first personal intelligence mobile app (iOS and Android) that allows users to submit everyday personal data (food photos, fridge contents, movement, body metrics, lifestyle inputs) and receive a single daily guidance signal called the Daily Pulse (0–100). The system helps users understand patterns and trends relative to their personal baseline, not generic benchmarks. The platform must avoid medical advice and focus on practical, non-clinical insights that reduce daily decision fatigue around food, movement, and recovery. Premium access is gated via token staking and unlocks advanced trend tracking, personal baseline modeling, multi-input reasoning, and unlimited AI requests."
 

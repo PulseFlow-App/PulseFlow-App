@@ -135,9 +135,12 @@ export function Pulse() {
                 <>
                   <section className={styles.narrativeSection} aria-labelledby="pulse-pattern-heading">
                     <h2 id="pulse-pattern-heading" className={styles.narrativeHeading}>
-                      {hasBoth ? 'From Body Signals' : 'Today’s pattern'}
+                      Today’s pattern
                     </h2>
                     <p className={styles.narrativeInsight}>{bodySnapshot.insight}</p>
+                    {hasRoutine && routineEntry?.analysis?.pattern && (
+                      <p className={styles.narrativeText} style={{ marginTop: 12 }}>{routineEntry.analysis.pattern}</p>
+                    )}
                   </section>
                   {bodySnapshot.explanation && (
                     <section className={styles.narrativeSection} aria-labelledby="pulse-why-heading">
@@ -166,19 +169,25 @@ export function Pulse() {
               ) : null}
             </>
           )}
-          {hasRoutine && routineEntry?.analysis && (
-            <section className={styles.narrativeSection} aria-labelledby="pulse-routine-heading">
-              <h2 id="pulse-routine-heading" className={styles.narrativeHeading}>
-                From your work check-in
-              </h2>
-              <p className={styles.narrativeTextSmall}>
-                Based on your logged focus, energy, and breaks (not AI).
-              </p>
-              <p className={styles.narrativeText}>{routineEntry.analysis.pattern}</p>
-              {routineEntry.analysis.oneThing && (
-                <p className={styles.narrativeOneThing}>{routineEntry.analysis.oneThing}</p>
+          {hasRoutine && routineEntry?.analysis && !hasBody && (
+            <>
+              <section className={styles.narrativeSection} aria-labelledby="pulse-pattern-heading">
+                <h2 id="pulse-pattern-heading" className={styles.narrativeHeading}>Today’s pattern</h2>
+                <p className={styles.narrativeText}>{routineEntry.analysis.pattern}</p>
+              </section>
+              {routineEntry.analysis.shaping && (
+                <section className={styles.narrativeSection} aria-labelledby="pulse-why-heading">
+                  <h2 id="pulse-why-heading" className={styles.narrativeHeading}>What’s shaping your Pulse</h2>
+                  <p className={styles.narrativeText} style={{ whiteSpace: 'pre-line' }}>{routineEntry.analysis.shaping.replace(/^[•\s]+/gm, '• ').trim()}</p>
+                </section>
               )}
-            </section>
+              {routineEntry.analysis.oneThing && (
+                <section className={styles.narrativeSection} aria-labelledby="pulse-one-heading">
+                  <h2 id="pulse-one-heading" className={styles.narrativeHeading}>One thing to try</h2>
+                  <p className={styles.narrativeOneThing}>{routineEntry.analysis.oneThing}</p>
+                </section>
+              )}
+            </>
           )}
           {(hasBoth || hasAllThree) && (bodySnapshot?.improvements?.[0] || routineEntry?.analysis?.oneThing) && (
             <section className={styles.narrativeSection} aria-labelledby="pulse-one-heading">
@@ -189,10 +198,9 @@ export function Pulse() {
             </section>
           )}
           {hasNutrition && blockCount >= 2 && (
-            <section className={styles.narrativeSection} aria-labelledby="pulse-nutrition-heading">
-              <h2 id="pulse-nutrition-heading" className={styles.narrativeHeading}>From Nutrition</h2>
+            <section className={styles.narrativeSection} aria-label="Nutrition note">
               <p className={styles.narrativeText}>
-                You logged fridge or nutrition today. Together with body and work data, this gives a fuller picture for your Pulse.
+                You logged nutrition today. Together with body and work data, this gives a fuller picture for your Pulse.
               </p>
             </section>
           )}
@@ -319,6 +327,16 @@ export function Pulse() {
             <Link to="/dashboard" className={styles.ctaPrimary}>
               {blockCount < 3 ? 'Continue with other blocks' : 'Go to main dashboard'}
             </Link>
+            <button
+              type="button"
+              className={styles.reportDownload}
+              onClick={() => {
+                // TODO: call report generation endpoint (daily-report-system-prompt), then PDF renderer
+                window.alert('Daily report download is coming soon. The report will include your Pulse summary, block details, and recommendations.');
+              }}
+            >
+              Download today’s report
+            </button>
           </div>
         )}
 

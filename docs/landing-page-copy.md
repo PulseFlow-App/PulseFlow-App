@@ -30,7 +30,7 @@ Use these as bullets or short cards on the landing page.
 
 **Premium: go deeper**
 - Unlimited requests, long-term trends, and personalized baselines.
-- Subscribe in the app — one tap, no complexity.
+- Subscribe in the app  - one tap, no complexity.
 
 **Your data, your control**
 - Encrypted. Exportable. Never sold or shared.
@@ -40,11 +40,11 @@ Use these as bullets or short cards on the landing page.
 
 ## Short Bullets (for a compact list)
 
-- One daily score (0–100) — your body, your baseline.
-- Body signals and routine check-ins — sleep, energy, mood.
-- Clear, actionable insights — not more dashboards.
+- One daily score (0–100)  - your body, your baseline.
+- Body signals and routine check-ins  - sleep, energy, mood.
+- Clear, actionable insights  - not more dashboards.
 - Premium: unlimited requests, trends, and personal baselines (subscribe in-app).
-- Your data stays yours — encrypted, exportable, never sold.
+- Your data stays yours  - encrypted, exportable, never sold.
 
 ---
 
@@ -56,8 +56,8 @@ If you have a section below the fold or on a separate page for community/protoco
 - "Pulse is an app you can use every day. $PULSE is how the system evolves."
 
 **Bullets (off-app, no store):**
-- Shape what gets built — governance and voting on the roadmap.
-- Pulse Lab — early experiments, raw dashboards, prompt templates (web).
+- Shape what gets built  - governance and voting on the roadmap.
+- Pulse Lab  - early experiments, raw dashboards, prompt templates (web).
 - Rewards and recognition for contributors (off-app).
 - You don't need crypto to use Pulse; it's for those who want to help shape it.
 

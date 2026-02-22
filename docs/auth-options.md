@@ -1,4 +1,4 @@
-# Auth Options — Email Login Without Your Backend
+# Auth Options  - Email Login Without Your Backend
 
 You don’t need to run a backend to have **email-based login**. Here are the options, including Solana-friendly ones.
 
@@ -27,8 +27,8 @@ So you get “email login” and a Solana-ready identity without running auth yo
 | Tool | What you get | Solana? | Notes |
 |------|----------------|--------|--------|
 | **Magic** | Email OTP → login + embedded wallet | Yes | [Magic + Solana](https://docs.magic.link/embedded-wallets/blockchains/non-evm/solana). Passwordless; creates Solana wallet on first login. You use their API key in the app. |
-| **Dynamic** | Email, social, wallet, passkeys | Yes | [Dynamic](https://dynamic.xyz) — email sign-in, can link Solana wallet. JS/React SDK; React Native possible. |
-| **Particle Network** | Social + email, “chain abstraction” | Yes | [Particle](https://developers.particle.network) — social logins + optional AA; Solana supported. |
+| **Dynamic** | Email, social, wallet, passkeys | Yes | [Dynamic](https://dynamic.xyz)  - email sign-in, can link Solana wallet. JS/React SDK; React Native possible. |
+| **Particle Network** | Social + email, “chain abstraction” | Yes | [Particle](https://developers.particle.network)  - social logins + optional AA; Solana supported. |
 | **Firebase Auth** | Email/password, magic link, OAuth | No (generic) | No wallet; just email auth + JWT. Good if you only need “email login” and don’t care about Solana for auth. |
 | **Supabase Auth** | Email/password, magic link, OAuth | No (generic) | Same idea as Firebase; JWT + user in Supabase. |
 
@@ -77,9 +77,9 @@ curl -X POST 'https://tee.express.magiclabs.com/v1/identity/provider' \
   }'
 ```
 
-- **issuer** — The IdP’s issuer claim (e.g. `https://your-tenant.auth0.com/` or your API origin).
-- **audience** — The audience your JWTs are issued for (e.g. your app’s client ID or API identifier).
-- **jwks_uri** — URL where Magic can fetch your IdP’s **public keys** (JWKS) to verify JWT signatures.
+- **issuer**  - The IdP’s issuer claim (e.g. `https://your-tenant.auth0.com/` or your API origin).
+- **audience**  - The audience your JWTs are issued for (e.g. your app’s client ID or API identifier).
+- **jwks_uri**  - URL where Magic can fetch your IdP’s **public keys** (JWKS) to verify JWT signatures.
 
 The response includes a **provider ID**. Use that when calling Magic’s Server Wallets APIs so Magic knows which IdP to validate against.
 

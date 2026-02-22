@@ -1,5 +1,5 @@
 /**
- * Body Signals — narrative-first Pulse insights.
+ * Body Signals: narrative-first Pulse insights.
  * One main insight, causal chains, one small experiment. No repetition, no tables, no generic tips.
  * Aligned with: body-signals-system-prompt.md and body-signals-physiology skill.
  */

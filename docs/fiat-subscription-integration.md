@@ -16,7 +16,7 @@ How to gate **advanced recommendations** (and other Premium features) on a **pai
 
 ### Endpoint (already stubbed)
 
-- **`GET /subscription/status`** — requires `Authorization: Bearer <accessToken>` (same JWT as other `/users/me` routes).
+- **`GET /subscription/status`**  - requires `Authorization: Bearer <accessToken>` (same JWT as other `/users/me` routes).
 - **Response:** `{ hasActiveSubscription: boolean }`
 - **Today:** Returns `false` until you wire a payment provider. No DB change required for the stub.
 

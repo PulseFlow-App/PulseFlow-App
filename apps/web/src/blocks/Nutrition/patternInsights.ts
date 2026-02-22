@@ -66,7 +66,7 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
   const weekHydrationDates = new Set(getHydrationTimingForRange(WEEK_DAYS).map((e) => e.date));
   const weekLogCount = new Set([...weekMealDates, ...weekHydrationDates]).size;
 
-  // ——— CASE A: No logs this week ———
+  // --- CASE A: No logs this week ---
   if (weekLogCount === 0) {
     return {
       pattern: 'You have no nutrition signals logged this week, so stability cannot be assessed yet.',
@@ -96,7 +96,7 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
     (lowSleep && highStress) ||
     (recovery === 'party_night' && lowSleep);
 
-  // ——— Recovery mode ———
+  // --- Recovery mode ---
   if (overload || recovery === 'gym_day' || recovery === 'party_night') {
     const pattern_type =
       recovery === 'party_night'
@@ -143,7 +143,7 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
     };
   }
 
-  // ——— Adjust mode: low energy + late first meal ———
+  // --- Adjust mode: low energy + late first meal ---
   if (lowEnergy && lateFirst && todayMeal) {
     return {
       pattern: 'Energy is lower and first meal was delayed. Long morning gaps often flatten afternoon focus.',
@@ -164,7 +164,7 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
     };
   }
 
-  // ——— Adjust mode: reactive hydration (no hydration logged, low energy) or back-to-back + no hydration ———
+  // --- Adjust mode: reactive hydration (no hydration logged, low energy) or back-to-back + no hydration ---
   if ((lowEnergy && lowHydration) || (backToBackCalls && !todayHydration?.when?.length)) {
     return {
       pattern: 'Hydration likely started after energy had already dropped. Proactive hydration often matters more than quantity.',
@@ -181,7 +181,7 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
     };
   }
 
-  // ——— Adjust mode: late heavy meal + sleep ———
+  // --- Adjust mode: late heavy meal + sleep ---
   const lateEaters = mealTimings.filter((e) => e.lateNightEating === true);
   if (lateEaters.length >= 2 && (lowSleep || todayBody?.sleepQuality != null)) {
     return {
@@ -203,7 +203,7 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
     };
   }
 
-  // ——— Adjust mode: stress + low appetite ———
+  // --- Adjust mode: stress + low appetite ---
   if (highStress && lowAppetite) {
     return {
       pattern: 'Appetite tends to drop on high-stress days. Light, easy meals and hydration reduce extra load.',
@@ -220,7 +220,7 @@ export function getNutritionPatternBlock(): NutritionPatternBlock {
     };
   }
 
-  // ——— CASE B: Maintain mode (stable) ———
+  // --- CASE B: Maintain mode (stable) ---
   return {
     pattern: 'Energy and stress look stable. Timing will likely influence tomorrow more than today.',
     influencing: [

@@ -8,7 +8,7 @@ A number from 0 to 100 that reflects how your body is responding on a given day.
 
 ### Is Pulse a medical or fitness app?
 
-No. Pulse is not a medical product and not a fitness gadget. It’s an everyday system for understanding your own rhythm and making better decisions. All insights are practical and educational only — no diagnosis, no treatment, no medical advice.
+No. Pulse is not a medical product and not a fitness gadget. It’s an everyday system for understanding your own rhythm and making better decisions. All insights are practical and educational only  - no diagnosis, no treatment, no medical advice.
 
 ### What can I log?
 
@@ -46,7 +46,7 @@ By holding and **locking** **Pulse tokens ($PULSE)** for as long as you want the
 
 ### Is there in-app token trading?
 
-No. The app uses read-only chain interaction for lock status. No in-app trading — for App Store and Play Store compliance.
+No. The app uses read-only chain interaction for lock status. No in-app trading  - for App Store and Play Store compliance.
 
 ---
 
@@ -66,7 +66,7 @@ No. Pulse does not sell or share your data.
 
 ### How is the Pulse score calculated?
 
-The score is **deterministic** — produced by a weighted formula, not by an LLM. It uses sleep, nutrition, movement, and recovery relative to your personal baseline. See [AI Stack](./ai-stack.md).
+The score is **deterministic**  - produced by a weighted formula, not by an LLM. It uses sleep, nutrition, movement, and recovery relative to your personal baseline. See [AI Stack](./ai-stack.md).
 
 ### How does Pulse stay non-medical?
 

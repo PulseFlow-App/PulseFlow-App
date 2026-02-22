@@ -12,7 +12,7 @@
 | **Body Signals** | Log, result (pattern, shaping, one thing to try) | + “Another angle” (2nd improvement), no “Get more” CTA | Same as wallet |
 | **Work Routine** | Check-in flow, “Check-in saved” | + On-chain daily check-in, points | + Pulse Lab teaser → full Lab access |
 | **Nutrition** | All inputs, stability, analysis, trick to try | + Recipe ideas from fridge (AI) | Same as wallet |
-| **Pulse Lab** (`/lab`) | — | Gate: “Connect wallet” | Full access |
+| **Pulse Lab** (`/lab`) | - | Gate: “Connect wallet” | Full access |
 
 ---
 

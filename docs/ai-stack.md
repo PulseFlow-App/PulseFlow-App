@@ -67,7 +67,7 @@ Critical for long-term scalability.
 
 ## 4. Reasoning & Recommendation Layer
 
-### MVP 1 — Lightweight Reasoning
+### MVP 1  - Lightweight Reasoning
 
 - **Single-call LLM reasoning**
 - Prompted with:
@@ -79,7 +79,7 @@ Critical for long-term scalability.
 
 **Use cases:** Daily Pulse explanation, simple recommendations, meal suggestions from ingredients
 
-### MVP 2 — Adaptive Reasoning
+### MVP 2  - Adaptive Reasoning
 
 - **Two-stage reasoning**
   1. Pattern analysis (non-LLM)
@@ -176,7 +176,7 @@ Critical for long-term scalability.
 
 ## One-Line Summary
 
-> Pulse uses **AI to interpret**, **math to decide**, and **history to personalize** — not the other way around.
+> Pulse uses **AI to interpret**, **math to decide**, and **history to personalize**  - not the other way around.
 
 ---
 

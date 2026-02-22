@@ -2,7 +2,7 @@
   "name": "pulse",
   "version": "0.1.0",
   "private": true,
-  "description": "Pulse — data-first wellness platform. One rhythm. One score.",
+  "description": "Pulse  - data-first wellness platform. One rhythm. One score.",
   "scripts": {
     "dev": "echo 'Run apps individually: apps/web, apps/api, apps/ai-engine'",
     "build": "echo 'Build all apps'",

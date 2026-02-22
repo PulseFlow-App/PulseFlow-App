@@ -1,4 +1,4 @@
-//! Reward Vault — Solana program for $PULSE (or any SPL token) payouts.
+//! Reward Vault  - Solana program for $PULSE (or any SPL token) payouts.
 //!
 //! Owner deposits tokens into the vault and can transfer to any recipient when
 //! fulfilling redemptions. On-chain points: owner can credit points to user

@@ -1,5 +1,5 @@
 /**
- * Pulse API — minimal backend for auth, body logs, insights, premium.
+ * Pulse API: minimal backend for auth, body logs, insights, premium.
  * Uses Postgres when DATABASE_URL is set; otherwise in-memory (MVP).
  */
 require('dotenv').config();

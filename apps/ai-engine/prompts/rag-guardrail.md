@@ -1,4 +1,4 @@
-# RAG Guardrail — Include in Every LLM Call That Uses Retrieved Knowledge
+# RAG Guardrail  - Include in Every LLM Call That Uses Retrieved Knowledge
 
 When generating narrative from retrieved knowledge entries, **always** include this instruction (or equivalent) in the system or user prompt:
 

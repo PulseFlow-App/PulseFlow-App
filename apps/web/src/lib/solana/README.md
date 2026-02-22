@@ -4,20 +4,20 @@ Frontend wiring for the reward_vault program (on-chain points, daily check-in, r
 
 ## Env
 
-- `VITE_SOLANA_RPC` — RPC endpoint (default devnet).
-- `VITE_PULSE_MINT` — $PULSE token mint (for vault PDA and PULSE balance).
-- `VITE_REWARD_PROGRAM_ID` — Deployed reward_vault program ID (for daily_check_in and redeem).
+- `VITE_SOLANA_RPC` -RPC endpoint (default devnet).
+- `VITE_PULSE_MINT` -$PULSE token mint (for vault PDA and PULSE balance).
+- `VITE_REWARD_PROGRAM_ID` -Deployed reward_vault program ID (for daily_check_in and redeem).
 
 ## Modules
 
-- **config** — `getSolanaConfig()`, env constants.
-- **dailyCheckIn** — `buildDailyCheckInInstruction`, `buildDailyCheckInTransaction`, `submitDailyCheckIn()` (Phantom sign + send).
-- **points** — `fetchOnChainPointsBalance(wallet)` to read PointsAccount balance.
+- **config** -`getSolanaConfig()`, env constants.
+- **dailyCheckIn** -`buildDailyCheckInInstruction`, `buildDailyCheckInTransaction`, `submitDailyCheckIn()` (Phantom sign + send).
+- **points** -`fetchOnChainPointsBalance(wallet)` to read PointsAccount balance.
 
 ## Hooks
 
-- `useOnChainDailyCheckIn()` — `trigger()`, `status`, `error`, `canCheckIn`.
-- `useOnChainPoints()` — `balance`, `loading`, `refresh` (for redeem UI).
+- `useOnChainDailyCheckIn()` -`trigger()`, `status`, `error`, `canCheckIn`.
+- `useOnChainPoints()` -`balance`, `loading`, `refresh` (for redeem UI).
 
 ## Adding redeem
 

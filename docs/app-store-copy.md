@@ -50,4 +50,4 @@ On your **website** or **community** (not in app store copy):
 
 - “Pulse is an app you can use every day. $PULSE is how the system evolves.”
 - “You don’t need crypto to use Pulse. Crypto is for those who want to help shape it.”
-- Link to governance, Pulse Lab, rewards — all clearly off-app.
+- Link to governance, Pulse Lab, rewards  - all clearly off-app.

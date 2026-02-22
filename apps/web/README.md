@@ -18,7 +18,7 @@ npm run dev
 
 Open http://localhost:5173. Sign in with any email (demo; no backend required). You get the dashboard with Body Signals and Work Routine blocks (full logging, trends, check-ins).
 
-**Using the API (auth sync, referrals, AI insights, points):** Start the API in another terminal — it uses **port 3002** by default:
+**Using the API (auth sync, referrals, AI insights, points):** Start the API in another terminal -it uses **port 3002** by default:
 
 ```bash
 cd apps/api

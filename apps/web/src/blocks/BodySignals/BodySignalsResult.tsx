@@ -52,7 +52,7 @@ export function BodySignalsResult() {
       <main id="main" className={styles.main}>
         <h1 className={styles.title}>Your Body Pulse</h1>
         <p className={styles.subtitle}>
-          Here’s your result from this block. Below: what next — go to the main dashboard to add other blocks and get combined recommendations.
+          Here’s your result from this block. Below: what next. Go to the main dashboard to add other blocks and get combined recommendations.
         </p>
 
         <div className={styles.card}>

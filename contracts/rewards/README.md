@@ -17,7 +17,7 @@ No on-chain “points” or “redemption” logic: the contract is a simple **t
 
 ## Files
 
-- `RewardVault.sol` — Minimal vault: owner deposits ERC20 and can transfer to any address.
+- `RewardVault.sol`  - Minimal vault: owner deposits ERC20 and can transfer to any address.
 
 ## Deploy (EVM)
 

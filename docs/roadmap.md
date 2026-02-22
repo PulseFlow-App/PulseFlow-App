@@ -4,7 +4,7 @@ This roadmap maps the Pulse vision into two clear execution phases: **MVP 1** (c
 
 ---
 
-## MVP 1 — Core Signal & Daily Use
+## MVP 1  - Core Signal & Daily Use
 
 **Goal:**  
 Deliver a simple, valuable daily experience that turns raw inputs into a clear signal users want to check every day.
@@ -38,7 +38,7 @@ Deliver a simple, valuable daily experience that turns raw inputs into a clear s
 
 ### Token Utility (MVP 1)
 
-- **$PULSE** exists on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump) — no token contract to create
+- **$PULSE** exists on [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump)  - no token contract to create
 - Token-gated **Premium Tier**
 - Premium unlocks:
   - Higher daily request limits
@@ -53,7 +53,7 @@ Deliver a simple, valuable daily experience that turns raw inputs into a clear s
 
 ---
 
-## MVP 2 — Adaptation & Personal Baselines
+## MVP 2  - Adaptation & Personal Baselines
 
 **Goal:**  
 Transform Pulse from a daily snapshot into a personalized system that learns the user over time.
@@ -106,7 +106,7 @@ Transform Pulse from a daily snapshot into a personalized system that learns the
 - **MVP 1**: "Pulse helps me understand today."
 - **MVP 2**: "Pulse understands me."
 
-Both stages focus on everyday usefulness first, depth second — ensuring Pulse grows with its users rather than overwhelming them from day one.
+Both stages focus on everyday usefulness first, depth second  - ensuring Pulse grows with its users rather than overwhelming them from day one.
 
 ---
 

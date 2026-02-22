@@ -208,11 +208,11 @@ export function DashboardActivity() {
               hidden={!howToEarnOpen}
             >
               <ul className={styles.howToEarnList}>
-                <li><strong>Day streak</strong> — 10 points per day you keep your streak.</li>
-                <li><strong>Check-ins & body logs</strong> — 30 points each (work routine check-ins and body signals).</li>
-                <li><strong>Logins</strong> — 1 point per login, up to 100 total.</li>
-                <li><strong>Referrals</strong> — 100 points when someone signs up using your invite link.</li>
-                <li><strong>Other Rewards</strong> — for activity or community contributions (granted by the team).</li>
+                <li><strong>Day streak</strong>: 10 points per day you keep your streak.</li>
+                <li><strong>Check-ins & body logs</strong>: 30 points each (work routine check-ins and body signals).</li>
+                <li><strong>Logins</strong>: 1 point per login, up to 100 total.</li>
+                <li><strong>Referrals</strong>: 100 points when someone signs up using your invite link.</li>
+                <li><strong>Other Rewards</strong>: for activity or community contributions (granted by the team).</li>
               </ul>
             </div>
           </div>

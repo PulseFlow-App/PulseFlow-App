@@ -42,7 +42,7 @@ Use this as a checklist in **Vercel → Your project → Settings → Environmen
 | **CORS_ORIGIN** | No | Single allowed origin for CORS (e.g. your PWA URL). If unset, all origins allowed. | `https://app.pulseflow.site` |
 | **CORS_ORIGINS** | No | Comma-separated allowed origins (alternative to CORS_ORIGIN). | `https://app.pulseflow.site,https://www.pulseflow.site` |
 
-**How to get ADMIN_API_KEY:** You don't "get" it from a service — you **generate** it yourself and set it only in your **API** project (never in the PWA or frontend). Generate a long random string, e.g. run in a terminal: `openssl rand -hex 32`. Copy the output and add it as `ADMIN_API_KEY` in Vercel → your **API** project → Settings → Environment Variables. Use that same value as the password in the Admin cabinet in the web app.
+**How to get ADMIN_API_KEY:** You don't "get" it from a service  - you **generate** it yourself and set it only in your **API** project (never in the PWA or frontend). Generate a long random string, e.g. run in a terminal: `openssl rand -hex 32`. Copy the output and add it as `ADMIN_API_KEY` in Vercel → your **API** project → Settings → Environment Variables. Use that same value as the password in the Admin cabinet in the web app.
 | **PORT** | No | Server port (Vercel usually ignores this; serverless uses the runtime default). | `3000` |
 
 **Auto-set by Vercel (do not add yourself):**

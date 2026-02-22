@@ -1,4 +1,4 @@
-# RAG Knowledge Base — Architecture
+# RAG Knowledge Base  - Architecture
 
 Evidence-grounded reasoning for Nutrition, Body Signals, Stress, Sleep, Hydration, Energy, Mood, and Fridge → Recipes. The LLM composes **only** from retrieved chunks; no free association.
 
@@ -39,7 +39,7 @@ Every entry follows the shape in `schema.ts`:
 
 ## Storage
 
-- **Location:** `knowledge/entries/<block>.json` — one JSON file per block, array of entries.
+- **Location:** `knowledge/entries/<block>.json`  - one JSON file per block, array of entries.
 - **Tagged by:** `block` + `topic` + `pattern_tags`.
 - **Retrieval:** By pattern tags, signal mismatches (e.g. low sleep + high stress), or log-frequency triggers. Load `entries/<block>.json`, filter by `pattern_tags` ∩ detected patterns.
 
@@ -49,9 +49,9 @@ Future: vectorized embeddings over `summary` + `implication_logic` + `observed_p
 
 ## Retrieval Rules
 
-1. **Pattern tags** — Rule engine outputs `pattern_type` and `drivers`. Map them to `pattern_tags` (e.g. `late_first_meal_low_energy` → `late_first_meal`, `low_energy`; `reactive_hydration` → `reactive_hydration`, `low_hydration`).
-2. **Signal mismatches** — e.g. stress high + sleep low → retrieve stress_sleep and sleep_stress entries.
-3. **Log frequency** — e.g. “no logs this week” → do not retrieve intervention entries; use maintenance-only copy.
+1. **Pattern tags**  - Rule engine outputs `pattern_type` and `drivers`. Map them to `pattern_tags` (e.g. `late_first_meal_low_energy` → `late_first_meal`, `low_energy`; `reactive_hydration` → `reactive_hydration`, `low_hydration`).
+2. **Signal mismatches**  - e.g. stress high + sleep low → retrieve stress_sleep and sleep_stress entries.
+3. **Log frequency**  - e.g. “no logs this week” → do not retrieve intervention entries; use maintenance-only copy.
 
 Return only entries whose `pattern_tags` intersect with detected patterns. Cap at 3–5 entries per request to keep context bounded.
 

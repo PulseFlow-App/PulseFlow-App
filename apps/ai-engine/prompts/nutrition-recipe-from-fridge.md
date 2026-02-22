@@ -1,4 +1,4 @@
-# Nutrition — Recipe from fridge (3 photos)
+# Nutrition -Recipe from fridge (3 photos)
 
 Production-ready **structured multimodal prompt** for generating non-generic recipes from three fridge images: **Freezer**, **Main compartment**, **Veggie drawer**. Use with Gemini or any vision model.
 
@@ -22,10 +22,10 @@ Production-ready **structured multimodal prompt** for generating non-generic rec
 
 ## Output structure (enforced in system prompt)
 
-1. **Ingredient Summary** — What you see, by compartment; mark uncertain as "possibly X".
-2. **Recipe Options** — 2–4 options, short step-based instructions; note which compartment each ingredient is from.
-3. **Why These Work** — Brief: waste-minimizing, uses what's there, fits constraints if any.
-4. **Optional Add-ons** — Only if user has basics; e.g. "If you have garlic and olive oil…".
+1. **Ingredient Summary** -What you see, by compartment; mark uncertain as "possibly X".
+2. **Recipe Options** -2–4 options, short step-based instructions; note which compartment each ingredient is from.
+3. **Why These Work** -Brief: waste-minimizing, uses what's there, fits constraints if any.
+4. **Optional Add-ons** -Only if user has basics; e.g. "If you have garlic and olive oil…".
 
 ---
 

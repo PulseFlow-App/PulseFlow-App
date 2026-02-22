@@ -24,13 +24,13 @@ One-page view of how the three layers interact. No token in the app; protocol br
                                         │  Reads / Rewards
                                         ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  TOKEN ($PULSE) — Off-App Only                                                │
+│  TOKEN ($PULSE)  - Off-App Only                                                │
 │  • Governance (votes on blocks, metrics, roadmap)                            │
 │  • Protocol credits (off-app)                                                 │
 │  • Pulse Lab access (web)                                                    │
 │  • Contributor rewards                                                       │
 │  • Future migration key                                                      │
-│  • All interaction: web, Farcaster, community — never in App Store flow      │
+│  • All interaction: web, Farcaster, community  - never in App Store flow      │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 

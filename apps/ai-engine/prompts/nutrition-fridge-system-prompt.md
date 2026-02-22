@@ -1,8 +1,8 @@
-# Nutrition — Fridge Snaps: Recipe Generator (System Prompt)
+# Nutrition -Fridge Snaps: Recipe Generator (System Prompt)
 
 Canonical **structured multimodal prompt** for generating non-generic recipes from three fridge images. Use with **Gemini** (or any vision model). Reduces hallucination via strict rules, ingredient grouping, and optional constraints.
 
-**Reference:** Trusted sources for nutrition (no medical claims): `trusted-sources-and-guardrails.md` — Harvard T.H. Chan Nutrition Source, WHO Nutrition, NIH ODS. Use for general guidance only. No diet prescriptions, no medical advice.
+**Reference:** Trusted sources for nutrition (no medical claims): `trusted-sources-and-guardrails.md` -Harvard T.H. Chan Nutrition Source, WHO Nutrition, NIH ODS. Use for general guidance only. No diet prescriptions, no medical advice.
 
 ---
 
@@ -95,9 +95,9 @@ Models perform better when constrained. Expose these in the UI and append to the
 
 If user logs are available, add one or more lines to the user prompt so recipes align with body signals (no medical claims):
 
-- **Low energy (from logs)** → "User logs suggest low energy — suggest energy-supporting meals."
-- **Heavy workout logged** → "Heavy workout logged — suggest recovery-oriented meals."
-- **Late night planned** → "Late night planned — suggest lighter, digestion-friendly meals."
+- **Low energy (from logs)** → "User logs suggest low energy -suggest energy-supporting meals."
+- **Heavy workout logged** → "Heavy workout logged -suggest recovery-oriented meals."
+- **Late night planned** → "Late night planned -suggest lighter, digestion-friendly meals."
 
 ---
 
@@ -109,5 +109,5 @@ If user logs are available, add one or more lines to the user prompt so recipes 
 
 ## Implementation
 
-- **System prompt string:** `apps/web/src/blocks/Nutrition/prompts/recipeFromFridge.ts` — `RECIPE_FROM_FRIDGE_SYSTEM_PROMPT` (keep in sync with this file).
+- **System prompt string:** `apps/web/src/blocks/Nutrition/prompts/recipeFromFridge.ts` -`RECIPE_FROM_FRIDGE_SYSTEM_PROMPT` (keep in sync with this file).
 - **User prompt builder:** `buildRecipeFromFridgeUserPrompt()` in the same file; accepts focus, constraints, staples, personalization, and toggles for ingredient-grouping and anti-hallucination.

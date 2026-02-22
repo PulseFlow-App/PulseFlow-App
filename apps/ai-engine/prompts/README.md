@@ -1,12 +1,12 @@
-# PulseFlow — Complete AI Prompt System
+# PulseFlow -Complete AI Prompt System
 `apps/ai-engine/prompts/`
 
 This directory defines all four prompts in the PulseFlow AI pipeline:
 
-1. **body-signals-system-prompt.md** — Block 1
-2. **work-routine-system-prompt.md** — Block 2
-3. **nutrition-system-prompt.md** — Block 3
-4. **pulse-aggregation-prompt.md** — Final synthesis
+1. **body-signals-system-prompt.md** -Block 1
+2. **work-routine-system-prompt.md** -Block 2
+3. **nutrition-system-prompt.md** -Block 3
+4. **pulse-aggregation-prompt.md** -Final synthesis
 
 Each block prompt produces a **self-contained insight** for its own screen, plus a structured `aggregation_handoff` object the Pulse page consumes. The aggregation prompt receives all available handoffs and produces one unified view.
 
@@ -32,7 +32,7 @@ User logs Block 3 (Nutrition)
   → Output renders on Nutrition screen
   → pulse-aggregation-prompt runs with all three handoffs
   → Pulse page shows full synthesis (Body + Work + Nutrition)
-  → No further CTA — Pulse is complete
+  → No further CTA -Pulse is complete
 ```
 
 The Pulse page **never renders block outputs side by side.** It only ever shows the aggregation layer's unified output.
@@ -54,7 +54,7 @@ apps/ai-engine/prompts/
 ## Rendering rules (frontend)
 
 - Each block screen renders its own block output only (three-section format).
-- The Pulse page renders **only** aggregation output — never individual block outputs.
+- The Pulse page renders **only** aggregation output -never individual block outputs.
 - CTAs are appended by the AI output, not hardcoded in the UI (so the prompt controls the flow).
 - "From Body Signals" / "From Work Routine" section labels must be removed from Pulse page UI.
 

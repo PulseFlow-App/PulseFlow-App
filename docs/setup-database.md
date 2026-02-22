@@ -10,11 +10,11 @@ The Pulse API (`apps/api`) currently uses **in-memory** storage (users and body 
 
 | Option | Best for | Free tier | Notes |
 |--------|----------|-----------|--------|
-| **Neon** | Serverless Postgres | Yes | [neon.tech](https://neon.tech) — get `DATABASE_URL` in the dashboard. Works well with Vercel. |
-| **Supabase** | Postgres + Auth/API | Yes | [supabase.com](https://supabase.com) — Project Settings → Database → Connection string (URI). |
+| **Neon** | Serverless Postgres | Yes | [neon.tech](https://neon.tech)  - get `DATABASE_URL` in the dashboard. Works well with Vercel. |
+| **Supabase** | Postgres + Auth/API | Yes | [supabase.com](https://supabase.com)  - Project Settings → Database → Connection string (URI). |
 | **Railway** | Same place as API | Yes (usage-based) | Add **Postgres** add-on to your project; Railway sets `DATABASE_URL`. |
 | **Render** | Same place as API | Yes | Add **Postgres** from dashboard; Render sets `DATABASE_URL`. |
-| **Vercel Postgres** | Vercel-native | Yes (limit) | [Vercel Storage](https://vercel.com/docs/storage/vercel-postgres) — connects to Vercel project. |
+| **Vercel Postgres** | Vercel-native | Yes (limit) | [Vercel Storage](https://vercel.com/docs/storage/vercel-postgres)  - connects to Vercel project. |
 
 **Simple path:** Use **Neon** or **Supabase** if your API is on Vercel; use **Railway Postgres** or **Render Postgres** if you deploy the API there.
 
@@ -29,7 +29,7 @@ postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
 ```
 
 - **Neon:** Sign up → Create project → Dashboard shows **Connection string**. Copy the **URI** (e.g. `postgresql://user:pass@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require`).
-- **Supabase:** In the project dashboard, click **Connect** or go to **Project Settings** → **Database**. For the **Transaction** (pooler) URI: copy the full string and replace `[YOUR-PASSWORD]` with your **database password** (the one from Settings → Database, not the anon key). The pooler user is `postgres.PROJECT_REF` (e.g. `postgres.udfytafypqwaynbtwfxs`) — use the URI as shown, don’t mix the direct-connection user with the pooler host. If the password contains `@`, `#`, or `%`, URL-encode it (e.g. `@` → `%40`).
+- **Supabase:** In the project dashboard, click **Connect** or go to **Project Settings** → **Database**. For the **Transaction** (pooler) URI: copy the full string and replace `[YOUR-PASSWORD]` with your **database password** (the one from Settings → Database, not the anon key). The pooler user is `postgres.PROJECT_REF` (e.g. `postgres.udfytafypqwaynbtwfxs`)  - use the URI as shown, don’t mix the direct-connection user with the pooler host. If the password contains `@`, `#`, or `%`, URL-encode it (e.g. `@` → `%40`).
 - **Railway / Render:** After adding Postgres, the platform adds **`DATABASE_URL`** to your app’s environment; no manual copy needed if you deploy the API on the same project.
 
 ---

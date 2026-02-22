@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { getLatestFridgeLog } from './store';
-import { getMealTimingForDate } from './mealTimingStore';
+import { getMealTimingForDate, hasMealTimingToday } from './mealTimingStore';
+import { hasHydrationTimingToday } from './hydrationTimingStore';
 import { getApiUrl } from '../../lib/apiUrl';
 import { ScoreRing } from '../../components/ScoreRing';
 import { getCombinedPulse, hasBodyTodayCheck, hasRoutineTodayCheck, hasNutritionTodayCheck } from '../../stores/combinedPulse';
@@ -17,6 +18,46 @@ const SOURCE_LABELS: Record<FromSource, string> = {
   'meal-timing': 'Meal timing saved',
   hydration: 'Hydration timing saved',
 };
+
+/** Required = meal timing + hydration. Optional = reflections, meal photos, fridge. */
+function NutritionProgressChecklist() {
+  const mealDone = hasMealTimingToday();
+  const hydrationDone = hasHydrationTimingToday();
+  return (
+    <section className={styles.progressCard} role="region" aria-labelledby="nutrition-progress-heading">
+      <h2 id="nutrition-progress-heading" className={styles.progressHeading}>
+        Nutrition block
+      </h2>
+      <ul className={styles.progressList}>
+        <li className={styles.progressItem}>
+          {mealDone ? <span className={styles.progressDone} aria-hidden>✓</span> : <span className={styles.progressDot} aria-hidden>○</span>}
+          <span>Meal timing</span>
+          {mealDone ? <span className={styles.progressLabel}>Done</span> : <Link to="/dashboard/nutrition/meal-timing" className={styles.progressLink}>Log now</Link>}
+        </li>
+        <li className={styles.progressItem}>
+          {hydrationDone ? <span className={styles.progressDone} aria-hidden>✓</span> : <span className={styles.progressDot} aria-hidden>○</span>}
+          <span>Hydration timing</span>
+          {hydrationDone ? <span className={styles.progressLabel}>Done</span> : <Link to="/dashboard/nutrition/hydration" className={styles.progressLink}>Log now</Link>}
+        </li>
+        <li className={styles.progressItem}>
+          <span className={styles.progressDot} aria-hidden>○</span>
+          <span>Post-meal reflections</span>
+          <Link to="/dashboard/nutrition/reflections" className={styles.progressLinkOptional}>Add</Link>
+        </li>
+        <li className={styles.progressItem}>
+          <span className={styles.progressDot} aria-hidden>○</span>
+          <span>Meal photos</span>
+          <span className={styles.progressLabelOptional}>Optional</span>
+        </li>
+        <li className={styles.progressItem}>
+          <span className={styles.progressDot} aria-hidden>○</span>
+          <span>Fridge photos</span>
+          <Link to="/dashboard/nutrition/fridge" className={styles.progressLinkOptional}>Add</Link>
+        </li>
+      </ul>
+    </section>
+  );
+}
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
@@ -91,7 +132,7 @@ function RecipeIdeasSection() {
         Recipe ideas from your fridge
       </h2>
       <p className={styles.recipeIdeasIntro}>
-        AI will detect ingredients in your photos and suggest meals you can make. Results use only what it sees—no guessing.
+        AI will detect ingredients in your photos and suggest meals you can make. Results use only what it sees; no guessing.
       </p>
       {!result && !error && (
         <button
@@ -121,6 +162,10 @@ export function NutritionResult() {
   const from: FromSource =
     rawFrom === 'meal-timing' || rawFrom === 'hydration' ? rawFrom : 'fridge';
 
+  const mealDone = hasMealTimingToday();
+  const hydrationDone = hasHydrationTimingToday();
+  const hasRequired = mealDone && hydrationDone;
+
   const pulse = getCombinedPulse();
   const hasBody = hasBodyTodayCheck();
   const hasRoutine = hasRoutineTodayCheck();
@@ -132,7 +177,7 @@ export function NutritionResult() {
   const bodyScore = pulse.body ?? 0;
   const routineScore = pulse.routine ?? 0;
 
-  const mealTips = from === 'meal-timing' ? getMealTimingTips() : [];
+  const mealTips = getMealTimingTips();
 
   const scoreCardLabel =
     blockCount === 3
@@ -154,94 +199,99 @@ export function NutritionResult() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>{SOURCE_LABELS[from]}</h1>
           <p className={styles.subtitle}>
-            Here’s your result from this block. See your aggregated pulse below, then add more nutrition data or go to the main dashboard for combined recommendations.
+            {hasRequired
+              ? "Here's your result from this block. See your Pulse below, then go to the main dashboard or view your full Pulse."
+              : mealDone && !hydrationDone
+                ? 'Good. Now add hydration timing to complete your Nutrition block. Optional inputs below will give you richer insights.'
+                : hydrationDone && !mealDone
+                  ? 'Good. Now add meal timing to complete your Nutrition block. Optional inputs below will give you richer insights.'
+                  : 'Good. Add meal timing and hydration timing to complete your Nutrition block. Optional inputs below will give you richer insights.'}
           </p>
         </div>
 
-        {/* Recommendations from this check-in */}
-        {from === 'meal-timing' && (
-          <section className={styles.card} role="region" aria-labelledby="nutrition-tips-heading">
-            <h2 id="nutrition-tips-heading" className={styles.recommendationsHeading}>
-              {mealTips.length > 0 ? 'Recommendations' : 'Saved'}
-            </h2>
-            {mealTips.length > 0 ? (
-              <ul className={styles.recommendationsList}>
-                {mealTips.map((tip, i) => (
-                  <li key={i}>{tip}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className={styles.recommendationsBody}>
-                Your meal timing is saved. Add hydration, fridge photos, or other blocks on the main dashboard for combined recommendations and your full Pulse.
-              </p>
-            )}
-          </section>
-        )}
-        {from === 'hydration' && (
-          <section className={styles.card} role="region" aria-labelledby="hydration-saved-heading">
-            <h2 id="hydration-saved-heading" className={styles.recommendationsHeading}>
-              Saved
-            </h2>
-            <p className={styles.recommendationsBody}>
-              Your hydration timing is saved. Add meal timing, fridge photos, or body signals and work routine to get combined recommendations and your full Pulse.
-            </p>
-          </section>
+        {!hasRequired && (
+          <>
+            <NutritionProgressChecklist />
+            <WhatNextSection variant="nutrition" />
+          </>
         )}
 
-        {/* Aggregated pulse (same diagram as Body Signals / Work Routine / Pulse page) */}
-        {pulse.combined !== null && (
-          <div id="pulse-score" className={pulseStyles.scoreCard}>
-            <ScoreRing score={pulse.combined} label={scoreCardLabel} />
-            <div className={pulseStyles.diagramSection}>
-              <h3 className={pulseStyles.diagramHeading}>What made it this way</h3>
-              <div className={pulseStyles.diagramBar} aria-hidden="true">
-                {pulse.body !== null && (
-                  <div
-                    className={`${pulseStyles.diagramSegment} ${pulseStyles.diagramSegmentBody} ${!hasBoth ? pulseStyles.diagramSegmentSolo : ''}`}
-                    style={{ width: `${bodyShare}%` }}
-                  />
-                )}
-                {pulse.routine !== null && (
-                  <div
-                    className={`${pulseStyles.diagramSegment} ${pulseStyles.diagramSegmentRoutine} ${!hasBoth ? pulseStyles.diagramSegmentSolo : ''}`}
-                    style={{ width: `${routineShare}%` }}
-                  />
-                )}
-              </div>
-              <div className={pulseStyles.diagramLegend}>
-                {pulse.body !== null && (
-                  <span className={pulseStyles.diagramLegendItem}>
-                    <span className={`${pulseStyles.diagramLegendDot} ${pulseStyles.diagramLegendDotBody}`} aria-hidden />
-                    Body Signals: {bodyScore}%
-                  </span>
-                )}
-                {pulse.routine !== null && (
-                  <span className={pulseStyles.diagramLegendItem}>
-                    <span className={`${pulseStyles.diagramLegendDot} ${pulseStyles.diagramLegendDotRoutine}`} aria-hidden />
-                    Work Routine: {routineScore}%
-                  </span>
-                )}
-              </div>
-              {hasNutrition && (
-                <p className={pulseStyles.aggregationText} style={{ marginTop: 12, marginBottom: 0 }}>
-                  {blockCount === 3
-                    ? 'Recommendations use all three blocks: Body Signals, Work Routine, and Nutrition.'
-                    : 'Add more blocks on the main dashboard to get combined recommendations.'}
+        {hasRequired && (
+          <>
+            {/* Recommendations (three-section pattern: today's pattern / what's shaping / one thing to try) */}
+            <section className={styles.card} role="region" aria-labelledby="nutrition-tips-heading">
+              <h2 id="nutrition-tips-heading" className={styles.recommendationsHeading}>
+                One thing to try
+              </h2>
+              {mealTips.length > 0 ? (
+                <ul className={styles.recommendationsList}>
+                  {mealTips.map((tip, i) => (
+                    <li key={i}>{tip}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className={styles.recommendationsBody}>
+                  Your nutrition block is complete. Add body signals and work routine on the main dashboard for combined recommendations and your full Pulse.
                 </p>
               )}
-            </div>
-          </div>
-        )}
+            </section>
 
-        {from === 'fridge' && hasWallet && <RecipeIdeasSection />}
-        {from === 'fridge' && !hasWallet && (
-          <section className={styles.stabilityCard} role="region" aria-labelledby="recipe-gate-heading">
-            <h2 id="recipe-gate-heading" className={styles.stabilityHeading}>Recipe ideas</h2>
-            <p className={styles.stabilityText}>Connect your wallet to unlock AI recipe ideas from your fridge photos.</p>
-          </section>
-        )}
+            {/* Pulse score only after required nutrition complete; same diagram as Pulse page */}
+            {pulse.combined !== null && (
+              <div id="pulse-score" className={pulseStyles.scoreCard}>
+                <ScoreRing score={pulse.combined} label={scoreCardLabel} />
+                <div className={pulseStyles.diagramSection}>
+                  <h3 className={pulseStyles.diagramHeading}>What made it this way</h3>
+                  <div className={pulseStyles.diagramBar} aria-hidden="true">
+                    {pulse.body !== null && (
+                      <div
+                        className={`${pulseStyles.diagramSegment} ${pulseStyles.diagramSegmentBody} ${!hasBoth ? pulseStyles.diagramSegmentSolo : ''}`}
+                        style={{ width: `${bodyShare}%` }}
+                      />
+                    )}
+                    {pulse.routine !== null && (
+                      <div
+                        className={`${pulseStyles.diagramSegment} ${pulseStyles.diagramSegmentRoutine} ${!hasBoth ? pulseStyles.diagramSegmentSolo : ''}`}
+                        style={{ width: `${routineShare}%` }}
+                      />
+                    )}
+                  </div>
+                  <div className={pulseStyles.diagramLegend}>
+                    {pulse.body !== null && (
+                      <span className={pulseStyles.diagramLegendItem}>
+                        <span className={`${pulseStyles.diagramLegendDot} ${pulseStyles.diagramLegendDotBody}`} aria-hidden />
+                        Body Signals: {bodyScore}%
+                      </span>
+                    )}
+                    {pulse.routine !== null && (
+                      <span className={pulseStyles.diagramLegendItem}>
+                        <span className={`${pulseStyles.diagramLegendDot} ${pulseStyles.diagramLegendDotRoutine}`} aria-hidden />
+                        Work Routine: {routineScore}%
+                      </span>
+                    )}
+                  </div>
+                  {hasNutrition && (
+                    <p className={pulseStyles.aggregationText} style={{ marginTop: 12, marginBottom: 0 }}>
+                      {blockCount === 3
+                        ? 'Recommendations use all three blocks: Body Signals, Work Routine, and Nutrition.'
+                        : 'Add more blocks on the main dashboard to get combined recommendations.'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
-        <WhatNextSection variant="nutrition" />
+            {from === 'fridge' && hasWallet && <RecipeIdeasSection />}
+            {from === 'fridge' && !hasWallet && (
+              <section className={styles.stabilityCard} role="region" aria-labelledby="recipe-gate-heading">
+                <h2 id="recipe-gate-heading" className={styles.stabilityHeading}>Recipe ideas</h2>
+                <p className={styles.stabilityText}>Connect your wallet to unlock AI recipe ideas from your fridge photos.</p>
+              </section>
+            )}
+
+            <WhatNextSection variant="nutrition" />
+          </>
+        )}
       </main>
     </div>
   );

@@ -89,7 +89,7 @@ Note the **program ID** printed after deploy (same as in `declare_id!(...)` and 
 
 Run **once** per token (e.g. once for $PULSE):
 
-1. **Initialize** the vault (owner + mint) — see main [README](./README.md) “Call initialize” for the exact accounts and a TS example.
+1. **Initialize** the vault (owner + mint)  - see main [README](./README.md) “Call initialize” for the exact accounts and a TS example.
 2. **Set redemption rate**: `set_redemption_rate(points_per_token)` (e.g. `100` = 100 points per 1 token).
 3. **Enable daily check-in**: `init_daily_config(daily_check_in_points, cooldown_secs)` (e.g. `30`, `86400`).
 4. **Deposit** tokens into the vault: `deposit(amount)`.

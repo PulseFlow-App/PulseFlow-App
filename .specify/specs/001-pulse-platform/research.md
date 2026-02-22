@@ -98,7 +98,7 @@
 - Clear separation: Blockchain logic isolated in token-service module
 
 **Alternatives considered**:
-- Creating a new token: Not needed — $PULSE already exists on Pump.fun
+- Creating a new token: Not needed  - $PULSE already exists on Pump.fun
 
 ### Image Processing: Sharp (Node.js)
 

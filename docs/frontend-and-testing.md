@@ -4,9 +4,9 @@
 
 **Current state:**
 
-- **Web (PWA)** — `apps/web/` is the main client: Vite + React, login, dashboard, Body Signals, Work Routine, Pulse Lab, Admin cabinet. Deploy to Vercel/Netlify; see [Deploy](./deploy.md).
-- **API** — `apps/api/` is the backend (auth, body logs, insights). Deploy with Root Directory `apps/api`; see [Deploy](./deploy.md).
-- **Spec** — [`.specify/specs/001-pulse-platform/`](../.specify/specs/001-pulse-platform/) holds the full spec and plan.
+- **Web (PWA)**  - `apps/web/` is the main client: Vite + React, login, dashboard, Body Signals, Work Routine, Pulse Lab, Admin cabinet. Deploy to Vercel/Netlify; see [Deploy](./deploy.md).
+- **API**  - `apps/api/` is the backend (auth, body logs, insights). Deploy with Root Directory `apps/api`; see [Deploy](./deploy.md).
+- **Spec**  - [`.specify/specs/001-pulse-platform/`](../.specify/specs/001-pulse-platform/) holds the full spec and plan.
 
 The Expo mobile app has been removed; the project is web-first (PWA) plus API.
 
@@ -48,7 +48,7 @@ Output is in `dist/`. Serve over HTTPS for full PWA behavior (e.g. deploy to Ver
 
 ## $PULSE and the Lab
 
-- **Token:** [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump) — Solana.
+- **Token:** [Pump.fun](https://pump.fun/coin/5ymQv4PBZDgECa4un7tYwXSVSWgFbfz79qg83dpppump)  - Solana.
 - **Lab:** The `/lab` page explains $PULSE, where to buy, and how to lock (lock tokens for as long as you want the paid tier). Set `VITE_LOCKING_URL` in the PWA project to show your locking link.
 - Wallet connection for Premium verification can be added later (e.g. Solana wallet connect on web).
 

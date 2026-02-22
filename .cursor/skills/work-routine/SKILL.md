@@ -1,4 +1,4 @@
-# Work Routine — Block 2 Spec & AI Guidance
+# Work Routine: Block 2 Spec & AI Guidance
 
 This skill defines what **Work Routine** means in Pulse, how it connects to Body Signals, and how the AI (or rule-based engine) should reason. Use it when writing or tuning Work Routine prompts, analysis logic, or UI copy.
 

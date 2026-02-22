@@ -1,4 +1,4 @@
-# Nutrition — Structured Knowledge Base (SKB)
+# Nutrition  - Structured Knowledge Base (SKB)
 
 This folder contains **structured knowledge entries** for the Nutrition block. Use for RAG retrieval or as context when calling an LLM. The rule engine remains the **decision layer**; the LLM adds **interpretation depth** within these constraints.
 
@@ -29,11 +29,11 @@ Signals → Rule engine detects pattern (pattern_type, drivers, context)
 
 ## Format (each .md)
 
-- **Topic** — Domain name.
-- **Evidence summary** — Short, non-diagnostic summary of relationships (for model context).
-- **Relationships** — Bullet cause–effect links (e.g. late first meal → afternoon energy dip).
-- **Allowed language** — "may contribute", "often associated with", "can influence".
-- **Disallowed** — Disease claims, diagnosis, treatment, dosing, calorie targets, fasting protocols, detox.
+- **Topic**  - Domain name.
+- **Evidence summary**  - Short, non-diagnostic summary of relationships (for model context).
+- **Relationships**  - Bullet cause–effect links (e.g. late first meal → afternoon energy dip).
+- **Allowed language**  - "may contribute", "often associated with", "can influence".
+- **Disallowed**  - Disease claims, diagnosis, treatment, dosing, calorie targets, fasting protocols, detox.
 
 ## Sources (traceability)
 

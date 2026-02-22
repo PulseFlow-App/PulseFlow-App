@@ -62,7 +62,7 @@ The app consumes the protocol. The protocol cares about $PULSE. Apple never sees
 ### 3. Governance & direction
 
 - Token holders vote on: which blocks ship next, what metrics to prioritize, what data sources to support; they propose features and allocate research focus.
-- All governance happens on **web**, **Farcaster**, **community channels** — never inside the App Store flow.
+- All governance happens on **web**, **Farcaster**, **community channels**  - never inside the App Store flow.
 
 ### 4. Access to “Pulse Lab” (web-only)
 

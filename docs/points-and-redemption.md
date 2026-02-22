@@ -27,7 +27,7 @@ Common reasons `GET /users/me/points` returns zeros:
 - **Activity not synced:** Activity points come from **check-ins** and **body logs** in the DB. If the app doesn’t call `POST /users/me/check-ins` or `POST /users/me/body-logs`, or `streak`/`checkIns` aren’t sent with the points request, activity (and total) can be 0.
 - **Tables/columns missing:** `users` needs `activity_points`, `referral_points`, `bonus_points` (see [setup-database.md](./setup-database.md)).
 
-**Alternative: earn on-chain (no API).** Use the Solana Reward Vault’s **daily check-in**: users connect their **wallet** and call `daily_check_in` once per cooldown (e.g. 24h). Points are stored on-chain in a PDA; you can show balance by reading that account from the chain. See `contracts/rewards-solana/README.md` — section “Earning points without the API”.
+**Alternative: earn on-chain (no API).** Use the Solana Reward Vault’s **daily check-in**: users connect their **wallet** and call `daily_check_in` once per cooldown (e.g. 24h). Points are stored on-chain in a PDA; you can show balance by reading that account from the chain. See `contracts/rewards-solana/README.md`  - section “Earning points without the API”.
 
 ---
 

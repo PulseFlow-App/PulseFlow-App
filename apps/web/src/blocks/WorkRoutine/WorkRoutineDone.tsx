@@ -1,14 +1,33 @@
 import { Link } from 'react-router-dom';
+import { ScoreRing } from '../../components/ScoreRing';
 import { WhatNextSection } from '../../components/WhatNextSection';
 import { WalletIndicator } from '../../components/WalletIndicator';
 import { useWallet, useHasPulseLabAccess } from '../../contexts/WalletContext';
 import { useOnChainDailyCheckIn } from '../../hooks/useOnChainDailyCheckIn';
+import { useSubscription } from '../../contexts/SubscriptionContext';
+import { getLatestCheckIn, getTodayRoutineScore } from './store';
 import styles from './WorkRoutine.module.css';
 
 export function WorkRoutineDone() {
   const { walletPublicKey, connect, isWalletAvailable, isLoading } = useWallet();
   const hasPulseLabAccess = useHasPulseLabAccess();
+  const { hasActiveSubscription } = useSubscription();
   const { trigger, status, error, canCheckIn } = useOnChainDailyCheckIn();
+
+  const latest = getLatestCheckIn();
+  const isToday = latest && latest.timestamp.slice(0, 10) === new Date().toISOString().slice(0, 10);
+  const score = getTodayRoutineScore();
+  const analysis = isToday ? latest?.analysis : null;
+  const pattern = analysis?.pattern ?? '';
+  const shaping = analysis?.shaping ?? '';
+  const oneThing = analysis?.oneThing ?? '';
+
+  const shapingBullets = shaping
+    ? shaping
+        .split(/\n+/)
+        .map((s) => s.replace(/^[•\-\s]+/, '').trim())
+        .filter(Boolean)
+    : [];
 
   return (
     <div className={styles.page}>
@@ -24,6 +43,49 @@ export function WorkRoutineDone() {
           <p className={styles.subtitle}>
             Here’s your result from this block. Below: go to the main dashboard to add other blocks and get combined recommendations (2 or 3 blocks).
           </p>
+        </div>
+
+        <div className={styles.card}>
+          <div className={styles.scoreSection}>
+            <ScoreRing
+              score={score ?? 0}
+              label={score !== null ? 'Your Work Pulse' : 'No data yet'}
+            />
+          </div>
+          {analysis && (
+            <>
+              {pattern && (
+                <section className={styles.narrativeSection} aria-labelledby="work-pattern-heading">
+                  <h2 id="work-pattern-heading" className={styles.narrativeHeading}>Today’s pattern</h2>
+                  <p className={styles.narrativeText}>{pattern}</p>
+                </section>
+              )}
+              {shapingBullets.length > 0 && (
+                <section className={styles.narrativeSection} aria-labelledby="work-shaping-heading">
+                  <h2 id="work-shaping-heading" className={styles.narrativeHeading}>What’s shaped your work signals</h2>
+                  <ul className={styles.shapingList}>
+                    {shapingBullets.map((line, i) => (
+                      <li key={i} className={styles.shapingItem}>{line}</li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+              {oneThing && (
+                <section className={styles.narrativeSection} aria-labelledby="work-one-heading">
+                  <h2 id="work-one-heading" className={styles.narrativeHeading}>One thing to try</h2>
+                  <p className={styles.narrativeText}>{oneThing}</p>
+                </section>
+              )}
+              {!hasActiveSubscription && oneThing && (
+                <section className={styles.narrativeSection} aria-labelledby="work-get-more-heading">
+                  <h2 id="work-get-more-heading" className={styles.narrativeHeading}>Get more</h2>
+                  <p className={styles.narrativeText}>
+                    <strong>Upgrade to Premium</strong> for your second recommendation (a structured recovery pattern) based on your specific load and break data.
+                  </p>
+                </section>
+              )}
+            </>
+          )}
         </div>
 
         <section className={styles.card} aria-label="On-chain rewards">

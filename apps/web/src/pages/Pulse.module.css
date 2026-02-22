@@ -200,6 +200,25 @@
   margin-bottom: 12px;
 }
 
+.reportDownload {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 20px;
+  font-size: 0.9375rem;
+  color: #737373;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.reportDownload:hover {
+  color: #a3a3a3;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
 .emptyState {
   text-align: center;
   padding: 32px 20px;

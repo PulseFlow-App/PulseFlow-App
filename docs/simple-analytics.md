@@ -121,7 +121,7 @@ np---
 
 - **On a single device:** Yes. The app can build personality and profile from localStorage (body signals, routine, check-ins) and show Daily Pulse and insights on that device.
 - **Across devices or for your analytics:** No. localStorage is per-browser and not synced. To have one profile on phone + laptop, or to see “who uses the app every day” in the admin, you need either:
-  - **Lightweight:** Only track “last seen” (and maybe login count) in the DB—no body/work data—so you can see who’s active daily; personality stays in localStorage, or
+  - **Lightweight:** Only track “last seen” (and maybe login count) in the DB -no body/work data -so you can see who’s active daily; personality stays in localStorage, or
   - **Full sync:** Store body_logs (and optionally work routine) in the DB so profile and personality can be built server-side and shared across devices.
 
 So: **localStorage is enough for personality/profile on one device.** For cross-device or “who comes every day” stats, you need at least last-seen (or an analytics product) in addition.
@@ -135,7 +135,7 @@ So: **localStorage is enough for personality/profile on one device.** For cross-
 
 ### Do I see their logins only once (when they first enter)?
 
-**Yes, with the current setup.** A row in `public.users` is created **once** when they first hit `/auth/sync` (first login). There is no “login event” stored per visit—so you see “user exists” and “signed up at …”, but not “logged in today” or “last active”.
+**Yes, with the current setup.** A row in `public.users` is created **once** when they first hit `/auth/sync` (first login). There is no “login event” stored per visit -so you see “user exists” and “signed up at …”, but not “logged in today” or “last active”.
 
 If you add **last seen** (see below), you’ll see **last time they opened the app** (or synced), which effectively shows “who came recently” and “who comes every day” when you query by `last_seen_at`.
 
