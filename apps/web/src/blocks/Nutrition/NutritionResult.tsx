@@ -10,7 +10,7 @@ import { hasFridgePhotoToday } from './fridgePhotoStore';
 import { setNutritionInsightsForDate } from './nutritionInsightsStore';
 import { getApiUrl } from '../../lib/apiUrl';
 import { getFullAccessForTesting } from '../../lib/featureFlags';
-import { ScoreRing } from '../../components/ScoreRing';
+import { PulseScoreCard } from '../../components/PulseScore';
 import { getCombinedPulse } from '../../stores/combinedPulse';
 import { getBodyLogs } from '../BodySignals/store';
 import { getLatestCheckIn } from '../WorkRoutine/store';
@@ -300,7 +300,13 @@ export function NutritionResult() {
           <>
             <div className={styles.card}>
               <div className={styles.scoreSection}>
-                <ScoreRing score={NUTRITION_BLOCK_SCORE_DEFAULT} label="Your Nutrition Pulse" />
+                <PulseScoreCard
+                  variant="block-only"
+                  score={NUTRITION_BLOCK_SCORE_DEFAULT}
+                  label="Your Nutrition Pulse"
+                  blockKey="nutrition"
+                  compact
+                />
               </div>
               {loadingAI ? (
                 <p className={styles.aiLoading}>Getting your pattern…</p>

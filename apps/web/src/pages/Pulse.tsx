@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ScoreRing } from '../components/ScoreRing';
+import { PulseScoreCard } from '../components/PulseScore';
 import {
   getCombinedPulse,
   hasBodyTodayCheck,
@@ -40,13 +40,7 @@ export function Pulse() {
   const showOfferBodySignals = from === 'work-routine' && !hasBody && hasRoutine;
   const showOfferNutrition = (hasBody || hasRoutine) && !hasNutrition;
 
-  const bodyScore = pulse.body ?? 0;
-  const routineScore = pulse.routine ?? 0;
   const hasBoth = hasBody && hasRoutine;
-  /* When all 3 blocks logged, show three segments in the bar (Body / Work / Nutrition). */
-  const bodyShare = hasAllThree ? 40 : hasBoth ? 50 : pulse.body !== null ? 100 : 0;
-  const routineShare = hasAllThree ? 40 : hasBoth ? 50 : pulse.routine !== null ? 100 : 0;
-  const nutritionShare = hasAllThree ? 20 : 0;
 
   const scoreCardLabel = hasAllThree
     ? 'Your Pulse (all 3 blocks)'
@@ -155,49 +149,20 @@ export function Pulse() {
 
   const scoreCardBlock = pulse.combined !== null ? (
     <div id="pulse-score" className={styles.scoreCard}>
-      <ScoreRing score={pulse.combined} label={scoreCardLabel} />
+      <PulseScoreCard
+        variant="daily-combined"
+        combinedScore={pulse.combined}
+        blocks={{
+          body: pulse.body,
+          work: pulse.routine,
+          nutrition: null,
+        }}
+        nutritionLogged={hasNutrition}
+        title={scoreCardLabel}
+        dateLabel={new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+        showLive
+      />
       <div className={styles.diagramSection}>
-        <h3 className={styles.diagramHeading}>What made it this way</h3>
-        <div className={`${styles.diagramBar} ${hasAllThree ? styles.threeBlocks : ''}`} aria-hidden="true">
-          {pulse.body !== null && bodyShare > 0 && (
-            <div
-              className={`${styles.diagramSegment} ${styles.diagramSegmentBody} ${!hasBoth && !hasAllThree ? styles.diagramSegmentSolo : ''}`}
-              style={{ width: `${bodyShare}%` }}
-            />
-          )}
-          {pulse.routine !== null && routineShare > 0 && (
-            <div
-              className={`${styles.diagramSegment} ${styles.diagramSegmentRoutine} ${!hasBoth && !hasAllThree ? styles.diagramSegmentSolo : ''}`}
-              style={{ width: `${routineShare}%` }}
-            />
-          )}
-          {hasNutrition && nutritionShare > 0 && (
-            <div
-              className={`${styles.diagramSegment} ${styles.diagramSegmentNutrition} ${hasAllThree ? '' : styles.diagramSegmentSolo}`}
-              style={{ width: `${nutritionShare}%` }}
-            />
-          )}
-        </div>
-        <div className={styles.diagramLegend}>
-          {pulse.body !== null && (
-            <span className={styles.diagramLegendItem}>
-              <span className={`${styles.diagramLegendDot} ${styles.diagramLegendDotBody}`} aria-hidden />
-              Body Signals: {bodyScore}%
-            </span>
-          )}
-          {pulse.routine !== null && (
-            <span className={styles.diagramLegendItem}>
-              <span className={`${styles.diagramLegendDot} ${styles.diagramLegendDotRoutine}`} aria-hidden />
-              Work Routine: {routineScore}%
-            </span>
-          )}
-          {hasNutrition && (
-            <span className={styles.diagramLegendItem}>
-              <span className={`${styles.diagramLegendDot} ${styles.diagramLegendDotNutrition}`} aria-hidden />
-              Nutrition: logged
-            </span>
-          )}
-        </div>
         {blockCount === 1 && (
           <p className={styles.ctaText} style={{ marginTop: 12, marginBottom: 0 }}>
             Based on {blockNames(1)} only. Add another block to get combined recommendations that use more of your inputs.

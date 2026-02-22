@@ -10,7 +10,7 @@ import { BlockCard } from '../components/BlockCard';
 import { AppFooter } from '../components/AppFooter';
 import { NextStepModal } from '../components/NextStepModal';
 import { WalletDropdown } from '../components/WalletDropdown';
-import { ScoreRing } from '../components/ScoreRing';
+import { PulseScoreCard } from '../components/PulseScore';
 import { BLOCKS } from '../blocks/registry';
 import styles from './Dashboard.module.css';
 
@@ -127,18 +127,23 @@ export function Dashboard() {
           <div className={styles.heroScoreWrap}>
             <div className={styles.pulseRings}>
               <div className={styles.pulseRingItem}>
-                <ScoreRing
+                <PulseScoreCard
+                  variant="block-only"
                   score={todayScore}
                   label={hasCheckInToday ? "Today's Pulse" : 'No data yet'}
-                  size={100}
+                  blockKey="body"
+                  compact
+                  useScoreColor
                 />
                 <span className={styles.pulseRingLabel}>Today</span>
               </div>
               <div className={styles.pulseRingItem}>
-                <ScoreRing
-                  score={allTime.hasData ? allTime.score : 0}
-                  label={allTime.hasData ? 'All Time Pulse' : 'No data yet'}
-                  size={100}
+                <PulseScoreCard
+                  variant="all-time-pulse"
+                  allTimeScore={allTime.hasData ? allTime.score : 0}
+                  bodyLogCount={allTime.bodyLogCount ?? 0}
+                  checkInCount={allTime.checkInCount ?? 0}
+                  compact
                 />
                 <span className={styles.pulseRingLabel}>All time</span>
               </div>

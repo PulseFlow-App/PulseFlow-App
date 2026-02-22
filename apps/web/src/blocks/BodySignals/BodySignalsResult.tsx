@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ScoreRing } from '../../components/ScoreRing';
+import { PulseScoreCard } from '../../components/PulseScore';
 import { WhatNextSection } from '../../components/WhatNextSection';
 import { computeBodyPulse, computeBodyPulseAsync } from './store';
 import { getExplanationBullets, SignalIcon } from './signalIcons';
@@ -53,7 +53,13 @@ export function BodySignalsResult() {
 
         <div className={styles.card}>
           <div className={styles.scoreSection}>
-            <ScoreRing score={pulse.score} label="Body Pulse" />
+            <PulseScoreCard
+              variant="block-only"
+              score={pulse.score}
+              label="Body Pulse"
+              blockKey="body"
+              compact
+            />
             <div className={styles.trendRow}>
               <span className={styles[`trend_${pulse.trend}`]}>
                 {TREND_SYMBOL[pulse.trend]}

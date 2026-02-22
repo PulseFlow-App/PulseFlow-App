@@ -9,10 +9,12 @@ const PAGE_H = 297;
 const MARGIN = 20;
 const LINE_HEIGHT = 5;
 
+/* Aligned with PulseScore design: #00ff88, #f59e0b, #ef4444 */
 const COLORS = {
-  green: [34, 197, 94] as [number, number, number],
+  green: [0, 255, 136] as [number, number, number],
   amber: [245, 158, 11] as [number, number, number],
   red: [239, 68, 68] as [number, number, number],
+  blue: [59, 130, 246] as [number, number, number],
   gray: [107, 114, 128] as [number, number, number],
   lightGray: [243, 244, 246] as [number, number, number],
   black: [0, 0, 0] as [number, number, number],

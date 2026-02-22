@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ScoreRing } from '../../components/ScoreRing';
+import { PulseScoreCard } from '../../components/PulseScore';
 import { WhatNextSection } from '../../components/WhatNextSection';
 import { getBodyLogs } from '../BodySignals/store';
+import { getCombinedPulse } from '../../stores/combinedPulse';
 import { getLatestCheckIn, getTodayRoutineScore, updateLatestCheckInAnalysis } from './store';
 import type { CheckInAnalysis } from './types';
 import styles from './WorkRoutine.module.css';
@@ -95,6 +96,10 @@ export function WorkRoutineDone() {
 
   const showInsightBlock = analysis && (pattern || shapingBullets.length > 0 || oneThing);
 
+  const pulse = getCombinedPulse();
+  const hasBodyToday = pulse.body !== null;
+  const showDailyPulseUpdate = hasBodyToday && score !== null && (pulse.combined ?? 0) !== (pulse.body ?? 0);
+
   return (
     <div className={styles.page}>
       <header className={styles.headerRow}>
@@ -112,9 +117,12 @@ export function WorkRoutineDone() {
 
         <div className={styles.card}>
           <div className={styles.scoreSection}>
-            <ScoreRing
+            <PulseScoreCard
+              variant="block-only"
               score={score ?? 0}
               label={score !== null ? 'Your Work Pulse' : 'No data yet'}
+              blockKey="work"
+              compact
             />
           </div>
           {loadingAI ? (
@@ -148,6 +156,25 @@ export function WorkRoutineDone() {
               <p className={styles.narrativeText}>Your check-in is saved. Add Body Signals or Nutrition on the main dashboard to get combined recommendations.</p>
             )}
         </div>
+
+        {showDailyPulseUpdate && (
+          <section className={styles.scoreSection} aria-label="Your pulse today">
+            <PulseScoreCard
+              variant="daily-combined"
+              combinedScore={pulse.combined ?? 0}
+              initialCombinedScore={pulse.body ?? 0}
+              blocks={{
+                body: pulse.body,
+                work: pulse.routine,
+                nutrition: null,
+              }}
+              nutritionLogged={false}
+              title="Your pulse today"
+              dateLabel={new Date().toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+              compact
+            />
+          </section>
+        )}
 
         <WhatNextSection />
       </main>
