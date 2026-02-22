@@ -13,6 +13,7 @@ import { getExplanationBullets, SignalIcon } from '../blocks/BodySignals/signalI
 import { getLatestCheckIn } from '../blocks/WorkRoutine/store';
 import { getApiUrl } from '../lib/apiUrl';
 import { buildDailyReportPayload } from '../lib/buildDailyReportPayload';
+import { fetchPulseAggregation, type AggregationResult } from '../lib/buildAggregationPayload';
 import { reportPdfToBlob } from '../lib/reportPdf';
 import type { DailyReportJson } from '../lib/reportTypes';
 import styles from './Pulse.module.css';
@@ -30,6 +31,8 @@ export function Pulse() {
 
   const [bodySnapshot, setBodySnapshot] = useState<BodyPulseSnapshot | null>(null);
   const [loadingBody, setLoadingBody] = useState(false);
+  const [aggregation, setAggregation] = useState<AggregationResult | null>(null);
+  const [loadingAggregation, setLoadingAggregation] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
 
@@ -40,8 +43,10 @@ export function Pulse() {
   const bodyScore = pulse.body ?? 0;
   const routineScore = pulse.routine ?? 0;
   const hasBoth = hasBody && hasRoutine;
-  const bodyShare = hasBoth ? 50 : pulse.body !== null ? 100 : 0;
-  const routineShare = hasBoth ? 50 : pulse.routine !== null ? 100 : 0;
+  /* When all 3 blocks logged, show three segments in the bar (Body / Work / Nutrition). */
+  const bodyShare = hasAllThree ? 40 : hasBoth ? 50 : pulse.body !== null ? 100 : 0;
+  const routineShare = hasAllThree ? 40 : hasBoth ? 50 : pulse.routine !== null ? 100 : 0;
+  const nutritionShare = hasAllThree ? 20 : 0;
 
   const scoreCardLabel = hasAllThree
     ? 'Your Pulse (all 3 blocks)'
@@ -72,6 +77,25 @@ export function Pulse() {
       .then(setBodySnapshot)
       .finally(() => setLoadingBody(false));
   }, [hasBody]);
+
+  useEffect(() => {
+    if (blockCount < 2) {
+      setAggregation(null);
+      setLoadingAggregation(false);
+      return;
+    }
+    const apiBase = getApiUrl();
+    if (!apiBase) {
+      setAggregation(null);
+      setLoadingAggregation(false);
+      return;
+    }
+    setLoadingAggregation(true);
+    setAggregation(null);
+    fetchPulseAggregation(apiBase, bodySnapshot)
+      .then(setAggregation)
+      .finally(() => setLoadingAggregation(false));
+  }, [blockCount, bodySnapshot?.date, hasBody, hasRoutine, hasNutrition]);
 
   useEffect(() => {
     if (!reportError) return;
@@ -134,17 +158,23 @@ export function Pulse() {
       <ScoreRing score={pulse.combined} label={scoreCardLabel} />
       <div className={styles.diagramSection}>
         <h3 className={styles.diagramHeading}>What made it this way</h3>
-        <div className={styles.diagramBar} aria-hidden="true">
-          {pulse.body !== null && (
+        <div className={`${styles.diagramBar} ${hasAllThree ? styles.threeBlocks : ''}`} aria-hidden="true">
+          {pulse.body !== null && bodyShare > 0 && (
             <div
-              className={`${styles.diagramSegment} ${styles.diagramSegmentBody} ${!hasBoth ? styles.diagramSegmentSolo : ''}`}
+              className={`${styles.diagramSegment} ${styles.diagramSegmentBody} ${!hasBoth && !hasAllThree ? styles.diagramSegmentSolo : ''}`}
               style={{ width: `${bodyShare}%` }}
             />
           )}
-          {pulse.routine !== null && (
+          {pulse.routine !== null && routineShare > 0 && (
             <div
-              className={`${styles.diagramSegment} ${styles.diagramSegmentRoutine} ${!hasBoth ? styles.diagramSegmentSolo : ''}`}
+              className={`${styles.diagramSegment} ${styles.diagramSegmentRoutine} ${!hasBoth && !hasAllThree ? styles.diagramSegmentSolo : ''}`}
               style={{ width: `${routineShare}%` }}
+            />
+          )}
+          {hasNutrition && nutritionShare > 0 && (
+            <div
+              className={`${styles.diagramSegment} ${styles.diagramSegmentNutrition} ${hasAllThree ? '' : styles.diagramSegmentSolo}`}
+              style={{ width: `${nutritionShare}%` }}
             />
           )}
         </div>
@@ -188,14 +218,67 @@ export function Pulse() {
       {/* Narrative: 1-, 2-, or 3-block recommendations */}
       {(hasBody || hasRoutine) && (
         <div className={styles.narrativeBlock}>
-          {blockCount >= 2 && (
-            <p className={styles.narrativeIntro}>
+          {blockCount >= 2 && loadingAggregation && (
+            <p className={styles.bodyLoading}>Getting your combined Pulse…</p>
+          )}
+          {blockCount >= 2 && aggregation && !loadingAggregation && (
+            <>
+              {aggregation.pulse_score_framing && (
+                <p className={styles.aggregationText} style={{ marginBottom: 12 }}>
+                  {aggregation.pulse_score_framing}
+                </p>
+              )}
+              <section className={styles.narrativeSection} aria-labelledby="pulse-connects-heading">
+                <h2 id="pulse-connects-heading" className={styles.narrativeHeading}>What&apos;s connecting today</h2>
+                <p className={styles.narrativeText}>{aggregation.what_connects}</p>
+              </section>
+              {aggregation.pulse_drivers.length > 0 && (
+                <section className={styles.narrativeSection} aria-labelledby="pulse-drivers-heading">
+                  <h2 id="pulse-drivers-heading" className={styles.narrativeHeading}>What&apos;s driving your Pulse score</h2>
+                  <ul className={styles.explanationList} aria-label="Cross-block drivers">
+                    {aggregation.pulse_drivers.map((line, i) => (
+                      <li key={i} className={styles.explanationItem}>
+                        <span className={styles.explanationText}>{line}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+              {aggregation.recommendations.length > 0 && (
+                <section className={styles.narrativeSection} aria-labelledby="pulse-recs-heading">
+                  <h2 id="pulse-recs-heading" className={styles.narrativeHeading}>Prioritized recommendations</h2>
+                  <ol className={styles.recommendationList}>
+                    {aggregation.recommendations.map((rec, i) => (
+                      <li key={i} className={styles.recommendationItem}>
+                        <strong>{rec.action}</strong>
+                        {rec.observe && <> – {rec.observe}</>}
+                        {rec.why && <p className={styles.recommendationWhy}>{rec.why}</p>}
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              )}
+              {aggregation.tomorrow_signal && (
+                <section className={styles.narrativeSection} aria-labelledby="pulse-tomorrow-heading">
+                  <h2 id="pulse-tomorrow-heading" className={styles.narrativeHeading}>Tomorrow&apos;s signal to watch</h2>
+                  <p className={styles.narrativeOneThing}>{aggregation.tomorrow_signal}</p>
+                </section>
+              )}
+              {aggregation.cta && (
+                <p className={styles.ctaText} style={{ marginTop: 12 }}>{aggregation.cta}</p>
+              )}
+            </>
+          )}
+          {((!aggregation && !loadingAggregation) || blockCount === 1) && (
+            <>
+              {blockCount >= 2 && (
+                <p className={styles.narrativeIntro}>
               {blockCount === 2
                 ? `Based on your ${blockNames(2)}: what’s shaping your Pulse and one thing to try.`
                 : 'Based on all your inputs: what’s shaping your Pulse and one thing to try.'}
-            </p>
-          )}
-          {hasBody && (
+                </p>
+              )}
+              {hasBody && (
             <>
               {loadingBody ? (
                 <p className={styles.bodyLoading}>Getting your pattern…</p>
@@ -271,6 +354,8 @@ export function Pulse() {
                 You logged nutrition today. Together with body and work data, this gives a fuller picture for your Pulse.
               </p>
             </section>
+          )}
+            </>
           )}
         </div>
       )}

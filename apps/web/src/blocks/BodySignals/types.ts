@@ -37,6 +37,18 @@ export type DailySignalsState = {
   frictionPoints: string[];
 };
 
+/** Aggregation handoff from block AI for Pulse synthesis (when 2+ blocks). */
+export type AggregationHandoff = {
+  block: string;
+  primary_driver?: string;
+  key_signals?: Record<string, unknown>;
+  cross_block_flags?: string[];
+  user_note_literal?: string;
+  experiment?: string;
+  confidence?: 'low' | 'medium' | 'high';
+  [key: string]: unknown;
+};
+
 export type BodyPulseSnapshot = {
   score: number;
   trend: 'up' | 'down' | 'stable';
@@ -52,6 +64,8 @@ export type BodyPulseSnapshot = {
   insightsSource?: 'api' | 'rule-based';
   /** Reason AI was not used (when insightsSource is rule-based) */
   insightsError?: string;
+  /** Passed to Pulse aggregation when 2+ blocks logged */
+  aggregation_handoff?: AggregationHandoff | null;
   date: string;
 };
 

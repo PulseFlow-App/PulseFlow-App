@@ -18,6 +18,19 @@ export type QuestionResponse = {
   score: number;
 };
 
+/** Handoff from block AI for Pulse aggregation (when 2+ blocks). */
+export type AggregationHandoff = {
+  block: string;
+  primary_driver?: string;
+  key_signals?: Record<string, unknown>;
+  cross_block_flags?: string[];
+  body_connection_used?: string | null;
+  user_note_literal?: string;
+  experiment?: string;
+  confidence?: 'low' | 'medium' | 'high';
+  [key: string]: unknown;
+};
+
 export type CheckInAnalysis = {
   /** Legacy / fallback: single-line summary */
   assessment: string;
@@ -30,6 +43,8 @@ export type CheckInAnalysis = {
   shaping?: string;
   /** One thing to observe or try (experiment framing) */
   oneThing?: string;
+  /** For Pulse aggregation when 2+ blocks */
+  aggregation_handoff?: AggregationHandoff | null;
 };
 
 export type WorkspaceType = 'home' | 'office' | 'cafe' | 'other';

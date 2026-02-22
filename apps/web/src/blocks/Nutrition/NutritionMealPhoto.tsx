@@ -115,11 +115,11 @@ function MealPhotoCard({
         <p className={styles.narrativeText}>{analysis.whatsOnPlate}</p>
       </section>
       <section className={styles.narrativeSection} aria-labelledby={`nutrition-${id}`}>
-        <h2 id={`nutrition-${id}`} className={styles.narrativeHeading}>Approximate nutrition</h2>
+        <h2 id={`nutrition-${id}`} className={styles.narrativeHeading}>Approximate nutrition (calories &amp; macros)</h2>
         <p className={styles.narrativeText}>{analysis.approximateNutrition}</p>
       </section>
       <section className={styles.narrativeSection} aria-labelledby={`suggestion-${id}`}>
-        <h2 id={`suggestion-${id}`} className={styles.narrativeHeading}>One suggestion</h2>
+        <h2 id={`suggestion-${id}`} className={styles.narrativeHeading}>What to improve</h2>
         <p className={styles.narrativeText}>{analysis.oneSuggestion}</p>
       </section>
     </article>

@@ -3,7 +3,7 @@
  * Calls backend POST /insights/body-signals when VITE_API_URL is set.
  * Otherwise returns null → rule-based fallback in store.
  */
-import type { BodyLogEntry, DailySignalsState, FactorImpact } from './types';
+import type { BodyLogEntry, DailySignalsState, FactorImpact, AggregationHandoff } from './types';
 
 export type AIInsightsResult = {
   insight: string;
@@ -12,6 +12,8 @@ export type AIInsightsResult = {
   /** Root driver from AI; used in premium gate when present */
   primary_driver?: string;
   factors?: FactorImpact[];
+  /** For Pulse aggregation when 2+ blocks */
+  aggregation_handoff?: AggregationHandoff | null;
 };
 
 const MAX_IMPROVEMENTS = 3;
@@ -52,13 +54,19 @@ function parseAIResponse(text: string): AIInsightsResult | null {
       : [];
     const factors = parseFactors(p.factors);
     const primary_driver = typeof p.primary_driver === 'string' ? p.primary_driver.trim() : undefined;
-    if (!insight && !explanation && improvements.length === 0 && factors.length === 0) return null;
+    const rawHandoff = p.aggregation_handoff;
+    const aggregation_handoff =
+      rawHandoff && typeof rawHandoff === 'object'
+        ? (rawHandoff as AggregationHandoff)
+        : undefined;
+    if (!insight && !explanation && improvements.length === 0 && factors.length === 0 && !aggregation_handoff) return null;
     return {
       insight: insight || 'Your signals are in. Small tweaks may help.',
       explanation: explanation || 'Focus on one or two suggestions below.',
       improvements,
       primary_driver: primary_driver || undefined,
       factors: factors.length ? factors : undefined,
+      aggregation_handoff: aggregation_handoff ?? undefined,
     };
   } catch {
     return null;

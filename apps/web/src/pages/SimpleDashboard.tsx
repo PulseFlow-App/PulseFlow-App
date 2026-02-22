@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useWallet } from '../contexts/WalletContext';
 import { getAppStreak } from '../stores/appStreak';
 import { getBodyLogs } from '../blocks/BodySignals/store';
 import { getCheckIns } from '../blocks/WorkRoutine/store';
@@ -14,7 +13,6 @@ import styles from './Dashboard.module.css';
  */
 export function SimpleDashboard() {
   const { user, signOut } = useAuth();
-  const { connect, isWalletAvailable, isLoading, walletPublicKey } = useWallet();
   const streak = getAppStreak();
   const checkInsCount = getBodyLogs().length + getCheckIns().length;
 
@@ -61,37 +59,6 @@ export function SimpleDashboard() {
             Invite friends
           </Link>
         </div>
-
-        {!walletPublicKey && (
-          <section className={styles.section} aria-label="Unlock more">
-            <div className={styles.upgradeCard}>
-              <h2 className={styles.upgradeTitle}>Unlock full Pulse</h2>
-              <p className={styles.upgradeText}>
-                Connect your wallet to get the full dashboard, leaderboard, on-chain points, and rewards.
-              </p>
-              {isWalletAvailable ? (
-                <button
-                  type="button"
-                  className={styles.upgradeButton}
-                  onClick={connect}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Connecting…' : 'Connect wallet'}
-                </button>
-              ) : (
-                <a
-                  href="https://phantom.app/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.upgradeButton}
-                  title="Phantom, Solflare, or any Solana wallet"
-                >
-                  Connect wallet
-                </a>
-              )}
-            </div>
-          </section>
-        )}
 
         <AppFooter />
       </main>

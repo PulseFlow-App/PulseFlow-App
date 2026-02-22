@@ -7,6 +7,7 @@ import { hasReflectionsToday } from './postMealReflectionStore';
 import { getPostMealReflections } from './postMealReflectionStore';
 import { hasMealPhotosToday, getMealPhotoInsightsForDate } from './mealPhotoStore';
 import { hasFridgePhotoToday } from './fridgePhotoStore';
+import { setNutritionInsightsForDate } from './nutritionInsightsStore';
 import { getApiUrl } from '../../lib/apiUrl';
 import { getFullAccessForTesting } from '../../lib/featureFlags';
 import { ScoreRing } from '../../components/ScoreRing';
@@ -14,7 +15,6 @@ import { getCombinedPulse } from '../../stores/combinedPulse';
 import { getBodyLogs } from '../BodySignals/store';
 import { getLatestCheckIn } from '../WorkRoutine/store';
 import { WhatNextSection } from '../../components/WhatNextSection';
-import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useHasWallet } from '../../contexts/WalletContext';
 import styles from './Nutrition.module.css';
 
@@ -119,10 +119,10 @@ function RecipeIdeasSection() {
   return (
     <section className={styles.recipeIdeasCard} role="region" aria-labelledby="recipe-ideas-heading">
       <h2 id="recipe-ideas-heading" className={styles.recipeIdeasHeading}>
-        Recipe ideas from your fridge
+        What to cook from what&apos;s in your fridge
       </h2>
       <p className={styles.recipeIdeasIntro}>
-        AI will detect ingredients in your photos and suggest meals you can make. Results use only what it sees; no guessing.
+        AI recognizes items in your fridge photos and suggests recipes you can make with them.
       </p>
       {!result && !error && (
         <button
@@ -196,7 +196,6 @@ const NUTRITION_BLOCK_SCORE_DEFAULT = 80;
 
 export function NutritionResult() {
   const hasWallet = useHasWallet();
-  const { hasActiveSubscription } = useSubscription();
   const fullAccessForTesting = getFullAccessForTesting();
   const showWalletGatedContent = hasWallet || fullAccessForTesting;
   const location = useLocation();
@@ -206,10 +205,12 @@ export function NutritionResult() {
 
   const mealDone = hasMealTimingToday();
   const hydrationDone = hasHydrationTimingToday();
-  const hasRequired = mealDone && hydrationDone;
+  const reflectionsDone = hasReflectionsToday();
+  /* Unlock AI recommendations and "View full Pulse" only after meal timing + hydration + post-meal reflection (agenda order). */
+  const hasRequiredForUnlock = mealDone && hydrationDone && reflectionsDone;
 
   const [loadingAI, setLoadingAI] = useState(false);
-  const [aiOutput, setAiOutput] = useState<{ pattern: string; shaping: string; oneThing: string } | null>(null);
+  const [aiOutput, setAiOutput] = useState<{ pattern: string; shaping: string; oneThing: string; aggregation_handoff?: Record<string, unknown> | null } | null>(null);
 
   const pulse = getCombinedPulse();
   const blockCount = pulse.blockCount;
@@ -218,7 +219,7 @@ export function NutritionResult() {
   const optionalDataVersion = getPostMealReflections().length + (getLatestFridgeLog()?.id ?? '');
 
   useEffect(() => {
-    if (!hasRequired) {
+    if (!hasRequiredForUnlock) {
       setAiOutput(null);
       return;
     }
@@ -243,18 +244,19 @@ export function NutritionResult() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && typeof data.pattern === 'string') {
-          setAiOutput({
-            pattern: data.pattern.trim(),
-            shaping: typeof data.shaping === 'string' ? data.shaping.trim() : '',
-            oneThing: typeof data.oneThing === 'string' ? data.oneThing.trim() : '',
-          });
+          const pattern = data.pattern.trim();
+          const shaping = typeof data.shaping === 'string' ? data.shaping.trim() : '';
+          const oneThing = typeof data.oneThing === 'string' ? data.oneThing.trim() : '';
+          const aggregation_handoff = data.aggregation_handoff && typeof data.aggregation_handoff === 'object' ? data.aggregation_handoff : null;
+          setAiOutput({ pattern, shaping, oneThing, aggregation_handoff });
+          setNutritionInsightsForDate(todayStr(), { date: todayStr(), pattern, shaping, oneThing, aggregation_handoff });
         } else {
           setAiOutput(null);
         }
       })
       .catch(() => setAiOutput(null))
       .finally(() => setLoadingAI(false));
-  }, [hasRequired, optionalDataVersion]);
+  }, [hasRequiredForUnlock, optionalDataVersion]);
 
   const shapingBullets = aiOutput?.shaping
     ? aiOutput.shaping
@@ -274,27 +276,27 @@ export function NutritionResult() {
       <main id="main" className={styles.main}>
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>
-            {hasRequired ? 'Your Nutrition Pulse' : SOURCE_LABELS[from]}
+            {hasRequiredForUnlock ? 'Your Nutrition Pulse' : SOURCE_LABELS[from]}
           </h1>
           <p className={styles.subtitle}>
-            {hasRequired
+            {hasRequiredForUnlock
               ? "Here's your result from this block. See your Pulse below, then go to the main dashboard or view your full Pulse."
-              : mealDone && !hydrationDone
-                ? 'Add hydration timing to complete your Nutrition block. Optional inputs below give you richer insights.'
-                : hydrationDone && !mealDone
-                  ? 'Add meal timing to complete your Nutrition block. Optional inputs below give you richer insights.'
-                  : 'Add meal timing and hydration timing to complete your Nutrition block. Optional inputs below give you richer insights.'}
+              : !mealDone
+                ? 'Complete the steps below in order: meal timing, then hydration, then post-meal reflection. After that you’ll see your nutrition recommendations and link to your full Pulse.'
+                : mealDone && !hydrationDone
+                  ? 'Next: add hydration timing. Then post-meal reflection. After both you’ll see your nutrition recommendations.'
+                  : 'Next: add post-meal reflection. After that you’ll see your nutrition AI recommendations and link to your full Pulse.'}
           </p>
         </div>
 
-        {!hasRequired && (
+        {!hasRequiredForUnlock && (
           <>
             <NutritionProgressChecklist />
             <WhatNextSection variant="nutrition" />
           </>
         )}
 
-        {hasRequired && (
+        {hasRequiredForUnlock && (
           <>
             <div className={styles.card}>
               <div className={styles.scoreSection}>
@@ -325,14 +327,6 @@ export function NutritionResult() {
                       <section className={styles.narrativeSection} aria-labelledby="nutrition-one-heading">
                         <h2 id="nutrition-one-heading" className={styles.narrativeHeading}>One thing to try</h2>
                         <p className={styles.narrativeText}>{aiOutput!.oneThing}</p>
-                      </section>
-                    )}
-                    {!hasActiveSubscription && aiOutput!.oneThing && (
-                      <section className={styles.narrativeSection} aria-labelledby="nutrition-get-more-heading">
-                        <h2 id="nutrition-get-more-heading" className={styles.narrativeHeading}>Get more</h2>
-                        <p className={styles.narrativeText}>
-                          Upgrade to Premium for a recommendation based on how your nutrition pattern connected to your body signals and work day.
-                        </p>
                       </section>
                     )}
                   </>

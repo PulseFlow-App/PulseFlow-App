@@ -2,9 +2,17 @@
  * Body Signals: narrative-first Pulse insights.
  * One main insight, causal chains, one small experiment. No repetition, no tables, no generic tips.
  * Aligned with: body-signals-system-prompt.md and body-signals-physiology skill.
+ * Optional LLM path when GEMINI_API_KEY is set; returns aggregation_handoff for Pulse synthesis.
  */
 
+const path = require('path');
+const fs = require('fs');
+
 const MAX_IMPROVEMENTS = 1; // One thing to try, not a list
+
+const GEMINI_MODEL = 'gemini-1.5-flash';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const BODY_SYSTEM_PROMPT_PATH = path.join(__dirname, '../../../../ai-engine/prompts/body-signals-system-prompt.md');
 
 // Extract themes from free-text notes (case-insensitive).
 // Distinguish "no/low appetite" from "high hunger" so we don't say "you mentioned appetite or hunger" when they said the opposite.
@@ -348,4 +356,113 @@ function computeInsights(body) {
   };
 }
 
-module.exports = { computeInsights, getNoteThemes, buildFactors };
+// ----- Optional LLM path (when GEMINI_API_KEY set). Returns aggregation_handoff for Pulse aggregation. -----
+function getBodySystemPrompt() {
+  try {
+    return fs.readFileSync(BODY_SYSTEM_PROMPT_PATH, 'utf8');
+  } catch {
+    return null;
+  }
+}
+
+function buildBodyUserMessage(payload) {
+  const parts = [
+    'Body signals (today):',
+    JSON.stringify(
+      {
+        entry: payload.entry || {},
+        score: payload.score,
+        trend: payload.trend,
+        frictionPoints: payload.frictionPoints || [],
+        recentEntries: (payload.recentEntries || []).slice(0, 7),
+      },
+      null,
+      2
+    ),
+  ];
+  if (payload.work && typeof payload.work === 'object') {
+    parts.push('', 'Work block (for context):', JSON.stringify(payload.work, null, 2));
+  }
+  if (payload.nutrition && typeof payload.nutrition === 'object') {
+    parts.push('', 'Nutrition block (for context):', JSON.stringify(payload.nutrition, null, 2));
+  }
+  parts.push(
+    '',
+    'Respond with only a single JSON object, no markdown or code fence. Keys: todays_pattern (string), shaping (string, 2-5 bullet lines separated by \\n, each line may start with •), improvement (string, one recommendation), aggregation_handoff (object with: block "body", primary_driver string, key_signals object, cross_block_flags array of strings, user_note_literal string, experiment string, confidence "low"|"medium"|"high").'
+  );
+  return parts.join('\n');
+}
+
+function parseBodyLLMResponse(text) {
+  if (!text || typeof text !== 'string') return null;
+  const trimmed = text.trim().replace(/^```json\s*|\s*```$/g, '').trim();
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (!parsed || typeof parsed !== 'object') return null;
+    const todays_pattern = typeof parsed.todays_pattern === 'string' ? parsed.todays_pattern.trim() : '';
+    const shaping = typeof parsed.shaping === 'string' ? parsed.shaping.trim() : '';
+    const improvement = typeof parsed.improvement === 'string' ? parsed.improvement.trim() : '';
+    const rawHandoff = parsed.aggregation_handoff;
+    const aggregation_handoff =
+      rawHandoff && typeof rawHandoff === 'object'
+        ? {
+            block: 'body',
+            primary_driver: typeof rawHandoff.primary_driver === 'string' ? rawHandoff.primary_driver.trim() : '',
+            key_signals: rawHandoff.key_signals && typeof rawHandoff.key_signals === 'object' ? rawHandoff.key_signals : {},
+            cross_block_flags: Array.isArray(rawHandoff.cross_block_flags) ? rawHandoff.cross_block_flags.filter((s) => typeof s === 'string') : [],
+            user_note_literal: typeof rawHandoff.user_note_literal === 'string' ? rawHandoff.user_note_literal : '',
+            experiment: typeof rawHandoff.experiment === 'string' ? rawHandoff.experiment : '',
+            confidence: ['low', 'medium', 'high'].includes(rawHandoff.confidence) ? rawHandoff.confidence : 'medium',
+          }
+        : null;
+    if (!todays_pattern && !shaping && !improvement) return null;
+    return {
+      insight: todays_pattern || 'Your signals are in. Small tweaks may help.',
+      explanation: shaping || 'Focus on one or two suggestions below.',
+      improvements: improvement ? [improvement] : [],
+      factors: [],
+      aggregation_handoff,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Call Gemini for body insights when API key is set. Returns { insight, explanation, improvements, factors, aggregation_handoff } or { error }.
+ */
+async function computeBodyInsightsLLM(payload) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key || !key.trim()) return null;
+
+  const systemPrompt = getBodySystemPrompt();
+  if (!systemPrompt) return null;
+
+  const userMessage = buildBodyUserMessage(payload);
+  const body = {
+    system_instruction: { parts: [{ text: systemPrompt + '\n\n---\nOutput: ' + 'Respond with only a JSON object. Keys: todays_pattern, shaping, improvement, aggregation_handoff. No markdown.' }] },
+    contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+    generationConfig: { temperature: 0.3, maxOutputTokens: 1024 },
+  };
+
+  const res = await fetch(`${GEMINI_URL}?key=${encodeURIComponent(key)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).catch(() => null);
+  if (!res || !res.ok) return null;
+
+  const data = await res.json().catch(() => ({}));
+  const textPart = data?.candidates?.[0]?.content?.parts?.find((p) => p.text);
+  const text = textPart?.text?.trim();
+  if (!text) return null;
+
+  return parseBodyLLMResponse(text);
+}
+
+module.exports = {
+  computeInsights,
+  computeBodyInsightsLLM,
+  getNoteThemes,
+  buildFactors,
+};

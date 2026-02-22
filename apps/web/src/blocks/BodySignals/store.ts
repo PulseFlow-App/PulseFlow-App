@@ -278,6 +278,7 @@ export async function computeBodyPulseAsync(): Promise<BodyPulseSnapshot> {
       primary_driver: r.primary_driver?.trim() || undefined,
       factors: r.factors?.length ? r.factors : ruleBased.factors,
       insightsSource: 'api',
+      aggregation_handoff: r.aggregation_handoff ?? undefined,
       date: ruleBased.date,
     };
   }

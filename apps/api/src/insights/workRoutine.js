@@ -40,6 +40,20 @@ function buildUserMessage(work, bodyEntry) {
   return parts.join('\n');
 }
 
+function parseHandoff(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  return {
+    block: 'work',
+    primary_driver: typeof raw.primary_driver === 'string' ? raw.primary_driver.trim() : '',
+    key_signals: raw.key_signals && typeof raw.key_signals === 'object' ? raw.key_signals : {},
+    cross_block_flags: Array.isArray(raw.cross_block_flags) ? raw.cross_block_flags.filter((s) => typeof s === 'string') : [],
+    body_connection_used: typeof raw.body_connection_used === 'string' ? raw.body_connection_used : null,
+    user_note_literal: typeof raw.user_note_literal === 'string' ? raw.user_note_literal : '',
+    experiment: typeof raw.experiment === 'string' ? raw.experiment : '',
+    confidence: ['low', 'medium', 'high'].includes(raw.confidence) ? raw.confidence : 'medium',
+  };
+}
+
 function parseResponse(text) {
   if (!text || typeof text !== 'string') return null;
   const trimmed = text.trim().replace(/^```json\s*|\s*```$/g, '').trim();
@@ -50,10 +64,12 @@ function parseResponse(text) {
     const shaping = typeof parsed.shaping === 'string' ? parsed.shaping.trim() : '';
     const oneThing = typeof parsed.oneThing === 'string' ? parsed.oneThing.trim() : '';
     if (!pattern && !shaping && !oneThing) return null;
+    const aggregation_handoff = parseHandoff(parsed.aggregation_handoff);
     return {
       pattern: pattern || '',
       shaping: shaping || '',
       oneThing: oneThing || '',
+      ...(aggregation_handoff && { aggregation_handoff }),
     };
   } catch {
     return null;
@@ -70,7 +86,7 @@ async function computeWorkRoutineInsights(work, bodyEntry) {
   }
 
   const systemPrompt = getSystemPrompt();
-  const systemWithJson = systemPrompt + '\n\n---\nOutput: Respond with only a JSON object, no markdown or code fence. Keys: pattern (string), shaping (string, 2-3 bullet lines separated by newline, each line may start with •), oneThing (string).';
+  const systemWithJson = systemPrompt + '\n\n---\nOutput: Respond with only a JSON object, no markdown or code fence. Keys: pattern (string), shaping (string), oneThing (string), aggregation_handoff (object with: block "work", primary_driver string, key_signals object, cross_block_flags array, body_connection_used string or null, user_note_literal string, experiment string, confidence "low"|"medium"|"high").';
   const userMessage = buildUserMessage(work, bodyEntry);
 
   const body = {

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useWallet } from '../contexts/WalletContext';
 import { AppFooter } from '../components/AppFooter';
 import styles from './Login.module.css';
 
@@ -9,8 +8,7 @@ const REFERRAL_STORAGE_KEY = '@pulse/referral_code';
 
 export function Login() {
   const [searchParams] = useSearchParams();
-  const { user, signIn, signInWithGoogle, sendLoginCode, verifyLoginCode, isGoogleAuth } = useAuth();
-  const { walletPublicKey, connect, disconnect, isLoading: walletLoading } = useWallet();
+  const { user, signInWithGoogle, sendLoginCode, verifyLoginCode, isGoogleAuth } = useAuth();
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
@@ -42,17 +40,6 @@ export function Login() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleEmailSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    const trimmed = email.trim();
-    if (!trimmed) {
-      setError('Email is required');
-      return;
-    }
-    signIn(trimmed);
   };
 
   const handleSendCode = async (e: React.FormEvent) => {
@@ -121,10 +108,10 @@ export function Login() {
 
         {isGoogleAuth && <p className={styles.divider}>or</p>}
 
-        {/* Email */}
+        {/* Email: code-only sign-in */}
         <div className={styles.form}>
           <label className={styles.label} htmlFor="login-email">
-            Email
+            Or sign in with email
           </label>
           <input
             id="login-email"
@@ -141,21 +128,11 @@ export function Login() {
             disabled={codeSent}
           />
           {!codeSent ? (
-            <>
-              <div className={styles.emailActions}>
-                <form onSubmit={handleEmailSubmit} className={styles.inlineForm}>
-                  <button type="submit" className={styles.button}>
-                    Continue with email
-                  </button>
-                </form>
-                <span className={styles.emailActionsOr}>or</span>
-                <form onSubmit={handleSendCode} className={styles.inlineForm}>
-                  <button type="submit" className={styles.buttonSecondary} disabled={loading}>
-                    {loading ? 'Sending…' : 'Send me a code'}
-                  </button>
-                </form>
-              </div>
-            </>
+            <form onSubmit={handleSendCode} className={styles.inlineForm}>
+              <button type="submit" className={styles.button} disabled={loading}>
+                {loading ? 'Sending…' : 'Send me a code'}
+              </button>
+            </form>
           ) : (
             <form onSubmit={handleVerifyCode} className={styles.form}>
               <p className={styles.codeSent}>We sent a code to {email}. Enter it below.</p>
@@ -191,31 +168,6 @@ export function Login() {
             </form>
           )}
           {error && <p className={styles.error}>{error}</p>}
-        </div>
-
-        <p className={styles.divider}>Optional: connect a Solana wallet (for rewards)</p>
-
-        {/* Wallet */}
-        <div className={styles.walletBlock}>
-          {walletPublicKey ? (
-            <div className={styles.walletConnected}>
-              <span className={styles.walletAddress} title={walletPublicKey}>
-                {walletPublicKey.slice(0, 4)}…{walletPublicKey.slice(-4)}
-              </span>
-              <button type="button" onClick={disconnect} className={styles.walletDisconnect}>
-                Disconnect
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className={styles.buttonSecondary}
-              onClick={connect}
-              disabled={walletLoading}
-            >
-              {walletLoading ? 'Connecting…' : 'Connect wallet'}
-            </button>
-          )}
         </div>
 
         {!isGoogleAuth && (

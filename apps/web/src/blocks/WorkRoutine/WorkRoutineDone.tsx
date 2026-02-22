@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ScoreRing } from '../../components/ScoreRing';
 import { WhatNextSection } from '../../components/WhatNextSection';
-import { useSubscription } from '../../contexts/SubscriptionContext';
 import { getBodyLogs } from '../BodySignals/store';
 import { getLatestCheckIn, getTodayRoutineScore, updateLatestCheckInAnalysis } from './store';
 import type { CheckInAnalysis } from './types';
@@ -30,7 +29,6 @@ function getTodayBodyEntry(): Record<string, unknown> | undefined {
 }
 
 export function WorkRoutineDone() {
-  const { hasActiveSubscription } = useSubscription();
   const [loadingAI, setLoadingAI] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<CheckInAnalysis | null | undefined>(undefined);
 
@@ -61,6 +59,7 @@ export function WorkRoutineDone() {
             pattern: data.pattern.trim(),
             shaping: typeof data.shaping === 'string' ? data.shaping.trim() : '',
             oneThing: typeof data.oneThing === 'string' ? data.oneThing.trim() : '',
+            aggregation_handoff: data.aggregation_handoff && typeof data.aggregation_handoff === 'object' ? data.aggregation_handoff : undefined,
           };
           updateLatestCheckInAnalysis(analysis);
           setAiAnalysis(analysis);
@@ -76,8 +75,9 @@ export function WorkRoutineDone() {
       .finally(() => setLoadingAI(false));
   }, [API_BASE, isToday, latest?.id]);
 
+  /* When API returns null (fail or no data), fall back to stored rule-based analysis so user always sees recommendations. */
   const analysis =
-    aiAnalysis !== undefined
+    aiAnalysis !== undefined && aiAnalysis !== null
       ? aiAnalysis
       : isToday
         ? latest?.analysis
@@ -106,7 +106,7 @@ export function WorkRoutineDone() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Check-in saved</h1>
           <p className={styles.subtitle}>
-            Here’s your result from this block. Below: go to the main dashboard to add other blocks and get combined recommendations (2 or 3 blocks).
+            Here’s your result from this block: your Work Pulse and recommendations below. Then add other blocks on the main dashboard for combined insights.
           </p>
         </div>
 
@@ -119,8 +119,7 @@ export function WorkRoutineDone() {
           </div>
           {loadingAI ? (
             <p className={styles.aiLoading}>Getting your pattern…</p>
-          ) : (
-            showInsightBlock && (
+          ) : showInsightBlock ? (
               <>
                 {pattern && (
                   <section className={styles.narrativeSection} aria-labelledby="work-pattern-heading">
@@ -144,17 +143,10 @@ export function WorkRoutineDone() {
                     <p className={styles.narrativeText}>{oneThing}</p>
                   </section>
                 )}
-                {!hasActiveSubscription && oneThing && (
-                  <section className={styles.narrativeSection} aria-labelledby="work-get-more-heading">
-                    <h2 id="work-get-more-heading" className={styles.narrativeHeading}>Get more</h2>
-                    <p className={styles.narrativeText}>
-                      Upgrade to Premium for a structured recovery pattern based on your specific load and break data.
-                    </p>
-                  </section>
-                )}
               </>
-            )
-          )}
+            ) : (
+              <p className={styles.narrativeText}>Your check-in is saved. Add Body Signals or Nutrition on the main dashboard to get combined recommendations.</p>
+            )}
         </div>
 
         <WhatNextSection />

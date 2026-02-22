@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ScoreRing } from '../../components/ScoreRing';
 import { WhatNextSection } from '../../components/WhatNextSection';
-import { useSubscription } from '../../contexts/SubscriptionContext';
-import { useHasWallet } from '../../contexts/WalletContext';
 import { computeBodyPulse, computeBodyPulseAsync } from './store';
 import { getExplanationBullets, SignalIcon } from './signalIcons';
 import type { BodyPulseSnapshot } from './types';
@@ -29,8 +27,6 @@ function ExplanationWithIcons({ explanation }: { explanation: string }) {
 }
 
 export function BodySignalsResult() {
-  const { hasActiveSubscription } = useSubscription();
-  const hasWallet = useHasWallet();
   const [pulse, setPulse] = useState<BodyPulseSnapshot>(() => computeBodyPulse());
   const [loadingAI, setLoadingAI] = useState(true);
 
@@ -84,19 +80,10 @@ export function BodySignalsResult() {
                     <p className={styles.narrativeText}>{pulse.improvements[0]}</p>
                   </section>
                 )}
-                {hasActiveSubscription && pulse.improvements.length > 1 && (
-                  <section className={styles.narrativeSection} aria-labelledby="result-advanced-heading">
-                    <h2 id="result-advanced-heading" className={styles.narrativeHeading}>Second recommendation (Premium)</h2>
+                {pulse.improvements.length > 1 && (
+                  <section className={styles.narrativeSection} aria-labelledby="result-second-heading">
+                    <h2 id="result-second-heading" className={styles.narrativeHeading}>Another thing to try</h2>
                     <p className={styles.narrativeText}>{pulse.improvements[1]}</p>
-                  </section>
-                )}
-                {!hasActiveSubscription && pulse.improvements.length > 0 && !loadingAI && (
-                  <section className={styles.narrativeSection} aria-labelledby="result-subscription-cta-heading">
-                    <h2 id="result-subscription-cta-heading" className={styles.narrativeHeading}>Get more</h2>
-                    <p className={styles.narrativeText}>
-                      Upgrade to Premium for your second recommendation — a targeted adjustment based on your {pulse.primary_driver || 'signals'} pattern.
-                      {!hasWallet && ' Connect your wallet for on-chain points and rewards.'}
-                    </p>
                   </section>
                 )}
               </>

@@ -110,18 +110,19 @@
 }
 
 .scoreCard {
-  background: rgba(23, 23, 23, 0.6);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 24px;
+  background: linear-gradient(145deg, rgba(23, 23, 23, 0.85) 0%, rgba(15, 18, 22, 0.9) 100%);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  padding: 28px 24px;
   margin-bottom: 24px;
   text-align: center;
 }
 
 .diagramSection {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .diagramHeading {
@@ -157,8 +158,21 @@
   border-radius: 0 14px 14px 0;
 }
 
+.diagramSegmentNutrition {
+  background: linear-gradient(90deg, #d97706, #f59e0b);
+  border-radius: 0 14px 14px 0;
+}
+
 .diagramSegmentSolo {
   border-radius: 14px;
+}
+
+.diagramBar.threeBlocks .diagramSegmentRoutine {
+  border-radius: 0;
+}
+
+.diagramBar.threeBlocks .diagramSegmentNutrition {
+  border-radius: 0 14px 14px 0;
 }
 
 .diagramLegend {
@@ -408,4 +422,28 @@
 .explanationText {
   flex: 1;
   min-width: 0;
+}
+
+.recommendationList {
+  list-style: decimal;
+  margin: 0 0 0 1.25em;
+  padding: 0;
+}
+
+.recommendationItem {
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.recommendationItem:last-child {
+  margin-bottom: 0;
+}
+
+.recommendationWhy {
+  font-size: 0.8125rem;
+  color: #a3a3a3;
+  margin: 4px 0 0;
+  line-height: 1.4;
 }

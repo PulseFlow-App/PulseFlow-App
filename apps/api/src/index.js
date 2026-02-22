@@ -483,20 +483,32 @@ app.post('/users/me/check-ins', authMiddleware, (req, res) => {
 });
 
 // ----- Insights (note-aware, with factors) -----
-const { computeInsights } = require('./insights/bodySignals');
+const { computeInsights, computeBodyInsightsLLM } = require('./insights/bodySignals');
 const { callGemini } = require('./insights/recipesFromFridge');
 const { computeWorkRoutineInsights } = require('./insights/workRoutine');
 const { computeNutritionInsights } = require('./insights/nutrition');
 const { computeMealPhotoInsights } = require('./insights/mealPhoto');
 const { computeFridgePhotoInsights } = require('./insights/fridgePhoto');
+const { computePulseAggregation } = require('./insights/pulseAggregation');
 const { generateDailyReport } = require('./report/dailyReport');
 
-app.post('/insights/body-signals', (req, res) => {
+app.post('/insights/body-signals', async (req, res) => {
   if (!security.isBodyWithinLimit(req, security.MAX_INSIGHTS_BODY_BYTES)) {
     return res.status(413).json({ message: 'Request too large' });
   }
   try {
     const payload = req.body || {};
+    const llmResult = await computeBodyInsightsLLM(payload);
+    if (llmResult && !llmResult.error) {
+      const { insight, explanation, improvements, factors, aggregation_handoff } = llmResult;
+      return res.json({
+        insight,
+        explanation,
+        improvements: improvements || [],
+        factors: factors || [],
+        ...(aggregation_handoff && { aggregation_handoff }),
+      });
+    }
     const { insight, explanation, improvements, factors } = computeInsights(payload);
     return res.json({ insight, explanation, improvements, factors: factors || [] });
   } catch (err) {
@@ -611,6 +623,36 @@ app.post('/insights/nutrition', async (req, res) => {
   } catch (err) {
     console.error('insights/nutrition error', err);
     return res.status(500).json({ message: 'Nutrition insights failed' });
+  }
+});
+
+// ----- Pulse aggregation (2+ blocks). Cross-block synthesis for Pulse page. -----
+app.post('/insights/pulse-aggregation', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const { mode, blocks_logged, handoffs, raw, date } = payload;
+    if (!handoffs || typeof handoffs !== 'object') {
+      return res.status(400).json({ message: 'Send handoffs (object with body, work, nutrition).' });
+    }
+    const blocks = Array.isArray(blocks_logged) ? blocks_logged : [];
+    if (blocks.length < 2) {
+      return res.status(400).json({ message: 'Aggregation requires at least 2 blocks logged.' });
+    }
+    const input = {
+      mode: mode === 'three_block' ? 'three_block' : 'two_block',
+      date: typeof date === 'string' ? date : new Date().toISOString().slice(0, 10),
+      blocks_logged: blocks,
+      handoffs,
+      raw: raw && typeof raw === 'object' ? raw : {},
+    };
+    const result = await computePulseAggregation(input);
+    if (result.error) {
+      return res.status(503).json({ message: result.error });
+    }
+    return res.json(result);
+  } catch (err) {
+    console.error('insights/pulse-aggregation error', err);
+    return res.status(500).json({ message: 'Pulse aggregation failed' });
   }
 });
 
