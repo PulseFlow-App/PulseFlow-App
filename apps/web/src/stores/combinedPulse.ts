@@ -4,9 +4,9 @@
  */
 import { hasBodyToday, getTodayBodyScore, getBodyLogs, calculatePulseScore } from '../blocks/BodySignals/store';
 import { hasRoutineToday, getTodayRoutineScore, getCheckIns, getScoreForCheckIn } from '../blocks/WorkRoutine/store';
-import { hasFridgeLogToday } from '../blocks/Nutrition/store';
-import { hasMealTimingToday } from '../blocks/Nutrition/mealTimingStore';
-import { hasHydrationTimingToday } from '../blocks/Nutrition/hydrationTimingStore';
+import { hasFridgeLogToday, getFridgeLogs } from '../blocks/Nutrition/store';
+import { hasMealTimingToday, getMealTimingEntries } from '../blocks/Nutrition/mealTimingStore';
+import { hasHydrationTimingToday, getHydrationTimingEntries } from '../blocks/Nutrition/hydrationTimingStore';
 
 export type CombinedPulseSource = 'body' | 'routine' | 'nutrition';
 
@@ -48,8 +48,8 @@ export function getCombinedPulse(): CombinedPulseResult {
   };
 }
 
-/** Aggregated pulse from all body log-ins and all work routine check-ins. */
-export function getAggregatedPulse(): {
+/** All-time pulse from all body logs and all work check-ins (combined). */
+export function getAllTimePulse(): {
   score: number;
   bodyLogCount: number;
   checkInCount: number;
@@ -70,6 +70,40 @@ export function getAggregatedPulse(): {
     checkInCount: checkIns.length,
     hasData: count > 0,
   };
+}
+
+/** @deprecated Use getAllTimePulse. Kept for compatibility. */
+export function getAggregatedPulse() {
+  return getAllTimePulse();
+}
+
+/** All-time Body Signals pulse (body logs only). */
+export function getAllTimeBodyPulse(): { score: number; hasData: boolean } {
+  const bodyLogs = getBodyLogs();
+  if (bodyLogs.length === 0) return { score: 0, hasData: false };
+  const scores = bodyLogs.map((entry) => calculatePulseScore(entry, bodyLogs));
+  const score = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  return { score: Math.max(0, Math.min(100, score)), hasData: true };
+}
+
+/** All-time Work Routine pulse (check-ins only). */
+export function getAllTimeRoutinePulse(): { score: number; hasData: boolean } {
+  const checkIns = getCheckIns();
+  const scores = checkIns
+    .map((e) => getScoreForCheckIn(e))
+    .filter((s): s is number => s !== null);
+  if (scores.length === 0) return { score: 0, hasData: false };
+  const score = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  return { score: Math.max(0, Math.min(100, score)), hasData: true };
+}
+
+/** All-time Nutrition: we don't have per-entry scores yet; returns hasData from any nutrition entries. */
+export function getAllTimeNutritionPulse(): { score: number; hasData: boolean } {
+  const hasData =
+    getFridgeLogs().length > 0 ||
+    getMealTimingEntries().length > 0 ||
+    getHydrationTimingEntries().length > 0;
+  return { score: 0, hasData };
 }
 
 export function hasBodyTodayCheck(): boolean {

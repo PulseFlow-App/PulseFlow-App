@@ -5,7 +5,7 @@ import { recordAppUsage } from '../stores/appStreak';
 import { getBodyLogs } from '../blocks/BodySignals/store';
 import { getCheckIns, setCheckInsFromServer } from '../blocks/WorkRoutine/store';
 import { startNotificationChecks, stopNotificationChecks } from '../stores/notifications';
-import { getCombinedPulse } from '../stores/combinedPulse';
+import { getCombinedPulse, getAllTimePulse } from '../stores/combinedPulse';
 import { BlockCard } from '../components/BlockCard';
 import { AppFooter } from '../components/AppFooter';
 import { NextStepModal } from '../components/NextStepModal';
@@ -30,7 +30,9 @@ export function Dashboard() {
   const modalVariant = locationState?.modalVariant ?? 'default';
 
   const pulse = getCombinedPulse();
-  const combinedScore = pulse.combined ?? 0;
+  const allTime = getAllTimePulse();
+  const todayScore = pulse.combined ?? 0;
+  const hasCheckInToday = pulse.blockCount >= 1;
 
   useEffect(() => {
     if (user) recordAppUsage();
@@ -123,7 +125,24 @@ export function Dashboard() {
           <p className={styles.heroLine1}>No noise.</p>
           <p className={styles.heroLine2}>Just signal.</p>
           <div className={styles.heroScoreWrap}>
-            <ScoreRing score={combinedScore} label="PULSE" size={120} />
+            <div className={styles.pulseRings}>
+              <div className={styles.pulseRingItem}>
+                <ScoreRing
+                  score={todayScore}
+                  label={hasCheckInToday ? "Today's Pulse" : 'No data yet'}
+                  size={100}
+                />
+                <span className={styles.pulseRingLabel}>Today</span>
+              </div>
+              <div className={styles.pulseRingItem}>
+                <ScoreRing
+                  score={allTime.hasData ? allTime.score : 0}
+                  label={allTime.hasData ? 'All Time Pulse' : 'No data yet'}
+                  size={100}
+                />
+                <span className={styles.pulseRingLabel}>All time</span>
+              </div>
+            </div>
             <Link to="/dashboard/pulse" className={styles.pulseLink}>
               See your Pulse
             </Link>

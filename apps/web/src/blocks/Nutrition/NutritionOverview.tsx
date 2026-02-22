@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { ScoreRing } from '../../components/ScoreRing';
-import { getAggregatedPulse } from '../../stores/combinedPulse';
+import { getAllTimeNutritionPulse } from '../../stores/combinedPulse';
 import styles from './Nutrition.module.css';
 
 export function NutritionOverview() {
-  const aggregated = getAggregatedPulse();
+  const pulse = getAllTimeNutritionPulse();
 
   return (
     <div className={styles.page}>
@@ -17,16 +17,16 @@ export function NutritionOverview() {
         <div className={styles.blockHeader}>
           <h1 className={styles.title}>Nutrition</h1>
           <p className={styles.subtitle}>
-            {aggregated.hasData
-              ? 'Your pulse from body and work data'
-              : 'Log body data and work check-ins to see your pulse'}
+            {pulse.hasData
+              ? 'Your nutrition data (pulse score coming soon)'
+              : 'Log meal timing, hydration, and fridge to see your pulse'}
           </p>
         </div>
         <div className={styles.card}>
           <div className={styles.scoreSection}>
             <ScoreRing
-              score={aggregated.hasData ? aggregated.score : 0}
-              label={aggregated.hasData ? 'Aggregated Pulse' : 'No data yet'}
+              score={pulse.hasData ? pulse.score : 0}
+              label={pulse.hasData ? 'All Time Nutrition Pulse' : 'No data yet'}
             />
           </div>
         </div>
