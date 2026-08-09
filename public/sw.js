@@ -1,5 +1,12 @@
-const CACHE = "pulseflow-shell-v1";
-const SHELL = ["/", "/login", "/home", "/manifest.webmanifest", "/icons/icon-192.png"];
+const CACHE = "pulseflow-shell-v3";
+const SHELL = [
+  "/",
+  "/login",
+  "/home",
+  "/manifest.webmanifest",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

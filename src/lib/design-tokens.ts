@@ -1,8 +1,8 @@
 export const colors = {
   background: "#FDF7F2",
   card: "#FFFFFF",
-  primary: "#F07A3A",
-  primaryDark: "#D45A1F",
+  primary: "#F26A36",
+  primaryDark: "#D94E1B",
   primarySoft: "#FFE4D4",
   secondary: "#3CB89A",
   secondaryDark: "#2A8F78",
