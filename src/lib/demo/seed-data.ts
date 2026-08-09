@@ -1,0 +1,891 @@
+import type {
+  AppNotification,
+  Bill,
+  Contact,
+  DemoAccount,
+  Endorsement,
+  Invite,
+  Message,
+  Organization,
+  OrgMembership,
+  Profile,
+  ServiceOrder,
+  Task,
+  Villa,
+  VillaAssignment,
+} from "@/lib/types";
+import { weekKey } from "@/lib/endorsements";
+import { makeNotification } from "@/lib/notifications";
+
+export const DEMO_ORG_ID = "11111111-1111-4111-8111-111111111111";
+export const DEMO_ORG_2_ID = "11111111-1111-4111-8111-111111111133";
+export const DEMO_PERSONAL_ORG_ID = "11111111-1111-4111-8111-111111111122";
+export const DEMO_OWNER_ID = "22222222-2222-4222-8222-222222222222";
+export const DEMO_OWNER_2_ID = "22222222-2222-4222-8222-222222222233";
+export const DEMO_EMPLOYEE_ID = "33333333-3333-4333-8333-333333333333";
+export const DEMO_CLEANER_ID = "33333333-3333-4333-8333-333333333344";
+
+export const demoOrg: Organization = {
+  id: DEMO_ORG_ID,
+  name: "Phangan Villas Co.",
+  kind: "company",
+  created_at: "2026-01-01T00:00:00.000Z",
+};
+
+export const demoOrg2: Organization = {
+  id: DEMO_ORG_2_ID,
+  name: "Beachside Stays",
+  kind: "company",
+  created_at: "2026-02-01T00:00:00.000Z",
+};
+
+export const demoPersonalOrg: Organization = {
+  id: DEMO_PERSONAL_ORG_ID,
+  name: "Sam's personal ops",
+  kind: "personal",
+  created_at: "2026-01-01T00:00:00.000Z",
+};
+
+export const demoProfiles: Profile[] = [
+  {
+    id: DEMO_OWNER_ID,
+    org_id: DEMO_ORG_ID,
+    personal_org_id: null,
+    role: "owner",
+    full_name: "Alex Owner",
+    phone: "+66812345001",
+    email: "owner@pulseflow.site",
+    job_title: "Owner",
+    share_slug: "alex-owner",
+  },
+  {
+    id: DEMO_OWNER_2_ID,
+    org_id: DEMO_ORG_2_ID,
+    personal_org_id: null,
+    role: "owner",
+    full_name: "Bee Host",
+    phone: "+66812345003",
+    email: "bee@pulseflow.site",
+    job_title: "Owner",
+    share_slug: "bee-host",
+  },
+  {
+    id: DEMO_EMPLOYEE_ID,
+    org_id: DEMO_ORG_ID,
+    personal_org_id: DEMO_PERSONAL_ORG_ID,
+    role: "manager",
+    full_name: "Sam Manager",
+    phone: "+66812345002",
+    email: "manager@pulseflow.site",
+    job_title: "On-site manager",
+    share_slug: "sam-manager",
+  },
+  {
+    id: DEMO_CLEANER_ID,
+    org_id: DEMO_ORG_ID,
+    personal_org_id: null,
+    role: "cleaner",
+    full_name: "Nok Cleaning",
+    phone: "+66819876543",
+    email: "employee@pulseflow.site",
+    job_title: "Lead cleaner",
+    share_slug: "nok-cleaning",
+  },
+];
+
+export const demoAccounts: DemoAccount[] = [
+  {
+    email: "owner@pulseflow.site",
+    password: "TestPass123!",
+    profileId: DEMO_OWNER_ID,
+  },
+  {
+    email: "manager@pulseflow.site",
+    password: "TestPass123!",
+    profileId: DEMO_EMPLOYEE_ID,
+  },
+  {
+    email: "employee@pulseflow.site",
+    password: "TestPass123!",
+    profileId: DEMO_CLEANER_ID,
+  },
+];
+
+/** @deprecated use demoAccounts */
+export const demoCredentials = demoAccounts;
+
+function daysFromNow(n: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function daysAgo(n: number) {
+  return daysFromNow(-n);
+}
+
+export const VILLA_IDS = {
+  lotus: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+  palm: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2",
+  coral: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3",
+  jungle: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa4",
+  sunset: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa5",
+  bamboo: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa6",
+  cliff: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa7",
+  tide: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa8",
+} as const;
+
+export const demoVillas: Villa[] = [
+  {
+    id: VILLA_IDS.lotus,
+    org_id: DEMO_ORG_ID,
+    name: "Lotus House",
+    area: "Srithanu",
+    location_url: "https://maps.google.com/?q=Srithanu+Koh+Phangan",
+    description: "Sea-view 2BR with private pool near Srithanu.",
+    status: "occupied",
+    check_in: daysAgo(2),
+    check_out: daysFromNow(3),
+    cleaning_status: "not_needed",
+    notes: "Guests requested extra towels.",
+    created_by: DEMO_OWNER_ID,
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: VILLA_IDS.palm,
+    org_id: DEMO_ORG_ID,
+    name: "Palm Villa",
+    area: "Haad Yao",
+    location_url: "https://maps.google.com/?q=Haad+Yao+Koh+Phangan",
+    description: "Family villa close to Haad Yao beach.",
+    status: "turnover",
+    check_in: daysFromNow(1),
+    check_out: daysFromNow(6),
+    cleaning_status: "in_progress",
+    notes: "Deep clean before tomorrow check-in.",
+    created_by: DEMO_OWNER_ID,
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: VILLA_IDS.coral,
+    org_id: DEMO_ORG_ID,
+    name: "Coral Bungalow",
+    area: "Thong Sala",
+    location_url: "https://maps.google.com/?q=Thong+Sala+Koh+Phangan",
+    description: null,
+    status: "available",
+    check_in: null,
+    check_out: null,
+    cleaning_status: "done",
+    notes: null,
+    created_by: DEMO_OWNER_ID,
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: VILLA_IDS.jungle,
+    org_id: DEMO_ORG_ID,
+    name: "Jungle Retreat",
+    area: "Chaloklum",
+    location_url: "https://maps.google.com/?q=Chaloklum+Koh+Phangan",
+    description: "Quiet hillside retreat - AC unit pending repair.",
+    status: "maintenance",
+    check_in: daysFromNow(5),
+    check_out: daysFromNow(12),
+    cleaning_status: "not_needed",
+    notes: "AC compressor replacement scheduled.",
+    created_by: DEMO_OWNER_ID,
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: VILLA_IDS.sunset,
+    org_id: DEMO_ORG_ID,
+    name: "Sunset Deck",
+    area: "Haad Rin",
+    location_url: "https://maps.google.com/?q=Haad+Rin+Koh+Phangan",
+    description: "Sunset-facing deck villa.",
+    status: "occupied",
+    check_in: daysAgo(5),
+    check_out: daysFromNow(1),
+    cleaning_status: "not_needed",
+    notes: "Checkout tomorrow 11:00.",
+    created_by: DEMO_OWNER_ID,
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: VILLA_IDS.bamboo,
+    org_id: DEMO_ORG_ID,
+    name: "Bamboo Nest",
+    area: "Srithanu",
+    location_url: "https://maps.google.com/?q=Srithanu+Koh+Phangan",
+    description: null,
+    status: "available",
+    check_in: daysFromNow(4),
+    check_out: daysFromNow(10),
+    cleaning_status: "done",
+    notes: null,
+    created_by: DEMO_OWNER_ID,
+    updated_at: new Date().toISOString(),
+  },
+  // Sam's side work - personal org, not owned by Phangan Villas Co.
+  {
+    id: VILLA_IDS.cliff,
+    org_id: DEMO_PERSONAL_ORG_ID,
+    name: "Cliff Side Studio",
+    area: "Haad Salad",
+    location_url: "https://maps.google.com/?q=Haad+Salad+Koh+Phangan",
+    description: "Compact studio for side-client bookings.",
+    status: "occupied",
+    check_in: daysAgo(1),
+    check_out: daysFromNow(4),
+    cleaning_status: "not_needed",
+    notes: "Side client - not company inventory.",
+    created_by: DEMO_EMPLOYEE_ID,
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: VILLA_IDS.tide,
+    org_id: DEMO_PERSONAL_ORG_ID,
+    name: "Tide Hut",
+    area: "Haad Yao",
+    location_url: "https://maps.google.com/?q=Haad+Yao+Koh+Phangan",
+    description: null,
+    status: "available",
+    check_in: null,
+    check_out: null,
+    cleaning_status: "done",
+    notes: null,
+    created_by: DEMO_EMPLOYEE_ID,
+    updated_at: new Date().toISOString(),
+  },
+];
+
+export const demoContacts: Contact[] = [
+  {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1",
+    org_id: DEMO_ORG_ID,
+    name: "Nok Cleaning",
+    role: "cleaning",
+    phone: "66819876543",
+    messenger: "whatsapp",
+    messenger_handle: null,
+    notes: "Preferred for turnovers · on PulseFlow",
+    linked_profile_id: DEMO_CLEANER_ID,
+  },
+  {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2",
+    org_id: DEMO_ORG_ID,
+    name: "Mai Housekeeping",
+    role: "cleaning",
+    phone: "66818765432",
+    messenger: "line",
+    messenger_handle: "mai.clean",
+    notes: null,
+    linked_profile_id: null,
+  },
+  {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3",
+    org_id: DEMO_ORG_ID,
+    name: "Somchai Plumbing",
+    role: "plumbing",
+    phone: "66817654321",
+    messenger: "whatsapp",
+    messenger_handle: null,
+    notes: "24h emergency",
+    linked_profile_id: null,
+  },
+  {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb4",
+    org_id: DEMO_ORG_ID,
+    name: "Bee Electric",
+    role: "electrical",
+    phone: "66816543210",
+    messenger: "line",
+    messenger_handle: "beeelectric",
+    notes: null,
+    linked_profile_id: null,
+  },
+  {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb5",
+    org_id: DEMO_ORG_ID,
+    name: "Island Pool Care",
+    role: "pool",
+    phone: "66815432109",
+    messenger: "whatsapp",
+    messenger_handle: null,
+    notes: "Weekly Wednesdays",
+    linked_profile_id: null,
+  },
+  {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb6",
+    org_id: DEMO_ORG_ID,
+    name: "Green Thumb Garden",
+    role: "garden",
+    phone: "66814321098",
+    messenger: "none",
+    messenger_handle: null,
+    notes: null,
+    linked_profile_id: null,
+  },
+  {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb7",
+    org_id: DEMO_ORG_ID,
+    name: "CoolAir Repair",
+    role: "AC/appliance repair",
+    phone: "66813210987",
+    messenger: "whatsapp",
+    messenger_handle: null,
+    notes: "Spare parts in Thong Sala · not on PulseFlow yet",
+    linked_profile_id: null,
+  },
+];
+
+const ORDER_PENDING_ID = "qqqqqqqq-qqqq-4qqq-8qqq-qqqqqqqqqqq1";
+const ORDER_AGREED_ID = "qqqqqqqq-qqqq-4qqq-8qqq-qqqqqqqqqqq2";
+const ORDER_MSG_PENDING = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee4";
+const ORDER_MSG_AGREED = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee5";
+const NOK_TASK_PENDING = "cccccccc-cccc-4ccc-8ccc-ccccccccccc8";
+const NOK_TASK_AGREED = "cccccccc-cccc-4ccc-8ccc-ccccccccccc9";
+
+export const demoTasks: Task[] = [
+  {
+    id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc1",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.palm,
+    title: "Finish Palm Villa deep clean",
+    priority: "urgent",
+    assigned_to: DEMO_CLEANER_ID,
+    status: "open",
+    due_date: daysFromNow(0),
+    time_start: "09:00",
+    time_end: "12:00",
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(1) + "T08:00:00.000Z",
+    completed_at: null,
+    service_order_id: ORDER_AGREED_ID,
+  },
+  {
+    id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc2",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.jungle,
+    title: "Meet AC tech at Jungle Retreat",
+    priority: "urgent",
+    assigned_to: DEMO_EMPLOYEE_ID,
+    status: "open",
+    due_date: daysFromNow(0),
+    time_start: "14:00",
+    time_end: "15:30",
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(2) + "T09:00:00.000Z",
+    completed_at: null,
+    service_order_id: null,
+  },
+  {
+    id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc3",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.sunset,
+    title: "Prepare Sunset Deck checkout checklist",
+    priority: "normal",
+    assigned_to: DEMO_EMPLOYEE_ID,
+    status: "open",
+    due_date: daysFromNow(1),
+    time_start: "10:00",
+    time_end: "11:00",
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(1) + "T10:00:00.000Z",
+    completed_at: null,
+    service_order_id: null,
+  },
+  {
+    id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc4",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.lotus,
+    title: "Deliver extra towels to Lotus House",
+    priority: "normal",
+    assigned_to: DEMO_EMPLOYEE_ID,
+    status: "done",
+    due_date: daysAgo(1),
+    time_start: "16:00",
+    time_end: "16:30",
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(3) + "T11:00:00.000Z",
+    completed_at: daysAgo(1) + "T15:00:00.000Z",
+    service_order_id: null,
+  },
+  {
+    id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc5",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.coral,
+    title: "Restock Coral Bungalow amenities",
+    priority: "normal",
+    assigned_to: DEMO_OWNER_ID,
+    status: "done",
+    due_date: daysAgo(2),
+    time_start: null,
+    time_end: null,
+    created_by: DEMO_EMPLOYEE_ID,
+    created_at: daysAgo(4) + "T12:00:00.000Z",
+    completed_at: daysAgo(2) + "T16:00:00.000Z",
+    service_order_id: null,
+  },
+  {
+    id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc6",
+    org_id: DEMO_ORG_ID,
+    villa_id: null,
+    title: "Buy pool chemicals in Thong Sala",
+    priority: "normal",
+    assigned_to: DEMO_EMPLOYEE_ID,
+    status: "done",
+    due_date: daysAgo(3),
+    time_start: null,
+    time_end: null,
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(5) + "T08:30:00.000Z",
+    completed_at: daysAgo(3) + "T14:00:00.000Z",
+    service_order_id: null,
+  },
+  {
+    id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc7",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.bamboo,
+    title: "Inspect Bamboo Nest water pump",
+    priority: "normal",
+    assigned_to: DEMO_EMPLOYEE_ID,
+    status: "open",
+    due_date: daysFromNow(2),
+    time_start: "08:00",
+    time_end: "09:00",
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(0) + "T07:00:00.000Z",
+    completed_at: null,
+    service_order_id: null,
+  },
+  {
+    id: NOK_TASK_PENDING,
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.lotus,
+    title: "Turnover clean - Lotus House",
+    priority: "urgent",
+    assigned_to: DEMO_CLEANER_ID,
+    status: "open",
+    due_date: daysFromNow(1),
+    time_start: "11:00",
+    time_end: "14:00",
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(0) + "T09:00:00.000Z",
+    completed_at: null,
+    service_order_id: ORDER_PENDING_ID,
+  },
+  {
+    id: NOK_TASK_AGREED,
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.sunset,
+    title: "Checkout clean - Sunset Deck",
+    priority: "normal",
+    assigned_to: DEMO_CLEANER_ID,
+    status: "open",
+    due_date: daysFromNow(1),
+    time_start: "08:00",
+    time_end: "10:30",
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(1) + "T12:00:00.000Z",
+    completed_at: null,
+    service_order_id: ORDER_AGREED_ID,
+  },
+];
+
+export const demoServiceOrders: ServiceOrder[] = [
+  {
+    id: ORDER_PENDING_ID,
+    org_id: DEMO_ORG_ID,
+    contact_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1",
+    staff_profile_id: DEMO_CLEANER_ID,
+    ordered_by: DEMO_OWNER_ID,
+    villa_id: VILLA_IDS.lotus,
+    location_label: "Lotus House",
+    service_type: "Turnover cleaning",
+    details: "Full turnover after checkout. Extra towels in laundry room.",
+    scheduled_date: daysFromNow(1),
+    time_start: "11:00",
+    time_end: "14:00",
+    status: "pending_ack",
+    agreed_at: null,
+    chat_message_id: ORDER_MSG_PENDING,
+    task_id: NOK_TASK_PENDING,
+    created_at: daysAgo(0) + "T09:00:00.000Z",
+  },
+  {
+    id: ORDER_AGREED_ID,
+    org_id: DEMO_ORG_ID,
+    contact_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1",
+    staff_profile_id: DEMO_CLEANER_ID,
+    ordered_by: DEMO_OWNER_ID,
+    villa_id: VILLA_IDS.palm,
+    location_label: "Palm Villa",
+    service_type: "Deep clean",
+    details: "Deep clean before tomorrow check-in.",
+    scheduled_date: daysFromNow(0),
+    time_start: "09:00",
+    time_end: "12:00",
+    status: "agreed",
+    agreed_at: daysAgo(0) + "T07:30:00.000Z",
+    chat_message_id: ORDER_MSG_AGREED,
+    task_id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc1",
+    created_at: daysAgo(1) + "T18:00:00.000Z",
+  },
+  {
+    id: "qqqqqqqq-qqqq-4qqq-8qqq-qqqqqqqqqqq3",
+    org_id: DEMO_ORG_ID,
+    contact_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb7",
+    staff_profile_id: null,
+    ordered_by: DEMO_EMPLOYEE_ID,
+    villa_id: VILLA_IDS.jungle,
+    location_label: "Jungle Retreat",
+    service_type: "AC repair visit",
+    details: "Compressor deposit already paid. Bring gauges.",
+    scheduled_date: daysFromNow(0),
+    time_start: "14:00",
+    time_end: "15:30",
+    status: "pending_ack",
+    agreed_at: null,
+    chat_message_id: null,
+    task_id: null,
+    created_at: daysAgo(0) + "T08:00:00.000Z",
+  },
+];
+
+export const demoBills: Bill[] = [
+  {
+    id: "dddddddd-dddd-4ddd-8ddd-ddddddddddd1",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.palm,
+    description: "Cleaning supplies for turnover",
+    amount: 1250,
+    currency: "THB",
+    status: "pending",
+    due_date: daysFromNow(0),
+    submitted_by: DEMO_EMPLOYEE_ID,
+    receipt_photo_url: null,
+    created_at: daysAgo(0) + "T09:30:00.000Z",
+  },
+  {
+    id: "dddddddd-dddd-4ddd-8ddd-ddddddddddd2",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.jungle,
+    description: "AC compressor deposit",
+    amount: 4500,
+    currency: "THB",
+    status: "pending",
+    due_date: daysFromNow(2),
+    submitted_by: DEMO_EMPLOYEE_ID,
+    receipt_photo_url: null,
+    created_at: daysAgo(1) + "T13:00:00.000Z",
+  },
+  {
+    id: "dddddddd-dddd-4ddd-8ddd-ddddddddddd3",
+    org_id: DEMO_ORG_ID,
+    villa_id: null,
+    description: "Fuel for island runs",
+    amount: 800,
+    currency: "THB",
+    status: "paid",
+    due_date: daysAgo(3),
+    submitted_by: DEMO_EMPLOYEE_ID,
+    receipt_photo_url: null,
+    created_at: daysAgo(4) + "T11:00:00.000Z",
+  },
+];
+
+export const demoNotifications: AppNotification[] = [
+  {
+    ...makeNotification({
+      org_id: DEMO_ORG_ID,
+      kind: "appointment",
+      title: "New job: Turnover cleaning",
+      body: "Lotus House · tomorrow 11:00-14:00 - tap Read & agreed",
+      href: "/jobs",
+      entity_id: ORDER_PENDING_ID,
+      audience_profile_ids: [DEMO_CLEANER_ID],
+      created_at: daysAgo(0) + "T09:00:00.000Z",
+    }),
+    id: "pppppppp-pppp-4ppp-8ppp-ppppppppppp1",
+  },
+  {
+    ...makeNotification({
+      org_id: DEMO_ORG_ID,
+      kind: "appointment",
+      title: "Job confirmed: Deep clean",
+      body: "Palm Villa · today 09:00-12:00",
+      href: "/jobs",
+      entity_id: ORDER_AGREED_ID,
+      audience_profile_ids: [DEMO_CLEANER_ID, DEMO_OWNER_ID],
+      created_at: daysAgo(0) + "T07:30:00.000Z",
+    }),
+    id: "pppppppp-pppp-4ppp-8ppp-ppppppppppp2",
+    read_by: [DEMO_CLEANER_ID],
+  },
+  {
+    ...makeNotification({
+      org_id: DEMO_ORG_ID,
+      kind: "message",
+      title: "New message from Alex",
+      body: "Can someone confirm Palm Villa towels?",
+      href: "/messages",
+      audience_profile_ids: [DEMO_EMPLOYEE_ID, DEMO_CLEANER_ID],
+      created_at: daysAgo(0) + "T08:05:00.000Z",
+    }),
+    id: "pppppppp-pppp-4ppp-8ppp-ppppppppppp3",
+    read_by: [DEMO_CLEANER_ID],
+  },
+  {
+    ...makeNotification({
+      org_id: DEMO_ORG_ID,
+      kind: "bill_submitted",
+      title: "Bill submitted",
+      body: "Cleaning supplies for turnover · ฿1,250",
+      href: "/bills",
+      entity_id: "dddddddd-dddd-4ddd-8ddd-ddddddddddd1",
+      audience_profile_ids: [DEMO_OWNER_ID],
+      created_at: daysAgo(0) + "T09:31:00.000Z",
+    }),
+    id: "pppppppp-pppp-4ppp-8ppp-ppppppppppp4",
+  },
+];
+
+export const demoMessages: Message[] = [
+  {
+    id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1",
+    org_id: DEMO_ORG_ID,
+    sender_id: DEMO_OWNER_ID,
+    body: "Morning - Palm Villa needs to be guest-ready by tomorrow noon.",
+    created_at: daysAgo(0) + "T07:15:00.000Z",
+    service_order_id: null,
+  },
+  {
+    id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2",
+    org_id: DEMO_ORG_ID,
+    sender_id: DEMO_EMPLOYEE_ID,
+    body: "On it. Cleaning team is already there. Will update when done.",
+    created_at: daysAgo(0) + "T07:22:00.000Z",
+    service_order_id: null,
+  },
+  {
+    id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee3",
+    org_id: DEMO_ORG_ID,
+    sender_id: DEMO_EMPLOYEE_ID,
+    body: "AC tech confirmed for Jungle Retreat at 2pm.",
+    created_at: daysAgo(0) + "T08:05:00.000Z",
+    service_order_id: null,
+  },
+  {
+    id: ORDER_MSG_AGREED,
+    org_id: DEMO_ORG_ID,
+    sender_id: DEMO_OWNER_ID,
+    body: "📋 Service order for Nok Cleaning\nWhat: Deep clean\nWhere: Palm Villa\nWhen: today 09:00-12:00\nDetails: Deep clean before tomorrow check-in.\nFrom: Alex Owner\n\nStaff: open this and tap “Read and agreed” to confirm you got the job.",
+    created_at: daysAgo(1) + "T18:00:00.000Z",
+    service_order_id: ORDER_AGREED_ID,
+  },
+  {
+    id: ORDER_MSG_PENDING,
+    org_id: DEMO_ORG_ID,
+    sender_id: DEMO_OWNER_ID,
+    body: "📋 Service order for Nok Cleaning\nWhat: Turnover cleaning\nWhere: Lotus House\nWhen: tomorrow 11:00-14:00\nDetails: Full turnover after checkout. Extra towels in laundry room.\nFrom: Alex Owner\n\nStaff: open this and tap “Read and agreed” to confirm you got the job.",
+    created_at: daysAgo(0) + "T09:00:00.000Z",
+    service_order_id: ORDER_PENDING_ID,
+  },
+];
+
+function priorWeekKey(weeksAgo: number) {
+  const d = new Date();
+  d.setDate(d.getDate() - weeksAgo * 7);
+  return weekKey(d);
+}
+
+export const demoMemberships: OrgMembership[] = [
+  {
+    id: "mmmmmmmm-mmmm-4mmm-8mmm-mmmmmmmmmmm1",
+    org_id: DEMO_ORG_ID,
+    profile_id: DEMO_OWNER_ID,
+    role: "owner",
+    joined_at: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "mmmmmmmm-mmmm-4mmm-8mmm-mmmmmmmmmmm2",
+    org_id: DEMO_ORG_ID,
+    profile_id: DEMO_EMPLOYEE_ID,
+    role: "manager",
+    joined_at: "2026-01-10T00:00:00.000Z",
+  },
+  {
+    id: "mmmmmmmm-mmmm-4mmm-8mmm-mmmmmmmmmmm3",
+    org_id: DEMO_ORG_ID,
+    profile_id: DEMO_CLEANER_ID,
+    role: "cleaner",
+    joined_at: "2026-01-15T00:00:00.000Z",
+  },
+  {
+    id: "mmmmmmmm-mmmm-4mmm-8mmm-mmmmmmmmmmm4",
+    org_id: DEMO_ORG_2_ID,
+    profile_id: DEMO_OWNER_2_ID,
+    role: "owner",
+    joined_at: "2026-02-01T00:00:00.000Z",
+  },
+  // Sam also works / worked with Beachside Stays
+  {
+    id: "mmmmmmmm-mmmm-4mmm-8mmm-mmmmmmmmmmm5",
+    org_id: DEMO_ORG_2_ID,
+    profile_id: DEMO_EMPLOYEE_ID,
+    role: "manager",
+    joined_at: "2026-03-01T00:00:00.000Z",
+  },
+];
+
+export const demoEndorsements: Endorsement[] = [
+  {
+    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn1",
+    org_id: DEMO_ORG_ID,
+    from_profile_id: DEMO_OWNER_ID,
+    to_profile_id: DEMO_EMPLOYEE_ID,
+    stars: 5,
+    week_key: priorWeekKey(3),
+    note: "Handled turnovers smoothly.",
+    created_at: daysAgo(21) + "T10:00:00.000Z",
+  },
+  {
+    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn2",
+    org_id: DEMO_ORG_ID,
+    from_profile_id: DEMO_OWNER_ID,
+    to_profile_id: DEMO_EMPLOYEE_ID,
+    stars: 4,
+    week_key: priorWeekKey(2),
+    note: null,
+    created_at: daysAgo(14) + "T10:00:00.000Z",
+  },
+  {
+    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn3",
+    org_id: DEMO_ORG_ID,
+    from_profile_id: DEMO_OWNER_ID,
+    to_profile_id: DEMO_EMPLOYEE_ID,
+    stars: 5,
+    week_key: priorWeekKey(1),
+    note: "Great guest communication.",
+    created_at: daysAgo(7) + "T10:00:00.000Z",
+  },
+  {
+    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn4",
+    org_id: DEMO_ORG_ID,
+    from_profile_id: DEMO_OWNER_ID,
+    to_profile_id: DEMO_CLEANER_ID,
+    stars: 4,
+    week_key: priorWeekKey(2),
+    note: null,
+    created_at: daysAgo(14) + "T11:00:00.000Z",
+  },
+  {
+    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn5",
+    org_id: DEMO_ORG_ID,
+    from_profile_id: DEMO_OWNER_ID,
+    to_profile_id: DEMO_CLEANER_ID,
+    stars: 5,
+    week_key: priorWeekKey(1),
+    note: "Spotless Palm Villa.",
+    created_at: daysAgo(7) + "T11:00:00.000Z",
+  },
+  {
+    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn6",
+    org_id: DEMO_ORG_2_ID,
+    from_profile_id: DEMO_OWNER_2_ID,
+    to_profile_id: DEMO_EMPLOYEE_ID,
+    stars: 5,
+    week_key: priorWeekKey(2),
+    note: "Reliable across properties.",
+    created_at: daysAgo(14) + "T12:00:00.000Z",
+  },
+  {
+    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn7",
+    org_id: DEMO_ORG_2_ID,
+    from_profile_id: DEMO_OWNER_2_ID,
+    to_profile_id: DEMO_EMPLOYEE_ID,
+    stars: 4,
+    week_key: priorWeekKey(1),
+    note: null,
+    created_at: daysAgo(7) + "T12:00:00.000Z",
+  },
+];
+
+export type DemoStore = {
+  orgs: Organization[];
+  accounts: DemoAccount[];
+  profiles: Profile[];
+  villas: Villa[];
+  contacts: Contact[];
+  tasks: Task[];
+  bills: Bill[];
+  messages: Message[];
+  invites: Invite[];
+  villaAssignments: VillaAssignment[];
+  memberships: OrgMembership[];
+  endorsements: Endorsement[];
+  notifications: AppNotification[];
+  serviceOrders: ServiceOrder[];
+};
+
+export function createFreshDemoStore(): DemoStore {
+  const assignments: VillaAssignment[] = [
+    {
+      id: "ffffffff-ffff-4fff-8fff-fffffffffff1",
+      org_id: DEMO_ORG_ID,
+      villa_id: VILLA_IDS.lotus,
+      profile_id: DEMO_EMPLOYEE_ID,
+    },
+    {
+      id: "ffffffff-ffff-4fff-8fff-fffffffffff2",
+      org_id: DEMO_ORG_ID,
+      villa_id: VILLA_IDS.palm,
+      profile_id: DEMO_EMPLOYEE_ID,
+    },
+    {
+      id: "ffffffff-ffff-4fff-8fff-fffffffffff3",
+      org_id: DEMO_ORG_ID,
+      villa_id: VILLA_IDS.sunset,
+      profile_id: DEMO_EMPLOYEE_ID,
+    },
+    {
+      id: "ffffffff-ffff-4fff-8fff-fffffffffff4",
+      org_id: DEMO_ORG_ID,
+      villa_id: VILLA_IDS.lotus,
+      profile_id: DEMO_CLEANER_ID,
+    },
+    {
+      id: "ffffffff-ffff-4fff-8fff-fffffffffff5",
+      org_id: DEMO_ORG_ID,
+      villa_id: VILLA_IDS.palm,
+      profile_id: DEMO_CLEANER_ID,
+    },
+    {
+      id: "ffffffff-ffff-4fff-8fff-fffffffffff6",
+      org_id: DEMO_ORG_ID,
+      villa_id: VILLA_IDS.sunset,
+      profile_id: DEMO_CLEANER_ID,
+    },
+  ];
+  return {
+    orgs: [
+      structuredClone(demoOrg),
+      structuredClone(demoOrg2),
+      structuredClone(demoPersonalOrg),
+    ],
+    accounts: structuredClone(demoAccounts),
+    profiles: structuredClone(demoProfiles),
+    villas: structuredClone(demoVillas),
+    contacts: structuredClone(demoContacts),
+    tasks: structuredClone(demoTasks),
+    bills: structuredClone(demoBills),
+    messages: structuredClone(demoMessages),
+    invites: [],
+    villaAssignments: assignments,
+    memberships: structuredClone(demoMemberships),
+    endorsements: structuredClone(demoEndorsements),
+    notifications: structuredClone(demoNotifications),
+    serviceOrders: structuredClone(demoServiceOrders),
+  };
+}

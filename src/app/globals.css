@@ -1,26 +1,94 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-sand: #fdf7f2;
+  --color-card: #ffffff;
+  --color-primary: #f07a3a;
+  --color-primary-dark: #d45a1f;
+  --color-primary-soft: #ffe4d4;
+  --color-secondary: #3cb89a;
+  --color-secondary-dark: #2a8f78;
+  --color-secondary-soft: #d8f3ec;
+  --color-sky: #6eb6e8;
+  --color-sky-soft: #dceffa;
+  --color-lavender: #a78bda;
+  --color-lavender-soft: #ede4fa;
+  --color-warning: #e0a84a;
+  --color-warning-dark: #8a5a14;
+  --color-danger: #e15a4a;
+  --color-danger-dark: #b03a2e;
+  --color-ink: #2b211c;
+  --color-muted: #8a817c;
+  --color-nav: #1c1c1e;
+  --color-background: var(--color-sand);
+  --color-foreground: var(--color-ink);
+  --font-sans: var(--font-pulse), "Nunito", ui-sans-serif, sans-serif;
+  --radius-card: 1.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-sand);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Same family everywhere - hierarchy is weight/size only */
+.font-display,
+.font-sans {
+  font-family: var(--font-sans) !important;
+}
+
+.font-display {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+button,
+input,
+select,
+textarea,
+p,
+h1,
+h2,
+h3,
+h4,
+span,
+a,
+li,
+label {
+  font-family: inherit;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: rise-in 0.45s ease-out both;
+}
+
+.animate-rise-delay {
+  animation: rise-in 0.5s ease-out 0.08s both;
+}
+
+.soft-shadow {
+  box-shadow: 0 10px 30px rgba(43, 33, 28, 0.06);
 }

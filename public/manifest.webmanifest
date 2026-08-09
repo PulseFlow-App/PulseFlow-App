@@ -1,0 +1,30 @@
+{
+  "name": "PulseFlow",
+  "short_name": "PulseFlow",
+  "description": "The pulse of your operation. Villa status, tasks, contacts, and bills for owners and on-site managers, in one place.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDF7F2",
+  "theme_color": "#F07A3A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
