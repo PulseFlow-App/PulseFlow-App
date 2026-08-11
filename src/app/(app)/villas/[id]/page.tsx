@@ -7,9 +7,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/empty-state";
+import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
 import type { CleaningStatus, VillaStatus } from "@/lib/design-tokens";
 import { ROLE_LABELS, canEditVillaCore, isStaffApp } from "@/lib/roles";
+import { fileToDataUrl } from "@/lib/file-to-data-url";
 import { isValidLocationUrl, normalizeLocationUrl } from "@/lib/utils";
 import { formatWorkWindow } from "@/lib/notifications";
 import { formatOrderWhen } from "@/lib/service-orders";
@@ -62,6 +64,7 @@ export default function VillaDetailPage({
   const [area, setArea] = useState("");
   const [locationUrl, setLocationUrl] = useState("");
   const [description, setDescription] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,6 +86,7 @@ export default function VillaDetailPage({
     setArea(villa.area ?? "");
     setLocationUrl(villa.location_url ?? "");
     setDescription(villa.description ?? "");
+    setPhotoUrl(villa.photo_url ?? null);
     setAssigneeIds(
       data.villaAssignments
         .filter((a) => a.villa_id === villa.id)
@@ -120,6 +124,7 @@ export default function VillaDetailPage({
         notes: notes || null,
         location_url: normalizeLocationUrl(locationUrl),
         description: description.trim() || null,
+        photo_url: photoUrl,
         ...(canEditCore ? { name, area: area || null } : {}),
       });
       if (isOwner && !isPersonal) {
@@ -143,6 +148,41 @@ export default function VillaDetailPage({
       </Link>
 
       <Card className="space-y-4 p-5">
+        {villa.photo_url || canEditCore ? (
+          <div className="space-y-2">
+            <VillaPhotoThumb src={photoUrl ?? villa.photo_url} alt={villa.name} />
+            {canEditCore ? (
+              <div>
+                <Label>Property photo</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    void fileToDataUrl(file)
+                      .then(setPhotoUrl)
+                      .catch(() => setError("Could not read photo."));
+                  }}
+                />
+                <p className="mt-1 text-xs text-muted">
+                  Employees see this when accepting jobs at this property.
+                </p>
+                {photoUrl ? (
+                  <button
+                    type="button"
+                    className="mt-1 text-xs font-semibold text-danger"
+                    onClick={() => setPhotoUrl(null)}
+                  >
+                    Remove photo
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
         {canEditCore ? (
           <>
             <div>

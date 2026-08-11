@@ -94,8 +94,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-sand px-4 py-10">
-      <div className="w-full max-w-md animate-rise">
+    <div className="h-dvh overflow-x-hidden overflow-y-auto overscroll-contain bg-sand px-4 py-10">
+      <div className="mx-auto w-full max-w-md animate-rise">
         <div className="mb-4 flex justify-end">
           <LanguageSwitcher compact />
         </div>

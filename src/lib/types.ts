@@ -93,6 +93,8 @@ export type Villa = {
   location_url: string | null;
   /** Optional longer description of the property */
   description: string | null;
+  /** Exterior / facade photo so staff can recognize the place */
+  photo_url: string | null;
   status: VillaStatus;
   check_in: string | null;
   check_out: string | null;

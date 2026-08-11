@@ -22,13 +22,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-lg bg-sand px-4 pb-32">
-      <OfflineBanner show={offline} />
-      <AppHeader
-        unreadMessages={data.unreadMessageCount}
-        unreadNotifications={data.unreadNotificationCount}
-      />
-      <main>{children}</main>
+    <div className="app-shell mx-auto flex h-dvh w-full max-w-lg flex-col overflow-hidden bg-sand">
+      <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain px-4 pb-28">
+        <OfflineBanner show={offline} />
+        <AppHeader
+          unreadMessages={data.unreadMessageCount}
+          unreadNotifications={data.unreadNotificationCount}
+        />
+        <main className="w-full max-w-full">{children}</main>
+      </div>
       <BottomNav />
     </div>
   );

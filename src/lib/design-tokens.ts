@@ -61,8 +61,8 @@ export const statusColors: Record<
 };
 
 export const brand = {
-  name: "PulseFlow",
-  tagline: "The pulse of your operation.",
+  name: "Pulse Flow Ops",
+  tagline: "The pulse of your rental operations",
   description:
-    "The pulse of your operation. Villa status, tasks, contacts, and bills for owners and on-site managers, in one place.",
+    "The pulse of your rental operations. Villa status, tasks, contacts, and bills for owners and on-site managers, in one place.",
 } as const;

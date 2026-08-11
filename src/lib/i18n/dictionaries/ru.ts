@@ -46,7 +46,7 @@ const ru: Dictionary = {
   "nav.endorsements": "Оценки",
   "nav.leaderboard": "Рейтинг",
   "nav.language": "Язык",
-  "brand.tagline": "Пульс вашей операции.",
+  "brand.tagline": "Пульс ваших операций аренды",
   "brand.opsPulse": "Операционный пульс",
   "auth.login": "Войти",
   "auth.logout": "Выйти",

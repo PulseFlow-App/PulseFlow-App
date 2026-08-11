@@ -1,4 +1,4 @@
-const CACHE = "pulseflow-shell-v3";
+const CACHE = "pulseflow-shell-v4";
 const SHELL = [
   "/",
   "/login",

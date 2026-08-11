@@ -16,61 +16,56 @@ export function AppHeader({
   const { t } = useI18n();
 
   return (
-    <header className="flex items-center justify-between gap-3 px-1 pb-4 pt-[max(0.85rem,env(safe-area-inset-top))]">
-      <Link href="/home" className="flex items-center gap-2.5">
-        <PulseMark className="size-10 rounded-[0.9rem]" />
-        <div>
-          <p className="font-display text-lg font-bold leading-none text-ink">
-            {brand.name}
-          </p>
-          <p className="mt-1 text-[11px] font-medium text-muted">
-            {t("brand.opsPulse")}
-          </p>
-        </div>
+    <header className="flex w-full max-w-full items-center justify-between gap-2 overflow-hidden pb-3 pt-[max(0.65rem,env(safe-area-inset-top))]">
+      <Link href="/home" className="flex min-w-0 flex-1 items-center gap-2">
+        <PulseMark className="size-9 shrink-0 rounded-[0.8rem]" />
+        <p className="truncate font-display text-[15px] font-bold leading-tight text-ink sm:text-base">
+          {brand.name}
+        </p>
       </Link>
-      <div className="flex items-center gap-1.5">
+      <div className="flex shrink-0 items-center gap-1">
         <Link
           href="/settings#language"
-          className="flex size-11 items-center justify-center rounded-full bg-white text-ink soft-shadow"
+          className="flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
           aria-label={t("nav.language")}
         >
-          <Languages className="size-5" />
+          <Languages className="size-4" />
         </Link>
         <Link
           href="/notifications"
-          className="relative flex size-11 items-center justify-center rounded-full bg-white text-ink soft-shadow"
+          className="relative flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
           aria-label={t("nav.notifications")}
         >
-          <Bell className="size-5" />
+          <Bell className="size-4" />
           {unreadNotifications > 0 ? (
-            <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">
+            <span className="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-white">
               {unreadNotifications > 9 ? "9+" : unreadNotifications}
             </span>
           ) : null}
         </Link>
         <Link
           href="/endorsements"
-          className="flex size-11 items-center justify-center rounded-full bg-white text-ink soft-shadow"
+          className="flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
           aria-label={t("nav.endorsements")}
         >
-          <Star className="size-5" />
+          <Star className="size-4" />
         </Link>
         <Link
           href="/messages"
-          className="relative flex size-11 items-center justify-center rounded-full bg-white text-ink soft-shadow"
+          className="relative flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
           aria-label={t("nav.messages")}
         >
-          <MessageCircle className="size-5" />
+          <MessageCircle className="size-4" />
           {unreadMessages > 0 ? (
-            <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-primary" />
+            <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
           ) : null}
         </Link>
         <Link
           href="/settings"
-          className="flex size-11 items-center justify-center rounded-full bg-white text-ink soft-shadow"
+          className="flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
           aria-label={t("nav.settings")}
         >
-          <Settings className="size-5" />
+          <Settings className="size-4" />
         </Link>
       </div>
     </header>

@@ -46,7 +46,7 @@ const he: Dictionary = {
   "nav.endorsements": "המלצות",
   "nav.leaderboard": "דירוג",
   "nav.language": "שפה",
-  "brand.tagline": "הדופק של הפעילות שלך.",
+  "brand.tagline": "הדופק של פעילות השכרת הנכסים שלך",
   "brand.opsPulse": "דופק תפעול",
   "auth.login": "התחברות",
   "auth.logout": "התנתקות",

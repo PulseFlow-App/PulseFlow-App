@@ -46,7 +46,7 @@ const en = {
   "nav.leaderboard": "Leaderboard",
   "nav.language": "Language",
 
-  "brand.tagline": "The pulse of your operation.",
+  "brand.tagline": "The pulse of your rental operations",
   "brand.opsPulse": "Ops pulse",
 
   "auth.login": "Sign in",

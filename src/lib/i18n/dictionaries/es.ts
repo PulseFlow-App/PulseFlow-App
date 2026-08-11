@@ -46,7 +46,7 @@ const es: Dictionary = {
   "nav.endorsements": "Valoraciones",
   "nav.leaderboard": "Clasificación",
   "nav.language": "Idioma",
-  "brand.tagline": "El pulso de tu operación.",
+  "brand.tagline": "El pulso de tus operaciones de alquiler",
   "brand.opsPulse": "Pulso ops",
   "auth.login": "Iniciar sesión",
   "auth.logout": "Cerrar sesión",

@@ -135,6 +135,12 @@ export const VILLA_IDS = {
   tide: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa8",
 } as const;
 
+
+function villaPhoto(name: string, tone: string) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${tone}" offset="0%"/><stop stop-color="#2B211C" stop-opacity=".35" offset="100%"/></linearGradient></defs><rect width="640" height="400" fill="url(#g)"/><path d="M120 260 L320 120 L520 260 V340 H120 Z" fill="none" stroke="#fff" stroke-width="14" stroke-linejoin="round"/><rect x="290" y="280" width="60" height="60" rx="8" fill="#fff" opacity=".9"/><text x="320" y="80" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="28" font-weight="700">${name}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 export const demoVillas: Villa[] = [
   {
     id: VILLA_IDS.lotus,
@@ -143,6 +149,7 @@ export const demoVillas: Villa[] = [
     area: "Srithanu",
     location_url: "https://maps.google.com/?q=Srithanu+Koh+Phangan",
     description: "Sea-view 2BR with private pool near Srithanu.",
+    photo_url: villaPhoto("Lotus House", "#3CB89A"),
     status: "occupied",
     check_in: daysAgo(2),
     check_out: daysFromNow(3),
@@ -158,6 +165,7 @@ export const demoVillas: Villa[] = [
     area: "Haad Yao",
     location_url: "https://maps.google.com/?q=Haad+Yao+Koh+Phangan",
     description: "Family villa close to Haad Yao beach.",
+    photo_url: villaPhoto("Palm Villa", "#F26A36"),
     status: "turnover",
     check_in: daysFromNow(1),
     check_out: daysFromNow(6),
@@ -173,6 +181,7 @@ export const demoVillas: Villa[] = [
     area: "Thong Sala",
     location_url: "https://maps.google.com/?q=Thong+Sala+Koh+Phangan",
     description: null,
+    photo_url: null,
     status: "available",
     check_in: null,
     check_out: null,
@@ -188,6 +197,7 @@ export const demoVillas: Villa[] = [
     area: "Chaloklum",
     location_url: "https://maps.google.com/?q=Chaloklum+Koh+Phangan",
     description: "Quiet hillside retreat - AC unit pending repair.",
+    photo_url: villaPhoto("Jungle Retreat", "#2A8F78"),
     status: "maintenance",
     check_in: daysFromNow(5),
     check_out: daysFromNow(12),
@@ -203,6 +213,7 @@ export const demoVillas: Villa[] = [
     area: "Haad Rin",
     location_url: "https://maps.google.com/?q=Haad+Rin+Koh+Phangan",
     description: "Sunset-facing deck villa.",
+    photo_url: villaPhoto("Sunset Deck", "#E0A84A"),
     status: "occupied",
     check_in: daysAgo(5),
     check_out: daysFromNow(1),
@@ -218,6 +229,7 @@ export const demoVillas: Villa[] = [
     area: "Srithanu",
     location_url: "https://maps.google.com/?q=Srithanu+Koh+Phangan",
     description: null,
+    photo_url: null,
     status: "available",
     check_in: daysFromNow(4),
     check_out: daysFromNow(10),
@@ -234,6 +246,7 @@ export const demoVillas: Villa[] = [
     area: "Haad Salad",
     location_url: "https://maps.google.com/?q=Haad+Salad+Koh+Phangan",
     description: "Compact studio for side-client bookings.",
+    photo_url: null,
     status: "occupied",
     check_in: daysAgo(1),
     check_out: daysFromNow(4),
@@ -249,6 +262,7 @@ export const demoVillas: Villa[] = [
     area: "Haad Yao",
     location_url: "https://maps.google.com/?q=Haad+Yao+Koh+Phangan",
     description: null,
+    photo_url: null,
     status: "available",
     check_in: null,
     check_out: null,

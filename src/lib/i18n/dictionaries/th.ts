@@ -48,7 +48,7 @@ const th: Dictionary = {
   "nav.leaderboard": "จัดอันดับ",
   "nav.language": "ภาษา",
 
-  "brand.tagline": "จังหวะการทำงานของคุณ",
+  "brand.tagline": "จังหวะของงานเช่ารายวันของคุณ",
   "brand.opsPulse": "พัลส์ปฏิบัติการ",
 
   "auth.login": "เข้าสู่ระบบ",

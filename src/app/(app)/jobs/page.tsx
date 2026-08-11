@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { AgreeButton } from "@/components/jobs/agree-button";
+import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
 import {
@@ -23,6 +24,15 @@ export default function JobsPage() {
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
   const booker = data.profile ? canBookServices(data.profile.role) : false;
 
+  const villaPhotoById = useMemo(() => {
+    const map = new Map<string, string | null>();
+    for (const v of data.villas) map.set(v.id, v.photo_url);
+    for (const v of data.allOrgVillas) {
+      if (!map.has(v.id)) map.set(v.id, v.photo_url);
+    }
+    return map;
+  }, [data.villas, data.allOrgVillas]);
+
   const myOrders = useMemo(() => {
     if (!data.profile) return [];
     const list = data.serviceOrders.filter((o) => {
@@ -38,9 +48,9 @@ export default function JobsPage() {
 
   const myTasks = useMemo(() => {
     if (!data.profile) return [];
-    return data.tasks.filter((t) => {
-      if (t.status !== "open") return false;
-      if (staff) return t.assigned_to === data.profile!.id;
+    return data.tasks.filter((task) => {
+      if (task.status !== "open") return false;
+      if (staff) return task.assigned_to === data.profile!.id;
       return true;
     });
   }, [data.tasks, data.profile, staff]);
@@ -50,7 +60,7 @@ export default function JobsPage() {
   return (
     <div className="space-y-4 animate-rise font-sans">
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-ink">
             {staff ? t("jobs.titleStaff") : t("jobs.titleOwner")}
           </h1>
@@ -84,56 +94,69 @@ export default function JobsPage() {
               staff &&
               order.status === "pending_ack" &&
               order.staff_profile_id === data.profile!.id;
+            const photo =
+              (order.villa_id && villaPhotoById.get(order.villa_id)) || null;
             return (
               <Card
                 key={order.id}
                 className={cn(
-                  "space-y-3 p-4",
+                  "space-y-0 overflow-hidden p-0",
                   pendingForMe && "ring-1 ring-primary/30",
                 )}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-semibold text-ink">{order.service_type}</p>
-                    <p className="text-sm text-muted">
-                      {order.location_label ?? t("tasks.villa")}
-                    </p>
+                {photo ? (
+                  <VillaPhotoThumb
+                    src={photo}
+                    alt={order.location_label ?? t("tasks.villa")}
+                    className="rounded-none"
+                  />
+                ) : null}
+                <div className="space-y-3 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-ink">
+                        {order.service_type}
+                      </p>
+                      <p className="text-sm text-muted">
+                        {order.location_label ?? t("tasks.villa")}
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
+                        order.status === "pending_ack"
+                          ? "bg-warning/20 text-warning-dark"
+                          : order.status === "agreed"
+                            ? "bg-secondary/15 text-secondary-dark"
+                            : "bg-[#F7F5F1] text-muted",
+                      )}
+                    >
+                      {t(`order.status.${order.status}` as MessageKey)}
+                    </span>
                   </div>
-                  <span
-                    className={cn(
-                      "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
-                      order.status === "pending_ack"
-                        ? "bg-warning/20 text-warning-dark"
-                        : order.status === "agreed"
-                          ? "bg-secondary/15 text-secondary-dark"
-                          : "bg-[#F7F5F1] text-muted",
-                    )}
-                  >
-                    {t(`order.status.${order.status}` as MessageKey)}
-                  </span>
-                </div>
-                <p className="text-sm font-semibold text-ink">
-                  {formatOrderWhen(order)}
-                </p>
-                {order.details ? (
-                  <p className="text-sm text-muted">{order.details}</p>
-                ) : null}
-                {!staff ? (
-                  <p className="text-xs font-semibold text-muted">
-                    {orderReachabilityLabel(order)}
+                  <p className="text-sm font-semibold text-ink">
+                    {formatOrderWhen(order)}
                   </p>
-                ) : null}
-                {pendingForMe ? <AgreeButton orderId={order.id} /> : null}
-                {staff && order.status === "agreed" ? (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="w-full"
-                    onClick={() => void data.completeServiceOrder(order.id)}
-                  >
-                    {t("jobs.markDone")}
-                  </Button>
-                ) : null}
+                  {order.details ? (
+                    <p className="text-sm text-muted">{order.details}</p>
+                  ) : null}
+                  {!staff ? (
+                    <p className="text-xs font-semibold text-muted">
+                      {orderReachabilityLabel(order)}
+                    </p>
+                  ) : null}
+                  {pendingForMe ? <AgreeButton orderId={order.id} /> : null}
+                  {staff && order.status === "agreed" ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="w-full"
+                      onClick={() => void data.completeServiceOrder(order.id)}
+                    >
+                      {t("jobs.markDone")}
+                    </Button>
+                  ) : null}
+                </div>
               </Card>
             );
           })

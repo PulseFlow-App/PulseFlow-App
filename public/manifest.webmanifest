@@ -1,7 +1,7 @@
 {
-  "name": "PulseFlow",
-  "short_name": "PulseFlow",
-  "description": "The pulse of your operation. Villa status, tasks, contacts, and bills for owners and on-site managers, in one place.",
+  "name": "Pulse Flow Ops",
+  "short_name": "Pulse Flow Ops",
+  "description": "The pulse of your rental operations. Villa status, tasks, contacts, and bills for owners and on-site managers, in one place.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FDF7F2",

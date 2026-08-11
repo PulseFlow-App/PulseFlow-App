@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
+import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
+import { fileToDataUrl } from "@/lib/file-to-data-url";
 import {
   formatShortDate,
   isValidLocationUrl,
@@ -24,6 +26,7 @@ export default function VillasPage() {
   const [area, setArea] = useState("");
   const [locationUrl, setLocationUrl] = useState("");
   const [description, setDescription] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [scope, setScope] = useState<"company" | "personal">("personal");
   const [error, setError] = useState<string | null>(null);
 
@@ -153,6 +156,34 @@ export default function VillasPage() {
               placeholder="Short notes about the property…"
             />
           </div>
+          <div>
+            <Label>Property photo</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) {
+                  setPhotoUrl(null);
+                  return;
+                }
+                void fileToDataUrl(file)
+                  .then(setPhotoUrl)
+                  .catch(() => setError("Could not read photo."));
+              }}
+            />
+            <p className="mt-1 text-xs text-muted">
+              Staff see this when accepting a job so they can recognize the place.
+            </p>
+            {photoUrl ? (
+              <VillaPhotoThumb
+                src={photoUrl}
+                alt="New villa preview"
+                className="mt-2"
+              />
+            ) : null}
+          </div>
           {error ? <p className="text-sm text-danger">{error}</p> : null}
           <div className="flex gap-2">
             <Button
@@ -179,6 +210,7 @@ export default function VillasPage() {
                     area: area.trim() || undefined,
                     location_url: normalizeLocationUrl(locationUrl),
                     description: description.trim() || undefined,
+                    photo_url: photoUrl,
                     scope:
                       inCompany && isOwner
                         ? scope
@@ -189,6 +221,7 @@ export default function VillasPage() {
                     setArea("");
                     setLocationUrl("");
                     setDescription("");
+                    setPhotoUrl(null);
                     setShowAdd(false);
                     setError(null);
                   })
@@ -297,7 +330,15 @@ function VillaSection({
           return (
             <li key={villa.id}>
               <Link href={`/villas/${villa.id}`}>
-                <Card className="p-5 transition hover:-translate-y-0.5">
+                <Card className="overflow-hidden p-0 transition hover:-translate-y-0.5">
+                  {villa.photo_url ? (
+                    <VillaPhotoThumb
+                      src={villa.photo_url}
+                      alt={villa.name}
+                      className="rounded-none"
+                    />
+                  ) : null}
+                  <div className="p-5">
                   <div className="mb-3 flex flex-wrap gap-2">
                     <span
                       className={
@@ -366,6 +407,7 @@ function VillaSection({
                       </span>
                     </div>
                   ) : null}
+                  </div>
                 </Card>
               </Link>
             </li>

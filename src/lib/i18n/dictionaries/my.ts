@@ -46,7 +46,7 @@ const my: Dictionary = {
   "nav.endorsements": "အဆင့်သတ်မှတ်",
   "nav.leaderboard": "အဆင့်ဇယား",
   "nav.language": "ဘာသာစကား",
-  "brand.tagline": "သင့်လုပ်ငန်း၏ နှလုံးခုန်သံ။",
+  "brand.tagline": "သင့်အငှားလုပ်ငန်း၏ နှလုံးခုန်သံ",
   "brand.opsPulse": "လုပ်ငန်းပယ်စ်",
   "auth.login": "ဝင်မည်",
   "auth.logout": "ထွက်မည်",

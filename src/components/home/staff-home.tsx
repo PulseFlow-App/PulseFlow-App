@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AgreeButton } from "@/components/jobs/agree-button";
 import { HeroCard } from "@/components/home/hero-card";
+import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import type { AppData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
 import { formatOrderWhen, orderStatusLabel } from "@/lib/service-orders";
@@ -15,6 +16,15 @@ import { useI18n } from "@/lib/i18n/provider";
 export function StaffHome({ data }: { data: AppData }) {
   const { t } = useI18n();
   const today = new Date().toISOString().slice(0, 10);
+
+  const villaPhotoById = useMemo(() => {
+    const map = new Map<string, string | null>();
+    for (const v of data.villas) map.set(v.id, v.photo_url);
+    for (const v of data.allOrgVillas) {
+      if (!map.has(v.id)) map.set(v.id, v.photo_url);
+    }
+    return map;
+  }, [data.villas, data.allOrgVillas]);
 
   const todayOrders = useMemo(
     () =>
@@ -61,18 +71,31 @@ export function StaffHome({ data }: { data: AppData }) {
             </p>
             <p className="text-xs text-muted">{t("home.needsAgreementHint")}</p>
           </div>
-          {pendingAck.map((order) => (
-            <div
-              key={order.id}
-              className="rounded-2xl bg-white p-3 soft-shadow"
-            >
-              <p className="font-semibold text-ink">{order.service_type}</p>
-              <p className="text-sm text-muted">
-                {order.location_label} · {formatOrderWhen(order)}
-              </p>
-              <AgreeButton orderId={order.id} className="mt-3" />
-            </div>
-          ))}
+          {pendingAck.map((order) => {
+            const photo =
+              (order.villa_id && villaPhotoById.get(order.villa_id)) || null;
+            return (
+              <div
+                key={order.id}
+                className="overflow-hidden rounded-2xl bg-white soft-shadow"
+              >
+                {photo ? (
+                  <VillaPhotoThumb
+                    src={photo}
+                    alt={order.location_label ?? "Property"}
+                    className="rounded-none"
+                  />
+                ) : null}
+                <div className="p-3">
+                  <p className="font-semibold text-ink">{order.service_type}</p>
+                  <p className="text-sm text-muted">
+                    {order.location_label} · {formatOrderWhen(order)}
+                  </p>
+                  <AgreeButton orderId={order.id} className="mt-3" />
+                </div>
+              </div>
+            );
+          })}
         </Card>
       ) : null}
 

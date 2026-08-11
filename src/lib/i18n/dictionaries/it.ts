@@ -46,7 +46,7 @@ const it: Dictionary = {
   "nav.endorsements": "Valutazioni",
   "nav.leaderboard": "Classifica",
   "nav.language": "Lingua",
-  "brand.tagline": "Il polso della tua operazione.",
+  "brand.tagline": "Il polso delle tue operazioni di affitto",
   "brand.opsPulse": "Polso ops",
   "auth.login": "Accedi",
   "auth.logout": "Esci",

@@ -46,7 +46,7 @@ const de: Dictionary = {
   "nav.endorsements": "Bewertungen",
   "nav.leaderboard": "Rangliste",
   "nav.language": "Sprache",
-  "brand.tagline": "Der Puls Ihres Betriebs.",
+  "brand.tagline": "Der Puls Ihrer Mietoperationen",
   "brand.opsPulse": "Ops-Puls",
   "auth.login": "Anmelden",
   "auth.logout": "Abmelden",

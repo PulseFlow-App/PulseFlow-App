@@ -110,6 +110,7 @@ export type AppData = {
         | "area"
         | "location_url"
         | "description"
+        | "photo_url"
       >
     >,
   ) => Promise<void>;
@@ -118,6 +119,7 @@ export type AppData = {
     area?: string;
     location_url: string;
     description?: string;
+    photo_url?: string | null;
     status?: Villa["status"];
     /** Owners default to company; managers default to personal side work. */
     scope?: "company" | "personal";
@@ -459,6 +461,7 @@ function useDemoData(): AppData {
             area: input.area ?? null,
             location_url: input.location_url.trim(),
             description: input.description?.trim() || null,
+            photo_url: input.photo_url ?? null,
             status: input.status ?? "available",
             check_in: null,
             check_out: null,
@@ -903,6 +906,7 @@ function useSupabaseData(enabled: boolean): AppData {
         area: input.area ?? null,
         location_url: input.location_url.trim(),
         description: input.description?.trim() || null,
+        photo_url: input.photo_url ?? null,
         status: input.status ?? "available",
         created_by: profile.id,
       });
