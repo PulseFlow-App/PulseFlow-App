@@ -75,7 +75,11 @@ function normalizeStore(store: DemoStore): DemoStore {
       details: plainDash(o.details) ?? null,
       location_label: plainDash(o.location_label) ?? null,
     })),
-    bills: store.bills.map((b) => ({ ...b, due_date: b.due_date ?? null })),
+    bills: store.bills.map((b) => ({
+      ...b,
+      due_date: b.due_date ?? null,
+      category: b.category ?? "other",
+    })),
     contacts: store.contacts.map((c) => ({
       ...c,
       linked_profile_id: c.linked_profile_id ?? null,

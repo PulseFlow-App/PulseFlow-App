@@ -16,6 +16,7 @@ import type {
   VillaListItem,
 } from "@/lib/types";
 import type { BillStatus, TaskPriority, TaskStatus, UserRole } from "@/lib/design-tokens";
+import type { BillCategory } from "@/lib/design-tokens";
 
 export type AppData = {
   ready: boolean;
@@ -109,6 +110,7 @@ export type AppData = {
     description: string;
     amount: number;
     villa_id: string | null;
+    category?: BillCategory;
     due_date?: string | null;
     receipt_photo_url?: string | null;
   }) => Promise<void>;

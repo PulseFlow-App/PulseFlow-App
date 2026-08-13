@@ -1,4 +1,5 @@
 import type {
+  BillCategory,
   BillStatus,
   CleaningStatus,
   Messenger,
@@ -190,6 +191,8 @@ export type Bill = {
   amount: number;
   currency: string;
   status: BillStatus;
+  /** Spend category tag for owner analytics */
+  category: BillCategory;
   /** Optional payment / reimbursement due date (YYYY-MM-DD) */
   due_date: string | null;
   submitted_by: string;

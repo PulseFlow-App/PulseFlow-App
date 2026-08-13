@@ -87,8 +87,8 @@ export default function MessagesPage() {
   if (!canUseTeamChat(data.orgKind)) {
     return (
       <EmptyState
-        title="Team chat is for companies"
-        description="Personal workspaces stay solo. Company plans unlock shared chat with managers and staff."
+        title={t("messages.companyOnly")}
+        description={t("messages.companyOnlyHint")}
       />
     );
   }
@@ -227,12 +227,12 @@ export default function MessagesPage() {
                   >
                     <span className="font-semibold text-ink">
                       {pick.kind === "everyone"
-                        ? "@everyone"
+                        ? t("messages.everyone")
                         : pick.profile.full_name}
                     </span>
                     <span className="text-xs text-muted capitalize">
                       {pick.kind === "everyone"
-                        ? "Notify the whole team"
+                        ? t("messages.everyoneHint")
                         : pick.profile.role}
                     </span>
                   </button>
@@ -256,7 +256,7 @@ export default function MessagesPage() {
               onClick={(e) => {
                 setCursor(e.currentTarget.selectionStart ?? 0);
               }}
-              placeholder={`${t("messages.placeholder")} (@name / @everyone)`}
+              placeholder={t("messages.placeholder")}
               onKeyDown={(e) => {
                 if (mentionOptions.length > 0) {
                   if (e.key === "ArrowDown") {

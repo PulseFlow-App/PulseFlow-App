@@ -69,6 +69,7 @@ function enrichBills(
       const submitter = profiles.find((p) => p.id === b.submitted_by);
       return {
         ...b,
+        category: b.category ?? "other",
         villa: villa ? { id: villa.id, name: villa.name } : null,
         submitter: submitter
           ? { id: submitter.id, full_name: submitter.full_name }
@@ -718,7 +719,12 @@ export function useSupabaseData(enabled: boolean): AppData {
         submitted_by: profile.id,
         currency: "THB",
         status: "pending",
-        ...input,
+        category: input.category ?? "other",
+        description: input.description,
+        amount: input.amount,
+        villa_id: input.villa_id,
+        due_date: input.due_date ?? null,
+        receipt_photo_url: input.receipt_photo_url ?? null,
       });
       if (error) throw error;
       await refresh();

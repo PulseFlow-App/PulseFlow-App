@@ -26,6 +26,29 @@ export type CleaningStatus = "not_needed" | "in_progress" | "done";
 export type TaskPriority = "normal" | "urgent";
 export type TaskStatus = "open" | "done";
 export type BillStatus = "pending" | "paid";
+export type BillCategory =
+  | "cleaning"
+  | "maintenance"
+  | "utilities"
+  | "supplies"
+  | "transport"
+  | "pool"
+  | "garden"
+  | "staff"
+  | "other";
+
+export const BILL_CATEGORIES: BillCategory[] = [
+  "cleaning",
+  "maintenance",
+  "utilities",
+  "supplies",
+  "transport",
+  "pool",
+  "garden",
+  "staff",
+  "other",
+];
+
 export type Messenger = "whatsapp" | "line" | "none";
 export type UserRole = "owner" | "manager" | "cleaner" | "staff";
 export type OrgKind = "personal" | "company";

@@ -86,7 +86,7 @@ export default function SettingsPage() {
       setCopiedToken(invite.token);
       setInviteTitle("");
     } catch (e) {
-      setInviteError(e instanceof Error ? e.message : "Could not create invite.");
+      setInviteError(e instanceof Error ? e.message : t("settings.inviteError"));
     } finally {
       setCreating(false);
     }
@@ -105,9 +105,9 @@ export default function SettingsPage() {
     if (!assignManagerId) return;
     try {
       await data.setVillaAssignments(assignManagerId, selectedVillas);
-      setAssignMsg("Villa access updated.");
+      setAssignMsg(t("settings.villaAccessSaved"));
     } catch (e) {
-      setAssignMsg(e instanceof Error ? e.message : "Could not save.");
+      setAssignMsg(e instanceof Error ? e.message : t("settings.saveError"));
     }
   };
 
@@ -133,7 +133,7 @@ export default function SettingsPage() {
           <Info label={t("common.role")} value={t(roleKey)} />
         ) : null}
         <Info
-          label={isPersonal ? "Workspace" : t("settings.organization")}
+          label={isPersonal ? t("settings.workspace") : t("settings.organization")}
           value={data.orgName}
         />
       </Card>
@@ -226,7 +226,7 @@ export default function SettingsPage() {
             <Input
               value={inviteTitle}
               onChange={(e) => setInviteTitle(e.target.value)}
-              placeholder="e.g. On-site manager, Lead cleaner"
+              placeholder={t("settings.jobTitlePlaceholder")}
             />
           </div>
           {inviteError ? (
@@ -234,7 +234,7 @@ export default function SettingsPage() {
           ) : null}
           {copiedToken ? (
             <p className="text-sm font-semibold text-secondary">
-              Unique invite link copied - share it with that person.
+              {t("settings.inviteCopied")}
             </p>
           ) : null}
           <Button
@@ -248,7 +248,7 @@ export default function SettingsPage() {
           {data.invites.length > 0 ? (
             <div className="space-y-2 border-t border-black/5 pt-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                Open invites
+                {t("settings.openInvites")}
               </p>
               {data.invites.map((inv) => (
                 <div
@@ -260,7 +260,9 @@ export default function SettingsPage() {
                       {t(`roles.${inv.role}` as MessageKey)}
                       {inv.job_title ? ` · ${inv.job_title}` : ""}
                     </p>
-                    <p className="text-xs text-muted">Waiting to join</p>
+                    <p className="text-xs text-muted">
+                      {t("settings.waitingToJoin")}
+                    </p>
                   </div>
                   <Button
                     size="sm"
@@ -271,7 +273,7 @@ export default function SettingsPage() {
                       setCopiedToken(inv.token);
                     }}
                   >
-                    Copy
+                    {t("common.copy")}
                   </Button>
                 </div>
               ))}
@@ -284,20 +286,19 @@ export default function SettingsPage() {
         <Card className="space-y-3 p-5">
           <div>
             <h2 className="font-display text-lg font-bold text-ink">
-              Assign villas to team
+              {t("settings.villaAccess")}
             </h2>
-            <p className="mt-1 text-sm text-muted">
-              Choose which villas each person can see. You can also set this
-              from each villa card.
+            <p className="mt-1 text-sm text-muted" dir="auto">
+              {t("settings.villaAccessHint")}
             </p>
           </div>
           <div>
-            <Label>Team member</Label>
+            <Label>{t("settings.teamMember")}</Label>
             <Select
               value={assignManagerId}
               onChange={(e) => loadAssignments(e.target.value)}
             >
-              <option value="">Select…</option>
+              <option value="">{t("settings.selectPerson")}</option>
               {assignablePeople.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.full_name} · {t(`roles.${p.role}` as MessageKey)}
@@ -340,14 +341,16 @@ export default function SettingsPage() {
             disabled={!assignManagerId}
             onClick={() => void saveAssignments()}
           >
-            Save villa access
+            {t("settings.saveVillaAccess")}
           </Button>
         </Card>
       ) : null}
 
       {isCompany ? (
         <Card className="space-y-2 p-5">
-          <h2 className="font-display text-lg font-bold text-ink">Team</h2>
+          <h2 className="font-display text-lg font-bold text-ink">
+            {t("settings.team")}
+          </h2>
           {data.profiles.map((p) => (
             <div
               key={p.id}

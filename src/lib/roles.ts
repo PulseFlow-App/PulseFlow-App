@@ -83,6 +83,14 @@ export function canMarkBillsPaid(role: UserRole) {
   return role === "owner" || role === "manager";
 }
 
+/** Owner spend analytics on company (subscription) workspaces. */
+export function canViewBillFinance(
+  role: UserRole,
+  orgKind?: OrgKind | null,
+) {
+  return isCompanyWorkspace(orgKind) && role === "owner";
+}
+
 export function canEditVillaCore(role: UserRole) {
   return role === "owner" || role === "manager";
 }

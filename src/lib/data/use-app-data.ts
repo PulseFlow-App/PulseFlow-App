@@ -97,6 +97,7 @@ function enrichBills(
       const submitter = profiles.find((p) => p.id === b.submitted_by);
       return {
         ...b,
+        category: b.category ?? "other",
         villa: villa ? { id: villa.id, name: villa.name } : null,
         submitter: submitter
           ? { id: submitter.id, full_name: submitter.full_name }
@@ -541,6 +542,7 @@ function useDemoData(): AppData {
             villa_id: input.villa_id,
             currency: "THB",
             status: "pending",
+            category: input.category ?? "other",
             due_date,
             submitted_by: profile.id,
             receipt_photo_url: input.receipt_photo_url ?? null,
