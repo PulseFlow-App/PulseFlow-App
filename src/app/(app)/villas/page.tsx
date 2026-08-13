@@ -10,7 +10,6 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
-import { fileToDataUrl } from "@/lib/file-to-data-url";
 import {
   formatShortDate,
   isValidLocationUrl,
@@ -34,9 +33,10 @@ export default function VillasPage() {
   const isOwner = data.profile?.role === "owner";
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
   const personalOnly = data.profile
-    ? personalVillasOnly(data.profile.role)
+    ? personalVillasOnly(data.profile.role, data.orgKind)
     : false;
   const inCompany = data.orgKind === "company";
+  const isPersonalWorkspace = data.orgKind === "personal";
 
   const companyVillas = useMemo(
     () => data.villaList.filter((v) => v.bucket === "company"),
@@ -64,9 +64,11 @@ export default function VillasPage() {
         <div>
           <h1 className="font-display text-2xl font-bold text-ink">Villas</h1>
           <p className="text-sm text-muted">
-            {staff
-              ? "Assigned company villas + your own personal list"
-              : "Company inventory first, then your personal list"}
+            {isPersonalWorkspace
+              ? "Your villas and rental work"
+              : staff
+                ? "Assigned company villas + your own personal list"
+                : "Company inventory first, then your personal list"}
           </p>
         </div>
         {canAdd ? (
@@ -168,9 +170,10 @@ export default function VillasPage() {
                   setPhotoUrl(null);
                   return;
                 }
-                void fileToDataUrl(file)
-                  .then(setPhotoUrl)
-                  .catch(() => setError("Could not read photo."));
+                void data
+                  .uploadVillaPhoto(file)
+                  .then((url) => setPhotoUrl(url))
+                  .catch(() => setError("Could not upload photo."));
               }}
             />
             <p className="mt-1 text-xs text-muted">
@@ -241,9 +244,21 @@ export default function VillasPage() {
           title="No villas yet"
           description={
             canAdd
-              ? "Add a company villa or a personal one you manage on the side."
+              ? isPersonalWorkspace
+                ? "Add your first villa to start tracking work."
+                : "Add a company villa or a personal one you manage on the side."
               : "Ask your owner to assign company villas to you."
           }
+        />
+      ) : isPersonalWorkspace ? (
+        <VillaSection
+          title={data.orgName || "Your villas"}
+          subtitle="Personal workspace"
+          icon="personal"
+          villas={data.villaList}
+          showAssignees={false}
+          assigneesFor={assigneesFor}
+          hideBucketBadge
         />
       ) : (
         <>
@@ -295,6 +310,7 @@ function VillaSection({
   villas,
   showAssignees,
   assigneesFor,
+  hideBucketBadge = false,
 }: {
   title: string;
   subtitle: string;
@@ -302,6 +318,7 @@ function VillaSection({
   villas: VillaListItem[];
   showAssignees: boolean;
   assigneesFor: (id: string) => string[];
+  hideBucketBadge?: boolean;
 }) {
   return (
     <section className="space-y-3">
@@ -340,15 +357,17 @@ function VillaSection({
                   ) : null}
                   <div className="p-5">
                   <div className="mb-3 flex flex-wrap gap-2">
-                    <span
-                      className={
-                        villa.bucket === "company"
-                          ? "rounded-full bg-secondary-soft px-2.5 py-1 text-[11px] font-semibold text-secondary-dark"
-                          : "rounded-full bg-[#F0EDE6] px-2.5 py-1 text-[11px] font-semibold text-muted"
-                      }
-                    >
-                      {villa.orgLabel}
-                    </span>
+                    {!hideBucketBadge ? (
+                      <span
+                        className={
+                          villa.bucket === "company"
+                            ? "rounded-full bg-secondary-soft px-2.5 py-1 text-[11px] font-semibold text-secondary-dark"
+                            : "rounded-full bg-[#F0EDE6] px-2.5 py-1 text-[11px] font-semibold text-muted"
+                        }
+                      >
+                        {villa.orgLabel}
+                      </span>
+                    ) : null}
                     <StatusPill status={villa.status} />
                   </div>
                   <h3 className="font-display text-lg font-bold text-ink">

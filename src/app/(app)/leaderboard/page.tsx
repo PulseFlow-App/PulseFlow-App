@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { LoadingState } from "@/components/ui/empty-state";
+import { LoadingState, EmptyState } from "@/components/ui/empty-state";
 import { StarsDisplay } from "@/components/endorsements/stars";
 import { useData } from "@/lib/data/use-app-data";
 import {
@@ -11,7 +11,7 @@ import {
   orgsForProfile,
   summarizeRatings,
 } from "@/lib/endorsements";
-import { ROLE_LABELS } from "@/lib/roles";
+import { ROLE_LABELS, canUseTeamReputation } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 
 export default function LeaderboardPage() {
@@ -30,9 +30,6 @@ export default function LeaderboardPage() {
     if (orgTab) return orgTab;
     return myCompanies[0]?.id ?? data.profile?.org_id ?? "";
   }, [isOwner, data.profile?.org_id, orgTab, myCompanies]);
-
-  const activeOrgName =
-    data.orgs.find((o) => o.id === activeOrgId)?.name ?? data.orgName;
 
   const memberIds = useMemo(() => {
     return new Set(
@@ -53,6 +50,18 @@ export default function LeaderboardPage() {
   }, [activeOrgId, data.endorsements, data.allProfiles, memberIds]);
 
   if (!data.ready || !data.profile) return <LoadingState />;
+
+  if (!canUseTeamReputation(data.orgKind)) {
+    return (
+      <EmptyState
+        title="Leaderboards are for companies"
+        description="Personal workspaces are solo - team rankings appear when you work with a company."
+      />
+    );
+  }
+
+  const activeOrgName =
+    data.orgs.find((o) => o.id === activeOrgId)?.name ?? data.orgName;
 
   const selectedTab = orgTab || myCompanies[0]?.id;
 

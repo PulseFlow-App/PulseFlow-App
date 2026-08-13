@@ -353,8 +353,8 @@ export const demoContacts: Contact[] = [
   },
 ];
 
-const ORDER_PENDING_ID = "qqqqqqqq-qqqq-4qqq-8qqq-qqqqqqqqqqq1";
-const ORDER_AGREED_ID = "qqqqqqqq-qqqq-4qqq-8qqq-qqqqqqqqqqq2";
+const ORDER_PENDING_ID = "77777777-7777-4777-8777-777777777771";
+const ORDER_AGREED_ID = "77777777-7777-4777-8777-777777777772";
 const ORDER_MSG_PENDING = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee4";
 const ORDER_MSG_AGREED = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee5";
 const NOK_TASK_PENDING = "cccccccc-cccc-4ccc-8ccc-ccccccccccc8";
@@ -547,7 +547,7 @@ export const demoServiceOrders: ServiceOrder[] = [
     created_at: daysAgo(1) + "T18:00:00.000Z",
   },
   {
-    id: "qqqqqqqq-qqqq-4qqq-8qqq-qqqqqqqqqqq3",
+    id: "77777777-7777-4777-8777-777777777773",
     org_id: DEMO_ORG_ID,
     contact_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb7",
     staff_profile_id: null,
@@ -621,7 +621,7 @@ export const demoNotifications: AppNotification[] = [
       audience_profile_ids: [DEMO_CLEANER_ID],
       created_at: daysAgo(0) + "T09:00:00.000Z",
     }),
-    id: "pppppppp-pppp-4ppp-8ppp-ppppppppppp1",
+    id: "55555555-5555-4555-8555-555555555551",
   },
   {
     ...makeNotification({
@@ -634,7 +634,7 @@ export const demoNotifications: AppNotification[] = [
       audience_profile_ids: [DEMO_CLEANER_ID, DEMO_OWNER_ID],
       created_at: daysAgo(0) + "T07:30:00.000Z",
     }),
-    id: "pppppppp-pppp-4ppp-8ppp-ppppppppppp2",
+    id: "55555555-5555-4555-8555-555555555552",
     read_by: [DEMO_CLEANER_ID],
   },
   {
@@ -647,7 +647,7 @@ export const demoNotifications: AppNotification[] = [
       audience_profile_ids: [DEMO_EMPLOYEE_ID, DEMO_CLEANER_ID],
       created_at: daysAgo(0) + "T08:05:00.000Z",
     }),
-    id: "pppppppp-pppp-4ppp-8ppp-ppppppppppp3",
+    id: "55555555-5555-4555-8555-555555555553",
     read_by: [DEMO_CLEANER_ID],
   },
   {
@@ -661,7 +661,7 @@ export const demoNotifications: AppNotification[] = [
       audience_profile_ids: [DEMO_OWNER_ID],
       created_at: daysAgo(0) + "T09:31:00.000Z",
     }),
-    id: "pppppppp-pppp-4ppp-8ppp-ppppppppppp4",
+    id: "55555555-5555-4555-8555-555555555554",
   },
 ];
 
@@ -716,28 +716,28 @@ function priorWeekKey(weeksAgo: number) {
 
 export const demoMemberships: OrgMembership[] = [
   {
-    id: "mmmmmmmm-mmmm-4mmm-8mmm-mmmmmmmmmmm1",
+    id: "66666666-6666-4666-8666-666666666661",
     org_id: DEMO_ORG_ID,
     profile_id: DEMO_OWNER_ID,
     role: "owner",
     joined_at: "2026-01-01T00:00:00.000Z",
   },
   {
-    id: "mmmmmmmm-mmmm-4mmm-8mmm-mmmmmmmmmmm2",
+    id: "66666666-6666-4666-8666-666666666662",
     org_id: DEMO_ORG_ID,
     profile_id: DEMO_EMPLOYEE_ID,
     role: "manager",
     joined_at: "2026-01-10T00:00:00.000Z",
   },
   {
-    id: "mmmmmmmm-mmmm-4mmm-8mmm-mmmmmmmmmmm3",
+    id: "66666666-6666-4666-8666-666666666663",
     org_id: DEMO_ORG_ID,
     profile_id: DEMO_CLEANER_ID,
     role: "cleaner",
     joined_at: "2026-01-15T00:00:00.000Z",
   },
   {
-    id: "mmmmmmmm-mmmm-4mmm-8mmm-mmmmmmmmmmm4",
+    id: "66666666-6666-4666-8666-666666666664",
     org_id: DEMO_ORG_2_ID,
     profile_id: DEMO_OWNER_2_ID,
     role: "owner",
@@ -745,7 +745,7 @@ export const demoMemberships: OrgMembership[] = [
   },
   // Sam also works / worked with Beachside Stays
   {
-    id: "mmmmmmmm-mmmm-4mmm-8mmm-mmmmmmmmmmm5",
+    id: "66666666-6666-4666-8666-666666666665",
     org_id: DEMO_ORG_2_ID,
     profile_id: DEMO_EMPLOYEE_ID,
     role: "manager",
@@ -755,7 +755,7 @@ export const demoMemberships: OrgMembership[] = [
 
 export const demoEndorsements: Endorsement[] = [
   {
-    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn1",
+    id: "88888888-8888-4888-8888-888888888881",
     org_id: DEMO_ORG_ID,
     from_profile_id: DEMO_OWNER_ID,
     to_profile_id: DEMO_EMPLOYEE_ID,
@@ -765,7 +765,7 @@ export const demoEndorsements: Endorsement[] = [
     created_at: daysAgo(21) + "T10:00:00.000Z",
   },
   {
-    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn2",
+    id: "88888888-8888-4888-8888-888888888882",
     org_id: DEMO_ORG_ID,
     from_profile_id: DEMO_OWNER_ID,
     to_profile_id: DEMO_EMPLOYEE_ID,
@@ -775,7 +775,7 @@ export const demoEndorsements: Endorsement[] = [
     created_at: daysAgo(14) + "T10:00:00.000Z",
   },
   {
-    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn3",
+    id: "88888888-8888-4888-8888-888888888883",
     org_id: DEMO_ORG_ID,
     from_profile_id: DEMO_OWNER_ID,
     to_profile_id: DEMO_EMPLOYEE_ID,
@@ -785,7 +785,7 @@ export const demoEndorsements: Endorsement[] = [
     created_at: daysAgo(7) + "T10:00:00.000Z",
   },
   {
-    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn4",
+    id: "88888888-8888-4888-8888-888888888884",
     org_id: DEMO_ORG_ID,
     from_profile_id: DEMO_OWNER_ID,
     to_profile_id: DEMO_CLEANER_ID,
@@ -795,7 +795,7 @@ export const demoEndorsements: Endorsement[] = [
     created_at: daysAgo(14) + "T11:00:00.000Z",
   },
   {
-    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn5",
+    id: "88888888-8888-4888-8888-888888888885",
     org_id: DEMO_ORG_ID,
     from_profile_id: DEMO_OWNER_ID,
     to_profile_id: DEMO_CLEANER_ID,
@@ -805,7 +805,7 @@ export const demoEndorsements: Endorsement[] = [
     created_at: daysAgo(7) + "T11:00:00.000Z",
   },
   {
-    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn6",
+    id: "88888888-8888-4888-8888-888888888886",
     org_id: DEMO_ORG_2_ID,
     from_profile_id: DEMO_OWNER_2_ID,
     to_profile_id: DEMO_EMPLOYEE_ID,
@@ -815,7 +815,7 @@ export const demoEndorsements: Endorsement[] = [
     created_at: daysAgo(14) + "T12:00:00.000Z",
   },
   {
-    id: "nnnnnnnn-nnnn-4nnn-8nnn-nnnnnnnnnnn7",
+    id: "88888888-8888-4888-8888-888888888887",
     org_id: DEMO_ORG_2_ID,
     from_profile_id: DEMO_OWNER_2_ID,
     to_profile_id: DEMO_EMPLOYEE_ID,
@@ -843,45 +843,46 @@ export type DemoStore = {
   serviceOrders: ServiceOrder[];
 };
 
+export const demoVillaAssignments: VillaAssignment[] = [
+  {
+    id: "ffffffff-ffff-4fff-8fff-fffffffffff1",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.lotus,
+    profile_id: DEMO_EMPLOYEE_ID,
+  },
+  {
+    id: "ffffffff-ffff-4fff-8fff-fffffffffff2",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.palm,
+    profile_id: DEMO_EMPLOYEE_ID,
+  },
+  {
+    id: "ffffffff-ffff-4fff-8fff-fffffffffff3",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.sunset,
+    profile_id: DEMO_EMPLOYEE_ID,
+  },
+  {
+    id: "ffffffff-ffff-4fff-8fff-fffffffffff4",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.lotus,
+    profile_id: DEMO_CLEANER_ID,
+  },
+  {
+    id: "ffffffff-ffff-4fff-8fff-fffffffffff5",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.palm,
+    profile_id: DEMO_CLEANER_ID,
+  },
+  {
+    id: "ffffffff-ffff-4fff-8fff-fffffffffff6",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.sunset,
+    profile_id: DEMO_CLEANER_ID,
+  },
+];
+
 export function createFreshDemoStore(): DemoStore {
-  const assignments: VillaAssignment[] = [
-    {
-      id: "ffffffff-ffff-4fff-8fff-fffffffffff1",
-      org_id: DEMO_ORG_ID,
-      villa_id: VILLA_IDS.lotus,
-      profile_id: DEMO_EMPLOYEE_ID,
-    },
-    {
-      id: "ffffffff-ffff-4fff-8fff-fffffffffff2",
-      org_id: DEMO_ORG_ID,
-      villa_id: VILLA_IDS.palm,
-      profile_id: DEMO_EMPLOYEE_ID,
-    },
-    {
-      id: "ffffffff-ffff-4fff-8fff-fffffffffff3",
-      org_id: DEMO_ORG_ID,
-      villa_id: VILLA_IDS.sunset,
-      profile_id: DEMO_EMPLOYEE_ID,
-    },
-    {
-      id: "ffffffff-ffff-4fff-8fff-fffffffffff4",
-      org_id: DEMO_ORG_ID,
-      villa_id: VILLA_IDS.lotus,
-      profile_id: DEMO_CLEANER_ID,
-    },
-    {
-      id: "ffffffff-ffff-4fff-8fff-fffffffffff5",
-      org_id: DEMO_ORG_ID,
-      villa_id: VILLA_IDS.palm,
-      profile_id: DEMO_CLEANER_ID,
-    },
-    {
-      id: "ffffffff-ffff-4fff-8fff-fffffffffff6",
-      org_id: DEMO_ORG_ID,
-      villa_id: VILLA_IDS.sunset,
-      profile_id: DEMO_CLEANER_ID,
-    },
-  ];
   return {
     orgs: [
       structuredClone(demoOrg),
@@ -896,7 +897,7 @@ export function createFreshDemoStore(): DemoStore {
     bills: structuredClone(demoBills),
     messages: structuredClone(demoMessages),
     invites: [],
-    villaAssignments: assignments,
+    villaAssignments: structuredClone(demoVillaAssignments),
     memberships: structuredClone(demoMemberships),
     endorsements: structuredClone(demoEndorsements),
     notifications: structuredClone(demoNotifications),

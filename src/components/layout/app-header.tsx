@@ -5,6 +5,8 @@ import { Bell, Languages, MessageCircle, Settings, Star } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { brand } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
+import { useData } from "@/lib/data/use-app-data";
+import { canUseTeamChat, canUseTeamReputation } from "@/lib/roles";
 
 export function AppHeader({
   unreadMessages = 0,
@@ -14,6 +16,9 @@ export function AppHeader({
   unreadNotifications?: number;
 }) {
   const { t } = useI18n();
+  const data = useData();
+  const showReputation = canUseTeamReputation(data.orgKind);
+  const showChat = canUseTeamChat(data.orgKind);
 
   return (
     <header className="flex w-full max-w-full items-center justify-between gap-2 overflow-hidden pb-3 pt-[max(0.65rem,env(safe-area-inset-top))]">
@@ -43,23 +48,27 @@ export function AppHeader({
             </span>
           ) : null}
         </Link>
-        <Link
-          href="/endorsements"
-          className="flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
-          aria-label={t("nav.endorsements")}
-        >
-          <Star className="size-4" />
-        </Link>
-        <Link
-          href="/messages"
-          className="relative flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
-          aria-label={t("nav.messages")}
-        >
-          <MessageCircle className="size-4" />
-          {unreadMessages > 0 ? (
-            <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
-          ) : null}
-        </Link>
+        {showReputation ? (
+          <Link
+            href="/endorsements"
+            className="flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
+            aria-label={t("nav.endorsements")}
+          >
+            <Star className="size-4" />
+          </Link>
+        ) : null}
+        {showChat ? (
+          <Link
+            href="/messages"
+            className="relative flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
+            aria-label={t("nav.messages")}
+          >
+            <MessageCircle className="size-4" />
+            {unreadMessages > 0 ? (
+              <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
+            ) : null}
+          </Link>
+        ) : null}
         <Link
           href="/settings"
           className="flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"

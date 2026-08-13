@@ -6,7 +6,7 @@ import { Copy, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label, Textarea } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/empty-state";
+import { LoadingState, EmptyState } from "@/components/ui/empty-state";
 import { StarsDisplay, StarsPicker } from "@/components/endorsements/stars";
 import { useData } from "@/lib/data/use-app-data";
 import {
@@ -14,7 +14,7 @@ import {
   weekKey,
   weekLabel,
 } from "@/lib/endorsements";
-import { ROLE_LABELS } from "@/lib/roles";
+import { ROLE_LABELS, canUseTeamReputation } from "@/lib/roles";
 
 export default function EndorsementsPage() {
   const data = useData();
@@ -42,6 +42,15 @@ export default function EndorsementsPage() {
   const [copied, setCopied] = useState(false);
 
   if (!data.ready || !data.profile) return <LoadingState />;
+
+  if (!canUseTeamReputation(data.orgKind)) {
+    return (
+      <EmptyState
+        title="Team reputation is for companies"
+        description="Personal workspaces are solo - invite and endorsements appear when you join or create a company."
+      />
+    );
+  }
 
   const alreadyVotedIds = new Set(
     data.endorsements

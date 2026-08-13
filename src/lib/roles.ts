@@ -1,4 +1,4 @@
-import type { UserRole } from "@/lib/design-tokens";
+import type { OrgKind, UserRole } from "@/lib/design-tokens";
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   owner: "Owner",
@@ -7,19 +7,39 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   staff: "Staff",
 };
 
-/** Roles an actor may assign when creating an invite. */
-export function invitableRoles(actorRole: UserRole): UserRole[] {
+export function isCompanyWorkspace(kind: OrgKind | null | undefined) {
+  return kind === "company";
+}
+
+export function isPersonalWorkspace(kind: OrgKind | null | undefined) {
+  return kind === "personal";
+}
+
+/** Roles an actor may assign when creating an invite (company only). */
+export function invitableRoles(
+  actorRole: UserRole,
+  orgKind?: OrgKind | null,
+): UserRole[] {
+  if (!isCompanyWorkspace(orgKind)) return [];
   if (actorRole === "owner") return ["manager", "cleaner", "staff"];
   if (actorRole === "manager") return ["cleaner", "staff"];
   return [];
 }
 
-export function canInvite(actorRole: UserRole) {
-  return invitableRoles(actorRole).length > 0;
+export function canInvite(actorRole: UserRole, orgKind?: OrgKind | null) {
+  return invitableRoles(actorRole, orgKind).length > 0;
 }
 
-export function canManageVillaAssignments(role: UserRole) {
-  return role === "owner";
+export function canManageVillaAssignments(
+  role: UserRole,
+  orgKind?: OrgKind | null,
+) {
+  return isCompanyWorkspace(orgKind) && role === "owner";
+}
+
+/** Endorsements / leaderboard / public reputation - company teams only. */
+export function canUseTeamReputation(orgKind?: OrgKind | null) {
+  return isCompanyWorkspace(orgKind);
 }
 
 export function canCreateVillas(role: UserRole) {
@@ -36,12 +56,22 @@ export function isStaffApp(role: UserRole) {
   return role === "cleaner" || role === "staff";
 }
 
-export function canBookServices(role: UserRole) {
+export function canBookServices(
+  role: UserRole,
+  orgKind?: OrgKind | null,
+) {
+  if (!isCompanyWorkspace(orgKind)) return false;
   return role === "owner" || role === "manager";
 }
 
-/** Personal-only villa creates (no company inventory). */
-export function personalVillasOnly(role: UserRole) {
+/** In-app team chat - company workspaces only. */
+export function canUseTeamChat(orgKind?: OrgKind | null) {
+  return isCompanyWorkspace(orgKind);
+}
+
+/** Personal-only villa creates (no company inventory) - for company staff side work. */
+export function personalVillasOnly(role: UserRole, orgKind?: OrgKind | null) {
+  if (isPersonalWorkspace(orgKind)) return true;
   return role === "manager" || role === "cleaner" || role === "staff";
 }
 

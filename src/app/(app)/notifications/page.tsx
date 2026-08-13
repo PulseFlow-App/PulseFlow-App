@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -48,6 +49,14 @@ export default function NotificationsPage() {
   const data = useData();
   const { t } = useI18n();
 
+  useEffect(() => {
+    if (!data.ready || !data.profile) return;
+    if (data.unreadNotificationCount <= 0) return;
+    void data.markAllNotificationsRead();
+    // Mark when the inbox is opened / while viewing so badges clear after checking.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional open clear
+  }, [data.ready, data.profile?.id, data.unreadNotificationCount]);
+
   if (!data.ready || !data.profile) return <LoadingState />;
 
   return (
@@ -79,7 +88,7 @@ export default function NotificationsPage() {
       ) : (
         <ul className="space-y-2">
           {data.notifications.map((n) => {
-            const unread = !n.read_by.includes(data.profile!.id);
+            const unread = !(n.read_by ?? []).includes(data.profile!.id);
             const Icon = kindIcon(n.kind);
             const kindLabel = t(
               `notifications.kind.${n.kind}` as MessageKey,

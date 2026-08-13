@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { ROLE_LABELS } from "@/lib/roles";
-import { isDemoMode } from "@/lib/supabase/client";
+import { createClient, isDemoMode } from "@/lib/supabase/client";
 import { demoAcceptInvite, getInviteContext } from "@/lib/demo/store";
 import type { Invite, Organization, Profile } from "@/lib/types";
 
@@ -34,12 +34,42 @@ export default function JoinPage({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!isDemoMode()) {
-      setLoaded(true);
-      return;
-    }
-    setCtx(getInviteContext(token));
-    setLoaded(true);
+    let cancelled = false;
+    (async () => {
+      if (isDemoMode()) {
+        if (!cancelled) {
+          setCtx(getInviteContext(token));
+          setLoaded(true);
+        }
+        return;
+      }
+      try {
+        const res = await fetch(`/api/invites/${encodeURIComponent(token)}`);
+        const payload = (await res.json()) as {
+          invite: Invite | null;
+          org: Organization | null;
+          inviter: Profile | null;
+        };
+        if (!cancelled) {
+          setCtx(
+            payload.invite
+              ? {
+                  invite: payload.invite,
+                  org: payload.org,
+                  inviter: payload.inviter,
+                }
+              : null,
+          );
+        }
+      } catch {
+        if (!cancelled) setCtx(null);
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const accept = async () => {
@@ -56,18 +86,38 @@ export default function JoinPage({
       setError("Passwords do not match.");
       return;
     }
-    if (!isDemoMode()) {
-      setError("Invite accept via Supabase activates when keys are connected.");
-      return;
-    }
     setSaving(true);
     try {
-      demoAcceptInvite(token, {
-        fullName,
-        email,
-        phone,
-        password,
-      });
+      if (isDemoMode()) {
+        demoAcceptInvite(token, {
+          fullName,
+          email,
+          phone,
+          password,
+        });
+      } else {
+        const res = await fetch("/api/auth/accept-invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token,
+            fullName,
+            email,
+            phone,
+            password,
+          }),
+        });
+        const payload = (await res.json()) as { error?: string };
+        if (!res.ok) {
+          throw new Error(payload.error ?? "Could not join.");
+        }
+        const supabase = createClient();
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+        if (signInError) throw signInError;
+      }
       router.replace("/home");
       router.refresh();
     } catch (e) {

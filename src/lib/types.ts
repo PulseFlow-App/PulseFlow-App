@@ -9,11 +9,24 @@ import type {
   VillaStatus,
 } from "./design-tokens";
 
+export type SubscriptionStatus =
+  | "none"
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "unpaid";
+
 export type Organization = {
   id: string;
   name: string;
   kind: OrgKind;
   created_at: string;
+  trial_ends_at?: string | null;
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
+  subscription_status?: SubscriptionStatus;
+  billing_email?: string | null;
 };
 
 export type Profile = {

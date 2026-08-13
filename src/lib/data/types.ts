@@ -1,0 +1,130 @@
+import type {
+  AppNotification,
+  Bill,
+  BillWithRelations,
+  Contact,
+  Endorsement,
+  Invite,
+  MessageWithSender,
+  OrgMembership,
+  Organization,
+  Profile,
+  ServiceOrder,
+  TaskWithRelations,
+  Villa,
+  VillaAssignment,
+  VillaListItem,
+} from "@/lib/types";
+import type { BillStatus, TaskPriority, TaskStatus, UserRole } from "@/lib/design-tokens";
+
+export type AppData = {
+  ready: boolean;
+  profile: Profile | null;
+  organization: Organization | null;
+  companyEntitled: boolean;
+  orgName: string;
+  orgKind: "personal" | "company" | null;
+  profiles: Profile[];
+  /** All profiles in the demo/db (for multi-company leaderboards). */
+  allProfiles: Profile[];
+  orgs: Organization[];
+  villas: Villa[];
+  villaList: VillaListItem[];
+  allOrgVillas: Villa[];
+  contacts: Contact[];
+  tasks: TaskWithRelations[];
+  bills: BillWithRelations[];
+  messages: MessageWithSender[];
+  invites: Invite[];
+  villaAssignments: VillaAssignment[];
+  memberships: OrgMembership[];
+  endorsements: Endorsement[];
+  notifications: AppNotification[];
+  serviceOrders: ServiceOrder[];
+  unreadNotificationCount: number;
+  unreadMessageCount: number;
+  refresh: () => Promise<void>;
+  markNotificationRead: (id: string) => Promise<void>;
+  /** Mark all visible unread as read. Pass kind to limit (e.g. message badges). */
+  markAllNotificationsRead: (kind?: AppNotification["kind"]) => Promise<void>;
+  createServiceOrder: (input: {
+    contact_id: string;
+    villa_id: string | null;
+    location_label?: string | null;
+    service_type: string;
+    details?: string | null;
+    scheduled_date: string;
+    time_start?: string | null;
+    time_end?: string | null;
+  }) => Promise<ServiceOrder>;
+  agreeServiceOrder: (orderId: string) => Promise<void>;
+  completeServiceOrder: (orderId: string) => Promise<void>;
+  updateVilla: (
+    id: string,
+    patch: Partial<
+      Pick<
+        Villa,
+        | "status"
+        | "check_in"
+        | "check_out"
+        | "cleaning_status"
+        | "notes"
+        | "name"
+        | "area"
+        | "location_url"
+        | "description"
+        | "photo_url"
+      >
+    >,
+  ) => Promise<void>;
+  createVilla: (input: {
+    name: string;
+    area?: string;
+    location_url: string;
+    description?: string;
+    photo_url?: string | null;
+    status?: Villa["status"];
+    /** Owners default to company; managers default to personal side work. */
+    scope?: "company" | "personal";
+  }) => Promise<void>;
+  deleteVilla: (id: string) => Promise<void>;
+  mergeVillaToCompany: (villaId: string) => Promise<void>;
+  createTask: (input: {
+    title: string;
+    villa_id: string | null;
+    priority: TaskPriority;
+    assigned_to: string | null;
+    due_date: string | null;
+    time_start?: string | null;
+    time_end?: string | null;
+  }) => Promise<void>;
+  setTaskStatus: (id: string, status: TaskStatus) => Promise<void>;
+  createContact: (input: Omit<Contact, "id" | "org_id">) => Promise<void>;
+  updateContact: (
+    id: string,
+    patch: Partial<Omit<Contact, "id" | "org_id">>,
+  ) => Promise<void>;
+  deleteContact: (id: string) => Promise<void>;
+  createBill: (input: {
+    description: string;
+    amount: number;
+    villa_id: string | null;
+    due_date?: string | null;
+    receipt_photo_url?: string | null;
+  }) => Promise<void>;
+  setBillStatus: (id: string, status: BillStatus) => Promise<void>;
+  sendMessage: (body: string) => Promise<void>;
+  uploadReceipt: (file: File) => Promise<string | null>;
+  uploadVillaPhoto: (file: File) => Promise<string | null>;
+  createInvite: (input: {
+    role: Exclude<UserRole, "owner">;
+    jobTitle?: string;
+  }) => Promise<Invite>;
+  setVillaAssignments: (managerId: string, villaIds: string[]) => Promise<void>;
+  setVillaAssignees: (villaId: string, profileIds: string[]) => Promise<void>;
+  castEndorsement: (
+    toProfileId: string,
+    stars: 1 | 2 | 3 | 4 | 5,
+    note?: string,
+  ) => Promise<void>;
+};

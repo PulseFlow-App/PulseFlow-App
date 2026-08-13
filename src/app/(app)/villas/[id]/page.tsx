@@ -2,6 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
 import type { CleaningStatus, VillaStatus } from "@/lib/design-tokens";
 import { ROLE_LABELS, canEditVillaCore, isStaffApp } from "@/lib/roles";
-import { fileToDataUrl } from "@/lib/file-to-data-url";
 import { isValidLocationUrl, normalizeLocationUrl } from "@/lib/utils";
 import { formatWorkWindow } from "@/lib/notifications";
 import { formatOrderWhen } from "@/lib/service-orders";
@@ -22,6 +22,7 @@ export default function VillaDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
   const data = useData();
   const villaItem = data.villaList.find((v) => v.id === id);
   const villa =
@@ -75,6 +76,15 @@ export default function VillaDetailPage({
     [data.profiles],
   );
 
+  const storedAssigneeKey = useMemo(() => {
+    if (!villa) return "";
+    return data.villaAssignments
+      .filter((a) => a.villa_id === villa.id)
+      .map((a) => a.profile_id)
+      .sort()
+      .join(",");
+  }, [villa?.id, data.villaAssignments]);
+
   useEffect(() => {
     if (!villa) return;
     setStatus(villa.status);
@@ -87,12 +97,14 @@ export default function VillaDetailPage({
     setLocationUrl(villa.location_url ?? "");
     setDescription(villa.description ?? "");
     setPhotoUrl(villa.photo_url ?? null);
-    setAssigneeIds(
-      data.villaAssignments
-        .filter((a) => a.villa_id === villa.id)
-        .map((a) => a.profile_id),
-    );
-  }, [villa, data.villaAssignments]);
+    // Only hydrate when opening a villa — re-syncing on every server refresh
+    // would wipe a just-uploaded photo before Save.
+  }, [villa?.id]);
+
+  useEffect(() => {
+    if (!villa?.id) return;
+    setAssigneeIds(storedAssigneeKey ? storedAssigneeKey.split(",") : []);
+  }, [villa?.id, storedAssigneeKey]);
 
   if (!data.ready) return <LoadingState />;
   if (!villa) {
@@ -130,10 +142,9 @@ export default function VillaDetailPage({
       if (isOwner && !isPersonal) {
         await data.setVillaAssignees(villa.id, assigneeIds);
       }
-      setSaved(true);
+      router.push("/villas");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save.");
-    } finally {
       setSaving(false);
     }
   };
@@ -161,9 +172,10 @@ export default function VillaDetailPage({
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
-                    void fileToDataUrl(file)
-                      .then(setPhotoUrl)
-                      .catch(() => setError("Could not read photo."));
+                    void data
+                      .uploadVillaPhoto(file)
+                      .then((url) => setPhotoUrl(url))
+                      .catch(() => setError("Could not upload photo."));
                   }}
                 />
                 <p className="mt-1 text-xs text-muted">
@@ -252,7 +264,7 @@ export default function VillaDetailPage({
           </div>
         )}
 
-        {villaItem ? (
+        {villaItem && data.orgKind === "company" ? (
           <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3 text-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">
               Belongs to
@@ -285,7 +297,7 @@ export default function VillaDetailPage({
           </Button>
         ) : null}
 
-        {isOwner && !isPersonal ? (
+        {isOwner && !isPersonal && data.orgKind === "company" ? (
           <div>
             <Label>Assigned to</Label>
             <p className="mb-2 text-xs text-muted">
@@ -296,9 +308,10 @@ export default function VillaDetailPage({
                 const checked = assigneeIds.includes(person.id);
                 return (
                   <li key={person.id}>
-                    <label className="flex items-center gap-3 rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm">
+                    <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm">
                       <input
                         type="checkbox"
+                        className="size-5 shrink-0 accent-primary"
                         checked={checked}
                         onChange={() => {
                           setAssigneeIds((prev) =>

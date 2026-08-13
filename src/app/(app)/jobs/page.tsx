@@ -22,7 +22,9 @@ export default function JobsPage() {
   const data = useData();
   const { t } = useI18n();
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
-  const booker = data.profile ? canBookServices(data.profile.role) : false;
+  const booker = data.profile
+    ? canBookServices(data.profile.role, data.orgKind)
+    : false;
 
   const villaPhotoById = useMemo(() => {
     const map = new Map<string, string | null>();

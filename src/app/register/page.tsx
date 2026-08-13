@@ -3,87 +3,107 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Building2, UserRound, Briefcase, HardHat } from "lucide-react";
+import { Building2, UserRound } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
-import { brand } from "@/lib/design-tokens";
 import type { OrgKind } from "@/lib/design-tokens";
 import { isDemoMode } from "@/lib/supabase/client";
 import { demoRegisterWorkspace } from "@/lib/demo/store";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 
-type Step = "use" | "version" | "details";
-type AppVersion = "owner" | "employee";
+type Step = "use" | "details";
 
 export default function RegisterPage() {
   const router = useRouter();
   const { t } = useI18n();
   const [step, setStep] = useState<Step>("use");
   const [useKind, setUseKind] = useState<OrgKind | null>(null);
-  const [version, setVersion] = useState<AppVersion | null>(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [orgName, setOrgName] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const title = useMemo(() => {
     if (step === "use") return "How will you use PulseFlow?";
-    if (step === "version") return "Which app version do you need?";
-    return version === "owner"
-      ? "Create your organization"
-      : "Set up your workspace";
-  }, [step, version]);
+    if (useKind === "company") return "Create your company";
+    return "Set up your villa workspace";
+  }, [step, useKind]);
+
+  const continueFromUse = () => {
+    if (!useKind) return;
+    setError(null);
+    setStep("details");
+  };
 
   const submit = async () => {
     setError(null);
-    if (!useKind || !version) return;
+    if (!useKind) return;
     if (!fullName.trim() || !email.trim() || password.length < 6) {
       setError("Name, email, and a password (6+ chars) are required.");
       return;
     }
-    if (version === "owner" && !orgName.trim()) {
-      setError("Organization name is required for owners.");
+    if (password !== confirm) {
+      setError("Passwords do not match.");
       return;
     }
-    if (version === "employee" && useKind === "company") {
-      setError(
-        "Company employees join via an invite link from their owner or manager. Ask them for a link, or choose Personal use to run your own list.",
-      );
-      return;
-    }
-
-    if (!isDemoMode()) {
-      setError(
-        "Full registration against Supabase will activate once your project keys are connected. Demo mode is on for now.",
-      );
+    if (useKind === "company" && !orgName.trim()) {
+      setError("Company name is required.");
       return;
     }
 
     setSaving(true);
     try {
-      const role = version === "owner" ? "owner" : "manager";
       const workspaceName =
         orgName.trim() ||
-        (useKind === "personal"
-          ? `${fullName.trim().split(" ")[0]}'s villas`
-          : fullName.trim());
+        `${fullName.trim().split(" ")[0] || "My"}'s villas`;
 
-      demoRegisterWorkspace({
-        fullName,
-        email,
-        phone,
-        password,
-        orgName: workspaceName,
-        kind: useKind,
-        role,
-      });
+      // Personal = solo workspace. Company register = owner only (staff use /join).
+      const role = "owner" as const;
+
+      if (isDemoMode()) {
+        demoRegisterWorkspace({
+          fullName,
+          email,
+          phone,
+          password,
+          orgName: workspaceName,
+          kind: useKind,
+          role,
+        });
+      } else {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName,
+            email,
+            phone,
+            password,
+            orgName: workspaceName,
+            kind: useKind,
+            role,
+          }),
+        });
+        const payload = (await res.json()) as { error?: string };
+        if (!res.ok) {
+          throw new Error(payload.error ?? "Could not register.");
+        }
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+        if (signInError) throw signInError;
+      }
       router.replace("/home");
       router.refresh();
     } catch (e) {
@@ -113,75 +133,24 @@ export default function RegisterPage() {
               <Choice
                 icon={<UserRound className="size-5" />}
                 title="Personal use"
-                description="You run the villas yourself - create your own lists and invite helpers later."
+                description="Just you and your villas - track work, bills, and jobs in one simple workspace."
                 active={useKind === "personal"}
                 onClick={() => setUseKind("personal")}
               />
               <Choice
                 icon={<Building2 className="size-5" />}
                 title="Company use"
-                description="Portfolio with an owner and on-site team. Owner creates the org; staff join by invite."
+                description="You are creating a new company as the owner. After setup you can invite your team."
                 active={useKind === "company"}
                 onClick={() => setUseKind("company")}
               />
               <Button
                 className="w-full"
                 disabled={!useKind}
-                onClick={() => setStep("version")}
+                onClick={continueFromUse}
               >
                 Continue
               </Button>
-            </div>
-          ) : null}
-
-          {step === "version" ? (
-            <div className="grid gap-3">
-              <Choice
-                icon={<Briefcase className="size-5" />}
-                title="Owner"
-                description="Create the organization, invite managers & staff, assign villas across the team."
-                active={version === "owner"}
-                onClick={() => setVersion("owner")}
-              />
-              <Choice
-                icon={<HardHat className="size-5" />}
-                title="Employee / manager"
-                description={
-                  useKind === "company"
-                    ? "Join a company with an invite link. Without a link, use Personal use instead."
-                    : "Run your own ops workspace and invite cleaning / staff under you (not owners)."
-                }
-                active={version === "employee"}
-                onClick={() => setVersion("employee")}
-              />
-              {useKind === "company" && version === "employee" ? (
-                <p className="rounded-xl bg-warning/15 px-3 py-2 text-xs text-warning-dark">
-                  Company employees must use an invite link from their owner or
-                  manager.{" "}
-                  <Link href="/login" className="font-semibold underline">
-                    Back to sign in
-                  </Link>
-                </p>
-              ) : null}
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  className="flex-1"
-                  onClick={() => setStep("use")}
-                >
-                  Back
-                </Button>
-                <Button
-                  className="flex-1"
-                  disabled={
-                    !version ||
-                    (useKind === "company" && version === "employee")
-                  }
-                  onClick={() => setStep("details")}
-                >
-                  Continue
-                </Button>
-              </div>
             </div>
           ) : null}
 
@@ -192,6 +161,7 @@ export default function RegisterPage() {
                 <Input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
+                  autoComplete="name"
                 />
               </div>
               <div>
@@ -200,6 +170,7 @@ export default function RegisterPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
                 />
               </div>
               <div>
@@ -207,42 +178,68 @@ export default function RegisterPage() {
                 <Input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  autoComplete="tel"
                 />
               </div>
-              {version === "owner" || useKind === "personal" ? (
+              {useKind === "company" ? (
                 <div>
-                  <Label>
-                    {version === "owner"
-                      ? "Organization name"
-                      : "Workspace name"}
-                  </Label>
+                  <Label>Company name</Label>
                   <Input
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
-                    placeholder={
-                      version === "owner"
-                        ? "Phangan Villas Co."
-                        : "Sam's villa ops"
-                    }
+                    placeholder="Phangan Villas Co."
                   />
                 </div>
-              ) : null}
+              ) : (
+                <div>
+                  <Label>Workspace name (optional)</Label>
+                  <Input
+                    value={orgName}
+                    onChange={(e) => setOrgName(e.target.value)}
+                    placeholder="Sam's villas"
+                  />
+                </div>
+              )}
               <div>
                 <Label>Password</Label>
                 <Input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
+              </div>
+              <div>
+                <Label>Confirm password</Label>
+                <Input
+                  type="password"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  autoComplete="new-password"
                 />
               </div>
               {error ? (
                 <p className="text-sm font-semibold text-danger">{error}</p>
               ) : null}
+              {useKind === "company" ? (
+                <p className="text-xs text-muted">
+                  Company accounts include a 30-day free trial, then the owner
+                  subscribes. By creating an account you agree to our{" "}
+                  <Link href="/terms" className="font-semibold text-primary">
+                    Terms
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" className="font-semibold text-primary">
+                    Privacy
+                  </Link>
+                  .
+                </p>
+              ) : null}
               <div className="flex gap-2">
                 <Button
                   variant="ghost"
                   className="flex-1"
-                  onClick={() => setStep("version")}
+                  onClick={() => setStep("use")}
                 >
                   Back
                 </Button>

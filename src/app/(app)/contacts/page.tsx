@@ -32,7 +32,10 @@ const ROLE_ORDER = [
 export default function ContactsPage() {
   const data = useData();
   const canEdit = data.profile ? canEditContacts(data.profile.role) : false;
-  const canBook = data.profile ? canBookServices(data.profile.role) : false;
+  const canBook = data.profile
+    ? canBookServices(data.profile.role, data.orgKind)
+    : false;
+  const isPersonal = data.orgKind === "personal";
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
   const [editing, setEditing] = useState<Contact | null>(null);
   const [creating, setCreating] = useState(false);
@@ -85,7 +88,9 @@ export default function ContactsPage() {
         <div>
           <h1 className="font-display text-2xl font-bold text-ink">Contacts</h1>
           <p className="text-sm text-muted">
-            Vendors & island team - Order books them in-app
+            {isPersonal
+              ? "Save numbers in one place - call from here"
+              : "Link a PulseFlow user to Order in-app; call others"}
           </p>
         </div>
         {canEdit ? (
@@ -95,7 +100,7 @@ export default function ContactsPage() {
         ) : null}
       </div>
 
-      {ordering && canBook ? (
+      {ordering && canBook && ordering.linked_profile_id ? (
         <OrderForm
           contact={ordering}
           villas={data.villas}
@@ -113,7 +118,8 @@ export default function ContactsPage() {
       {(creating || editing) && canEdit ? (
         <ContactForm
           initial={editing}
-          linkableProfiles={linkableProfiles}
+          linkableProfiles={isPersonal ? [] : linkableProfiles}
+          allowAppLink={!isPersonal}
           onCancel={() => {
             setCreating(false);
             setEditing(null);
@@ -133,7 +139,11 @@ export default function ContactsPage() {
       {grouped.length === 0 ? (
         <EmptyState
           title="No contacts"
-          description="Add cleaning, plumbing, and other vendors."
+          description={
+            isPersonal
+              ? "Add cleaners, plumbers, and other numbers you use often."
+              : "Add cleaning, plumbing, and other vendors."
+          }
         />
       ) : (
         grouped.map((group) => (
@@ -155,22 +165,26 @@ export default function ContactsPage() {
                       {contact.notes ? (
                         <p className="text-xs text-muted">{contact.notes}</p>
                       ) : null}
-                      <p
-                        className={cn(
-                          "mt-1 text-[11px] font-bold uppercase tracking-wide",
-                          reach === "awaiting_ack"
-                            ? "text-warning-dark"
+                      {!isPersonal ? (
+                        <p
+                          className={cn(
+                            "mt-1 text-[11px] font-bold uppercase tracking-wide",
+                            reach === "awaiting_ack"
+                              ? "text-warning-dark"
+                              : reach === "not_on_app"
+                                ? "text-muted"
+                                : "text-secondary",
+                          )}
+                        >
+                          {reach === "awaiting_ack"
+                            ? "Not contacted - awaiting Read & agreed"
                             : reach === "not_on_app"
-                              ? "text-muted"
-                              : "text-secondary",
-                        )}
-                      >
-                        {reach === "awaiting_ack"
-                          ? "Not contacted - awaiting Read & agreed"
-                          : reach === "not_on_app"
-                            ? "Not on app - call to reach"
-                            : "Reachable in app"}
-                      </p>
+                              ? "Not on app - call to reach"
+                              : "Reachable in app"}
+                        </p>
+                      ) : contact.phone ? (
+                        <p className="mt-1 text-xs text-muted">{contact.phone}</p>
+                      ) : null}
                     </div>
                     {canEdit ? (
                       <div className="flex gap-1">
@@ -194,7 +208,7 @@ export default function ContactsPage() {
                     ) : null}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {canBook ? (
+                    {canBook && contact.linked_profile_id ? (
                       <button
                         type="button"
                         onClick={() => setOrdering(contact)}
@@ -211,7 +225,9 @@ export default function ContactsPage() {
                         <Phone className="size-4" /> Call
                       </a>
                     ) : null}
-                    {contact.messenger === "whatsapp" && contact.phone ? (
+                    {!isPersonal &&
+                    contact.messenger === "whatsapp" &&
+                    contact.phone ? (
                       <a
                         href={phoneToWaMe(contact.phone)}
                         target="_blank"
@@ -221,7 +237,8 @@ export default function ContactsPage() {
                         <MessageCircle className="size-4" /> WhatsApp
                       </a>
                     ) : null}
-                    {contact.messenger === "line" &&
+                    {!isPersonal &&
+                    contact.messenger === "line" &&
                     contact.messenger_handle ? (
                       <a
                         href={lineDeepLink(contact.messenger_handle)}
@@ -387,11 +404,13 @@ function OrderForm({
 function ContactForm({
   initial,
   linkableProfiles,
+  allowAppLink = true,
   onCancel,
   onSave,
 }: {
   initial: Contact | null;
   linkableProfiles: { id: string; full_name: string }[];
+  allowAppLink?: boolean;
   onCancel: () => void;
   onSave: (values: Omit<Contact, "id" | "org_id">) => Promise<void>;
 }) {
@@ -424,38 +443,42 @@ function ContactForm({
           <option value="other">other</option>
         </Select>
       </div>
-      <div>
-        <Label>PulseFlow user (for in-app booking)</Label>
-        <Select value={linkedId} onChange={(e) => setLinkedId(e.target.value)}>
-          <option value="">Not on app - phone only</option>
-          {linkableProfiles.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.full_name}
-            </option>
-          ))}
-        </Select>
-      </div>
+      {allowAppLink ? (
+        <div>
+          <Label>PulseFlow user (for in-app booking)</Label>
+          <Select value={linkedId} onChange={(e) => setLinkedId(e.target.value)}>
+            <option value="">Not on app - phone only</option>
+            {linkableProfiles.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.full_name}
+              </option>
+            ))}
+          </Select>
+        </div>
+      ) : null}
       <div>
         <Label>Phone</Label>
         <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label>Messenger</Label>
-          <Select
-            value={messenger}
-            onChange={(e) => setMessenger(e.target.value as Messenger)}
-          >
-            <option value="whatsapp">WhatsApp</option>
-            <option value="line">LINE</option>
-            <option value="none">None</option>
-          </Select>
+      {allowAppLink ? (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>Messenger</Label>
+            <Select
+              value={messenger}
+              onChange={(e) => setMessenger(e.target.value as Messenger)}
+            >
+              <option value="whatsapp">WhatsApp</option>
+              <option value="line">LINE</option>
+              <option value="none">None</option>
+            </Select>
+          </div>
+          <div>
+            <Label>Handle</Label>
+            <Input value={handle} onChange={(e) => setHandle(e.target.value)} />
+          </div>
         </div>
-        <div>
-          <Label>Handle</Label>
-          <Input value={handle} onChange={(e) => setHandle(e.target.value)} />
-        </div>
-      </div>
+      ) : null}
       <div>
         <Label>Notes</Label>
         <Textarea
@@ -482,10 +505,10 @@ function ContactForm({
               name: name.trim(),
               role,
               phone: phone || null,
-              messenger,
-              messenger_handle: handle || null,
+              messenger: allowAppLink ? messenger : "none",
+              messenger_handle: allowAppLink ? handle || null : null,
               notes: notes || null,
-              linked_profile_id: linkedId || null,
+              linked_profile_id: allowAppLink ? linkedId || null : null,
             }).finally(() => setSaving(false));
           }}
         >

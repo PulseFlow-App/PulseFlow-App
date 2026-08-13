@@ -21,6 +21,7 @@ import {
   buildScheduleAlerts,
   formatWorkWindow,
   makeNotification,
+  notificationVisibleTo,
 } from "@/lib/notifications";
 import { buildOrderChatBody, formatOrderWhen } from "@/lib/service-orders";
 
@@ -66,6 +67,7 @@ function normalizeStore(store: DemoStore): DemoStore {
       ...n,
       title: plainDash(n.title) ?? n.title,
       body: plainDash(n.body) ?? n.body,
+      read_by: Array.isArray(n.read_by) ? n.read_by : [],
     })),
     serviceOrders: (store.serviceOrders ?? []).map((o) => ({
       ...o,
@@ -215,7 +217,8 @@ type RegisterOwnerInput = {
   password: string;
   orgName: string;
   kind: OrgKind;
-  role: "owner" | "manager";
+  /** Public register is always owner; managers/staff join via invite. */
+  role?: "owner" | "manager";
 };
 
 export function demoRegisterWorkspace(input: RegisterOwnerInput): Profile {
@@ -225,6 +228,7 @@ export function demoRegisterWorkspace(input: RegisterOwnerInput): Profile {
     throw new Error("An account with this email already exists. Sign in instead.");
   }
 
+  const role = "owner" as const;
   const orgId = crypto.randomUUID();
   const profileId = crypto.randomUUID();
   const org: Organization = {
@@ -240,15 +244,13 @@ export function demoRegisterWorkspace(input: RegisterOwnerInput): Profile {
   const profile: Profile = {
     id: profileId,
     org_id: orgId,
-    // Solo / personal managers keep a personal workspace equal to their org.
-    // Company owners don't need a personal workspace until they create side villas.
-    personal_org_id:
-      input.kind === "personal" || input.role === "manager" ? orgId : null,
-    role: input.role,
+    // Solo personal workspace is the org itself.
+    personal_org_id: input.kind === "personal" ? orgId : null,
+    role,
     full_name: input.fullName.trim(),
     phone: input.phone?.trim() || null,
     email,
-    job_title: input.role === "owner" ? "Owner" : "Manager",
+    job_title: input.kind === "personal" ? "Personal" : "Owner",
     share_slug,
   };
   const account: DemoAccount = {
@@ -262,7 +264,7 @@ export function demoRegisterWorkspace(input: RegisterOwnerInput): Profile {
           id: crypto.randomUUID(),
           org_id: orgId,
           profile_id: profileId,
-          role: input.role,
+          role,
           joined_at: new Date().toISOString(),
         }
       : null;
@@ -289,7 +291,12 @@ export function demoCreateInvite(
   actor: Profile,
   input: CreateInviteInput,
 ): Invite {
-  const allowed = invitableRoles(actor.role);
+  const store = readStore();
+  const org = store.orgs.find((o) => o.id === actor.org_id);
+  if (!org || org.kind !== "company") {
+    throw new Error("Invites are only available for company workspaces.");
+  }
+  const allowed = invitableRoles(actor.role, org.kind);
   if (!allowed.includes(input.role)) {
     throw new Error("You cannot invite someone with that role.");
   }
@@ -553,22 +560,31 @@ export function demoPushNotifications(items: AppNotification[]) {
 export function demoMarkNotificationRead(profileId: string, id: string) {
   updateDemoStore((s) => ({
     ...s,
-    notifications: (s.notifications ?? []).map((n) =>
-      n.id === id && !n.read_by.includes(profileId)
-        ? { ...n, read_by: [...n.read_by, profileId] }
-        : n,
-    ),
+    notifications: (s.notifications ?? []).map((n) => {
+      const readBy = n.read_by ?? [];
+      return n.id === id && !readBy.includes(profileId)
+        ? { ...n, read_by: [...readBy, profileId] }
+        : { ...n, read_by: readBy };
+    }),
   }));
 }
 
-export function demoMarkAllNotificationsRead(profileId: string, orgId: string) {
+export function demoMarkAllNotificationsRead(
+  profileId: string,
+  orgId: string,
+  kind?: AppNotification["kind"],
+) {
   updateDemoStore((s) => ({
     ...s,
-    notifications: (s.notifications ?? []).map((n) =>
-      n.org_id === orgId && !n.read_by.includes(profileId)
-        ? { ...n, read_by: [...n.read_by, profileId] }
-        : n,
-    ),
+    notifications: (s.notifications ?? []).map((n) => {
+      const readBy = n.read_by ?? [];
+      const visible =
+        n.org_id === orgId && notificationVisibleTo(n, profileId);
+      const kindOk = !kind || n.kind === kind;
+      return visible && kindOk && !readBy.includes(profileId)
+        ? { ...n, read_by: [...readBy, profileId] }
+        : { ...n, read_by: readBy };
+    }),
   }));
 }
 
@@ -609,6 +625,11 @@ export function demoCreateServiceOrder(
     (c) => c.id === input.contact_id && c.org_id === actor.org_id,
   );
   if (!contact) throw new Error("Contact not found.");
+  if (!contact.linked_profile_id) {
+    throw new Error(
+      "This contact is not on PulseFlow. Link a team member or call them.",
+    );
+  }
   const villa = input.villa_id
     ? store.villas.find((v) => v.id === input.villa_id)
     : null;
@@ -642,7 +663,7 @@ export function demoCreateServiceOrder(
     status: "pending_ack",
     agreed_at: null,
     chat_message_id: msgId,
-    task_id: contact.linked_profile_id ? taskId : null,
+    task_id: taskId,
     created_at: new Date().toISOString(),
   };
 
@@ -655,32 +676,26 @@ export function demoCreateServiceOrder(
     orderedBy: actor.full_name,
   });
 
-  const notifAudience = contact.linked_profile_id
-    ? [contact.linked_profile_id]
-    : null;
-
   updateDemoStore((s) => {
-    const nextTasks = contact.linked_profile_id
-      ? [
-          {
-            id: taskId,
-            org_id: actor.org_id,
-            villa_id: order.villa_id,
-            title: `${order.service_type} - ${location}`,
-            priority: "normal" as const,
-            assigned_to: contact.linked_profile_id,
-            status: "open" as const,
-            due_date: order.scheduled_date,
-            time_start: order.time_start,
-            time_end: order.time_end,
-            created_by: actor.id,
-            created_at: order.created_at,
-            completed_at: null,
-            service_order_id: orderId,
-          },
-          ...s.tasks,
-        ]
-      : s.tasks;
+    const nextTasks = [
+      {
+        id: taskId,
+        org_id: actor.org_id,
+        villa_id: order.villa_id,
+        title: `${order.service_type} - ${location}`,
+        priority: "normal" as const,
+        assigned_to: contact.linked_profile_id,
+        status: "open" as const,
+        due_date: order.scheduled_date,
+        time_start: order.time_start,
+        time_end: order.time_end,
+        created_by: actor.id,
+        created_at: order.created_at,
+        completed_at: null,
+        service_order_id: orderId,
+      },
+      ...s.tasks,
+    ];
 
     const nextMessages = [
       ...s.messages,
@@ -699,40 +714,13 @@ export function demoCreateServiceOrder(
         org_id: actor.org_id,
         kind: "appointment",
         title: `New job: ${order.service_type}`,
-        body: `${location} · ${when}${
-          contact.linked_profile_id
-            ? " - tap Read & agreed"
-            : " - staff not on app; call them"
-        }`,
-        href: contact.linked_profile_id ? "/jobs" : "/contacts",
+        body: `${location} · ${when} - tap Read & agreed`,
+        href: "/jobs",
         entity_id: orderId,
-        audience_profile_ids: notifAudience,
+        audience_profile_ids: [contact.linked_profile_id!],
       }),
       ...(s.notifications ?? []),
     ];
-
-    // Also ping owner/managers if staff is on app (they already know - skip)
-    // Notify managers about offline vendor bookings for visibility
-    if (!contact.linked_profile_id) {
-      const managers = s.profiles
-        .filter(
-          (p) =>
-            p.org_id === actor.org_id &&
-            (p.role === "owner" || p.role === "manager"),
-        )
-        .map((p) => p.id);
-      nextNotifs.unshift(
-        makeNotification({
-          org_id: actor.org_id,
-          kind: "appointment",
-          title: `${contact.name} not on app`,
-          body: `Order logged for ${location} · ${when}. Call to confirm.`,
-          href: "/contacts",
-          entity_id: orderId,
-          audience_profile_ids: managers,
-        }),
-      );
-    }
 
     return {
       ...s,

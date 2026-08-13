@@ -19,6 +19,7 @@ import {
 } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { BillingSettingsCard } from "@/components/billing/billing-card";
 import type { MessageKey } from "@/lib/i18n";
 
 export default function SettingsPage() {
@@ -37,9 +38,15 @@ export default function SettingsPage() {
   const [assignMsg, setAssignMsg] = useState<string | null>(null);
 
   const roleOptions = useMemo(
-    () => (data.profile ? invitableRoles(data.profile.role) : []),
-    [data.profile],
+    () =>
+      data.profile
+        ? invitableRoles(data.profile.role, data.orgKind)
+        : [],
+    [data.profile, data.orgKind],
   );
+
+  const isCompany = data.orgKind === "company";
+  const isPersonal = data.orgKind === "personal";
 
   const effectiveInviteRole = (
     roleOptions.includes(inviteRole) ? inviteRole : roleOptions[0] ?? "cleaner"
@@ -122,67 +129,73 @@ export default function SettingsPage() {
       <Card className="space-y-3 p-5">
         <Info label={t("common.name")} value={data.profile.full_name} />
         <Info label={t("common.email")} value={data.profile.email} />
-        <Info label={t("common.role")} value={t(roleKey)} />
+        {isCompany ? (
+          <Info label={t("common.role")} value={t(roleKey)} />
+        ) : null}
         <Info
-          label={t("settings.organization")}
-          value={`${data.orgName}${data.orgKind ? ` · ${data.orgKind}` : ""}`}
+          label={isPersonal ? "Workspace" : t("settings.organization")}
+          value={data.orgName}
         />
       </Card>
 
-      <Card className="space-y-3 p-5">
-        <div>
-          <h2 className="text-lg font-bold text-ink">
-            {t("settings.reputation")}
-          </h2>
-          <p className="text-sm text-muted">
-            {data.profile.role === "owner"
-              ? t("settings.reputationOwner")
-              : t("settings.reputationStaff")}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/endorsements">
-            <Button size="sm" variant="secondary">
-              <Star className="size-4" />
-              {t("nav.endorsements")}
-            </Button>
-          </Link>
-          <Link href="/leaderboard">
-            <Button size="sm" variant="ghost">
-              <Trophy className="size-4" />
-              {t("nav.leaderboard")}
-            </Button>
-          </Link>
-        </div>
-        {data.profile.role !== "owner" ? (
-          <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-              {t("settings.publicLink")}
+      {isCompany ? (
+        <Card className="space-y-3 p-5">
+          <div>
+            <h2 className="text-lg font-bold text-ink">
+              {t("settings.reputation")}
+            </h2>
+            <p className="text-sm text-muted">
+              {data.profile.role === "owner"
+                ? t("settings.reputationOwner")
+                : t("settings.reputationStaff")}
             </p>
-            <p className="mt-1 break-all text-sm font-semibold text-ink">
-              {typeof window !== "undefined"
-                ? `${window.location.origin}/u/${data.profile.share_slug}`
-                : `/u/${data.profile.share_slug}`}
-            </p>
-            <Button
-              size="sm"
-              className="mt-3 w-full"
-              variant="secondary"
-              onClick={async () => {
-                const url = `${window.location.origin}/u/${data.profile!.share_slug}`;
-                await navigator.clipboard.writeText(url);
-                setCopiedShare(true);
-                setTimeout(() => setCopiedShare(false), 1500);
-              }}
-            >
-              <Copy className="size-4" />
-              {copiedShare ? t("common.copied") : t("settings.copyShare")}
-            </Button>
           </div>
-        ) : null}
-      </Card>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/endorsements">
+              <Button size="sm" variant="secondary">
+                <Star className="size-4" />
+                {t("nav.endorsements")}
+              </Button>
+            </Link>
+            <Link href="/leaderboard">
+              <Button size="sm" variant="ghost">
+                <Trophy className="size-4" />
+                {t("nav.leaderboard")}
+              </Button>
+            </Link>
+          </div>
+          {data.profile.role !== "owner" ? (
+            <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                {t("settings.publicLink")}
+              </p>
+              <p className="mt-1 break-all text-sm font-semibold text-ink">
+                {typeof window !== "undefined"
+                  ? `${window.location.origin}/u/${data.profile.share_slug}`
+                  : `/u/${data.profile.share_slug}`}
+              </p>
+              <Button
+                size="sm"
+                className="mt-3 w-full"
+                variant="secondary"
+                onClick={async () => {
+                  const url = `${window.location.origin}/u/${data.profile!.share_slug}`;
+                  await navigator.clipboard.writeText(url);
+                  setCopiedShare(true);
+                  setTimeout(() => setCopiedShare(false), 1500);
+                }}
+              >
+                <Copy className="size-4" />
+                {copiedShare ? t("common.copied") : t("settings.copyShare")}
+              </Button>
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
 
-      {canInvite(data.profile.role) ? (
+      <BillingSettingsCard />
+
+      {canInvite(data.profile.role, data.orgKind) ? (
         <Card className="space-y-3 p-5">
           <div>
             <h2 className="font-display text-lg font-bold text-ink">
@@ -267,7 +280,7 @@ export default function SettingsPage() {
         </Card>
       ) : null}
 
-      {canManageVillaAssignments(data.profile.role) ? (
+      {canManageVillaAssignments(data.profile.role, data.orgKind) ? (
         <Card className="space-y-3 p-5">
           <div>
             <h2 className="font-display text-lg font-bold text-ink">
@@ -298,9 +311,10 @@ export default function SettingsPage() {
                 const checked = selectedVillas.includes(villa.id);
                 return (
                   <li key={villa.id}>
-                    <label className="flex items-center gap-3 rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm">
+                    <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm">
                       <input
                         type="checkbox"
+                        className="size-5 shrink-0 accent-primary"
                         checked={checked}
                         onChange={() => {
                           setSelectedVillas((prev) =>
@@ -331,20 +345,22 @@ export default function SettingsPage() {
         </Card>
       ) : null}
 
-      <Card className="space-y-2 p-5">
-        <h2 className="font-display text-lg font-bold text-ink">Team</h2>
-        {data.profiles.map((p) => (
-          <div
-            key={p.id}
-            className="flex items-center justify-between rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm"
-          >
-            <span className="font-semibold text-ink">{p.full_name}</span>
-            <span className="text-muted">
-              {t(`roles.${p.role}` as MessageKey)}
-            </span>
-          </div>
-        ))}
-      </Card>
+      {isCompany ? (
+        <Card className="space-y-2 p-5">
+          <h2 className="font-display text-lg font-bold text-ink">Team</h2>
+          {data.profiles.map((p) => (
+            <div
+              key={p.id}
+              className="flex items-center justify-between rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm"
+            >
+              <span className="font-semibold text-ink">{p.full_name}</span>
+              <span className="text-muted">
+                {t(`roles.${p.role}` as MessageKey)}
+              </span>
+            </div>
+          ))}
+        </Card>
+      ) : null}
 
       <Button variant="danger" className="w-full" onClick={() => void signOut()}>
         {t("settings.signOut")}

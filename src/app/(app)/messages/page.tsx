@@ -1,33 +1,112 @@
 "use client";
 
-import { useEffect, useRef, useState, useOptimistic, startTransition } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useOptimistic,
+  startTransition,
+} from "react";
 import { Send } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/empty-state";
+import { LoadingState, EmptyState } from "@/components/ui/empty-state";
 import { AgreeButton } from "@/components/jobs/agree-button";
 import { useData } from "@/lib/data/use-app-data";
 import { cn } from "@/lib/utils";
-import type { MessageWithSender } from "@/lib/types";
+import type { MessageWithSender, Profile } from "@/lib/types";
 import { useI18n } from "@/lib/i18n/provider";
+import { canUseTeamChat } from "@/lib/roles";
+import {
+  EVERYONE_LABEL,
+  applyMention,
+  buildMentionOptions,
+  getActiveMention,
+  mentionSegments,
+  type MentionPick,
+} from "@/lib/mentions";
 
 export default function MessagesPage() {
   const data = useData();
   const { t } = useI18n();
   const [body, setBody] = useState("");
+  const [cursor, setCursor] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const [mentionDismissed, setMentionDismissed] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [optimistic, addOptimistic] = useOptimistic(
     data.messages,
     (state, newMsg: MessageWithSender) => [...state, newMsg],
   );
 
+  const teammates = useMemo(
+    () => data.profiles.filter((p) => p.org_id === data.profile?.org_id),
+    [data.profiles, data.profile?.org_id],
+  );
+
+  const activeMention = useMemo(
+    () => getActiveMention(body, cursor),
+    [body, cursor],
+  );
+
+  const mentionOptions = useMemo(() => {
+    if (!activeMention || !data.profile || mentionDismissed) return [];
+    return buildMentionOptions(
+      teammates,
+      activeMention.query,
+      data.profile.id,
+    );
+  }, [activeMention, teammates, data.profile, mentionDismissed]);
+
+  useEffect(() => {
+    setMentionIndex(0);
+  }, [activeMention?.query]);
+
+  useEffect(() => {
+    setMentionDismissed(false);
+  }, [activeMention?.atIndex]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [optimistic.length]);
 
+  useEffect(() => {
+    if (!data.ready || !data.profile) return;
+    if (data.unreadMessageCount <= 0) return;
+    void data.markAllNotificationsRead("message");
+    // Clear chat badge when the conversation is opened / while viewing new pings.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional open clear
+  }, [data.ready, data.profile?.id, data.unreadMessageCount]);
+
   if (!data.ready || !data.profile) return <LoadingState />;
+
+  if (!canUseTeamChat(data.orgKind)) {
+    return (
+      <EmptyState
+        title="Team chat is for companies"
+        description="Personal workspaces stay solo. Company plans unlock shared chat with managers and staff."
+      />
+    );
+  }
+
+  const pickMention = (pick: MentionPick) => {
+    if (!activeMention) return;
+    const label =
+      pick.kind === "everyone" ? EVERYONE_LABEL : pick.profile.full_name;
+    const next = applyMention(body, cursor, activeMention, label);
+    setBody(next.text);
+    setCursor(next.cursor);
+    requestAnimationFrame(() => {
+      const el = inputRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(next.cursor, next.cursor);
+    });
+  };
 
   const send = () => {
     const text = body.trim();
@@ -47,6 +126,7 @@ export default function MessagesPage() {
       },
     };
     setBody("");
+    setCursor(0);
     startTransition(async () => {
       addOptimistic(temp);
       try {
@@ -93,9 +173,7 @@ export default function MessagesPage() {
                   <div
                     className={cn(
                       "max-w-[80%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap",
-                      mine
-                        ? "bg-primary text-white"
-                        : "bg-sand text-ink",
+                      mine ? "bg-primary text-white" : "bg-sand text-ink",
                     )}
                   >
                     {!mine ? (
@@ -103,7 +181,11 @@ export default function MessagesPage() {
                         {msg.sender?.full_name ?? t("messages.teammate")}
                       </p>
                     ) : null}
-                    <p>{msg.body}</p>
+                    <MessageBody
+                      body={msg.body}
+                      profiles={teammates}
+                      mine={mine}
+                    />
                   </div>
                   {needsAgree && msg.service_order_id ? (
                     <div className="w-[80%]">
@@ -116,14 +198,92 @@ export default function MessagesPage() {
           )}
           <div ref={bottomRef} />
         </div>
-        <div className="border-t border-black/5 p-3">
+        <div className="relative border-t border-black/5 p-3">
+          {mentionOptions.length > 0 ? (
+            <ul
+              className="absolute bottom-full left-3 right-14 z-10 mb-1 max-h-44 overflow-y-auto rounded-2xl border border-black/5 bg-white py-1 soft-shadow"
+              role="listbox"
+            >
+              {mentionOptions.map((pick, i) => (
+                <li
+                  key={
+                    pick.kind === "everyone"
+                      ? "everyone"
+                      : pick.profile.id
+                  }
+                >
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={i === mentionIndex}
+                    className={cn(
+                      "flex w-full flex-col px-3 py-2 text-left text-sm",
+                      i === mentionIndex ? "bg-primary/10" : "hover:bg-sand",
+                    )}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      pickMention(pick);
+                    }}
+                  >
+                    <span className="font-semibold text-ink">
+                      {pick.kind === "everyone"
+                        ? "@everyone"
+                        : pick.profile.full_name}
+                    </span>
+                    <span className="text-xs text-muted capitalize">
+                      {pick.kind === "everyone"
+                        ? "Notify the whole team"
+                        : pick.profile.role}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {error ? <p className="mb-2 text-xs text-danger">{error}</p> : null}
           <div className="flex gap-2">
             <Input
+              ref={inputRef}
               value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder={t("messages.placeholder")}
+              onChange={(e) => {
+                setBody(e.target.value);
+                setCursor(e.target.selectionStart ?? e.target.value.length);
+              }}
+              onSelect={(e) => {
+                const el = e.currentTarget;
+                setCursor(el.selectionStart ?? 0);
+              }}
+              onClick={(e) => {
+                setCursor(e.currentTarget.selectionStart ?? 0);
+              }}
+              placeholder={`${t("messages.placeholder")} (@name / @everyone)`}
               onKeyDown={(e) => {
+                if (mentionOptions.length > 0) {
+                  if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    setMentionIndex((i) =>
+                      Math.min(i + 1, mentionOptions.length - 1),
+                    );
+                    return;
+                  }
+                  if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    setMentionIndex((i) => Math.max(i - 1, 0));
+                    return;
+                  }
+                  if (e.key === "Enter" || e.key === "Tab") {
+                    e.preventDefault();
+                    const pick = mentionOptions[mentionIndex];
+                    if (pick) pickMention(pick);
+                    return;
+                  }
+                  if (e.key === "Escape") {
+                    e.preventDefault();
+                    setMentionDismissed(true);
+                    setMentionIndex(0);
+                    return;
+                  }
+                }
                 if (e.key === "Enter") {
                   e.preventDefault();
                   send();
@@ -141,5 +301,36 @@ export default function MessagesPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+function MessageBody({
+  body,
+  profiles,
+  mine,
+}: {
+  body: string;
+  profiles: Profile[];
+  mine: boolean;
+}) {
+  const segments = mentionSegments(body, profiles);
+  return (
+    <p>
+      {segments.map((seg, i) =>
+        seg.type === "mention" || seg.type === "everyone" ? (
+          <span
+            key={`${seg.type}-${i}`}
+            className={cn(
+              "font-bold",
+              mine ? "text-white underline decoration-white/50" : "text-primary",
+            )}
+          >
+            {seg.value}
+          </span>
+        ) : (
+          <span key={`t-${i}`}>{seg.value}</span>
+        ),
+      )}
+    </p>
   );
 }

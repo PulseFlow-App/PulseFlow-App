@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { isDemoMode, createClient } from "@/lib/supabase/client";
+import { isDemoMode } from "@/lib/supabase/client";
+import { useSupabaseData } from "@/lib/data/use-supabase-data";
 import {
   buildVillaList,
   demoAgreeServiceOrder,
@@ -55,115 +56,15 @@ import {
   ownerManagerIds,
   unreadNotifications,
 } from "@/lib/notifications";
+import {
+  loadLocallyReadIds,
+  mergeReadBy,
+  rememberLocallyRead,
+} from "@/lib/notifications-read";
 import { formatMoney, formatShortDate } from "@/lib/utils";
 
-export type AppData = {
-  ready: boolean;
-  profile: Profile | null;
-  orgName: string;
-  orgKind: "personal" | "company" | null;
-  profiles: Profile[];
-  /** All profiles in the demo/db (for multi-company leaderboards). */
-  allProfiles: Profile[];
-  orgs: Organization[];
-  villas: Villa[];
-  villaList: VillaListItem[];
-  allOrgVillas: Villa[];
-  contacts: Contact[];
-  tasks: TaskWithRelations[];
-  bills: BillWithRelations[];
-  messages: MessageWithSender[];
-  invites: Invite[];
-  villaAssignments: VillaAssignment[];
-  memberships: OrgMembership[];
-  endorsements: Endorsement[];
-  notifications: AppNotification[];
-  serviceOrders: ServiceOrder[];
-  unreadNotificationCount: number;
-  unreadMessageCount: number;
-  refresh: () => Promise<void>;
-  markNotificationRead: (id: string) => Promise<void>;
-  markAllNotificationsRead: () => Promise<void>;
-  createServiceOrder: (input: {
-    contact_id: string;
-    villa_id: string | null;
-    location_label?: string | null;
-    service_type: string;
-    details?: string | null;
-    scheduled_date: string;
-    time_start?: string | null;
-    time_end?: string | null;
-  }) => Promise<ServiceOrder>;
-  agreeServiceOrder: (orderId: string) => Promise<void>;
-  completeServiceOrder: (orderId: string) => Promise<void>;
-  updateVilla: (
-    id: string,
-    patch: Partial<
-      Pick<
-        Villa,
-        | "status"
-        | "check_in"
-        | "check_out"
-        | "cleaning_status"
-        | "notes"
-        | "name"
-        | "area"
-        | "location_url"
-        | "description"
-        | "photo_url"
-      >
-    >,
-  ) => Promise<void>;
-  createVilla: (input: {
-    name: string;
-    area?: string;
-    location_url: string;
-    description?: string;
-    photo_url?: string | null;
-    status?: Villa["status"];
-    /** Owners default to company; managers default to personal side work. */
-    scope?: "company" | "personal";
-  }) => Promise<void>;
-  deleteVilla: (id: string) => Promise<void>;
-  mergeVillaToCompany: (villaId: string) => Promise<void>;
-  createTask: (input: {
-    title: string;
-    villa_id: string | null;
-    priority: TaskPriority;
-    assigned_to: string | null;
-    due_date: string | null;
-    time_start?: string | null;
-    time_end?: string | null;
-  }) => Promise<void>;
-  setTaskStatus: (id: string, status: TaskStatus) => Promise<void>;
-  createContact: (input: Omit<Contact, "id" | "org_id">) => Promise<void>;
-  updateContact: (
-    id: string,
-    patch: Partial<Omit<Contact, "id" | "org_id">>,
-  ) => Promise<void>;
-  deleteContact: (id: string) => Promise<void>;
-  createBill: (input: {
-    description: string;
-    amount: number;
-    villa_id: string | null;
-    due_date?: string | null;
-    receipt_photo_url?: string | null;
-  }) => Promise<void>;
-  setBillStatus: (id: string, status: BillStatus) => Promise<void>;
-  sendMessage: (body: string) => Promise<void>;
-  uploadReceipt: (file: File) => Promise<string | null>;
-  createInvite: (input: {
-    role: Exclude<UserRole, "owner">;
-    jobTitle?: string;
-  }) => Promise<Invite>;
-  setVillaAssignments: (managerId: string, villaIds: string[]) => Promise<void>;
-  setVillaAssignees: (villaId: string, profileIds: string[]) => Promise<void>;
-  castEndorsement: (
-    toProfileId: string,
-    stars: 1 | 2 | 3 | 4 | 5,
-    note?: string,
-  ) => Promise<void>;
-};
+export type { AppData } from "@/lib/data/types";
+import type { AppData } from "@/lib/data/types";
 
 function enrichTasks(
   tasks: Task[],
@@ -208,6 +109,7 @@ function enrichBills(
 function useDemoData(): AppData {
   // Avoid SSR/client mismatch: demo profile + localStorage only exist in the browser.
   const [hydrated, setHydrated] = useState(false);
+  const [localReadIds, setLocalReadIds] = useState<string[]>([]);
   useEffect(() => {
     setHydrated(true);
     demoSyncScheduleAlerts();
@@ -222,6 +124,14 @@ function useDemoData(): AppData {
   const org = profile
     ? store.orgs.find((o) => o.id === profile.org_id) ?? null
     : null;
+
+  useEffect(() => {
+    if (!profile?.id) {
+      setLocalReadIds([]);
+      return;
+    }
+    setLocalReadIds(loadLocallyReadIds(profile.id));
+  }, [profile?.id]);
 
   const orgProfiles = useMemo(
     () =>
@@ -316,30 +226,46 @@ function useDemoData(): AppData {
           n.org_id === profile.org_id &&
           notificationVisibleTo(n, profile.id),
       )
+      .map((n) => ({
+        ...n,
+        read_by: mergeReadBy(n.read_by, profile.id, localReadIds, n.id),
+      }))
       .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-  }, [store.notifications, profile]);
+  }, [store.notifications, profile, localReadIds]);
 
   const unreadNotificationCount = useMemo(() => {
     if (!profile) return 0;
     return unreadNotifications(
-      store.notifications ?? [],
+      notifications,
       profile.id,
       profile.org_id,
     ).length;
-  }, [store.notifications, profile]);
+  }, [notifications, profile]);
 
   const unreadMessageCount = useMemo(() => {
     if (!profile) return 0;
     return unreadNotifications(
-      store.notifications ?? [],
+      notifications,
       profile.id,
       profile.org_id,
     ).filter((n) => n.kind === "message").length;
-  }, [store.notifications, profile]);
+  }, [notifications, profile]);
+
+  const villaAssignments = useMemo(() => {
+    if (!profile) return [];
+    return store.villaAssignments.filter((a) => a.org_id === profile.org_id);
+  }, [store.villaAssignments, profile]);
+
+  const serviceOrders = useMemo(() => {
+    if (!profile) return [];
+    return (store.serviceOrders ?? []).filter((o) => o.org_id === profile.org_id);
+  }, [store.serviceOrders, profile]);
 
   return {
     ready: hydrated,
     profile,
+    organization: org,
+    companyEntitled: true,
     orgName: org?.name ?? "",
     orgKind: org?.kind ?? null,
     profiles: orgProfiles,
@@ -353,29 +279,38 @@ function useDemoData(): AppData {
     bills,
     messages,
     invites,
-    villaAssignments: store.villaAssignments.filter(
-      (a) => a.org_id === profile?.org_id,
-    ),
+    villaAssignments,
     memberships: store.memberships ?? [],
     endorsements: store.endorsements ?? [],
     notifications,
-    serviceOrders: (store.serviceOrders ?? []).filter(
-      (o) => o.org_id === profile?.org_id,
-    ),
+    serviceOrders,
     unreadNotificationCount,
     unreadMessageCount,
     refresh: async () => undefined,
     markNotificationRead: async (id) => {
       if (!profile) return;
+      rememberLocallyRead(profile.id, [id]);
+      setLocalReadIds((prev) => [...new Set([...prev, id])]);
       demoMarkNotificationRead(profile.id, id);
     },
-    markAllNotificationsRead: async () => {
+    markAllNotificationsRead: async (kind) => {
       if (!profile) return;
-      demoMarkAllNotificationsRead(profile.id, profile.org_id);
+      const ids = notifications
+        .filter(
+          (n) =>
+            !(n.read_by ?? []).includes(profile.id) &&
+            (!kind || n.kind === kind),
+        )
+        .map((n) => n.id);
+      if (ids.length) {
+        rememberLocallyRead(profile.id, ids);
+        setLocalReadIds((prev) => [...new Set([...prev, ...ids])]);
+      }
+      demoMarkAllNotificationsRead(profile.id, profile.org_id, kind);
     },
     createServiceOrder: async (input) => {
-      if (!profile || !canBookServices(profile.role)) {
-        throw new Error("Only owners or managers can book services.");
+      if (!profile || !canBookServices(profile.role, org?.kind)) {
+        throw new Error("Only company owners or managers can book services.");
       }
       return demoCreateServiceOrder(profile, input);
     },
@@ -444,7 +379,7 @@ function useDemoData(): AppData {
         (profile.role === "owner" && org?.kind === "company"
           ? "company"
           : "personal");
-      if (personalVillasOnly(profile.role)) scope = "personal";
+      if (personalVillasOnly(profile.role, org?.kind)) scope = "personal";
 
       let orgId = profile.org_id;
       if (scope === "personal") {
@@ -672,25 +607,57 @@ function useDemoData(): AppData {
           },
         ],
       }));
+      const { mentionedProfileIds, hasEveryoneMention } = await import(
+        "@/lib/mentions"
+      );
+      const orgProfiles = store.profiles.filter(
+        (p) => p.org_id === profile.org_id,
+      );
+      const mentioned = mentionedProfileIds(body, orgProfiles).filter(
+        (id) => id !== profile.id,
+      );
       const others = orgMemberIds(store.profiles, profile.org_id).filter(
         (id) => id !== profile.id,
       );
-      if (others.length) {
-        const preview = body.trim().slice(0, 80);
-        demoPushNotifications([
+      const alerts: ReturnType<typeof makeNotification>[] = [];
+      const preview = body.trim().slice(0, 80);
+      const first = profile.full_name.split(" ")[0];
+      if (mentioned.length) {
+        alerts.push(
           makeNotification({
             org_id: profile.org_id,
             kind: "message",
-            title: `New message from ${profile.full_name.split(" ")[0]}`,
+            title: hasEveryoneMention(body)
+              ? `${first} mentioned @everyone`
+              : `${first} mentioned you`,
             body: preview,
             href: "/messages",
             entity_id: msgId,
-            audience_profile_ids: others,
+            audience_profile_ids: mentioned,
           }),
-        ]);
+        );
       }
+      const rest = others.filter((id) => !mentioned.includes(id));
+      if (rest.length) {
+        alerts.push(
+          makeNotification({
+            org_id: profile.org_id,
+            kind: "message",
+            title: `New message from ${first}`,
+            body: preview,
+            href: "/messages",
+            entity_id: msgId,
+            audience_profile_ids: rest,
+          }),
+        );
+      }
+      if (alerts.length) demoPushNotifications(alerts);
     },
     uploadReceipt: async (file) => URL.createObjectURL(file),
+    uploadVillaPhoto: async (file) => {
+      const { fileToDataUrl } = await import("@/lib/file-to-data-url");
+      return fileToDataUrl(file);
+    },
     createInvite: async (input) => {
       if (!profile) throw new Error("Not signed in.");
       return demoCreateInvite(profile, input);
@@ -706,390 +673,6 @@ function useDemoData(): AppData {
     castEndorsement: async (toProfileId, stars, note) => {
       if (!profile) throw new Error("Not signed in.");
       demoCastEndorsement(profile, toProfileId, stars, note);
-    },
-  };
-}
-
-function useSupabaseData(enabled: boolean): AppData {
-  const empty: AppData = {
-    ready: !enabled,
-    profile: null,
-    orgName: "",
-    orgKind: null,
-    profiles: [],
-    allProfiles: [],
-    orgs: [],
-    villas: [],
-    villaList: [],
-    allOrgVillas: [],
-    contacts: [],
-    tasks: [],
-    bills: [],
-    messages: [],
-    invites: [],
-    villaAssignments: [],
-    memberships: [],
-    endorsements: [],
-    notifications: [],
-    serviceOrders: [],
-    unreadNotificationCount: 0,
-    unreadMessageCount: 0,
-    refresh: async () => undefined,
-    markNotificationRead: async () => undefined,
-    markAllNotificationsRead: async () => undefined,
-    createServiceOrder: async () => {
-      throw new Error("Connect Supabase to book services.");
-    },
-    agreeServiceOrder: async () => undefined,
-    completeServiceOrder: async () => undefined,
-    updateVilla: async () => undefined,
-    createVilla: async () => undefined,
-    deleteVilla: async () => undefined,
-    mergeVillaToCompany: async () => undefined,
-    createTask: async () => undefined,
-    setTaskStatus: async () => undefined,
-    createContact: async () => undefined,
-    updateContact: async () => undefined,
-    deleteContact: async () => undefined,
-    createBill: async () => undefined,
-    setBillStatus: async () => undefined,
-    sendMessage: async () => undefined,
-    uploadReceipt: async () => null,
-    createInvite: async () => {
-      throw new Error("Connect Supabase to create invites.");
-    },
-    setVillaAssignments: async () => undefined,
-    setVillaAssignees: async () => undefined,
-    castEndorsement: async () => undefined,
-  };
-
-  const [ready, setReady] = useState(!enabled);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [orgName, setOrgName] = useState("");
-  const [orgKind, setOrgKind] = useState<"personal" | "company" | null>(null);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [villas, setVillas] = useState<Villa[]>([]);
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [bills, setBills] = useState<Bill[]>([]);
-  const [messages, setMessages] = useState<MessageWithSender[]>([]);
-  const [invites, setInvites] = useState<Invite[]>([]);
-  const [villaAssignments, setVillaAssignments] = useState<VillaAssignment[]>(
-    [],
-  );
-
-  const refresh = useCallback(async () => {
-    if (!enabled) return;
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setReady(true);
-      return;
-    }
-    const { data: profileRow } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-    if (!profileRow) {
-      setReady(true);
-      return;
-    }
-    setProfile(profileRow as Profile);
-    const orgId = profileRow.org_id as string;
-    const [
-      orgRes,
-      profilesRes,
-      villasRes,
-      contactsRes,
-      tasksRes,
-      billsRes,
-      messagesRes,
-      invitesRes,
-      assignRes,
-    ] = await Promise.all([
-      supabase.from("organizations").select("name, kind").eq("id", orgId).single(),
-      supabase.from("profiles").select("*").eq("org_id", orgId),
-      supabase.from("villas").select("*").eq("org_id", orgId).order("name"),
-      supabase.from("contacts").select("*").eq("org_id", orgId).order("role"),
-      supabase
-        .from("tasks")
-        .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("bills")
-        .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("messages")
-        .select("*, sender:profiles!messages_sender_id_fkey(id, full_name, role)")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("invites")
-        .select("*")
-        .eq("org_id", orgId)
-        .is("used_at", null),
-      supabase.from("villa_assignments").select("*").eq("org_id", orgId),
-    ]);
-    setOrgName(orgRes.data?.name ?? "");
-    setOrgKind((orgRes.data?.kind as "personal" | "company") ?? null);
-    setProfiles((profilesRes.data as Profile[]) ?? []);
-    setVillas((villasRes.data as Villa[]) ?? []);
-    setContacts((contactsRes.data as Contact[]) ?? []);
-    setTasks((tasksRes.data as Task[]) ?? []);
-    setBills((billsRes.data as Bill[]) ?? []);
-    setMessages((messagesRes.data as MessageWithSender[]) ?? []);
-    setInvites((invitesRes.data as Invite[]) ?? []);
-    setVillaAssignments((assignRes.data as VillaAssignment[]) ?? []);
-    setReady(true);
-  }, [enabled]);
-
-  useEffect(() => {
-    if (!enabled) return;
-    void refresh();
-  }, [enabled, refresh]);
-
-  if (!enabled) return empty;
-
-  const villaList = profile
-    ? buildVillaList(profile, villas, villaAssignments, [
-        {
-          id: profile.org_id,
-          name: orgName,
-          kind: orgKind ?? "company",
-          created_at: "",
-        },
-      ])
-    : [];
-  const visible = villaList.map(
-    ({ bucket: _b, orgLabel: _o, ...v }) => v as Villa,
-  );
-
-  return {
-    ready,
-    profile,
-    orgName,
-    orgKind,
-    profiles,
-    allProfiles: profiles,
-    orgs: [],
-    villas: visible,
-    villaList,
-    allOrgVillas: villas,
-    contacts,
-    tasks: enrichTasks(tasks, visible, profiles),
-    bills: enrichBills(bills, visible, profiles),
-    messages,
-    invites,
-    villaAssignments,
-    refresh,
-    updateVilla: async (id, patch) => {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("villas")
-        .update({ ...patch, updated_at: new Date().toISOString() })
-        .eq("id", id);
-      if (error) throw error;
-      await refresh();
-    },
-    createVilla: async (input) => {
-      if (!profile) return;
-      const supabase = createClient();
-      const { error } = await supabase.from("villas").insert({
-        org_id: profile.org_id,
-        name: input.name,
-        area: input.area ?? null,
-        location_url: input.location_url.trim(),
-        description: input.description?.trim() || null,
-        photo_url: input.photo_url ?? null,
-        status: input.status ?? "available",
-        created_by: profile.id,
-      });
-      if (error) throw error;
-      await refresh();
-    },
-    deleteVilla: async (id) => {
-      const supabase = createClient();
-      const { error } = await supabase.from("villas").delete().eq("id", id);
-      if (error) throw error;
-      await refresh();
-    },
-    mergeVillaToCompany: async (villaId) => {
-      if (!profile) return;
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("villas")
-        .update({ org_id: profile.org_id })
-        .eq("id", villaId);
-      if (error) throw error;
-      await refresh();
-    },
-    createTask: async (input) => {
-      if (!profile) return;
-      const supabase = createClient();
-      const { error } = await supabase.from("tasks").insert({
-        org_id: profile.org_id,
-        created_by: profile.id,
-        status: "open",
-        ...input,
-      });
-      if (error) throw error;
-      await refresh();
-    },
-    setTaskStatus: async (id, status) => {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("tasks")
-        .update({
-          status,
-          completed_at: status === "done" ? new Date().toISOString() : null,
-        })
-        .eq("id", id);
-      if (error) throw error;
-      await refresh();
-    },
-    createContact: async (input) => {
-      if (!profile) return;
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("contacts")
-        .insert({ org_id: profile.org_id, ...input });
-      if (error) throw error;
-      await refresh();
-    },
-    updateContact: async (id, patch) => {
-      const supabase = createClient();
-      const { error } = await supabase.from("contacts").update(patch).eq("id", id);
-      if (error) throw error;
-      await refresh();
-    },
-    deleteContact: async (id) => {
-      const supabase = createClient();
-      const { error } = await supabase.from("contacts").delete().eq("id", id);
-      if (error) throw error;
-      await refresh();
-    },
-    createBill: async (input) => {
-      if (!profile) return;
-      const supabase = createClient();
-      const { error } = await supabase.from("bills").insert({
-        org_id: profile.org_id,
-        submitted_by: profile.id,
-        currency: "THB",
-        status: "pending",
-        ...input,
-      });
-      if (error) throw error;
-      await refresh();
-    },
-    setBillStatus: async (id, status) => {
-      const supabase = createClient();
-      const { error } = await supabase.from("bills").update({ status }).eq("id", id);
-      if (error) throw error;
-      await refresh();
-    },
-    sendMessage: async (body) => {
-      if (!profile) return;
-      const supabase = createClient();
-      const { error } = await supabase.from("messages").insert({
-        org_id: profile.org_id,
-        sender_id: profile.id,
-        body,
-      });
-      if (error) throw error;
-      await refresh();
-    },
-    uploadReceipt: async (file) => {
-      if (!profile) return null;
-      const supabase = createClient();
-      const path = `${profile.org_id}/${profile.id}/${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage.from("receipts").upload(path, file);
-      if (error) throw error;
-      const { data } = supabase.storage.from("receipts").getPublicUrl(path);
-      return data.publicUrl;
-    },
-    createInvite: async (input) => {
-      if (!profile) throw new Error("Not signed in.");
-      const supabase = createClient();
-      const token = crypto.randomUUID().replace(/-/g, "");
-      const { data, error } = await supabase
-        .from("invites")
-        .insert({
-          token,
-          org_id: profile.org_id,
-          role: input.role,
-          full_name: null,
-          email: null,
-          phone: null,
-          job_title: input.jobTitle ?? null,
-          created_by: profile.id,
-        })
-        .select("*")
-        .single();
-      if (error) throw error;
-      await refresh();
-      return data as Invite;
-    },
-    setVillaAssignments: async (managerId, villaIds) => {
-      if (!profile) return;
-      const supabase = createClient();
-      await supabase
-        .from("villa_assignments")
-        .delete()
-        .eq("org_id", profile.org_id)
-        .eq("profile_id", managerId);
-      if (villaIds.length) {
-        const { error } = await supabase.from("villa_assignments").insert(
-          villaIds.map((villa_id) => ({
-            org_id: profile.org_id,
-            villa_id,
-            profile_id: managerId,
-          })),
-        );
-        if (error) throw error;
-      }
-      await refresh();
-    },
-    setVillaAssignees: async (villaId, profileIds) => {
-      if (!profile) return;
-      const supabase = createClient();
-      await supabase
-        .from("villa_assignments")
-        .delete()
-        .eq("org_id", profile.org_id)
-        .eq("villa_id", villaId);
-      if (profileIds.length) {
-        const { error } = await supabase.from("villa_assignments").insert(
-          profileIds.map((profile_id) => ({
-            org_id: profile.org_id,
-            villa_id: villaId,
-            profile_id,
-          })),
-        );
-        if (error) throw error;
-      }
-      await refresh();
-    },
-    memberships: [],
-    endorsements: [],
-    notifications: [],
-    serviceOrders: [],
-    unreadNotificationCount: 0,
-    unreadMessageCount: 0,
-    markNotificationRead: async () => undefined,
-    markAllNotificationsRead: async () => undefined,
-    createServiceOrder: async () => {
-      throw new Error("Connect Supabase to book services.");
-    },
-    agreeServiceOrder: async () => undefined,
-    completeServiceOrder: async () => undefined,
-    castEndorsement: async () => {
-      throw new Error("Connect Supabase to cast endorsements.");
     },
   };
 }

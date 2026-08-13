@@ -8,6 +8,11 @@ const PUBLIC_PREFIXES = [
   "/join",
   "/auth/callback",
   "/u",
+  "/terms",
+  "/privacy",
+  "/api/auth",
+  "/api/invites",
+  "/api/billing/webhook",
 ];
 
 function isPublicPath(pathname: string) {

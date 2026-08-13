@@ -26,7 +26,7 @@ export function unreadNotifications(
     (n) =>
       n.org_id === orgId &&
       notificationVisibleTo(n, profileId) &&
-      !n.read_by.includes(profileId),
+      !(n.read_by ?? []).includes(profileId),
   );
 }
 

@@ -1,11 +1,13 @@
+import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
-export function Input({
-  className,
-  ...props
-}: React.InputHTMLAttributes<HTMLInputElement>) {
+export const Input = forwardRef<
+  HTMLInputElement,
+  React.InputHTMLAttributes<HTMLInputElement>
+>(function Input({ className, ...props }, ref) {
   return (
     <input
+      ref={ref}
       className={cn(
         "w-full rounded-2xl border-0 bg-[#F7F5F1] px-4 py-3 text-sm text-ink outline-none ring-primary/25 placeholder:text-muted focus:ring-2",
         className,
@@ -13,7 +15,7 @@ export function Input({
       {...props}
     />
   );
-}
+});
 
 export function Textarea({
   className,
