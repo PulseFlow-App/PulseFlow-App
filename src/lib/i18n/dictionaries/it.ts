@@ -174,7 +174,7 @@ const it: Dictionary = {
   "bills.title": "Spese",
   "bills.subtitle": "Spese e rimborsi",
   "bills.financeTitle": "Finanze",
-  "bills.financeSubtitle": "Spese per villa, periodo e categoria — il vostro registro ops.",
+  "bills.financeSubtitle": "Spese per villa, periodo e categoria. Il vostro registro ops.",
   "bills.pendingTotal": "Totale in attesa",
   "bills.paidTotal": "Pagato",
   "bills.totalSpend": "Spesa totale",

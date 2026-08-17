@@ -174,7 +174,7 @@ const de: Dictionary = {
   "bills.title": "Rechnungen",
   "bills.subtitle": "Ausgaben & Erstattungen",
   "bills.financeTitle": "Finanzen",
-  "bills.financeSubtitle": "Ausgaben nach Villa, Zeitraum und Kategorie — euer Ops-Ledger.",
+  "bills.financeSubtitle": "Ausgaben nach Villa, Zeitraum und Kategorie. Euer Ops-Ledger.",
   "bills.pendingTotal": "Offener Betrag",
   "bills.paidTotal": "Bezahlt",
   "bills.totalSpend": "Gesamtausgaben",

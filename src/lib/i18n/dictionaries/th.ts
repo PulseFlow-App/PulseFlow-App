@@ -174,7 +174,7 @@ const th: Dictionary = {
   "bills.title": "บิล",
   "bills.subtitle": "ค่าใช้จ่ายและการเบิก",
   "bills.financeTitle": "การเงิน",
-  "bills.financeSubtitle": "ดูรายจ่ายตามวิลล่า ช่วงเวลา และหมวด — สมุดบัญชีงานจริงของคุณ",
+  "bills.financeSubtitle": "ดูรายจ่ายตามวิลล่า ช่วงเวลา และหมวด. สมุดบัญชีงานจริงของคุณ",
   "bills.pendingTotal": "ยอดรอชำระ",
   "bills.paidTotal": "ชำระแล้ว",
   "bills.totalSpend": "ยอดใช้จ่ายรวม",

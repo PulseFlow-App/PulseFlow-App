@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,6 +78,7 @@ export default function BillsPage() {
   const [filterCategory, setFilterCategory] = useState<"" | BillCategory>("");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
+  const formRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(() => {
     return data.bills.filter((b) => {
@@ -189,7 +190,7 @@ export default function BillsPage() {
   return (
     <div className="space-y-4 animate-rise">
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="font-display text-2xl font-bold text-ink">
             {showFinance ? t("bills.financeTitle") : t("bills.title")}
           </h1>
@@ -197,10 +198,117 @@ export default function BillsPage() {
             {showFinance ? t("bills.financeSubtitle") : t("bills.subtitle")}
           </p>
         </div>
-        <Button size="sm" onClick={() => setShowForm((v) => !v)}>
-          <Plus className="size-4" /> {t("common.add")}
+        <Button
+          type="button"
+          size="sm"
+          className="shrink-0"
+          onClick={() => {
+            setShowForm((open) => {
+              const next = !open;
+              if (next) {
+                requestAnimationFrame(() => {
+                  formRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                });
+              }
+              return next;
+            });
+          }}
+        >
+          {showForm ? (
+            t("common.cancel")
+          ) : (
+            <>
+              <Plus className="size-4" /> {t("common.add")}
+            </>
+          )}
         </Button>
       </div>
+
+      {showForm ? (
+        <div ref={formRef}>
+          <Card className="space-y-3 p-4">
+          <div>
+            <Label>{t("bills.description")}</Label>
+            <Input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>{t("bills.amount")}</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>{t("bills.villa")}</Label>
+              <Select
+                value={villaId}
+                onChange={(e) => setVillaId(e.target.value)}
+              >
+                <option value="">{t("common.general")}</option>
+                {data.villas.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label>{t("bills.category")}</Label>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {BILL_CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setCategory(cat)}
+                  className={cn(
+                    "rounded-full px-3 py-1 text-xs font-semibold",
+                    category === cat
+                      ? "bg-primary text-white"
+                      : "bg-[#F7F5F1] text-ink",
+                  )}
+                >
+                  {categoryLabel(cat)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <Label>{t("bills.dueDate")}</Label>
+            <Input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>{t("bills.receipt")}</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
+          {error ? <p className="text-sm text-danger">{error}</p> : null}
+          <Button
+            className="w-full"
+            disabled={saving}
+            onClick={() => void submit()}
+          >
+            {saving ? t("bills.submitting") : t("bills.submit")}
+          </Button>
+          </Card>
+        </div>
+      ) : null}
 
       {showFinance ? (
         <Card className="space-y-3 p-4">
@@ -366,87 +474,6 @@ export default function BillsPage() {
             )}
           </Card>
         </div>
-      ) : null}
-
-      {showForm ? (
-        <Card className="space-y-3 p-4">
-          <div>
-            <Label>{t("bills.description")}</Label>
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>{t("bills.amount")}</Label>
-              <Input
-                type="number"
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>{t("bills.villa")}</Label>
-              <Select
-                value={villaId}
-                onChange={(e) => setVillaId(e.target.value)}
-              >
-                <option value="">{t("common.general")}</option>
-                {data.villas.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.name}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </div>
-          <div>
-            <Label>{t("bills.category")}</Label>
-            <div className="mt-1.5 flex flex-wrap gap-2">
-              {BILL_CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setCategory(cat)}
-                  className={cn(
-                    "rounded-full px-3 py-1 text-xs font-semibold",
-                    category === cat
-                      ? "bg-primary text-white"
-                      : "bg-[#F7F5F1] text-ink",
-                  )}
-                >
-                  {categoryLabel(cat)}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <Label>{t("bills.dueDate")}</Label>
-            <Input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-            />
-          </div>
-          <div>
-            <Label>{t("bills.receipt")}</Label>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            />
-          </div>
-          {error ? <p className="text-sm text-danger">{error}</p> : null}
-          <Button
-            className="w-full"
-            disabled={saving}
-            onClick={() => void submit()}
-          >
-            {saving ? t("bills.submitting") : t("bills.submit")}
-          </Button>
-        </Card>
       ) : null}
 
       {filtered.length === 0 ? (

@@ -174,7 +174,7 @@ const he: Dictionary = {
   "bills.title": "חשבונות",
   "bills.subtitle": "הוצאות והחזרים",
   "bills.financeTitle": "כספים",
-  "bills.financeSubtitle": "מעקב הוצאות לפי וילה, תקופה וקטגוריה — יומן התפעול המלא שלך.",
+  "bills.financeSubtitle": "מעקב הוצאות לפי וילה, תקופה וקטגוריה. יומן התפעול המלא שלך.",
   "bills.pendingTotal": "סה״כ ממתין",
   "bills.paidTotal": "שולם",
   "bills.totalSpend": "סה״כ הוצאות",

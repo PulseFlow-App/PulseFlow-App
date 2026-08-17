@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { PulseMark } from "@/components/brand/pulse-mark";
+import { LegalShell } from "@/components/legal/legal-shell";
 import { brand } from "@/lib/design-tokens";
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-dvh bg-sand px-4 py-10">
-      <div className="mx-auto max-w-lg space-y-6 text-sm leading-relaxed text-ink">
+    <LegalShell>
+      <div className="space-y-6 text-sm leading-relaxed text-ink">
         <PulseMark className="size-10" />
         <div>
           <h1 className="font-display text-2xl font-bold text-ink">
@@ -26,26 +27,26 @@ export default function PrivacyPage() {
           <h2 className="font-display text-lg font-bold">1. Information we collect</h2>
           <ul className="list-disc space-y-1 pl-5 text-muted">
             <li>
-              <strong className="text-ink">Account data</strong> — name, email,
+              <strong className="text-ink">Account data:</strong> name, email,
               role, organization, and authentication identifiers.
             </li>
             <li>
-              <strong className="text-ink">Operations data</strong> — villas,
+              <strong className="text-ink">Operations data:</strong> villas,
               tasks, contacts, messages, service orders, bills, endorsements,
               notifications, and related metadata you or your team enter.
             </li>
             <li>
-              <strong className="text-ink">Files</strong> — villa photos and
+              <strong className="text-ink">Files:</strong> villa photos and
               receipt images you upload (stored in our cloud storage).
             </li>
             <li>
-              <strong className="text-ink">Billing data</strong> — for company
+              <strong className="text-ink">Billing data:</strong> for company
               subscriptions, Stripe processes card details. We store Stripe
               customer and subscription IDs on the organization, not full card
               numbers.
             </li>
             <li>
-              <strong className="text-ink">Technical data</strong> — device/browser
+              <strong className="text-ink">Technical data:</strong> device/browser
               type, IP address, and basic usage logs needed to secure and
               operate the Service.
             </li>
@@ -79,7 +80,7 @@ export default function PrivacyPage() {
               <strong className="text-ink">Stripe</strong> for company payments
             </li>
             <li>
-              <strong className="text-ink">Your organization</strong> — teammates
+              <strong className="text-ink">Your organization:</strong> teammates
               you invite can see data according to their role and assignments
             </li>
             <li>
@@ -167,18 +168,18 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <div className="flex flex-wrap gap-4 pt-2">
+        <div className="flex flex-wrap gap-4 pt-2 pb-8">
           <Link href="/terms" className="font-semibold text-primary">
             Terms of Service
           </Link>
-          <Link href="/register" className="font-semibold text-primary">
-            Back to register
+          <Link href="/settings" className="font-semibold text-primary">
+            Settings
           </Link>
           <Link href="/login" className="font-semibold text-muted">
             Sign in
           </Link>
         </div>
       </div>
-    </div>
+    </LegalShell>
   );
 }

@@ -193,7 +193,7 @@ const en = {
   "bills.subtitle": "Expenses & reimbursements",
   "bills.financeTitle": "Finances",
   "bills.financeSubtitle":
-    "Track spend by villa, period, and category — your full ops ledger.",
+    "Track spend by villa, period, and category. Your full ops ledger.",
   "bills.pendingTotal": "Pending total",
   "bills.paidTotal": "Paid",
   "bills.totalSpend": "Total spend",

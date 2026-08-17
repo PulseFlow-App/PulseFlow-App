@@ -797,15 +797,19 @@ export function demoAgreeServiceOrder(actor: Profile, orderId: string) {
     ),
     messages: [...s.messages, confirmMsg],
     notifications: [
-      makeNotification({
-        org_id: order.org_id,
-        kind: "appointment",
-        title: `${actor.full_name} agreed`,
-        body: `${order.service_type} · ${formatOrderWhen(order)}`,
-        href: "/jobs",
-        entity_id: orderId,
-        audience_profile_ids: [order.ordered_by],
-      }),
+      ...(order.ordered_by && order.ordered_by !== actor.id
+        ? [
+            makeNotification({
+              org_id: order.org_id,
+              kind: "appointment",
+              title: `${actor.full_name} agreed`,
+              body: `${order.service_type} · ${formatOrderWhen(order)}`,
+              href: "/jobs",
+              entity_id: orderId,
+              audience_profile_ids: [order.ordered_by],
+            }),
+          ]
+        : []),
       ...(s.notifications ?? []).map((n) =>
         n.entity_id === orderId && n.kind === "appointment"
           ? {

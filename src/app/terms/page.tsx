@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { PulseMark } from "@/components/brand/pulse-mark";
+import { LegalShell } from "@/components/legal/legal-shell";
 import { brand } from "@/lib/design-tokens";
 
 export default function TermsPage() {
   return (
-    <div className="min-h-dvh bg-sand px-4 py-10">
-      <div className="mx-auto max-w-lg space-y-6 text-sm leading-relaxed text-ink">
+    <LegalShell>
+      <div className="space-y-6 text-sm leading-relaxed text-ink">
         <PulseMark className="size-10" />
         <div>
           <h1 className="font-display text-2xl font-bold text-ink">
@@ -45,8 +46,8 @@ export default function TermsPage() {
             </li>
             <li>
               <strong className="text-ink">Company workspaces</strong> support
-              teams (owners, managers, staff). Company features—invites, team
-              chat, in-app ordering, reputation, and related tools—require an
+              teams (owners, managers, staff). Company features (invites, team
+              chat, in-app ordering, reputation, and related tools) require an
               eligible company plan.
             </li>
             <li>
@@ -197,18 +198,18 @@ export default function TermsPage() {
           advice from your own counsel.
         </p>
 
-        <div className="flex flex-wrap gap-4 pt-2">
+        <div className="flex flex-wrap gap-4 pt-2 pb-8">
           <Link href="/privacy" className="font-semibold text-primary">
             Privacy Policy
           </Link>
-          <Link href="/register" className="font-semibold text-primary">
-            Back to register
+          <Link href="/settings" className="font-semibold text-primary">
+            Settings
           </Link>
           <Link href="/login" className="font-semibold text-muted">
             Sign in
           </Link>
         </div>
       </div>
-    </div>
+    </LegalShell>
   );
 }

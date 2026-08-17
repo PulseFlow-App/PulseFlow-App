@@ -174,7 +174,7 @@ const my: Dictionary = {
   "bills.title": "ဘေလ်",
   "bills.subtitle": "အသုံးစရိတ်နှင့် ပြန်အမ်း",
   "bills.financeTitle": "Finances",
-  "bills.financeSubtitle": "Track spend by villa, period, and category — your full ops ledger.",
+  "bills.financeSubtitle": "Track spend by villa, period, and category. Your full ops ledger.",
   "bills.pendingTotal": "စောင့်ဆိုင်းစုစုပေါင်း",
   "bills.paidTotal": "Paid",
   "bills.totalSpend": "Total spend",

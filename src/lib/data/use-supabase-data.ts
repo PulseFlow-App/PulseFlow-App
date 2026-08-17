@@ -37,6 +37,7 @@ import {
   mergeReadBy,
   rememberLocallyRead,
 } from "@/lib/notifications-read";
+import { formatOrderWhen } from "@/lib/service-orders";
 
 function enrichTasks(
   tasks: Task[],
@@ -573,6 +574,15 @@ export function useSupabaseData(enabled: boolean): AppData {
     agreeServiceOrder: async (orderId) => {
       if (!profile) throw new Error("Not signed in.");
       const supabase = createClient();
+      let order = serviceOrders.find((o) => o.id === orderId) ?? null;
+      if (!order) {
+        const { data } = await supabase
+          .from("service_orders")
+          .select("*")
+          .eq("id", orderId)
+          .single();
+        order = (data as ServiceOrder | null) ?? null;
+      }
       const { error } = await supabase
         .from("service_orders")
         .update({
@@ -581,6 +591,18 @@ export function useSupabaseData(enabled: boolean): AppData {
         })
         .eq("id", orderId);
       if (error) throw error;
+
+      if (order?.ordered_by && order.ordered_by !== profile.id) {
+        await supabase.from("notifications").insert({
+          org_id: profile.org_id,
+          kind: "appointment",
+          title: `${profile.full_name} agreed`,
+          body: `${order.service_type} · ${formatOrderWhen(order)}`,
+          href: "/jobs",
+          entity_id: orderId,
+          audience_profile_ids: [order.ordered_by],
+        });
+      }
       await refresh();
     },
     completeServiceOrder: async (orderId) => {

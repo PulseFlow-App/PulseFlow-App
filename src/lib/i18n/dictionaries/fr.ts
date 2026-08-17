@@ -174,7 +174,7 @@ const fr: Dictionary = {
   "bills.title": "Factures",
   "bills.subtitle": "Dépenses & remboursements",
   "bills.financeTitle": "Finances",
-  "bills.financeSubtitle": "Suivez les dépenses par villa, période et catégorie — votre grand livre d’ops.",
+  "bills.financeSubtitle": "Suivez les dépenses par villa, période et catégorie. Votre grand livre d’ops.",
   "bills.pendingTotal": "Total en attente",
   "bills.paidTotal": "Payé",
   "bills.totalSpend": "Total dépensé",

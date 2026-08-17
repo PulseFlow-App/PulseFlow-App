@@ -2,35 +2,35 @@
 
 ## Phase 0 — Foundations
 
-- [ ] Supabase project created (staging + production)
-- [ ] Env vars set in Vercel / `.env.local` from `.env.example`
-- [ ] Migrations `001` → `010` applied in order on each project
-- [ ] `npm run seed` succeeds on staging
-- [ ] Seeded owner can open `/home` with `NEXT_PUBLIC_DEMO_MODE=false`
+- [x] Supabase project created (staging + production)
+- [x] Env vars set in Vercel / `.env.local` from `.env.example`
+- [x] Migrations `001` → `010` applied in order on each project
+- [x] `npm run seed` succeeds on staging
+- [x] Seeded owner can open `/home` with `NEXT_PUBLIC_DEMO_MODE=false`
 
 ## Phase 1 — Auth
 
-- [ ] Register personal owner end-to-end
-- [ ] Register company owner (trial fields set, `subscription_status=trialing`)
-- [ ] Create invite from Settings; accept on `/join/[token]`
-- [ ] Email confirm / magic link via `/auth/callback` if confirmation enabled
-- [ ] Middleware refreshes session cookies on App Router navigations
+- [x] Register personal owner end-to-end
+- [x] Register company owner (trial fields set, `subscription_status=trialing`)
+- [x] Create invite from Settings; accept on `/join/[token]`
+- [x] Email confirm / magic link via `/auth/callback` if confirmation enabled
+- [x] Middleware refreshes session cookies on App Router navigations
 
 ## Phase 2 — Parity
 
 - [ ] Service orders: book → agree → complete
-- [ ] Personal villas via `personal_org_id` / ensure-personal API
-- [ ] Villa photo upload to Storage bucket `villas` (not data URLs)
-- [ ] Receipts upload to `receipts`
-- [ ] Notifications + endorsements load and update
-- [ ] Realtime updates for messages / orders / notifications
+- [x] Personal villas via `personal_org_id` / ensure-personal API
+- [x] Villa photo upload to Storage bucket `villas` (not data URLs)
+- [x] Receipts upload to `receipts`
+- [x] Notifications + endorsements load and update
+- [x] Realtime updates for messages / orders / notifications
 
 ## Phase 3 — Billing
 
 - [ ] Stripe test product + monthly Company price ID
 - [ ] Checkout + Customer Portal from Settings → Billing
 - [ ] Webhook updates `subscription_status` / Stripe IDs
-- [ ] Soft banner when trial &lt; 7 days
+- [ ] Soft banner when trial < 7 days
 - [ ] Hard gates block invite / company villa / service order when expired
 - [ ] Personal orgs never see Billing or gates
 

@@ -174,7 +174,7 @@ const ru: Dictionary = {
   "bills.title": "Счета",
   "bills.subtitle": "Расходы и возмещения",
   "bills.financeTitle": "Финансы",
-  "bills.financeSubtitle": "Расходы по виллам, периодам и категориям — полный учёт операций.",
+  "bills.financeSubtitle": "Расходы по виллам, периодам и категориям. Полный учёт операций.",
   "bills.pendingTotal": "Ожидает оплаты",
   "bills.paidTotal": "Оплачено",
   "bills.totalSpend": "Всего потрачено",
