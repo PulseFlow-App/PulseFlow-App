@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Copy, Star, Trophy } from "lucide-react";
+import { Copy, QrCode, Star, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
@@ -36,6 +36,8 @@ export default function SettingsPage() {
   const [assignManagerId, setAssignManagerId] = useState("");
   const [selectedVillas, setSelectedVillas] = useState<string[]>([]);
   const [assignMsg, setAssignMsg] = useState<string | null>(null);
+  const [qrToken, setQrToken] = useState<string | null>(null);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
 
   const roleOptions = useMemo(
     () =>
@@ -251,30 +253,67 @@ export default function SettingsPage() {
                 {t("settings.openInvites")}
               </p>
               {data.invites.map((inv) => (
-                <div
-                  key={inv.id}
-                  className="flex items-center justify-between gap-2 text-sm"
-                >
-                  <div>
-                    <p className="font-semibold text-ink">
-                      {t(`roles.${inv.role}` as MessageKey)}
-                      {inv.job_title ? ` · ${inv.job_title}` : ""}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {t("settings.waitingToJoin")}
-                    </p>
+                <div key={inv.id}>
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    <div>
+                      <p className="font-semibold text-ink">
+                        {t(`roles.${inv.role}` as MessageKey)}
+                        {inv.job_title ? ` · ${inv.job_title}` : ""}
+                      </p>
+                      <p className="text-xs text-muted">
+                        {t("settings.waitingToJoin")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={async () => {
+                          const link = `${window.location.origin}/join/${inv.token}`;
+                          await navigator.clipboard.writeText(link);
+                          setCopiedToken(inv.token);
+                        }}
+                      >
+                        {t("common.copy")}
+                      </Button>
+                      {data.profile.role === "owner" ? (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            if (qrToken === inv.token) {
+                              setQrToken(null);
+                              setQrUrl(null);
+                              return;
+                            }
+                            const url = `${window.location.origin}/join/${inv.token}`;
+                            setQrToken(inv.token);
+                            setQrUrl(url);
+                          }}
+                        >
+                          <QrCode className="size-4" />
+                          QR
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={async () => {
-                      const link = `${window.location.origin}/join/${inv.token}`;
-                      await navigator.clipboard.writeText(link);
-                      setCopiedToken(inv.token);
-                    }}
-                  >
-                    {t("common.copy")}
-                  </Button>
+                  {qrToken === inv.token && qrUrl ? (
+                    <Card className="mt-3 space-y-2 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                        Scan to join
+                      </p>
+                      <img
+                        alt="Invite QR code"
+                        className="mx-auto rounded-2xl border border-black/5"
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(
+                          qrUrl,
+                        )}`}
+                        width={260}
+                        height={260}
+                        loading="lazy"
+                      />
+                    </Card>
+                  ) : null}
                 </div>
               ))}
             </div>
