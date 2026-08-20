@@ -129,6 +129,15 @@ export function BillingSettingsCard() {
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       <p className="text-xs text-muted">
+        <a
+          href="https://pulseflow.site/subscription"
+          target="_blank"
+          rel="noreferrer"
+          className="font-semibold text-primary"
+        >
+          {t("plan.seePlans")}
+        </a>
+        {" · "}
         <Link href="/terms" className="font-semibold text-primary">
           {t("billing.terms")}
         </Link>

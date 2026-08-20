@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Building2, UserRound } from "lucide-react";
@@ -17,6 +17,8 @@ import { useI18n } from "@/lib/i18n/provider";
 
 type Step = "use" | "details";
 
+const REFERRAL_STORAGE_KEY = "pulseflow_referral_code";
+
 export default function RegisterPage() {
   const router = useRouter();
   const { t } = useI18n();
@@ -30,6 +32,19 @@ export default function RegisterPage() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fromQuery = new URLSearchParams(window.location.search)
+      .get("ref")
+      ?.trim();
+    if (fromQuery) {
+      localStorage.setItem(REFERRAL_STORAGE_KEY, fromQuery);
+      setReferralCode(fromQuery);
+      return;
+    }
+    setReferralCode(localStorage.getItem(REFERRAL_STORAGE_KEY));
+  }, []);
 
   const title = useMemo(() => {
     if (step === "use") return "How will you use PulseFlow?";
@@ -125,6 +140,11 @@ export default function RegisterPage() {
           </div>
           <h1 className="font-display text-2xl font-bold text-ink">{title}</h1>
           <p className="mt-1 text-sm text-muted">{t("brand.tagline")}</p>
+          {referralCode ? (
+            <p className="mt-2 text-xs font-semibold text-secondary">
+              Referral code saved: {referralCode}
+            </p>
+          ) : null}
         </div>
 
         <Card className="space-y-4 p-5">

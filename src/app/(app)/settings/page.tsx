@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Copy, QrCode, Star, Trophy } from "lucide-react";
+import { Copy, NotebookPen, QrCode, Star, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
@@ -21,6 +21,11 @@ import { useI18n } from "@/lib/i18n/provider";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { BillingSettingsCard } from "@/components/billing/billing-card";
 import type { MessageKey } from "@/lib/i18n";
+import {
+  referralRegisterUrl,
+  resolvePlanTier,
+} from "@/lib/billing/plans";
+import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
   const data = useData();
@@ -38,6 +43,7 @@ export default function SettingsPage() {
   const [assignMsg, setAssignMsg] = useState<string | null>(null);
   const [qrToken, setQrToken] = useState<string | null>(null);
   const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [copiedReferral, setCopiedReferral] = useState(false);
 
   const roleOptions = useMemo(
     () =>
@@ -63,6 +69,7 @@ export default function SettingsPage() {
   );
 
   if (!data.ready || !data.profile) return <LoadingState />;
+  const profile = data.profile;
 
   const signOut = async () => {
     if (isDemoMode()) {
@@ -113,7 +120,13 @@ export default function SettingsPage() {
     }
   };
 
-  const roleKey = `roles.${data.profile.role}` as MessageKey;
+  const roleKey = `roles.${profile.role}` as MessageKey;
+  const plan = resolvePlanTier({
+    role: profile.role,
+    orgKind: data.orgKind,
+    organization: data.organization,
+  });
+  const referralCode = profile.share_slug?.trim() || profile.id.slice(0, 8);
 
   return (
     <div className="space-y-4 animate-rise">
@@ -129,8 +142,8 @@ export default function SettingsPage() {
       </Card>
 
       <Card className="space-y-3 p-5">
-        <Info label={t("common.name")} value={data.profile.full_name} />
-        <Info label={t("common.email")} value={data.profile.email} />
+        <Info label={t("common.name")} value={profile.full_name} />
+        <Info label={t("common.email")} value={profile.email} />
         {isCompany ? (
           <Info label={t("common.role")} value={t(roleKey)} />
         ) : null}
@@ -140,6 +153,66 @@ export default function SettingsPage() {
         />
       </Card>
 
+      <Card className="space-y-3 p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-display text-lg font-bold text-ink">
+              {t("plan.title")}
+            </h2>
+            <p className="mt-1 text-sm text-muted">{t(plan.noteKey)}</p>
+          </div>
+          <span
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide",
+              plan.tier === "full" || plan.tier === "trial"
+                ? "bg-primary-soft text-primary-dark"
+                : plan.tier === "basic"
+                  ? "bg-secondary-soft text-secondary-dark"
+                  : plan.tier === "expired"
+                    ? "bg-danger/10 text-danger"
+                    : "bg-[#F7F5F1] text-ink",
+            )}
+          >
+            <NotebookPen className="size-3.5" />
+            {t(plan.labelKey)}
+          </span>
+        </div>
+        <a
+          href="https://pulseflow.site/subscription"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex text-sm font-semibold text-primary"
+        >
+          {t("plan.seePlans")}
+        </a>
+        {(profile.role === "owner" || profile.role === "manager") &&
+        isCompany ? (
+          <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+              {t("plan.referralTitle")}
+            </p>
+            <p className="mt-1 text-sm text-muted">{t("plan.referralHint")}</p>
+            <Button
+              size="sm"
+              className="mt-3 w-full"
+              variant="secondary"
+              onClick={async () => {
+                const url = referralRegisterUrl(
+                  window.location.origin,
+                  referralCode,
+                );
+                await navigator.clipboard.writeText(url);
+                setCopiedReferral(true);
+                setTimeout(() => setCopiedReferral(false), 1500);
+              }}
+            >
+              <Copy className="size-4" />
+              {copiedReferral ? t("plan.referralCopied") : t("plan.copyReferral")}
+            </Button>
+          </div>
+        ) : null}
+      </Card>
+
       {isCompany ? (
         <Card className="space-y-3 p-5">
           <div>
@@ -147,7 +220,7 @@ export default function SettingsPage() {
               {t("settings.reputation")}
             </h2>
             <p className="text-sm text-muted">
-              {data.profile.role === "owner"
+              {profile.role === "owner"
                 ? t("settings.reputationOwner")
                 : t("settings.reputationStaff")}
             </p>
@@ -166,22 +239,22 @@ export default function SettingsPage() {
               </Button>
             </Link>
           </div>
-          {data.profile.role !== "owner" ? (
+          {profile.role !== "owner" ? (
             <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                 {t("settings.publicLink")}
               </p>
               <p className="mt-1 break-all text-sm font-semibold text-ink">
                 {typeof window !== "undefined"
-                  ? `${window.location.origin}/u/${data.profile.share_slug}`
-                  : `/u/${data.profile.share_slug}`}
+                  ? `${window.location.origin}/u/${profile.share_slug}`
+                  : `/u/${profile.share_slug}`}
               </p>
               <Button
                 size="sm"
                 className="mt-3 w-full"
                 variant="secondary"
                 onClick={async () => {
-                  const url = `${window.location.origin}/u/${data.profile!.share_slug}`;
+                  const url = `${window.location.origin}/u/${profile.share_slug}`;
                   await navigator.clipboard.writeText(url);
                   setCopiedShare(true);
                   setTimeout(() => setCopiedShare(false), 1500);
@@ -197,7 +270,7 @@ export default function SettingsPage() {
 
       <BillingSettingsCard />
 
-      {canInvite(data.profile.role, data.orgKind) ? (
+      {canInvite(profile.role, data.orgKind) ? (
         <Card className="space-y-3 p-5">
           <div>
             <h2 className="font-display text-lg font-bold text-ink">
@@ -276,7 +349,7 @@ export default function SettingsPage() {
                       >
                         {t("common.copy")}
                       </Button>
-                      {data.profile.role === "owner" ? (
+                      {profile.role === "owner" ? (
                         <Button
                           size="sm"
                           variant="ghost"
@@ -321,7 +394,7 @@ export default function SettingsPage() {
         </Card>
       ) : null}
 
-      {canManageVillaAssignments(data.profile.role, data.orgKind) ? (
+      {canManageVillaAssignments(profile.role, data.orgKind) ? (
         <Card className="space-y-3 p-5">
           <div>
             <h2 className="font-display text-lg font-bold text-ink">

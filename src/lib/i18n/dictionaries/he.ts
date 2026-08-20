@@ -289,6 +289,35 @@ const he: Dictionary = {
   "billing.endedBanner": "תקופת הניסיון הסתיימה. יש להירשם כדי להמשיך להזמין צוות ולערוך נתוני חברה.",
   "billing.subscribeNow": "להרשמה עכשיו",
   "billing.askOwner": "בקשו מהבעלים לחדש.",
+
+
+  "plan.free": "Free",
+  "plan.basic": "Basic",
+  "plan.full": "Full",
+  "plan.trial": "Full trial",
+  "plan.expired": "Full expired",
+  "plan.title": "Your plan",
+  "plan.seePlans": "See Free, Basic, and Full",
+  "plan.note.personal":
+    "Personal workspace. Free forever for solo villas, tasks, and bills.",
+  "plan.note.staff":
+    "Free field seat on this company. Assigned villas, jobs, bills, and chat.",
+  "plan.note.managerLimited":
+    "Free manager seat with limited tools. Company Full is inactive, so exports and company writes stay closed.",
+  "plan.note.managerBasic":
+    "Basic reporting seat while the company Full plan (or trial) is active. Export bills, tasks, and villa status for owner reports.",
+  "plan.note.ownerTrial":
+    "Company Full trial. Invite the team, assign villas, and run owner finances until the trial ends.",
+  "plan.note.ownerFull":
+    "Company Full. Your subscription covers the team workspace, including Basic reporting for managers.",
+  "plan.note.ownerExpired":
+    "Company Full has ended. Subscribe to reopen invites, company villas, and service orders.",
+  "plan.referralTitle": "Referral year",
+  "plan.referralHint":
+    "Invite 5 people with this link (teammates or other owners). When five join, you get 1 year of Full free.",
+  "plan.copyReferral": "Copy referral link",
+  "plan.referralCopied": "Referral link copied.",
+
   "contacts.subtitlePersonal": "שמרו מספרים במקום אחד — והתקשרו מכאן",
   "contacts.subtitleCompany": "חברו משתמש PulseFlow כדי להזמין באפליקציה; לאחרים התקשרו",
   "contacts.whatsapp": "וואטסאפ",
