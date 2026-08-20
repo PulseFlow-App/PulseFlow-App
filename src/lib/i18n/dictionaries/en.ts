@@ -275,6 +275,11 @@ const en = {
   "settings.languageHint": "Choose the language for your PulseFlow apps.",
   "settings.invite": "Invite teammate",
   "settings.inviteHint": "Share a link. They fill in their own details.",
+  "settings.inviteCountsTowardReferral":
+    "Team invites count toward your five referrals.",
+  "settings.inviteAnyone": "Invite anyone to the app",
+  "settings.inviteAnyoneHint":
+    "Invite other villa owners or anyone who wants to use the app for personal use.",
   "settings.jobTitle": "Job title (optional)",
   "settings.jobTitlePlaceholder": "e.g. On-site manager, Lead cleaner",
   "settings.createInvite": "Create & copy invite link",
@@ -347,6 +352,9 @@ const en = {
     "Invite 5 people with this link (teammates or other owners). When five join, you get 1 year of Full free.",
   "plan.copyReferral": "Copy referral link",
   "plan.referralCopied": "Referral link copied.",
+
+  "demo.readOnlyBanner":
+    "Demo only. Explore freely. Sign up for a real account to make changes.",
 
   "contacts.subtitlePersonal": "Save numbers in one place — call from here",
   "contacts.subtitleCompany":

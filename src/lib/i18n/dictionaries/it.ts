@@ -249,6 +249,11 @@ const it: Dictionary = {
   "settings.languageHint": "Scegli la lingua delle tue app PulseFlow.",
   "settings.invite": "Invita collega",
   "settings.inviteHint": "Condividi un link. Compilano i loro dati.",
+  "settings.inviteCountsTowardReferral":
+    "Team invites count toward your five referrals.",
+  "settings.inviteAnyone": "Invite anyone to the app",
+  "settings.inviteAnyoneHint":
+    "Invite other villa owners or anyone who wants to use the app for personal use.",
   "settings.jobTitle": "Mansione (opzionale)",
   "settings.jobTitlePlaceholder": "e.g. On-site manager, Lead cleaner",
   "settings.createInvite": "Crea e copia link",
@@ -317,6 +322,9 @@ const it: Dictionary = {
     "Invite 5 people with this link (teammates or other owners). When five join, you get 1 year of Full free.",
   "plan.copyReferral": "Copy referral link",
   "plan.referralCopied": "Referral link copied.",
+
+  "demo.readOnlyBanner":
+    "Demo only. Explore freely. Sign up for a real account to make changes.",
 
   "contacts.subtitlePersonal": "Save numbers in one place — call from here",
   "contacts.subtitleCompany": "Link a PulseFlow user to Order in-app; call others",

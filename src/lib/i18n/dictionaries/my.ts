@@ -249,6 +249,11 @@ const my: Dictionary = {
   "settings.languageHint": "သင့် PulseFlow အက်ပ်များအတွက် ဘာသာရွေးပါ။",
   "settings.invite": "အဖွဲ့သားဖိတ်",
   "settings.inviteHint": "လင့်ခ်မျှဝေပါ။ သူတို့ ကိုယ်တိုင် ဖြည့်မည်။",
+  "settings.inviteCountsTowardReferral":
+    "Team invites count toward your five referrals.",
+  "settings.inviteAnyone": "Invite anyone to the app",
+  "settings.inviteAnyoneHint":
+    "Invite other villa owners or anyone who wants to use the app for personal use.",
   "settings.jobTitle": "ရာထူး (ရွေးချယ်နိုင်)",
   "settings.jobTitlePlaceholder": "e.g. On-site manager, Lead cleaner",
   "settings.createInvite": "ဖိတ်လင့်ခ် ဖန်တီးနှင့် ကူး",
@@ -317,6 +322,9 @@ const my: Dictionary = {
     "Invite 5 people with this link (teammates or other owners). When five join, you get 1 year of Full free.",
   "plan.copyReferral": "Copy referral link",
   "plan.referralCopied": "Referral link copied.",
+
+  "demo.readOnlyBanner":
+    "Demo only. Explore freely. Sign up for a real account to make changes.",
 
   "contacts.subtitlePersonal": "Save numbers in one place — call from here",
   "contacts.subtitleCompany": "Link a PulseFlow user to Order in-app; call others",

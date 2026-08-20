@@ -9,7 +9,9 @@ import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { ROLE_LABELS } from "@/lib/roles";
 import { createClient, isDemoMode } from "@/lib/supabase/client";
-import { demoAcceptInvite, getInviteContext } from "@/lib/demo/store";
+import { getInviteContext } from "@/lib/demo/store";
+import { DEMO_READ_ONLY_MESSAGE } from "@/lib/demo/guard";
+import { rememberReferralCode } from "@/lib/billing/plans";
 import type { Invite, Organization, Profile } from "@/lib/types";
 
 export default function JoinPage({
@@ -32,6 +34,12 @@ export default function JoinPage({
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    rememberReferralCode(
+      new URLSearchParams(window.location.search).get("ref"),
+    );
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,35 +97,29 @@ export default function JoinPage({
     setSaving(true);
     try {
       if (isDemoMode()) {
-        demoAcceptInvite(token, {
+        throw new Error(DEMO_READ_ONLY_MESSAGE);
+      }
+      const res = await fetch("/api/auth/accept-invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
           fullName,
           email,
           phone,
           password,
-        });
-      } else {
-        const res = await fetch("/api/auth/accept-invite", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            token,
-            fullName,
-            email,
-            phone,
-            password,
-          }),
-        });
-        const payload = (await res.json()) as { error?: string };
-        if (!res.ok) {
-          throw new Error(payload.error ?? "Could not join.");
-        }
-        const supabase = createClient();
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
-          password,
-        });
-        if (signInError) throw signInError;
+        }),
+      });
+      const payload = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        throw new Error(payload.error ?? "Could not join.");
       }
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (signInError) throw signInError;
       router.replace("/home");
       router.refresh();
     } catch (e) {

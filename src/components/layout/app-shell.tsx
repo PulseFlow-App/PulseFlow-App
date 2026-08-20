@@ -7,11 +7,14 @@ import { BottomNav } from "./bottom-nav";
 import { OfflineBanner } from "@/components/ui/empty-state";
 import { TrialBanner } from "@/components/billing/billing-card";
 import { useData } from "@/lib/data/use-app-data";
+import { isDemoMode } from "@/lib/env";
+import { useI18n } from "@/lib/i18n/provider";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [offline, setOffline] = useState(false);
   const data = useData();
   const pathname = usePathname();
+  const { t } = useI18n();
 
   useEffect(() => {
     const sync = () => setOffline(!navigator.onLine);
@@ -50,6 +53,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="app-shell mx-auto flex h-dvh w-full max-w-lg flex-col overflow-hidden bg-sand">
       <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain px-4 pb-28">
         <OfflineBanner show={offline} />
+        {isDemoMode() ? (
+          <div className="mb-3 rounded-2xl bg-secondary-soft px-3 py-2.5 text-sm text-secondary-dark">
+            <p className="font-semibold">{t("demo.readOnlyBanner")}</p>
+            <a
+              href="https://pulseflow.site"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1 inline-flex text-xs font-bold underline"
+            >
+              Sign up
+            </a>
+          </div>
+        ) : null}
         <TrialBanner />
         <AppHeader
           unreadMessages={data.unreadMessageCount}

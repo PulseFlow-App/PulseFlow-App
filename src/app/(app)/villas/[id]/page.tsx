@@ -168,7 +168,6 @@ export default function VillaDetailPage({
                 <Input
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
@@ -179,7 +178,8 @@ export default function VillaDetailPage({
                   }}
                 />
                 <p className="mt-1 text-xs text-muted">
-                  Employees see this when accepting jobs at this property.
+                  Upload from your gallery or take a photo. Employees see this
+                  when accepting jobs at this property.
                 </p>
                 {photoUrl ? (
                   <button

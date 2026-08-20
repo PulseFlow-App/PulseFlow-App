@@ -79,6 +79,26 @@ export function resolvePlanTier(input: {
   };
 }
 
+export const REFERRAL_STORAGE_KEY = "pulseflow_referral_code";
+
 export function referralRegisterUrl(origin: string, refCode: string) {
   return `${origin}/register?ref=${encodeURIComponent(refCode)}`;
+}
+
+/** Teammate join links also carry the inviter's referral code toward the year unlock. */
+export function referralJoinUrl(
+  origin: string,
+  inviteToken: string,
+  refCode: string,
+) {
+  const url = new URL(`${origin}/join/${inviteToken}`);
+  url.searchParams.set("ref", refCode);
+  return url.toString();
+}
+
+export function rememberReferralCode(refCode: string | null | undefined) {
+  if (typeof window === "undefined") return;
+  const trimmed = refCode?.trim();
+  if (!trimmed) return;
+  window.localStorage.setItem(REFERRAL_STORAGE_KEY, trimmed);
 }

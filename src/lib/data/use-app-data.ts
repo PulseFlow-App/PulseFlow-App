@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { isDemoMode } from "@/lib/supabase/client";
+import { assertDemoWritable } from "@/lib/demo/guard";
 import { useSupabaseData } from "@/lib/data/use-supabase-data";
 import {
   buildVillaList,
@@ -310,20 +311,24 @@ function useDemoData(): AppData {
       demoMarkAllNotificationsRead(profile.id, profile.org_id, kind);
     },
     createServiceOrder: async (input) => {
+      assertDemoWritable();
       if (!profile || !canBookServices(profile.role, org?.kind)) {
         throw new Error("Only company owners or managers can book services.");
       }
       return demoCreateServiceOrder(profile, input);
     },
     agreeServiceOrder: async (orderId) => {
+      assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       demoAgreeServiceOrder(profile, orderId);
     },
     completeServiceOrder: async (orderId) => {
+      assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       demoCompleteServiceOrder(profile, orderId);
     },
     updateVilla: async (id, patch) => {
+      assertDemoWritable();
       const before = store.villas.find((v) => v.id === id);
       updateDemoStore((s) => ({
         ...s,
@@ -372,6 +377,7 @@ function useDemoData(): AppData {
       demoPushNotifications(alerts);
     },
     createVilla: async (input) => {
+      assertDemoWritable();
       if (!profile || !canCreateVillas(profile.role)) {
         throw new Error("You cannot add villas.");
       }
@@ -411,6 +417,7 @@ function useDemoData(): AppData {
       }));
     },
     deleteVilla: async (id) => {
+      assertDemoWritable();
       if (!profile) return;
       const villa = store.villas.find((v) => v.id === id);
       if (!villa) return;
@@ -429,10 +436,12 @@ function useDemoData(): AppData {
       }));
     },
     mergeVillaToCompany: async (villaId) => {
+      assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       demoMergeVillaToCompany(profile, villaId);
     },
     createTask: async (input) => {
+      assertDemoWritable();
       if (!profile) return;
       const taskId = uid("task");
       updateDemoStore((s) => ({
@@ -491,6 +500,7 @@ function useDemoData(): AppData {
       demoPushNotifications(alerts);
     },
     setTaskStatus: async (id, status) => {
+      assertDemoWritable();
       updateDemoStore((s) => ({
         ...s,
         tasks: s.tasks.map((t) =>
@@ -506,6 +516,7 @@ function useDemoData(): AppData {
       }));
     },
     createContact: async (input) => {
+      assertDemoWritable();
       if (!profile) return;
       updateDemoStore((s) => ({
         ...s,
@@ -516,18 +527,21 @@ function useDemoData(): AppData {
       }));
     },
     updateContact: async (id, patch) => {
+      assertDemoWritable();
       updateDemoStore((s) => ({
         ...s,
         contacts: s.contacts.map((c) => (c.id === id ? { ...c, ...patch } : c)),
       }));
     },
     deleteContact: async (id) => {
+      assertDemoWritable();
       updateDemoStore((s) => ({
         ...s,
         contacts: s.contacts.filter((c) => c.id !== id),
       }));
     },
     createBill: async (input) => {
+      assertDemoWritable();
       if (!profile) return;
       const billId = uid("bill");
       const due_date = input.due_date?.trim() || null;
@@ -584,6 +598,7 @@ function useDemoData(): AppData {
       demoPushNotifications(alerts);
     },
     setBillStatus: async (id, status) => {
+      assertDemoWritable();
       if (!profile || !canMarkBillsPaid(profile.role)) {
         throw new Error("Only owners or managers can mark bills paid.");
       }
@@ -593,6 +608,7 @@ function useDemoData(): AppData {
       }));
     },
     sendMessage: async (body) => {
+      assertDemoWritable();
       if (!profile) return;
       const msgId = uid("msg");
       updateDemoStore((s) => ({
@@ -655,24 +671,32 @@ function useDemoData(): AppData {
       }
       if (alerts.length) demoPushNotifications(alerts);
     },
-    uploadReceipt: async (file) => URL.createObjectURL(file),
+    uploadReceipt: async (file) => {
+      assertDemoWritable();
+      return URL.createObjectURL(file);
+    },
     uploadVillaPhoto: async (file) => {
+      assertDemoWritable();
       const { fileToDataUrl } = await import("@/lib/file-to-data-url");
       return fileToDataUrl(file);
     },
     createInvite: async (input) => {
+      assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       return demoCreateInvite(profile, input);
     },
     setVillaAssignments: async (managerId, villaIds) => {
+      assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       demoSetVillaAssignments(profile, managerId, villaIds);
     },
     setVillaAssignees: async (villaId, profileIds) => {
+      assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       demoSetVillaAssignees(profile, villaId, profileIds);
     },
     castEndorsement: async (toProfileId, stars, note) => {
+      assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       demoCastEndorsement(profile, toProfileId, stars, note);
     },

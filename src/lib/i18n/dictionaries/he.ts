@@ -249,6 +249,11 @@ const he: Dictionary = {
   "settings.languageHint": "בחר את שפת אפליקציות PulseFlow שלך.",
   "settings.invite": "הזמן חבר צוות",
   "settings.inviteHint": "שתף קישור. הם ממלאים פרטים.",
+  "settings.inviteCountsTowardReferral":
+    "Team invites count toward your five referrals.",
+  "settings.inviteAnyone": "Invite anyone to the app",
+  "settings.inviteAnyoneHint":
+    "Invite other villa owners or anyone who wants to use the app for personal use.",
   "settings.jobTitle": "תפקיד (אופציונלי)",
   "settings.jobTitlePlaceholder": "למשל: מנהל בשטח, אחראי ניקיון",
   "settings.createInvite": "צור והעתק קישור הזמנה",
@@ -317,6 +322,9 @@ const he: Dictionary = {
     "Invite 5 people with this link (teammates or other owners). When five join, you get 1 year of Full free.",
   "plan.copyReferral": "Copy referral link",
   "plan.referralCopied": "Referral link copied.",
+
+  "demo.readOnlyBanner":
+    "Demo only. Explore freely. Sign up for a real account to make changes.",
 
   "contacts.subtitlePersonal": "שמרו מספרים במקום אחד — והתקשרו מכאן",
   "contacts.subtitleCompany": "חברו משתמש PulseFlow כדי להזמין באפליקציה; לאחרים התקשרו",

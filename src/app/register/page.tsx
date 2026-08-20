@@ -11,13 +11,15 @@ import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import type { OrgKind } from "@/lib/design-tokens";
 import { isDemoMode } from "@/lib/supabase/client";
-import { demoRegisterWorkspace } from "@/lib/demo/store";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
+import {
+  REFERRAL_STORAGE_KEY,
+  rememberReferralCode,
+} from "@/lib/billing/plans";
+import { DEMO_READ_ONLY_MESSAGE } from "@/lib/demo/guard";
 
 type Step = "use" | "details";
-
-const REFERRAL_STORAGE_KEY = "pulseflow_referral_code";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -39,7 +41,7 @@ export default function RegisterPage() {
       .get("ref")
       ?.trim();
     if (fromQuery) {
-      localStorage.setItem(REFERRAL_STORAGE_KEY, fromQuery);
+      rememberReferralCode(fromQuery);
       setReferralCode(fromQuery);
       return;
     }
@@ -84,7 +86,12 @@ export default function RegisterPage() {
       const role = "owner" as const;
 
       if (isDemoMode()) {
-        demoRegisterWorkspace({
+        throw new Error(DEMO_READ_ONLY_MESSAGE);
+      }
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           fullName,
           email,
           phone,
@@ -92,33 +99,19 @@ export default function RegisterPage() {
           orgName: workspaceName,
           kind: useKind,
           role,
-        });
-      } else {
-        const res = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fullName,
-            email,
-            phone,
-            password,
-            orgName: workspaceName,
-            kind: useKind,
-            role,
-          }),
-        });
-        const payload = (await res.json()) as { error?: string };
-        if (!res.ok) {
-          throw new Error(payload.error ?? "Could not register.");
-        }
-        const { createClient } = await import("@/lib/supabase/client");
-        const supabase = createClient();
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
-          password,
-        });
-        if (signInError) throw signInError;
+        }),
+      });
+      const payload = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        throw new Error(payload.error ?? "Could not register.");
       }
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (signInError) throw signInError;
       router.replace("/home");
       router.refresh();
     } catch (e) {

@@ -163,7 +163,6 @@ export default function VillasPage() {
             <Input
               type="file"
               accept="image/*"
-              capture="environment"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (!file) {
@@ -177,7 +176,8 @@ export default function VillasPage() {
               }}
             />
             <p className="mt-1 text-xs text-muted">
-              Staff see this when accepting a job so they can recognize the place.
+              Upload from your gallery or take a photo. Staff see this when
+              accepting a job so they can recognize the place.
             </p>
             {photoUrl ? (
               <VillaPhotoThumb
