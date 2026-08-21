@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
-import { VillaPhotoThumb } from "@/components/villas/villa-photo";
+import { VillaPhotoThumb } from "@/components/properties/property-photo";
 import { useData } from "@/lib/data/use-app-data";
 import {
   formatShortDate,
@@ -62,12 +62,12 @@ export default function VillasPage() {
     <div className="relative space-y-4 animate-rise">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Villas</h1>
+          <h1 className="font-display text-2xl font-bold text-ink">Properties</h1>
           <p className="text-sm text-muted">
             {isPersonalWorkspace
-              ? "Your villas and rental work"
+              ? "Your properties and rental work"
               : staff
-                ? "Assigned company villas + your own personal list"
+                ? "Assigned company properties + your own personal list"
                 : "Company inventory first, then your personal list"}
           </p>
         </div>
@@ -182,7 +182,7 @@ export default function VillasPage() {
             {photoUrl ? (
               <VillaPhotoThumb
                 src={photoUrl}
-                alt="New villa preview"
+                alt="New property preview"
                 className="mt-2"
               />
             ) : null}
@@ -241,18 +241,18 @@ export default function VillasPage() {
 
       {data.villaList.length === 0 ? (
         <EmptyState
-          title="No villas yet"
+          title="No properties yet"
           description={
             canAdd
               ? isPersonalWorkspace
-                ? "Add your first villa to start tracking work."
-                : "Add a company villa or a personal one you manage on the side."
-              : "Ask your owner to assign company villas to you."
+                ? "Add your first property to start tracking work."
+                : "Add a company property or a personal one you manage on the side."
+              : "Ask your owner to assign company properties to you."
           }
         />
       ) : isPersonalWorkspace ? (
         <VillaSection
-          title={data.orgName || "Your villas"}
+          title={data.orgName || "Your properties"}
           subtitle="Personal workspace"
           icon="personal"
           villas={data.villaList}
@@ -289,7 +289,7 @@ export default function VillasPage() {
       {canAdd ? (
         <button
           type="button"
-          aria-label="Add new villa"
+          aria-label="Add new property"
           onClick={() => {
             setScope(defaultScope);
             setShowAdd(true);

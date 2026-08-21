@@ -509,6 +509,21 @@ export default function SettingsPage() {
         </Card>
       ) : null}
 
+      <Card className="space-y-2 p-5">
+        <h2 className="font-display text-lg font-bold text-ink">Website</h2>
+        <p className="text-sm text-muted">
+          Product overview, plans, and guides on the public site.
+        </p>
+        <a
+          href="https://pulseflow.site"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex text-sm font-semibold text-primary"
+        >
+          pulseflow.site
+        </a>
+      </Card>
+
       <Button variant="danger" className="w-full" onClick={() => void signOut()}>
         {t("settings.signOut")}
       </Button>

@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 
-/** Property photo shown on villa cards and job acceptance. */
+/** Property photo shown on property cards and job acceptance. */
 export function VillaPhoto({
   src,
   alt,

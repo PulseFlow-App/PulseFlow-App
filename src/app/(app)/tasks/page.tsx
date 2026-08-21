@@ -114,7 +114,7 @@ export default function TasksPage() {
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div>
-            <Label>Villa</Label>
+            <Label>Property</Label>
             <Select value={villaId} onChange={(e) => setVillaId(e.target.value)}>
               <option value="">General</option>
               {data.villas.map((v) => (

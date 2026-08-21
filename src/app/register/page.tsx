@@ -51,7 +51,7 @@ export default function RegisterPage() {
   const title = useMemo(() => {
     if (step === "use") return "How will you use PulseFlow?";
     if (useKind === "company") return "Create your company";
-    return "Set up your villa workspace";
+    return "Set up your property workspace";
   }, [step, useKind]);
 
   const continueFromUse = () => {
@@ -146,7 +146,7 @@ export default function RegisterPage() {
               <Choice
                 icon={<UserRound className="size-5" />}
                 title="Personal use"
-                description="Just you and your villas - track work, bills, and jobs in one simple workspace."
+                description="Just you and your properties - track work, bills, and jobs in one simple workspace."
                 active={useKind === "personal"}
                 onClick={() => setUseKind("personal")}
               />
@@ -200,7 +200,7 @@ export default function RegisterPage() {
                   <Input
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
-                    placeholder="Phangan Villas Co."
+                    placeholder="Phangan Properties Co."
                   />
                 </div>
               ) : (
@@ -209,7 +209,7 @@ export default function RegisterPage() {
                   <Input
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
-                    placeholder="Sam's villas"
+                    placeholder="Sam's properties"
                   />
                 </div>
               )}

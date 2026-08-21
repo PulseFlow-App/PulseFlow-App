@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/empty-state";
-import { VillaPhotoThumb } from "@/components/villas/villa-photo";
+import { VillaPhotoThumb } from "@/components/properties/property-photo";
 import { useData } from "@/lib/data/use-app-data";
 import type { CleaningStatus, VillaStatus } from "@/lib/design-tokens";
 import { ROLE_LABELS, canEditVillaCore, isStaffApp } from "@/lib/roles";
@@ -110,7 +110,7 @@ export default function VillaDetailPage({
   if (!villa) {
     return (
       <div className="space-y-3">
-        <Link href="/villas" className="text-sm font-semibold text-primary">
+        <Link href="/properties" className="text-sm font-semibold text-primary">
           ← Back to villas
         </Link>
         <p className="text-muted">Villa not found.</p>
@@ -142,7 +142,7 @@ export default function VillaDetailPage({
       if (isOwner && !isPersonal) {
         await data.setVillaAssignees(villa.id, assigneeIds);
       }
-      router.push("/villas");
+      router.push("/properties");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save.");
       setSaving(false);
@@ -152,7 +152,7 @@ export default function VillaDetailPage({
   return (
     <div className="space-y-4 animate-rise">
       <Link
-        href="/villas"
+        href="/properties"
         className="inline-flex items-center gap-1 text-sm font-semibold text-muted"
       >
         <ArrowLeft className="size-4" /> Villas

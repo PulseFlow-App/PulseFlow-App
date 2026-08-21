@@ -33,7 +33,7 @@ const en = {
   "common.error": "Something went wrong. Try again.",
 
   "nav.home": "Home",
-  "nav.villas": "Villas",
+  "nav.villas": "Properties",
   "nav.tasks": "Tasks",
   "nav.jobs": "Jobs",
   "nav.contacts": "Contacts",
@@ -65,9 +65,9 @@ const en = {
 
   "home.ready": "Ready for a smooth day?",
   "home.hello": "Hello, {name}",
-  "home.allSteady": "All villas look steady today.",
+  "home.allSteady": "All properties look steady today.",
   "home.attention":
-    "{count} villa needs attention today|{count} villas need attention today",
+    "{count} property needs attention today|{count} properties need attention today",
   "home.opsReadiness": "Ops readiness",
   "home.staffClear": "Your job board looks clear.",
   "home.staffPending":
@@ -77,16 +77,16 @@ const en = {
     "Until you tap Read & agreed, the owner sees you as not contacted.",
   "home.todayOverdue": "Today & overdue",
   "home.allJobs": "All jobs",
-  "home.noJobs": "No jobs on your board right now. You can still add personal villas.",
-  "home.myVillas": "My villas",
+  "home.noJobs": "No jobs on your board right now. You can still add personal properties.",
+  "home.myVillas": "My properties",
   "home.schedule": "Schedule",
   "home.loading": "Loading your ops pulse…",
 
-  "villas.title": "Villas",
+  "villas.title": "Properties",
   "villas.subtitle": "Company inventory first, then your personal list",
-  "villas.subtitleStaff": "Assigned company villas + your own personal list",
+  "villas.subtitleStaff": "Assigned company properties + your own personal list",
   "villas.addNew": "Add new",
-  "villas.empty": "No villas yet",
+  "villas.empty": "No properties yet",
   "villas.emptyHint": "Add your first property to start the pulse.",
   "villas.belongsTo": "Belongs to",
   "villas.company": "company",
@@ -100,11 +100,11 @@ const en = {
   "villas.checkOut": "Check-out",
   "villas.assignedTo": "Assigned to",
   "villas.yourJobsHere": "Your jobs here",
-  "villas.noJobsHere": "No open jobs for this villa.",
+  "villas.noJobsHere": "No open jobs for this property.",
   "villas.staffHint":
     "Guest check-in/out is for owners - you only need your work window.",
   "villas.personalHint":
-    "New villas you add go to No company (your own list). Company villas appear when the owner assigns them - or when they Order you for a job.",
+    "New propertys you add go to No company (your own list). Company properties appear when the owner assigns them - or when they Order you for a job.",
 
   "status.available": "Available",
   "status.occupied": "Occupied",
@@ -123,7 +123,7 @@ const en = {
   "tasks.filter.mine": "mine",
   "tasks.filter.urgent": "urgent",
   "tasks.titleField": "Title",
-  "tasks.villa": "Villa",
+  "tasks.villa": "Property",
   "tasks.priority": "Priority",
   "tasks.priority.normal": "Normal",
   "tasks.priority.urgent": "Urgent",
@@ -140,7 +140,7 @@ const en = {
 
   "jobs.titleStaff": "My jobs",
   "jobs.titleOwner": "Bookings",
-  "jobs.subtitleStaff": "Work windows by villa - not guest check-in times",
+  "jobs.subtitleStaff": "Work windows by property - not guest check-in times",
   "jobs.subtitleOwner": "Service orders & staff acknowledgements",
   "jobs.orderStaff": "Order staff",
   "jobs.appointments": "Appointments",
@@ -193,7 +193,7 @@ const en = {
   "bills.subtitle": "Expenses & reimbursements",
   "bills.financeTitle": "Finances",
   "bills.financeSubtitle":
-    "Track spend by villa, period, and category. Your full ops ledger.",
+    "Track spend by property, period, and category. Your full ops ledger.",
   "bills.pendingTotal": "Pending total",
   "bills.paidTotal": "Paid",
   "bills.totalSpend": "Total spend",
@@ -206,10 +206,10 @@ const en = {
   "bills.period.all": "All time",
   "bills.from": "From",
   "bills.to": "To",
-  "bills.allVillas": "All villas",
+  "bills.allVillas": "All properties",
   "bills.allCategories": "All",
   "bills.byCategory": "By category",
-  "bills.byVilla": "By villa",
+  "bills.byVilla": "By property",
   "bills.noSpend": "No spend in this range.",
   "bills.category": "Category",
   "bills.category.cleaning": "Cleaning",
@@ -223,13 +223,13 @@ const en = {
   "bills.category.other": "Other",
   "bills.description": "Description",
   "bills.amount": "Amount (THB)",
-  "bills.villa": "Villa",
+  "bills.villa": "Property",
   "bills.dueDate": "Due date (optional)",
   "bills.receipt": "Receipt photo",
   "bills.submit": "Submit bill",
   "bills.submitting": "Submitting…",
   "bills.empty": "No bills yet",
-  "bills.emptyHint": "Submit a receipt when you spend on villa ops.",
+  "bills.emptyHint": "Submit a receipt when you spend on property ops.",
   "bills.markPaid": "Mark paid",
   "bills.due": "due {date}",
   "bills.someone": "Someone",
@@ -268,7 +268,7 @@ const en = {
   "settings.reputationOwner":
     "Vote each week and follow your company’s ranking.",
   "settings.reputationStaff":
-    "Share your public rating with other villa companies.",
+    "Share your public rating with other rental companies.",
   "settings.publicLink": "Public profile link",
   "settings.copyShare": "Copy share link",
   "settings.language": "Language",
@@ -279,7 +279,7 @@ const en = {
     "Team invites count toward your five referrals.",
   "settings.inviteAnyone": "Invite anyone to the app",
   "settings.inviteAnyoneHint":
-    "Invite other villa owners or anyone who wants to use the app for personal use.",
+    "Invite other property owners or anyone who wants to use the app for personal use.",
   "settings.jobTitle": "Job title (optional)",
   "settings.jobTitlePlaceholder": "e.g. On-site manager, Lead cleaner",
   "settings.createInvite": "Create & copy invite link",
@@ -287,13 +287,13 @@ const en = {
   "settings.inviteCopied": "Invite link copied — send it to them.",
   "settings.openInvites": "Open invites",
   "settings.waitingToJoin": "Waiting to join",
-  "settings.villaAccess": "Assign villas to team",
+  "settings.villaAccess": "Assign properties to team",
   "settings.villaAccessHint":
-    "Pick which villas each person can see. You can also set this on each villa.",
+    "Pick which properties each person can see. You can also set this on each property.",
   "settings.teamMember": "Team member",
   "settings.selectPerson": "Select…",
-  "settings.saveVillaAccess": "Save villa access",
-  "settings.villaAccessSaved": "Villa access updated.",
+  "settings.saveVillaAccess": "Save property access",
+  "settings.villaAccessSaved": "Property access updated.",
   "settings.team": "Team",
   "settings.signOut": "Sign out",
   "settings.inviteError": "Could not create invite.",
@@ -334,19 +334,19 @@ const en = {
   "plan.title": "Your plan",
   "plan.seePlans": "See Free, Basic, and Full",
   "plan.note.personal":
-    "Personal workspace. Free forever for solo villas, tasks, and bills.",
+    "Personal workspace. Free forever for solo properties, tasks, and bills.",
   "plan.note.staff":
-    "Free field seat on this company. Assigned villas, jobs, bills, and chat.",
+    "Free field seat on this company. Assigned properties, jobs, bills, and chat.",
   "plan.note.managerLimited":
     "Free manager seat with limited tools. Company Full is inactive, so exports and company writes stay closed.",
   "plan.note.managerBasic":
-    "Basic reporting seat while the company Full plan (or trial) is active. Export bills, tasks, and villa status for owner reports.",
+    "Basic reporting seat while the company Full plan (or trial) is active. Export bills, tasks, and property status for owner reports.",
   "plan.note.ownerTrial":
-    "Company Full trial. Invite the team, assign villas, and run owner finances until the trial ends.",
+    "Company Full trial. Invite the team, assign properties, and run owner finances until the trial ends.",
   "plan.note.ownerFull":
     "Company Full. Your subscription covers the team workspace, including Basic reporting for managers.",
   "plan.note.ownerExpired":
-    "Company Full has ended. Subscribe to reopen invites, company villas, and service orders.",
+    "Company Full has ended. Subscribe to reopen invites, company properties, and service orders.",
   "plan.referralTitle": "Referral year",
   "plan.referralHint":
     "Invite 5 people with this link (teammates or other owners). When five join, you get 1 year of Full free.",

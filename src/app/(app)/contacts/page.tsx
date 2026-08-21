@@ -322,7 +322,7 @@ function OrderForm({
           <Input
             value={locationLabel}
             onChange={(e) => setLocationLabel(e.target.value)}
-            placeholder="Address or villa name"
+            placeholder="Address or property name"
           />
         </div>
       ) : null}
@@ -375,7 +375,7 @@ function OrderForm({
               return;
             }
             if (!villaId && !locationLabel.trim()) {
-              setError("Pick a villa or enter a location.");
+              setError("Pick a property or enter a location.");
               return;
             }
             setSaving(true);

@@ -195,7 +195,7 @@ export default function EndorsementsPage() {
             <h2 className="text-lg font-bold text-ink">Your reputation</h2>
             <p className="mt-1 text-sm text-muted">
               Owners vote weekly. Share your profile when applying to other
-              villa companies.
+              rental companies.
             </p>
           </div>
           <div className="rounded-[1.5rem] bg-gradient-to-br from-primary to-primary-dark p-5 text-white">

@@ -79,7 +79,7 @@ export async function POST(request: Request) {
   const workspaceName =
     orgName ||
     (kind === "personal"
-      ? `${fullName.split(" ")[0]}'s villas`
+      ? `${fullName.split(" ")[0]}'s properties`
       : fullName);
 
   const isCompany = kind === "company";

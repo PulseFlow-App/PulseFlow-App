@@ -26,7 +26,7 @@ export default function TermsPage() {
         <section className="space-y-2">
           <h2 className="font-display text-lg font-bold">1. Who we are</h2>
           <p className="text-muted">
-            {brand.name} is an operations tool for villa and short-term rental
+            {brand.name} is an operations tool for property and short-term rental
             teams: property status, tasks, contacts, team chat, bills, and
             related workflows. The Service is provided by the Pulse Flow Ops
             product team (“we”, “us”).
@@ -68,7 +68,7 @@ export default function TermsPage() {
             <li>
               After the trial, the{" "}
               <strong className="text-ink">company owner</strong> must keep an
-              active paid subscription for invite, villa, service-order, and
+              active paid subscription for invite, property, service-order, and
               other gated company writes. Managers, cleaners, and staff are not
               billed personally.
             </li>
@@ -111,7 +111,7 @@ export default function TermsPage() {
         <section className="space-y-2">
           <h2 className="font-display text-lg font-bold">5. Your content & data</h2>
           <p className="text-muted">
-            You retain ownership of villas, tasks, contacts, messages, bills,
+            You retain ownership of properties, tasks, contacts, messages, bills,
             photos, and other data you submit (“Customer Content”). You grant us
             a limited license to host, process, and display Customer Content
             solely to operate and improve the Service.

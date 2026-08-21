@@ -31,12 +31,12 @@ export default function PrivacyPage() {
               role, organization, and authentication identifiers.
             </li>
             <li>
-              <strong className="text-ink">Operations data:</strong> villas,
+              <strong className="text-ink">Operations data:</strong> properties,
               tasks, contacts, messages, service orders, bills, endorsements,
               notifications, and related metadata you or your team enter.
             </li>
             <li>
-              <strong className="text-ink">Files:</strong> villa photos and
+              <strong className="text-ink">Files:</strong> property photos and
               receipt images you upload (stored in our cloud storage).
             </li>
             <li>
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
         <section className="space-y-2">
           <h2 className="font-display text-lg font-bold">2. How we use information</h2>
           <ul className="list-disc space-y-1 pl-5 text-muted">
-            <li>Provide and improve villa operations features</li>
+            <li>Provide and improve rental operations features</li>
             <li>Authenticate users and enforce roles within an organization</li>
             <li>Send in-app notifications (jobs, chat mentions, bills)</li>
             <li>Process company subscriptions and prevent abuse</li>
