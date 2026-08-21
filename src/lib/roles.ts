@@ -83,12 +83,17 @@ export function canMarkBillsPaid(role: UserRole) {
   return role === "owner" || role === "manager";
 }
 
-/** Owner spend analytics on company (subscription) workspaces. */
+/** Owners and managers see every org bill; staff only see their own submissions. */
+export function canViewAllBills(role: UserRole) {
+  return role === "owner" || role === "manager";
+}
+
+/** Spend analytics / budget totals - owners and managers only. */
 export function canViewBillFinance(
   role: UserRole,
-  orgKind?: OrgKind | null,
+  _orgKind?: OrgKind | null,
 ) {
-  return isCompanyWorkspace(orgKind) && role === "owner";
+  return canViewAllBills(role);
 }
 
 export function canEditVillaCore(role: UserRole) {

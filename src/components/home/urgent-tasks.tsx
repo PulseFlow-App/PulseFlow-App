@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { TaskWithRelations } from "@/lib/types";
 import { formatShortDate } from "@/lib/utils";
+import { capitalizeLabel } from "@/lib/format-label";
 
 export function UrgentTasks({
   tasks,
@@ -39,13 +40,13 @@ export function UrgentTasks({
               type="button"
               onClick={() => void onClose(task.id)}
               className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/10 text-secondary"
-              aria-label={`Close ${task.title}`}
+              aria-label={`Close ${capitalizeLabel(task.title)}`}
             >
               <Check className="size-4" />
             </button>
             <div className="min-w-0 flex-1">
               <p className="truncate font-sans text-[15px] font-semibold text-ink">
-                {task.title}
+                {capitalizeLabel(task.title)}
               </p>
               <p className="truncate font-sans text-xs font-medium text-muted">
                 {task.villa?.name ?? "General"}

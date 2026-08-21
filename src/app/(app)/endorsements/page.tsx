@@ -236,9 +236,14 @@ export default function EndorsementsPage() {
                 <Copy className="size-4" />
                 {copied ? "Copied" : "Copy link"}
               </Button>
-              <Link href={`/u/${data.profile.share_slug}`} className="flex-1">
+              <Link
+                href={`/u/${data.profile.share_slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1"
+              >
                 <Button size="sm" variant="ghost" className="w-full">
-                  Preview
+                  Open
                 </Button>
               </Link>
             </div>

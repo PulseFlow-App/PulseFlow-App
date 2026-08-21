@@ -11,6 +11,7 @@ import { useData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
 import { isStaffApp } from "@/lib/roles";
 import { formatShortDate, cn } from "@/lib/utils";
+import { capitalizeLabel } from "@/lib/format-label";
 import type { TaskPriority } from "@/lib/design-tokens";
 
 type Filter = "all" | "mine" | "urgent";
@@ -197,7 +198,9 @@ export default function TasksPage() {
                 onClick={() => void data.setTaskStatus(task.id, "done")}
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-ink">{task.title}</p>
+                <p className="truncate font-semibold text-ink">
+                  {capitalizeLabel(task.title)}
+                </p>
                 <p className="truncate text-xs text-muted">
                   {task.villa?.name ?? "General"}
                   {formatWorkWindow(
@@ -244,7 +247,7 @@ export default function TasksPage() {
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold line-through text-ink">
-                  {task.title}
+                  {capitalizeLabel(task.title)}
                 </p>
               </div>
             </Card>

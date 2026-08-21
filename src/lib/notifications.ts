@@ -8,6 +8,7 @@ import type {
   Villa,
 } from "@/lib/types";
 import { formatMoney, formatShortDate } from "@/lib/utils";
+import { capitalizeLabel } from "@/lib/format-label";
 
 export function notificationVisibleTo(
   n: AppNotification,
@@ -125,7 +126,7 @@ export function buildScheduleAlerts(input: {
         org_id: order.org_id,
         kind: "appointment",
         title: `Appointment ${when}`,
-        body: `${order.service_type} · ${order.location_label ?? "Villa"} · ${window}`,
+        body: `${capitalizeLabel(order.service_type)} · ${order.location_label ?? "Villa"} · ${window}`,
         href: "/jobs",
         entity_id: order.id,
         audience_profile_ids: audience,

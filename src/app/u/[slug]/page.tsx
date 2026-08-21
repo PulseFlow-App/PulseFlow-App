@@ -15,8 +15,21 @@ import {
 } from "@/lib/endorsements";
 import { ROLE_LABELS } from "@/lib/roles";
 import { brand } from "@/lib/design-tokens";
+import type {
+  Endorsement,
+  OrgMembership,
+  Organization,
+  Profile,
+} from "@/lib/types";
 
-type PublicData = NonNullable<ReturnType<typeof getPublicProfileBySlug>>;
+type PublicData = {
+  profile: Profile;
+  endorsements: Endorsement[];
+  memberships: OrgMembership[];
+  orgs: Organization[];
+  tasksDone: number;
+  tasksOpen: number;
+};
 
 export default function PublicProfilePage({
   params,
@@ -28,12 +41,32 @@ export default function PublicProfilePage({
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (!isDemoMode()) {
-      setLoaded(true);
-      return;
-    }
-    setData(getPublicProfileBySlug(slug));
-    setLoaded(true);
+    let cancelled = false;
+    (async () => {
+      try {
+        if (isDemoMode()) {
+          const demo = getPublicProfileBySlug(slug);
+          if (!cancelled) setData(demo);
+          return;
+        }
+        const res = await fetch(
+          `/api/public/profile/${encodeURIComponent(slug)}`,
+        );
+        if (!res.ok) {
+          if (!cancelled) setData(null);
+          return;
+        }
+        const payload = (await res.json()) as PublicData;
+        if (!cancelled) setData(payload);
+      } catch {
+        if (!cancelled) setData(null);
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   const rating = useMemo(() => {

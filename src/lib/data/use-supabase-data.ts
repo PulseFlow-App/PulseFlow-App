@@ -22,6 +22,7 @@ import type {
 import {
   canBookServices,
   canCreateVillas,
+  canViewAllBills,
   personalVillasOnly,
 } from "@/lib/roles";
 import {
@@ -30,6 +31,7 @@ import {
 } from "@/lib/billing/entitlement";
 import {
   notificationVisibleTo,
+  ownerManagerIds,
   unreadNotifications,
 } from "@/lib/notifications";
 import {
@@ -38,6 +40,7 @@ import {
   rememberLocallyRead,
 } from "@/lib/notifications-read";
 import { formatOrderWhen } from "@/lib/service-orders";
+import { capitalizeLabel } from "@/lib/format-label";
 
 function enrichTasks(
   tasks: Task[],
@@ -422,7 +425,13 @@ export function useSupabaseData(enabled: boolean): AppData {
     allOrgVillas,
     contacts,
     tasks: enrichTasks(tasks, visible, profiles),
-    bills: enrichBills(bills, visible, profiles),
+    bills: enrichBills(
+      profile && !canViewAllBills(profile.role)
+        ? bills.filter((b) => b.submitted_by === profile.id)
+        : bills,
+      visible,
+      profiles,
+    ),
     messages,
     invites,
     villaAssignments,
@@ -499,6 +508,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         : null;
       const location =
         villa?.name ?? input.location_label?.trim() ?? "Location TBC";
+      const serviceType = capitalizeLabel(input.service_type);
 
       const { data: order, error } = await supabase
         .from("service_orders")
@@ -509,7 +519,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           ordered_by: profile.id,
           villa_id: villa?.id ?? null,
           location_label: location,
-          service_type: input.service_type.trim(),
+          service_type: serviceType,
           details: input.details?.trim() || null,
           scheduled_date: input.scheduled_date,
           time_start: input.time_start || null,
@@ -520,7 +530,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         .single();
       if (error || !order) throw error ?? new Error("Could not create order.");
 
-      const title = `${order.service_type} · ${location}`;
+      const title = `${serviceType} · ${location}`;
       const { data: task } = await supabase
         .from("tasks")
         .insert({
@@ -608,13 +618,23 @@ export function useSupabaseData(enabled: boolean): AppData {
     completeServiceOrder: async (orderId) => {
       if (!profile) throw new Error("Not signed in.");
       const supabase = createClient();
-      const order = serviceOrders.find((o) => o.id === orderId);
+      let order = serviceOrders.find((o) => o.id === orderId) ?? null;
+      if (!order) {
+        const { data } = await supabase
+          .from("service_orders")
+          .select("*")
+          .eq("id", orderId)
+          .single();
+        order = (data as ServiceOrder | null) ?? null;
+      }
+      if (!order) throw new Error("Order not found.");
+
       const { error } = await supabase
         .from("service_orders")
         .update({ status: "done" })
         .eq("id", orderId);
       if (error) throw error;
-      if (order?.task_id) {
+      if (order.task_id) {
         await supabase
           .from("tasks")
           .update({
@@ -622,6 +642,30 @@ export function useSupabaseData(enabled: boolean): AppData {
             completed_at: new Date().toISOString(),
           })
           .eq("id", order.task_id);
+      }
+
+      const location = order.location_label ?? "location";
+      const when = formatOrderWhen(order);
+      await supabase.from("messages").insert({
+        org_id: order.org_id,
+        sender_id: profile.id,
+        body: `✅ Done - ${order.service_type} at ${location} (${when})`,
+        service_order_id: orderId,
+      });
+
+      const audience = ownerManagerIds(profiles, order.org_id).filter(
+        (id) => id !== profile.id,
+      );
+      if (audience.length) {
+        await supabase.from("notifications").insert({
+          org_id: order.org_id,
+          kind: "appointment",
+          title: `${profile.full_name} completed a job`,
+          body: `${order.service_type} · ${location} · ${when}`,
+          href: "/jobs",
+          entity_id: orderId,
+          audience_profile_ids: audience,
+        });
       }
       await refresh();
     },
@@ -696,6 +740,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         created_by: profile.id,
         status: "open",
         ...input,
+        title: capitalizeLabel(input.title),
       });
       if (error) throw error;
       await refresh();

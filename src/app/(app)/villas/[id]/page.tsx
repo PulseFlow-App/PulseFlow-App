@@ -15,6 +15,7 @@ import { ROLE_LABELS, canEditVillaCore, isStaffApp } from "@/lib/roles";
 import { isValidLocationUrl, normalizeLocationUrl } from "@/lib/utils";
 import { formatWorkWindow } from "@/lib/notifications";
 import { formatOrderWhen } from "@/lib/service-orders";
+import { capitalizeLabel } from "@/lib/format-label";
 
 export default function VillaDetailPage({
   params,
@@ -364,7 +365,7 @@ export default function VillaDetailPage({
             ) : null}
             {villaJobs.map((o) => (
               <p key={o.id} className="text-sm font-semibold text-ink">
-                {o.service_type} · {formatOrderWhen(o)}
+                {capitalizeLabel(o.service_type)} · {formatOrderWhen(o)}
               </p>
             ))}
             {villaTasks.map((t) => (

@@ -10,6 +10,7 @@ import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import type { AppData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
 import { formatOrderWhen, orderStatusLabel } from "@/lib/service-orders";
+import { capitalizeLabel } from "@/lib/format-label";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 
@@ -87,7 +88,9 @@ export function StaffHome({ data }: { data: AppData }) {
                   />
                 ) : null}
                 <div className="p-3">
-                  <p className="font-semibold text-ink">{order.service_type}</p>
+                  <p className="font-semibold text-ink">
+                    {capitalizeLabel(order.service_type)}
+                  </p>
                   <p className="text-sm text-muted">
                     {order.location_label} · {formatOrderWhen(order)}
                   </p>
@@ -115,7 +118,9 @@ export function StaffHome({ data }: { data: AppData }) {
           <Card key={order.id} className="p-3">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="font-semibold text-ink">{order.service_type}</p>
+                <p className="font-semibold text-ink">
+                  {capitalizeLabel(order.service_type)}
+                </p>
                 <p className="text-xs text-muted">
                   {order.location_label} · {formatOrderWhen(order)}
                 </p>
@@ -144,7 +149,9 @@ export function StaffHome({ data }: { data: AppData }) {
                 onClick={() => void data.setTaskStatus(task.id, "done")}
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-ink">{task.title}</p>
+                <p className="truncate font-semibold text-ink">
+                  {capitalizeLabel(task.title)}
+                </p>
                 <p className="text-xs text-muted">
                   {task.villa?.name ?? "General"}
                   {formatWorkWindow(

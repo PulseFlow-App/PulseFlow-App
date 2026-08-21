@@ -48,6 +48,7 @@ import {
   canBookServices,
   canCreateVillas,
   canMarkBillsPaid,
+  canViewAllBills,
   personalVillasOnly,
 } from "@/lib/roles";
 import {
@@ -63,6 +64,7 @@ import {
   rememberLocallyRead,
 } from "@/lib/notifications-read";
 import { formatMoney, formatShortDate } from "@/lib/utils";
+import { capitalizeLabel } from "@/lib/format-label";
 
 export type { AppData } from "@/lib/data/types";
 import type { AppData } from "@/lib/data/types";
@@ -185,11 +187,10 @@ function useDemoData(): AppData {
     if (!profile) return [];
     return store.bills.filter((b) => {
       if (b.org_id !== profile.org_id) return false;
-      if (profile.role === "owner") return true;
-      if (!b.villa_id) return true;
-      return visibleIds.has(b.villa_id);
+      if (canViewAllBills(profile.role)) return true;
+      return b.submitted_by === profile.id;
     });
-  }, [store.bills, profile, visibleIds]);
+  }, [store.bills, profile]);
 
   const tasks = useMemo(
     () => enrichTasks(orgTasks, visibleVillas, orgProfiles),
@@ -444,13 +445,14 @@ function useDemoData(): AppData {
       assertDemoWritable();
       if (!profile) return;
       const taskId = uid("task");
+      const title = capitalizeLabel(input.title);
       updateDemoStore((s) => ({
         ...s,
         tasks: [
           {
             id: taskId,
             org_id: profile.org_id,
-            title: input.title,
+            title,
             villa_id: input.villa_id,
             priority: input.priority,
             assigned_to: input.assigned_to,
@@ -478,7 +480,7 @@ function useDemoData(): AppData {
             org_id: profile.org_id,
             kind: "urgent_task",
             title: "Urgent task",
-            body: input.title,
+            body: title,
             href: "/tasks",
             entity_id: taskId,
             audience_profile_ids: audience.length ? audience : null,
@@ -490,7 +492,7 @@ function useDemoData(): AppData {
             org_id: profile.org_id,
             kind: "task_assigned",
             title: "Task assigned to you",
-            body: input.title,
+            body: title,
             href: "/tasks",
             entity_id: taskId,
             audience_profile_ids: [input.assigned_to],

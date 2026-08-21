@@ -22,8 +22,10 @@ import {
   formatWorkWindow,
   makeNotification,
   notificationVisibleTo,
+  ownerManagerIds,
 } from "@/lib/notifications";
 import { buildOrderChatBody, formatOrderWhen } from "@/lib/service-orders";
+import { capitalizeLabel } from "@/lib/format-label";
 
 function slugifyName(name: string) {
   return (
@@ -641,6 +643,7 @@ export function demoCreateServiceOrder(
     villa?.name ??
     input.location_label?.trim() ??
     "Location TBC";
+  const serviceType = capitalizeLabel(input.service_type);
   const orderId = crypto.randomUUID();
   const taskId = crypto.randomUUID();
   const msgId = crypto.randomUUID();
@@ -659,7 +662,7 @@ export function demoCreateServiceOrder(
     ordered_by: actor.id,
     villa_id: villa?.id ?? null,
     location_label: location,
-    service_type: input.service_type.trim(),
+    service_type: serviceType,
     details: input.details?.trim() || null,
     scheduled_date: input.scheduled_date,
     time_start: input.time_start || null,
@@ -749,6 +752,21 @@ export function demoCompleteServiceOrder(actor: Profile, orderId: string) {
   ) {
     throw new Error("You cannot complete this order.");
   }
+  const now = new Date().toISOString();
+  const doneMsg = {
+    id: crypto.randomUUID(),
+    org_id: order.org_id,
+    sender_id: actor.id,
+    body: `✅ Done - ${order.service_type} at ${
+      order.location_label ?? "location"
+    } (${formatOrderWhen(order)})`,
+    created_at: now,
+    service_order_id: orderId,
+  };
+  const audience = ownerManagerIds(store.profiles, order.org_id).filter(
+    (id) => id !== actor.id,
+  );
+
   updateDemoStore((s) => ({
     ...s,
     serviceOrders: s.serviceOrders.map((o) =>
@@ -759,10 +777,29 @@ export function demoCompleteServiceOrder(actor: Profile, orderId: string) {
         ? {
             ...t,
             status: "done" as const,
-            completed_at: new Date().toISOString(),
+            completed_at: now,
           }
         : t,
     ),
+    messages: [...s.messages, doneMsg],
+    notifications: [
+      ...(audience.length
+        ? [
+            makeNotification({
+              org_id: order.org_id,
+              kind: "appointment",
+              title: `${actor.full_name} completed a job`,
+              body: `${order.service_type} · ${
+                order.location_label ?? "location"
+              } · ${formatOrderWhen(order)}`,
+              href: "/jobs",
+              entity_id: orderId,
+              audience_profile_ids: audience,
+            }),
+          ]
+        : []),
+      ...(s.notifications ?? []),
+    ],
   }));
 }
 

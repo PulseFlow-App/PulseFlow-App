@@ -13,6 +13,7 @@ import {
   formatOrderWhen,
   orderReachabilityLabel,
 } from "@/lib/service-orders";
+import { capitalizeLabel } from "@/lib/format-label";
 import { isStaffApp, canBookServices } from "@/lib/roles";
 import { cn, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
@@ -117,7 +118,7 @@ export default function JobsPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="font-semibold text-ink">
-                        {order.service_type}
+                        {capitalizeLabel(order.service_type)}
                       </p>
                       <p className="text-sm text-muted">
                         {order.location_label ?? t("tasks.villa")}
@@ -187,7 +188,9 @@ export default function JobsPage() {
                   onClick={() => void data.setTaskStatus(task.id, "done")}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-ink">{task.title}</p>
+                  <p className="truncate font-semibold text-ink">
+                    {capitalizeLabel(task.title)}
+                  </p>
                   <p className="truncate text-xs text-muted">
                     {task.villa?.name ?? "General"}
                     {window ? ` · ${window}` : ""}

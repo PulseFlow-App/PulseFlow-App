@@ -12,6 +12,7 @@ const PUBLIC_PREFIXES = [
   "/privacy",
   "/api/auth",
   "/api/invites",
+  "/api/public",
   "/api/billing/webhook",
 ];
 

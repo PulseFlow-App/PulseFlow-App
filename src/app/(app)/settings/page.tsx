@@ -231,20 +231,32 @@ export default function SettingsPage() {
                   ? `${window.location.origin}/u/${profile.share_slug}`
                   : `/u/${profile.share_slug}`}
               </p>
-              <Button
-                size="sm"
-                className="mt-3 w-full"
-                variant="secondary"
-                onClick={async () => {
-                  const url = `${window.location.origin}/u/${profile.share_slug}`;
-                  await navigator.clipboard.writeText(url);
-                  setCopiedShare(true);
-                  setTimeout(() => setCopiedShare(false), 1500);
-                }}
-              >
-                <Copy className="size-4" />
-                {copiedShare ? t("common.copied") : t("settings.copyShare")}
-              </Button>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  variant="secondary"
+                  onClick={async () => {
+                    const url = `${window.location.origin}/u/${profile.share_slug}`;
+                    await navigator.clipboard.writeText(url);
+                    setCopiedShare(true);
+                    setTimeout(() => setCopiedShare(false), 1500);
+                  }}
+                >
+                  <Copy className="size-4" />
+                  {copiedShare ? t("common.copied") : t("settings.copyShare")}
+                </Button>
+                <Link
+                  href={`/u/${profile.share_slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1"
+                >
+                  <Button size="sm" variant="ghost" className="w-full">
+                    {t("common.open")}
+                  </Button>
+                </Link>
+              </div>
             </div>
           ) : null}
         </Card>

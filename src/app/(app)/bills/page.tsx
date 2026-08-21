@@ -399,37 +399,28 @@ export default function BillsPage() {
         </Card>
       ) : null}
 
-      <div
-        className={cn(
-          "grid gap-3",
-          showFinance ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1",
-        )}
-      >
-        <Card className="bg-gradient-to-br from-primary to-primary-dark p-4 text-white">
-          <p className="text-sm text-white/80">
-            {showFinance ? t("bills.totalSpend") : t("bills.pendingTotal")}
-          </p>
-          <p className="font-display text-3xl font-bold">
-            {formatMoney(showFinance ? spendTotal : pendingTotal)}
-          </p>
-        </Card>
-        {showFinance ? (
-          <>
-            <Card className="p-4">
-              <p className="text-sm text-muted">{t("bills.paidTotal")}</p>
-              <p className="font-display text-2xl font-bold text-secondary">
-                {formatMoney(paidTotal)}
-              </p>
-            </Card>
-            <Card className="p-4">
-              <p className="text-sm text-muted">{t("bills.pendingTotal")}</p>
-              <p className="font-display text-2xl font-bold text-warning-dark">
-                {formatMoney(pendingTotal)}
-              </p>
-            </Card>
-          </>
-        ) : null}
-      </div>
+      {showFinance ? (
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
+          <Card className="bg-gradient-to-br from-primary to-primary-dark p-4 text-white">
+            <p className="text-sm text-white/80">{t("bills.totalSpend")}</p>
+            <p className="font-display text-3xl font-bold">
+              {formatMoney(spendTotal)}
+            </p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-sm text-muted">{t("bills.paidTotal")}</p>
+            <p className="font-display text-2xl font-bold text-secondary">
+              {formatMoney(paidTotal)}
+            </p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-sm text-muted">{t("bills.pendingTotal")}</p>
+            <p className="font-display text-2xl font-bold text-warning-dark">
+              {formatMoney(pendingTotal)}
+            </p>
+          </Card>
+        </div>
+      ) : null}
 
       {showFinance && (byCategory.length > 0 || byVilla.length > 0) ? (
         <div className="grid gap-3 sm:grid-cols-2">

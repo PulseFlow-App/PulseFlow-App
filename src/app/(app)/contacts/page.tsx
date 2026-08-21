@@ -18,6 +18,7 @@ import { contactReachability } from "@/lib/notifications";
 import { canBookServices, canEditContacts, isStaffApp } from "@/lib/roles";
 import { cn, lineDeepLink, phoneToWaMe } from "@/lib/utils";
 import type { Contact } from "@/lib/types";
+import { capitalizeLabel } from "@/lib/format-label";
 import type { Messenger } from "@/lib/design-tokens";
 
 const ROLE_ORDER = [
@@ -279,7 +280,9 @@ function OrderForm({
     time_end?: string | null;
   }) => Promise<void>;
 }) {
-  const [serviceType, setServiceType] = useState(contact.role);
+  const [serviceType, setServiceType] = useState(
+    capitalizeLabel(contact.role),
+  );
   const [villaId, setVillaId] = useState(villas[0]?.id ?? "");
   const [locationLabel, setLocationLabel] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
@@ -382,7 +385,7 @@ function OrderForm({
             void onSave({
               villa_id: villaId || null,
               location_label: locationLabel.trim() || null,
-              service_type: serviceType.trim(),
+              service_type: capitalizeLabel(serviceType),
               details: details.trim() || null,
               scheduled_date: date,
               time_start: timeStart || null,
