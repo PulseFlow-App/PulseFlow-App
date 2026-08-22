@@ -6,6 +6,7 @@ import {
   uniqueShareSlug,
   type RegisterWorkspaceInput,
 } from "@/lib/auth/helpers";
+import { creditReferral } from "@/lib/billing/referrals";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 
 export async function POST(request: Request) {
@@ -143,6 +144,16 @@ export async function POST(request: Request) {
       profile_id: userId,
       role: resolvedRole,
     });
+  }
+
+  try {
+    await creditReferral(admin, {
+      referrerCode: body.referredBy,
+      referredProfileId: userId,
+      source: "register",
+    });
+  } catch (e) {
+    console.warn("referral credit failed", e);
   }
 
   return NextResponse.json({ ok: true, orgId: org.id, userId });

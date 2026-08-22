@@ -320,6 +320,9 @@ const de: Dictionary = {
   "plan.referralTitle": "Referral year",
   "plan.referralHint":
     "Invite 5 people with this link (teammates or other owners). When five join, you get 1 year of Full free.",
+  "plan.referralProgress": "{count} of {goal} joins credited",
+  "plan.referralRemaining": "{remaining} more for 1 year Full free",
+  "plan.referralUnlocked": "Referral year active until {date}",
   "plan.copyReferral": "Copy referral link",
   "plan.referralCopied": "Referral link copied.",
 
@@ -357,6 +360,35 @@ const de: Dictionary = {
   "roles.staff": "Personal",
   "language.title": "Sprache",
   "language.choose": "App-Sprache",
+
+  "reports.title": "Reports & exports",
+  "reports.subtitle": "CSV exports, weekly summary, and handoff snapshots",
+  "reports.upgradeHint":
+    "Basic reporting is available while the company Full plan or trial is active.",
+  "reports.period": "Date range",
+  "reports.periodAll": "All time",
+  "reports.periodMonth": "This month",
+  "reports.period30": "Last 30 days",
+  "reports.period90": "Last 90 days",
+  "reports.exportBills": "Export bills (CSV)",
+  "reports.exportTasks": "Export tasks (CSV)",
+  "reports.exportProperties": "Export properties (CSV)",
+  "reports.exportJobs": "Export jobs (CSV)",
+  "reports.weeklyTitle": "Weekly ops summary",
+  "reports.weeklyHint": "Opens a printable page for this week.",
+  "reports.printWeekly": "Print weekly summary",
+  "reports.handoffTitle": "Handoff snapshot",
+  "reports.handoffHint":
+    "Capture property status, open tasks, and pending bills for a shift handoff.",
+  "reports.snapshotLabel": "Label (optional)",
+  "reports.snapshotPlaceholder": "e.g. Friday evening handoff",
+  "reports.saveSnapshot": "Save snapshot",
+  "reports.savedSnapshots": "Saved snapshots",
+  "reports.downloadCsv": "Download CSV",
+  "reports.deleteSnapshot": "Delete",
+  "reports.noSnapshots": "No snapshots yet.",
+  "settings.reportsLink": "Reports & exports",
+  "settings.reportsHint": "CSV downloads, printable weekly summary, handoff snapshots.",
 };
 
 export default de;

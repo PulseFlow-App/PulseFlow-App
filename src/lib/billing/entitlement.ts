@@ -17,13 +17,15 @@ export type OrgBilling = Pick<
   | "stripe_customer_id"
   | "stripe_subscription_id"
   | "billing_email"
+  | "referral_bonus_ends_at"
+  | "referral_year_claimed"
 >;
 
 /** Personal orgs are always entitled. Company needs trial or paid status. */
 export function isCompanyEntitled(
-  org: Pick<
+  org:   Pick<
     Organization,
-    "kind" | "trial_ends_at" | "subscription_status"
+    "kind" | "trial_ends_at" | "subscription_status" | "referral_bonus_ends_at"
   > | null,
   now = new Date(),
 ): boolean {
@@ -36,6 +38,12 @@ export function isCompanyEntitled(
     return true;
   }
   if (org.trial_ends_at && new Date(org.trial_ends_at) > now) {
+    return true;
+  }
+  if (
+    org.referral_bonus_ends_at &&
+    new Date(org.referral_bonus_ends_at) > now
+  ) {
     return true;
   }
   return false;
@@ -51,4 +59,4 @@ export function trialDaysRemaining(
 }
 
 export const ENTITLEMENT_BLOCKED_MESSAGE =
-  "Your company trial has ended. The owner must subscribe to keep creating invites, villas, and service orders.";
+  "Your company trial has ended. The owner must subscribe to keep making changes.";

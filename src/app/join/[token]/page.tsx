@@ -11,7 +11,7 @@ import { ROLE_LABELS } from "@/lib/roles";
 import { createClient, isDemoMode } from "@/lib/supabase/client";
 import { getInviteContext } from "@/lib/demo/store";
 import { DEMO_READ_ONLY_MESSAGE } from "@/lib/demo/guard";
-import { rememberReferralCode } from "@/lib/billing/plans";
+import { rememberReferralCode, REFERRAL_STORAGE_KEY } from "@/lib/billing/plans";
 import type { Invite, Organization, Profile } from "@/lib/types";
 
 export default function JoinPage({
@@ -108,6 +108,10 @@ export default function JoinPage({
           email,
           phone,
           password,
+          referredBy:
+            typeof window !== "undefined"
+              ? localStorage.getItem(REFERRAL_STORAGE_KEY)
+              : null,
         }),
       });
       const payload = (await res.json()) as { error?: string };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Copy, NotebookPen, QrCode, Star, Trophy } from "lucide-react";
@@ -26,7 +26,9 @@ import {
   referralRegisterUrl,
   resolvePlanTier,
 } from "@/lib/billing/plans";
-import { cn } from "@/lib/utils";
+import { canUseBasicReporting } from "@/lib/billing/reporting";
+import type { ReferralProgress } from "@/lib/billing/referrals";
+import { cn, formatShortDate } from "@/lib/utils";
 
 export default function SettingsPage() {
   const data = useData();
@@ -45,6 +47,8 @@ export default function SettingsPage() {
   const [qrToken, setQrToken] = useState<string | null>(null);
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [copiedReferral, setCopiedReferral] = useState(false);
+  const [referralProgress, setReferralProgress] =
+    useState<ReferralProgress | null>(null);
 
   const roleOptions = useMemo(
     () =>
@@ -68,6 +72,19 @@ export default function SettingsPage() {
       ),
     [data.profiles, data.profile?.id],
   );
+
+  const showReferralYear =
+    !!data.profile &&
+    (data.profile.role === "owner" ||
+      (data.profile.role === "manager" && data.orgKind === "company"));
+
+  useEffect(() => {
+    if (!showReferralYear) return;
+    void fetch("/api/referrals/progress")
+      .then((r) => r.json())
+      .then((payload) => setReferralProgress(payload as ReferralProgress))
+      .catch(() => setReferralProgress(null));
+  }, [showReferralYear]);
 
   if (!data.ready || !data.profile) return <LoadingState />;
   const profile = data.profile;
@@ -132,9 +149,12 @@ export default function SettingsPage() {
     orgKind: data.orgKind,
     organization: data.organization,
   });
-  const showReferralYear =
-    profile.role === "owner" || (profile.role === "manager" && isCompany);
   const canInviteTeammates = canInvite(profile.role, data.orgKind);
+  const showReports = canUseBasicReporting({
+    role: profile.role,
+    orgKind: data.orgKind,
+    organization: data.organization,
+  });
 
   return (
     <div className="space-y-4 animate-rise">
@@ -271,6 +291,29 @@ export default function SettingsPage() {
               {t("plan.referralTitle")}
             </p>
             <p className="mt-1 text-sm text-muted">{t("plan.referralHint")}</p>
+            {referralProgress ? (
+              <div className="mt-3 rounded-2xl bg-[#F7F5F1] px-3 py-2.5">
+                <p className="text-sm font-semibold text-ink">
+                  {t("plan.referralProgress", {
+                    count: referralProgress.count,
+                    goal: referralProgress.goal,
+                  })}
+                </p>
+                {referralProgress.claimed && referralProgress.bonusEndsAt ? (
+                  <p className="mt-1 text-xs text-secondary">
+                    {t("plan.referralUnlocked", {
+                      date: formatShortDate(referralProgress.bonusEndsAt),
+                    })}
+                  </p>
+                ) : referralProgress.count < referralProgress.goal ? (
+                  <p className="mt-1 text-xs text-muted">
+                    {t("plan.referralRemaining", {
+                      remaining: referralProgress.goal - referralProgress.count,
+                    })}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           {canInviteTeammates ? (
@@ -518,6 +561,21 @@ export default function SettingsPage() {
               </span>
             </div>
           ))}
+        </Card>
+      ) : null}
+
+      {showReports ? (
+        <Card className="space-y-2 p-5">
+          <h2 className="font-display text-lg font-bold text-ink">
+            {t("settings.reportsLink")}
+          </h2>
+          <p className="text-sm text-muted">{t("settings.reportsHint")}</p>
+          <Link
+            href="/reports"
+            className="inline-flex text-sm font-semibold text-primary"
+          >
+            {t("settings.reportsLink")} →
+          </Link>
         </Card>
       ) : null}
 

@@ -33,6 +33,8 @@ export type RegisterWorkspaceInput = {
   kind: OrgKind;
   /** Ignored if not owner; public register is owner-only. */
   role?: Extract<UserRole, "owner" | "manager">;
+  /** Referrer share slug or profile id prefix from ?ref= */
+  referredBy?: string | null;
 };
 
 export const COMPANY_TRIAL_DAYS = 30;

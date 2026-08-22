@@ -28,6 +28,8 @@ export type Organization = {
   stripe_subscription_id?: string | null;
   subscription_status?: SubscriptionStatus;
   billing_email?: string | null;
+  referral_bonus_ends_at?: string | null;
+  referral_year_claimed?: boolean;
 };
 
 export type Profile = {
@@ -247,4 +249,13 @@ export type BillWithRelations = Bill & {
 
 export type MessageWithSender = Message & {
   sender?: Pick<Profile, "id" | "full_name" | "role"> | null;
+};
+
+export type HandoffSnapshot = {
+  id: string;
+  org_id: string;
+  created_by: string;
+  label: string;
+  payload: Record<string, unknown>;
+  created_at: string;
 };

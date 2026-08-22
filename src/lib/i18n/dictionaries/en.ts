@@ -349,7 +349,10 @@ const en = {
     "Company Full has ended. Subscribe to reopen invites, company properties, and service orders.",
   "plan.referralTitle": "Referral year",
   "plan.referralHint":
-    "Invite 5 people with this link (teammates or other owners). When five join, you get 1 year of Full free.",
+    "Share your link or team invites. Five joins unlock 1 year of Full free.",
+  "plan.referralProgress": "{count} of {goal} joins credited",
+  "plan.referralRemaining": "{remaining} more for 1 year Full free",
+  "plan.referralUnlocked": "Referral year active until {date}",
   "plan.copyReferral": "Copy referral link",
   "plan.referralCopied": "Referral link copied.",
 
@@ -394,6 +397,34 @@ const en = {
 
   "language.title": "Language",
   "language.choose": "App language",
+
+  "reports.title": "Reports",
+  "reports.subtitle": "Exports and handoffs for owners and managers",
+  "reports.upgradeHint":
+    "Basic reporting is available while the company Full plan or trial is active.",
+  "reports.period": "Date range",
+  "reports.periodAll": "All time",
+  "reports.periodMonth": "This month",
+  "reports.period30": "Last 30 days",
+  "reports.period90": "Last 90 days",
+  "reports.exportBills": "Export bills (CSV)",
+  "reports.exportTasks": "Export tasks (CSV)",
+  "reports.exportProperties": "Export properties (CSV)",
+  "reports.exportJobs": "Export jobs (CSV)",
+  "reports.weeklyTitle": "Weekly ops summary",
+  "reports.weeklyHint": "Printable turnovers, urgent tasks, pending bills.",
+  "reports.printWeekly": "Print summary",
+  "reports.handoffTitle": "Handoff",
+  "reports.handoffHint": "Save property status for shift changes.",
+  "reports.snapshotLabel": "Label (optional)",
+  "reports.snapshotPlaceholder": "e.g. Friday evening handoff",
+  "reports.saveSnapshot": "Save snapshot",
+  "reports.savedSnapshots": "Saved snapshots",
+  "reports.downloadCsv": "Download CSV",
+  "reports.deleteSnapshot": "Delete",
+  "reports.noSnapshots": "No snapshots yet.",
+  "settings.reportsLink": "Reports & exports",
+  "settings.reportsHint": "CSV downloads, printable weekly summary, handoff snapshots.",
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -99,6 +99,7 @@ export default function RegisterPage() {
           orgName: workspaceName,
           kind: useKind,
           role,
+          referredBy: referralCode,
         }),
       });
       const payload = (await res.json()) as { error?: string };

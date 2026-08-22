@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { slugifyName, uniqueShareSlug } from "@/lib/auth/helpers";
+import { creditReferral } from "@/lib/billing/referrals";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 
 type Body = {
@@ -9,6 +10,7 @@ type Body = {
   email: string;
   phone?: string;
   password: string;
+  referredBy?: string | null;
 };
 
 export async function POST(request: Request) {
@@ -228,6 +230,17 @@ export async function POST(request: Request) {
       used_by: userId,
     })
     .eq("id", invite.id);
+
+  try {
+    await creditReferral(admin, {
+      referrerCode: body.referredBy,
+      referredProfileId: userId,
+      source: "invite",
+      fallbackReferrerId: invite.created_by as string,
+    });
+  } catch (e) {
+    console.warn("referral credit failed", e);
+  }
 
   return NextResponse.json({ ok: true, userId, email });
 }

@@ -352,11 +352,22 @@ export function useSupabaseData(enabled: boolean): AppData {
     [organization],
   );
 
-  const requireCompanyWrite = useCallback(() => {
-    if (organization?.kind === "company" && !companyEntitled) {
-      throw new Error(ENTITLEMENT_BLOCKED_MESSAGE);
-    }
-  }, [organization, companyEntitled]);
+  const requireOrgWrite = useCallback(
+    (orgId: string) => {
+      const org =
+        orgs.find((o) => o.id === orgId) ??
+        (organization?.id === orgId ? organization : null);
+      if (org?.kind === "company" && !companyEntitled) {
+        throw new Error(ENTITLEMENT_BLOCKED_MESSAGE);
+      }
+    },
+    [orgs, organization, companyEntitled],
+  );
+
+  const requireCurrentOrgWrite = useCallback(() => {
+    if (!profile) return;
+    requireOrgWrite(profile.org_id);
+  }, [profile, requireOrgWrite]);
 
   if (!enabled) return empty;
 
@@ -367,6 +378,13 @@ export function useSupabaseData(enabled: boolean): AppData {
     ({ bucket: _b, orgLabel: _o, ...v }) => v as Villa,
   );
   const allOrgVillas = villas.filter((v) => v.org_id === profile?.org_id);
+  const visibleVillaIds = new Set(visible.map((v) => v.id));
+  const scopedTasks = tasks.filter((t) => {
+    if (t.org_id !== profile?.org_id) return false;
+    if (profile?.role === "owner") return true;
+    if (!t.villa_id) return true;
+    return visibleVillaIds.has(t.villa_id);
+  });
 
   const visibleNotifications = profile
     ? notifications
@@ -424,7 +442,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     villaList,
     allOrgVillas,
     contacts,
-    tasks: enrichTasks(tasks, visible, profiles),
+    tasks: enrichTasks(scopedTasks, visible, profiles),
     bills: enrichBills(
       profile && !canViewAllBills(profile.role)
         ? bills.filter((b) => b.submitted_by === profile.id)
@@ -494,7 +512,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!profile || !canBookServices(profile.role, organization?.kind)) {
         throw new Error("Only company owners or managers can book services.");
       }
-      requireCompanyWrite();
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const contact = contacts.find((c) => c.id === input.contact_id);
       if (!contact) throw new Error("Contact not found.");
@@ -585,6 +603,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!profile) throw new Error("Not signed in.");
       const supabase = createClient();
       let order = serviceOrders.find((o) => o.id === orderId) ?? null;
+      if (order) requireOrgWrite(order.org_id);
       if (!order) {
         const { data } = await supabase
           .from("service_orders")
@@ -593,6 +612,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           .single();
         order = (data as ServiceOrder | null) ?? null;
       }
+      if (order) requireOrgWrite(order.org_id);
       const { error } = await supabase
         .from("service_orders")
         .update({
@@ -628,6 +648,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         order = (data as ServiceOrder | null) ?? null;
       }
       if (!order) throw new Error("Order not found.");
+      requireOrgWrite(order.org_id);
 
       const { error } = await supabase
         .from("service_orders")
@@ -670,6 +691,8 @@ export function useSupabaseData(enabled: boolean): AppData {
       await refresh();
     },
     updateVilla: async (id, patch) => {
+      const villa = villas.find((v) => v.id === id);
+      if (villa) requireOrgWrite(villa.org_id);
       const supabase = createClient();
       const { error } = await supabase
         .from("villas")
@@ -693,7 +716,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (scope === "personal") {
         orgId = await ensurePersonalOrgId(profile);
       } else {
-        requireCompanyWrite();
+        requireOrgWrite(orgId);
       }
 
       const supabase = createClient();
@@ -716,6 +739,8 @@ export function useSupabaseData(enabled: boolean): AppData {
       await refresh();
     },
     deleteVilla: async (id) => {
+      const villa = villas.find((v) => v.id === id);
+      if (villa) requireOrgWrite(villa.org_id);
       const supabase = createClient();
       const { error } = await supabase.from("villas").delete().eq("id", id);
       if (error) throw error;
@@ -723,7 +748,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     mergeVillaToCompany: async (villaId) => {
       if (!profile) return;
-      requireCompanyWrite();
+      requireOrgWrite(profile.org_id);
       const supabase = createClient();
       const { error } = await supabase
         .from("villas")
@@ -734,6 +759,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     createTask: async (input) => {
       if (!profile) return;
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const { error } = await supabase.from("tasks").insert({
         org_id: profile.org_id,
@@ -746,6 +772,8 @@ export function useSupabaseData(enabled: boolean): AppData {
       await refresh();
     },
     setTaskStatus: async (id, status) => {
+      const task = tasks.find((t) => t.id === id);
+      if (task) requireOrgWrite(task.org_id);
       const supabase = createClient();
       const { error } = await supabase
         .from("tasks")
@@ -759,6 +787,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     createContact: async (input) => {
       if (!profile) return;
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const { error } = await supabase
         .from("contacts")
@@ -767,12 +796,14 @@ export function useSupabaseData(enabled: boolean): AppData {
       await refresh();
     },
     updateContact: async (id, patch) => {
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const { error } = await supabase.from("contacts").update(patch).eq("id", id);
       if (error) throw error;
       await refresh();
     },
     deleteContact: async (id) => {
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const { error } = await supabase.from("contacts").delete().eq("id", id);
       if (error) throw error;
@@ -780,6 +811,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     createBill: async (input) => {
       if (!profile) return;
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const { error } = await supabase.from("bills").insert({
         org_id: profile.org_id,
@@ -797,6 +829,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       await refresh();
     },
     setBillStatus: async (id, status) => {
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const { error } = await supabase.from("bills").update({ status }).eq("id", id);
       if (error) throw error;
@@ -804,6 +837,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     sendMessage: async (body) => {
       if (!profile) return;
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const { data: inserted, error } = await supabase
         .from("messages")
@@ -864,6 +898,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     uploadReceipt: async (file) => {
       if (!profile) return null;
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const path = `${profile.org_id}/${profile.id}/${Date.now()}-${file.name}`;
       const { error } = await supabase.storage.from("receipts").upload(path, file);
@@ -873,6 +908,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     uploadVillaPhoto: async (file) => {
       if (!profile) return null;
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const safeName = file.name.replace(/[^\w.\-]+/g, "_");
       const path = `${profile.org_id}/${profile.id}/${Date.now()}-${safeName}`;
@@ -886,7 +922,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (organization?.kind !== "company") {
         throw new Error("Invites are only available for company workspaces.");
       }
-      requireCompanyWrite();
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const token = crypto.randomUUID().replace(/-/g, "");
       const { data, error } = await supabase
@@ -909,6 +945,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     setVillaAssignments: async (managerId, villaIds) => {
       if (!profile) return;
+      requireCurrentOrgWrite();
       const supabase = createClient();
       await supabase
         .from("villa_assignments")
@@ -929,6 +966,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     setVillaAssignees: async (villaId, profileIds) => {
       if (!profile) return;
+      requireCurrentOrgWrite();
       const supabase = createClient();
       await supabase
         .from("villa_assignments")
@@ -949,6 +987,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     castEndorsement: async (toProfileId, stars, note) => {
       if (!profile) throw new Error("Not signed in.");
+      requireCurrentOrgWrite();
       const supabase = createClient();
       const now = new Date();
       const week_key = `${now.getUTCFullYear()}-W${Math.ceil(
