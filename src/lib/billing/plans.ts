@@ -6,7 +6,8 @@ import {
 import type { Organization } from "@/lib/types";
 import type { MessageKey } from "@/lib/i18n";
 
-export type PlanTier = "free" | "basic" | "full" | "trial" | "expired";
+/** Purchasable / display tiers. Manager reporting is included with Full, not a separate tier. */
+export type PlanTier = "free" | "full" | "trial" | "expired";
 
 export function resolvePlanTier(input: {
   role: UserRole;
@@ -64,11 +65,10 @@ export function resolvePlanTier(input: {
         noteKey: "plan.note.managerLimited",
       };
     }
-    // While company Full/trial is active, managers receive Basic reporting seats.
     return {
-      tier: "basic",
-      labelKey: "plan.basic",
-      noteKey: "plan.note.managerBasic",
+      tier: "free",
+      labelKey: "plan.free",
+      noteKey: "plan.note.managerIncluded",
     };
   }
 
@@ -101,4 +101,24 @@ export function rememberReferralCode(refCode: string | null | undefined) {
   const trimmed = refCode?.trim();
   if (!trimmed) return;
   window.localStorage.setItem(REFERRAL_STORAGE_KEY, trimmed);
+}
+
+/** Parse a pasted invite URL or raw token for /join/[token]. */
+export function extractInviteToken(input: string): string | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  if (trimmed.includes("/join/")) {
+    try {
+      const url = trimmed.startsWith("http")
+        ? new URL(trimmed)
+        : new URL(trimmed, "https://app.pulseflow.site");
+      const match = url.pathname.match(/\/join\/([^/?#]+)/);
+      if (match?.[1]) return decodeURIComponent(match[1]);
+    } catch {
+      const match = trimmed.match(/\/join\/([^/?#\s]+)/);
+      if (match?.[1]) return decodeURIComponent(match[1]);
+    }
+  }
+  if (/^[a-zA-Z0-9_-]{16,}$/.test(trimmed)) return trimmed;
+  return null;
 }

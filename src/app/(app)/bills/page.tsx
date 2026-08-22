@@ -9,6 +9,10 @@ import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import { BILL_CATEGORIES, type BillCategory } from "@/lib/design-tokens";
 import { canMarkBillsPaid, canViewBillFinance } from "@/lib/roles";
+import {
+  canUseManagerReporting,
+  historyCutoffIso,
+} from "@/lib/billing/reporting";
 import { cn, formatMoney, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
@@ -63,6 +67,22 @@ export default function BillsPage() {
     ? canViewBillFinance(data.profile.role, data.orgKind)
     : false;
 
+  const extendedHistory = useMemo(
+    () =>
+      data.profile
+        ? canUseManagerReporting({
+            role: data.profile.role,
+            orgKind: data.orgKind,
+            organization: data.organization,
+          })
+        : false,
+    [data.profile, data.orgKind, data.organization],
+  );
+  const historyCutoff = useMemo(() => {
+    if (data.profile?.role !== "manager") return null;
+    return historyCutoffIso(extendedHistory);
+  }, [data.profile?.role, extendedHistory]);
+
   const [showForm, setShowForm] = useState(false);
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -82,6 +102,12 @@ export default function BillsPage() {
 
   const filtered = useMemo(() => {
     return data.bills.filter((b) => {
+      if (
+        historyCutoff &&
+        new Date(b.created_at) < new Date(historyCutoff)
+      ) {
+        return false;
+      }
       if (filterVilla && b.villa_id !== filterVilla) return false;
       if (filterCategory && (b.category ?? "other") !== filterCategory) {
         return false;
@@ -97,6 +123,7 @@ export default function BillsPage() {
     period,
     customFrom,
     customTo,
+    historyCutoff,
   ]);
 
   const pendingTotal = useMemo(

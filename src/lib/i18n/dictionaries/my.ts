@@ -55,6 +55,10 @@ const my: Dictionary = {
   "auth.signingIn": "ဝင်နေသည်…",
   "auth.noAccount": "အကောင့်မရှိသေးဘူးလား?",
   "auth.register": "အလုပ်ခွင်ဖန်တီး",
+  "auth.invitedToTeam": "Invited to a team?",
+  "auth.invitePlaceholder": "Paste your invite link",
+  "auth.inviteOpen": "Open invite",
+  "auth.inviteInvalid": "That doesn't look like an invite link.",
   "auth.invalidCredentials": "အီးမေးလ် သို့ စကားဝှက်မှားသည်။",
   "auth.demoHint": "Demo စကားဝှက်အားလုံး: TestPass123!",
   "auth.demoAccounts": "Demo အမြန်ဝင်",
@@ -250,7 +254,7 @@ const my: Dictionary = {
   "settings.invite": "အဖွဲ့သားဖိတ်",
   "settings.inviteHint": "လင့်ခ်မျှဝေပါ။ သူတို့ ကိုယ်တိုင် ဖြည့်မည်။",
   "settings.inviteCountsTowardReferral":
-    "Team invites count toward your five referrals.",
+    "Company invites and app sign-ups both count.",
   "settings.inviteAnyone": "Invite anyone to the app",
   "settings.inviteAnyoneHint":
     "Invite other property owners or anyone who wants to use the app for personal use.",
@@ -302,24 +306,24 @@ const my: Dictionary = {
   "plan.trial": "Full trial",
   "plan.expired": "Full expired",
   "plan.title": "Your plan",
-  "plan.seePlans": "See Free, Basic, and Full",
+  "plan.seePlans": "See Free and Full",
   "plan.note.personal":
     "Personal workspace. Free forever for solo properties, tasks, and bills.",
   "plan.note.staff":
     "Free field seat on this company. Assigned properties, jobs, bills, and chat.",
   "plan.note.managerLimited":
     "Free manager seat with limited tools. Company Full is inactive, so exports and company writes stay closed.",
-  "plan.note.managerBasic":
-    "Basic reporting seat while the company Full plan (or trial) is active. Export bills, tasks, and property status for owner reports.",
+  "plan.note.managerIncluded":
+    "Free seat. Reporting is included while the owner keeps Full active.",
   "plan.note.ownerTrial":
     "Company Full trial. Invite the team, assign properties, and run owner finances until the trial ends.",
   "plan.note.ownerFull":
     "Company Full. Your subscription covers the team workspace, including Basic reporting for managers.",
   "plan.note.ownerExpired":
     "Company Full has ended. Subscribe to reopen invites, company properties, and service orders.",
-  "plan.referralTitle": "Referral year",
+  "plan.referralTitle": "Invite 5 people → Get 1 year Full free",
   "plan.referralHint":
-    "Invite 5 people with this link (teammates or other owners). When five join, you get 1 year of Full free.",
+    "Copy your referral link in Profile. You can invite people to your company, or simply to the app itself, both cases count.",
   "plan.referralProgress": "{count} of {goal} joins credited",
   "plan.referralRemaining": "{remaining} more for 1 year Full free",
   "plan.referralUnlocked": "Referral year active until {date}",

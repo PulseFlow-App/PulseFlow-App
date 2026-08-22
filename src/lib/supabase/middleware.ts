@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/login";
       return NextResponse.redirect(url);
     }
-    if (demoCookie && (pathname === "/login" || pathname === "/" || pathname === "/register")) {
+    if (demoCookie && (pathname === "/" || pathname === "/register")) {
       const url = request.nextUrl.clone();
       url.pathname = "/home";
       return NextResponse.redirect(url);

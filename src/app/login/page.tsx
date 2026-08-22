@@ -13,9 +13,10 @@ import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { brand } from "@/lib/design-tokens";
 import { isDemoMode, createClient } from "@/lib/supabase/client";
-import { demoLogin } from "@/lib/demo/store";
+import { demoLogin, demoLogout } from "@/lib/demo/store";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
+import { extractInviteToken } from "@/lib/billing/plans";
 
 const schema = z.object({
   email: z.string().email(),
@@ -50,6 +51,8 @@ export default function LoginPage() {
   const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
   const [demoRole, setDemoRole] = useState<"owner" | "employee" | null>(null);
+  const [inviteLink, setInviteLink] = useState("");
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   const demoAccount = demoAccountFromParam(demoRole);
   const isDemoPrefill = Boolean(demoAccount);
@@ -68,12 +71,21 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    const fromQuery = new URLSearchParams(window.location.search)
-      .get("demo")
-      ?.trim()
-      .toLowerCase();
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = params.get("demo")?.trim().toLowerCase();
     if (fromQuery === "owner" || fromQuery === "employee") {
       setDemoRole(fromQuery);
+      return;
+    }
+    setDemoRole(null);
+    if (isDemoMode()) {
+      demoLogout();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (window.location.hash === "#invite") {
+      document.getElementById("invite-join")?.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
 
@@ -220,6 +232,45 @@ export default function LoginPage() {
                 {t("auth.register")}
               </Link>
             </p>
+
+            <div
+              id="invite-join"
+              className="mt-5 border-t border-black/5 pt-4"
+            >
+              <p className="text-sm font-semibold text-ink">
+                {t("auth.invitedToTeam")}
+              </p>
+              <div className="mt-2 flex gap-2">
+                <Input
+                  value={inviteLink}
+                  onChange={(e) => {
+                    setInviteLink(e.target.value);
+                    setInviteError(null);
+                  }}
+                  placeholder={t("auth.invitePlaceholder")}
+                  autoComplete="off"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    const token = extractInviteToken(inviteLink);
+                    if (!token) {
+                      setInviteError(t("auth.inviteInvalid"));
+                      return;
+                    }
+                    router.push(`/join/${token}`);
+                  }}
+                >
+                  {t("auth.inviteOpen")}
+                </Button>
+              </div>
+              {inviteError ? (
+                <p className="mt-2 text-xs font-semibold text-danger">
+                  {inviteError}
+                </p>
+              ) : null}
+            </div>
           </Card>
         </div>
       </div>

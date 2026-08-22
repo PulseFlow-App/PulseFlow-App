@@ -2,8 +2,8 @@ import { isCompanyEntitled } from "@/lib/billing/entitlement";
 import type { OrgKind, UserRole } from "@/lib/design-tokens";
 import type { Organization } from "@/lib/types";
 
-/** Owners and managers on an active company Full/trial seat. */
-export function canUseBasicReporting(input: {
+/** Owners and managers when the company Full plan or trial is active (included, not a separate purchase). */
+export function canUseManagerReporting(input: {
   role: UserRole;
   orgKind: OrgKind | null | undefined;
   organization: Organization | null | undefined;
@@ -14,7 +14,10 @@ export function canUseBasicReporting(input: {
   return role === "owner" || role === "manager";
 }
 
-/** Default bill/task history window for limited (non-Basic) managers — 90 days. */
+/** @deprecated Use canUseManagerReporting */
+export const canUseBasicReporting = canUseManagerReporting;
+
+/** Bill/task history window when Full is inactive — 90 days. */
 export const LIMITED_HISTORY_DAYS = 90;
 
 export function historyCutoffIso(

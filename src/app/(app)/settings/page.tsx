@@ -26,7 +26,7 @@ import {
   referralRegisterUrl,
   resolvePlanTier,
 } from "@/lib/billing/plans";
-import { canUseBasicReporting } from "@/lib/billing/reporting";
+import { canUseManagerReporting } from "@/lib/billing/reporting";
 import type { ReferralProgress } from "@/lib/billing/referrals";
 import { cn, formatShortDate } from "@/lib/utils";
 
@@ -150,7 +150,7 @@ export default function SettingsPage() {
     organization: data.organization,
   });
   const canInviteTeammates = canInvite(profile.role, data.orgKind);
-  const showReports = canUseBasicReporting({
+  const showReports = canUseManagerReporting({
     role: profile.role,
     orgKind: data.orgKind,
     organization: data.organization,
@@ -194,11 +194,9 @@ export default function SettingsPage() {
               "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide",
               plan.tier === "full" || plan.tier === "trial"
                 ? "bg-primary-soft text-primary-dark"
-                : plan.tier === "basic"
-                  ? "bg-secondary-soft text-secondary-dark"
-                  : plan.tier === "expired"
-                    ? "bg-danger/10 text-danger"
-                    : "bg-[#F7F5F1] text-ink",
+                : plan.tier === "expired"
+                  ? "bg-danger/10 text-danger"
+                  : "bg-[#F7F5F1] text-ink",
             )}
           >
             <NotebookPen className="size-3.5" />

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
-import { canUseBasicReporting } from "@/lib/billing/reporting";
+import { canUseManagerReporting } from "@/lib/billing/reporting";
 import { downloadCsv } from "@/lib/export/csv";
 import {
   billsToCsv,
@@ -73,7 +73,7 @@ export default function ReportsPage() {
   const allowed = useMemo(
     () =>
       data.profile
-        ? canUseBasicReporting({
+        ? canUseManagerReporting({
             role: data.profile.role,
             orgKind: data.orgKind,
             organization: data.organization,

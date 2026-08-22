@@ -56,6 +56,10 @@ const en = {
   "auth.signingIn": "Signing in…",
   "auth.noAccount": "No account yet?",
   "auth.register": "Create workspace",
+  "auth.invitedToTeam": "Invited to a team?",
+  "auth.invitePlaceholder": "Paste your invite link",
+  "auth.inviteOpen": "Open invite",
+  "auth.inviteInvalid": "That doesn't look like an invite link.",
   "auth.invalidCredentials": "Invalid email or password.",
   "auth.demoHint": "Password for all demos: TestPass123!",
   "auth.demoAccounts": "Quick demo sign-in",
@@ -276,7 +280,7 @@ const en = {
   "settings.invite": "Invite teammate",
   "settings.inviteHint": "Share a link. They fill in their own details.",
   "settings.inviteCountsTowardReferral":
-    "Team invites count toward your five referrals.",
+    "Company invites and app sign-ups both count.",
   "settings.inviteAnyone": "Invite anyone to the app",
   "settings.inviteAnyoneHint":
     "Invite other property owners or anyone who wants to use the app for personal use.",
@@ -301,7 +305,7 @@ const en = {
 
   "billing.title": "Billing",
   "billing.subtitle":
-    "Company plans include a 30-day free trial. Personal workspaces stay free. Only the owner is billed.",
+    "One Full subscription covers your company. Personal workspaces stay free.",
   "billing.status": "Status",
   "billing.trial": "Trial",
   "billing.daysLeft": "{count} day left|{count} days left",
@@ -332,24 +336,24 @@ const en = {
   "plan.trial": "Full trial",
   "plan.expired": "Full expired",
   "plan.title": "Your plan",
-  "plan.seePlans": "See Free, Basic, and Full",
+  "plan.seePlans": "See Free and Full",
   "plan.note.personal":
-    "Personal workspace. Free forever for solo properties, tasks, and bills.",
+    "Free forever for your own properties, tasks, and bills.",
   "plan.note.staff":
-    "Free field seat on this company. Assigned properties, jobs, bills, and chat.",
+    "Free seat on this company — assigned properties, jobs, bills, and chat.",
   "plan.note.managerLimited":
-    "Free manager seat with limited tools. Company Full is inactive, so exports and company writes stay closed.",
-  "plan.note.managerBasic":
-    "Basic reporting seat while the company Full plan (or trial) is active. Export bills, tasks, and property status for owner reports.",
+    "Free seat. Company Full is inactive, so exports and company writes are closed.",
+  "plan.note.managerIncluded":
+    "Free seat. Reporting is included while the owner keeps Full active.",
   "plan.note.ownerTrial":
-    "Company Full trial. Invite the team, assign properties, and run owner finances until the trial ends.",
+    "30-day Full trial — invite the team and run company ops.",
   "plan.note.ownerFull":
-    "Company Full. Your subscription covers the team workspace, including Basic reporting for managers.",
+    "Your subscription covers the team. Managers get reporting automatically.",
   "plan.note.ownerExpired":
     "Company Full has ended. Subscribe to reopen invites, company properties, and service orders.",
-  "plan.referralTitle": "Referral year",
+  "plan.referralTitle": "Invite 5 people → Get 1 year Full free",
   "plan.referralHint":
-    "Share your link or team invites. Five joins unlock 1 year of Full free.",
+    "Copy your referral link in Profile. You can invite people to your company, or simply to the app itself, both cases count.",
   "plan.referralProgress": "{count} of {goal} joins credited",
   "plan.referralRemaining": "{remaining} more for 1 year Full free",
   "plan.referralUnlocked": "Referral year active until {date}",
@@ -401,7 +405,7 @@ const en = {
   "reports.title": "Reports",
   "reports.subtitle": "Exports and handoffs for owners and managers",
   "reports.upgradeHint":
-    "Basic reporting is available while the company Full plan or trial is active.",
+    "Reporting unlocks when the company Full plan or trial is active.",
   "reports.period": "Date range",
   "reports.periodAll": "All time",
   "reports.periodMonth": "This month",
