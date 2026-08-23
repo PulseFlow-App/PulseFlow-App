@@ -2,6 +2,8 @@
 
 import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +33,31 @@ type PublicData = {
   tasksDone: number;
   tasksOpen: number;
 };
+
+function PublicProfileBack() {
+  const router = useRouter();
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        const fromApp =
+          typeof document !== "undefined" &&
+          Boolean(document.referrer) &&
+          document.referrer.startsWith(window.location.origin);
+        if (fromApp) {
+          router.back();
+          return;
+        }
+        router.push("/settings");
+      }}
+      className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition hover:text-ink"
+    >
+      <ArrowLeft className="size-4" />
+      Back
+    </button>
+  );
+}
 
 export default function PublicProfilePage({
   params,
@@ -98,6 +125,11 @@ export default function PublicProfilePage({
           <p className="text-sm text-muted">
             This share link may be invalid or private.
           </p>
+          <Link href="/settings">
+            <Button className="w-full" variant="secondary">
+              Back to settings
+            </Button>
+          </Link>
           <Link href="/login">
             <Button className="w-full">Go to PulseFlow</Button>
           </Link>
@@ -114,6 +146,7 @@ export default function PublicProfilePage({
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-lg bg-sand px-4 py-8 font-sans">
+      <PublicProfileBack />
       <div className="mb-6 flex items-center gap-3">
         <PulseMark className="size-10" />
         <div>
