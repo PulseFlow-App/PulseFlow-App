@@ -4,6 +4,7 @@ import { addDays, format, isSameDay, parseISO, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { Villa } from "@/lib/types";
 import { Card } from "@/components/ui/card";
+import { useI18n } from "@/lib/i18n/provider";
 
 export function DateStrip({
   villas,
@@ -14,6 +15,7 @@ export function DateStrip({
   selected: Date;
   onSelect: (d: Date) => void;
 }) {
+  const { t } = useI18n();
   const today = startOfDay(new Date());
   const days = Array.from({ length: 7 }, (_, i) => addDays(today, i));
 
@@ -28,7 +30,7 @@ export function DateStrip({
     <Card className="p-3">
       <div className="mb-2 flex items-center justify-between px-1">
         <h2 className="font-display text-base font-bold text-ink">
-          Check-ins & outs
+          {t("home.checkInsOuts")}
         </h2>
         <span className="text-xs text-muted">{format(selected, "MMM yyyy")}</span>
       </div>
@@ -74,20 +76,21 @@ export function DateStrip({
 }
 
 function DayEvents({ day, villas }: { day: Date; villas: Villa[] }) {
+  const { t } = useI18n();
   const items = villas.flatMap((v) => {
     const rows: { villa: string; kind: string }[] = [];
     if (v.check_in && isSameDay(parseISO(v.check_in), day)) {
-      rows.push({ villa: v.name, kind: "Check-in" });
+      rows.push({ villa: v.name, kind: t("villas.checkIn") });
     }
     if (v.check_out && isSameDay(parseISO(v.check_out), day)) {
-      rows.push({ villa: v.name, kind: "Check-out" });
+      rows.push({ villa: v.name, kind: t("villas.checkOut") });
     }
     return rows;
   });
 
   if (items.length === 0) {
     return (
-      <p className="mt-2 px-1 text-sm text-muted">No moves on this day.</p>
+      <p className="mt-2 px-1 text-sm text-muted">{t("home.noMoves")}</p>
     );
   }
 

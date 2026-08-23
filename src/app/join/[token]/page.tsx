@@ -7,11 +7,12 @@ import { PulseMark } from "@/components/brand/pulse-mark";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
-import { ROLE_LABELS } from "@/lib/roles";
 import { createClient, isDemoMode } from "@/lib/supabase/client";
 import { getInviteContext } from "@/lib/demo/store";
 import { DEMO_READ_ONLY_MESSAGE } from "@/lib/demo/guard";
 import { rememberReferralCode, REFERRAL_STORAGE_KEY } from "@/lib/billing/plans";
+import { useI18n } from "@/lib/i18n/provider";
+import { labelRole } from "@/lib/i18n/labels";
 import type { Invite, Organization, Profile } from "@/lib/types";
 
 export default function JoinPage({
@@ -21,6 +22,7 @@ export default function JoinPage({
 }) {
   const { token } = use(params);
   const router = useRouter();
+  const { t } = useI18n();
   const [ctx, setCtx] = useState<{
     invite: Invite;
     org: Organization | null;
@@ -182,7 +184,7 @@ export default function JoinPage({
                 <span className="font-semibold text-ink">
                   {inviter.full_name}
                 </span>{" "}
-                ({ROLE_LABELS[inviter.role]})
+                ({labelRole(t, inviter.role)})
               </>
             ) : null}
             .
@@ -194,7 +196,7 @@ export default function JoinPage({
             <div className="flex justify-between gap-3 py-1">
               <span className="text-muted">Your role</span>
               <span className="font-semibold text-ink">
-                {ROLE_LABELS[invite.role]}
+                {labelRole(t, invite.role)}
               </span>
             </div>
             {invite.job_title ? (

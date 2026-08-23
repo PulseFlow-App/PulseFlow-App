@@ -16,10 +16,15 @@ import {
   normalizeLocationUrl,
 } from "@/lib/utils";
 import { canCreateVillas, isStaffApp, personalVillasOnly } from "@/lib/roles";
+import { useI18n } from "@/lib/i18n/provider";
+import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import type { MessageKey } from "@/lib/i18n";
 import type { VillaListItem } from "@/lib/types";
 
 export default function VillasPage() {
   const data = useData();
+  const { t } = useI18n();
+  const label = useLocalizedDemoText();
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState("");
   const [area, setArea] = useState("");
@@ -62,13 +67,15 @@ export default function VillasPage() {
     <div className="relative space-y-4 animate-rise">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Properties</h1>
+          <h1 className="font-display text-2xl font-bold text-ink">
+            {t("villas.title")}
+          </h1>
           <p className="text-sm text-muted">
             {isPersonalWorkspace
-              ? "Your properties and rental work"
+              ? t("villas.subtitle")
               : staff
-                ? "Assigned company properties + your own personal list"
-                : "Company inventory first, then your personal list"}
+                ? t("villas.subtitleStaff")
+                : t("villas.subtitle")}
           </p>
         </div>
         {canAdd ? (
@@ -79,7 +86,7 @@ export default function VillasPage() {
               setShowAdd(true);
             }}
           >
-            <Plus className="size-4" /> Add new
+            <Plus className="size-4" /> {t("villas.addNew")}
           </Button>
         ) : null}
       </div>
@@ -93,36 +100,36 @@ export default function VillasPage() {
             setShowAdd(true);
           }}
         >
-          <Plus className="size-5" /> Add new villa
+          <Plus className="size-5" /> {t("villas.addNew")}
         </Button>
       ) : null}
 
       {showAdd ? (
         <Card className="space-y-3 p-5">
-          <h2 className="font-display text-lg font-bold text-ink">New villa</h2>
+          <h2 className="font-display text-lg font-bold text-ink">{t("villas.addNew")}</h2>
           {inCompany && isOwner ? (
             <div>
-              <Label>Belongs to</Label>
+              <Label>{t("villas.belongsTo")}</Label>
               <Select
                 value={scope}
                 onChange={(e) =>
                   setScope(e.target.value as "company" | "personal")
                 }
               >
-                <option value="company">{data.orgName} (company)</option>
-                <option value="personal">No company (personal)</option>
+                <option value="company">
+                  {data.orgName} ({t("villas.company")})
+                </option>
+                <option value="personal">{t("villas.personal")}</option>
               </Select>
             </div>
           ) : null}
           {inCompany && personalOnly && canAdd ? (
             <p className="rounded-2xl bg-[#F7F5F1] px-3 py-2 text-xs text-muted">
-              New villas you add go to <strong>No company</strong> (your own
-              list). Company villas appear when the owner assigns them - or when
-              they Order you for a job.
+              {t("villas.personalHint")}
             </p>
           ) : null}
           <div>
-            <Label>Name</Label>
+            <Label>{t("common.name")}</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -130,7 +137,7 @@ export default function VillasPage() {
             />
           </div>
           <div>
-            <Label>Area</Label>
+            <Label>{t("villas.area")}</Label>
             <Input
               value={area}
               onChange={(e) => setArea(e.target.value)}
@@ -138,7 +145,7 @@ export default function VillasPage() {
             />
           </div>
           <div>
-            <Label>Location link</Label>
+            <Label>{t("villas.locationLink")}</Label>
             <Input
               value={locationUrl}
               onChange={(e) => setLocationUrl(e.target.value)}
@@ -150,7 +157,7 @@ export default function VillasPage() {
             </p>
           </div>
           <div>
-            <Label>Description (optional)</Label>
+            <Label>{t("villas.description")}</Label>
             <Textarea
               rows={3}
               value={description}
@@ -194,7 +201,7 @@ export default function VillasPage() {
               className="flex-1"
               onClick={() => setShowAdd(false)}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               className="flex-1"
@@ -233,7 +240,7 @@ export default function VillasPage() {
                   );
               }}
             >
-              Save villa
+              {t("common.save")}
             </Button>
           </div>
         </Card>
@@ -241,46 +248,43 @@ export default function VillasPage() {
 
       {data.villaList.length === 0 ? (
         <EmptyState
-          title="No properties yet"
-          description={
-            canAdd
-              ? isPersonalWorkspace
-                ? "Add your first property to start tracking work."
-                : "Add a company property or a personal one you manage on the side."
-              : "Ask your owner to assign company properties to you."
-          }
+          title={t("villas.empty")}
+          description={t("villas.emptyHint")}
         />
       ) : isPersonalWorkspace ? (
         <VillaSection
-          title={data.orgName || "Your properties"}
-          subtitle="Personal workspace"
+          title={data.orgName || t("villas.title")}
+          subtitle={t("villas.personal")}
           icon="personal"
           villas={data.villaList}
           showAssignees={false}
           assigneesFor={assigneesFor}
           hideBucketBadge
+          t={t}
         />
       ) : (
         <>
           {companyVillas.length > 0 ? (
             <VillaSection
               title={companyVillas[0]?.orgLabel ?? data.orgName}
-              subtitle="Company-owned"
+              subtitle={t("villas.company")}
               icon="company"
               villas={companyVillas}
               showAssignees={isOwner}
               assigneesFor={assigneesFor}
+              t={t}
             />
           ) : null}
 
           {personalVillas.length > 0 ? (
             <VillaSection
-              title="No company"
-              subtitle="Your personal / side work - not on the company books"
+              title={t("villas.personal")}
+              subtitle={t("villas.personalHint")}
               icon="personal"
               villas={personalVillas}
               showAssignees={false}
               assigneesFor={assigneesFor}
+              t={t}
             />
           ) : null}
         </>
@@ -289,7 +293,7 @@ export default function VillasPage() {
       {canAdd ? (
         <button
           type="button"
-          aria-label="Add new property"
+          aria-label={t("villas.addNew")}
           onClick={() => {
             setScope(defaultScope);
             setShowAdd(true);
@@ -311,6 +315,7 @@ function VillaSection({
   showAssignees,
   assigneesFor,
   hideBucketBadge = false,
+  t,
 }: {
   title: string;
   subtitle: string;
@@ -319,7 +324,9 @@ function VillaSection({
   showAssignees: boolean;
   assigneesFor: (id: string) => string[];
   hideBucketBadge?: boolean;
+  t: (key: MessageKey, params?: Record<string, string | number>) => string;
 }) {
+  const label = useLocalizedDemoText();
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-2 px-1">
@@ -381,7 +388,7 @@ function VillaSection({
                   ) : null}
                   {villa.description ? (
                     <p className="mt-2 line-clamp-2 text-sm text-muted">
-                      {villa.description}
+                      {label(villa.description)}
                     </p>
                   ) : null}
                   {villa.location_url ? (
@@ -411,18 +418,24 @@ function VillaSection({
                       className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
                     >
                       <ExternalLink className="size-3.5" />
-                      Open location
+                      {t("villas.locationLink")}
                     </span>
                   ) : null}
                   <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted">
-                    <span>In {formatShortDate(villa.check_in)}</span>
-                    <span>Out {formatShortDate(villa.check_out)}</span>
+                    <span>
+                      {t("villas.checkIn")} {formatShortDate(villa.check_in)}
+                    </span>
+                    <span>
+                      {t("villas.checkOut")} {formatShortDate(villa.check_out)}
+                    </span>
                   </div>
                   {showAssignees ? (
                     <div className="mt-3 flex items-center gap-2 rounded-2xl bg-[#F7F5F1] px-3 py-2 text-sm">
-                      <span className="text-muted">Assigned to</span>
+                      <span className="text-muted">{t("villas.assignedTo")}</span>
                       <span className="font-semibold text-ink">
-                        {assignees.length ? assignees.join(", ") : "Unassigned"}
+                        {assignees.length
+                          ? assignees.join(", ")
+                          : t("tasks.unassigned")}
                       </span>
                     </div>
                   ) : null}

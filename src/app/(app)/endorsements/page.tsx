@@ -14,10 +14,13 @@ import {
   weekKey,
   weekLabel,
 } from "@/lib/endorsements";
-import { ROLE_LABELS, canUseTeamReputation } from "@/lib/roles";
+import { canUseTeamReputation } from "@/lib/roles";
+import { useI18n } from "@/lib/i18n/provider";
+import { labelRole } from "@/lib/i18n/labels";
 
 export default function EndorsementsPage() {
   const data = useData();
+  const { t } = useI18n();
   const currentWeek = weekKey();
   const isOwner = data.profile?.role === "owner";
 
@@ -124,7 +127,7 @@ export default function EndorsementsPage() {
                   <div>
                     <p className="font-semibold text-ink">{person.full_name}</p>
                     <p className="text-xs text-muted">
-                      {ROLE_LABELS[person.role]}
+                      {labelRole(t, person.role)}
                       {person.job_title ? ` · ${person.job_title}` : ""}
                     </p>
                   </div>

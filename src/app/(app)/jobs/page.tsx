@@ -9,19 +9,17 @@ import { AgreeButton } from "@/components/jobs/agree-button";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
-import {
-  formatOrderWhen,
-  orderReachabilityLabel,
-} from "@/lib/service-orders";
-import { capitalizeLabel } from "@/lib/format-label";
+import { formatOrderWhen } from "@/lib/service-orders";
 import { isStaffApp, canBookServices } from "@/lib/roles";
 import { cn, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
+import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 import type { MessageKey } from "@/lib/i18n";
 
 export default function JobsPage() {
   const data = useData();
   const { t } = useI18n();
+  const label = useLocalizedDemoText();
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
   const booker = data.profile
     ? canBookServices(data.profile.role, data.orgKind)
@@ -118,7 +116,7 @@ export default function JobsPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="font-semibold text-ink">
-                        {capitalizeLabel(order.service_type)}
+                        {label(order.service_type)}
                       </p>
                       <p className="text-sm text-muted">
                         {order.location_label ?? t("tasks.villa")}
@@ -145,7 +143,13 @@ export default function JobsPage() {
                   ) : null}
                   {!staff ? (
                     <p className="text-xs font-semibold text-muted">
-                      {orderReachabilityLabel(order)}
+                      {!order.staff_profile_id
+                        ? t("order.reach.offline")
+                        : order.status === "pending_ack"
+                          ? t("order.reach.pending")
+                          : order.status === "agreed"
+                            ? t("order.reach.confirmed")
+                            : t(`order.status.${order.status}` as MessageKey)}
                     </p>
                   ) : null}
                   {pendingForMe ? <AgreeButton orderId={order.id} /> : null}
@@ -189,10 +193,10 @@ export default function JobsPage() {
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold text-ink">
-                    {capitalizeLabel(task.title)}
+                    {label(task.title)}
                   </p>
                   <p className="truncate text-xs text-muted">
-                    {task.villa?.name ?? "General"}
+                    {task.villa?.name ?? t("common.general")}
                     {window ? ` · ${window}` : ""}
                   </p>
                 </div>

@@ -1,11 +1,15 @@
+"use client";
+
 import {
   BedDouble,
   Sparkles,
   Wrench,
   CircleCheck,
 } from "lucide-react";
-import { statusColors, type VillaStatus } from "@/lib/design-tokens";
+import { type VillaStatus } from "@/lib/design-tokens";
 import { Card } from "@/components/ui/card";
+import { useI18n } from "@/lib/i18n/provider";
+import { labelVillaStatus } from "@/lib/i18n/labels";
 
 const meta: Record<
   VillaStatus,
@@ -38,6 +42,7 @@ export function StatGrid({
 }: {
   counts: Record<VillaStatus, number>;
 }) {
+  const { t } = useI18n();
   const order: VillaStatus[] = [
     "occupied",
     "available",
@@ -49,7 +54,6 @@ export function StatGrid({
     <div className="grid grid-cols-2 gap-3">
       {order.map((status) => {
         const Icon = meta[status].icon;
-        const tone = statusColors[status];
         return (
           <Card key={status} className="p-4">
             <div
@@ -61,7 +65,7 @@ export function StatGrid({
               {counts[status]}
             </p>
             <p className={`text-sm font-semibold ${meta[status].ink}`}>
-              {tone.label}
+              {labelVillaStatus(t, status)}
             </p>
           </Card>
         );

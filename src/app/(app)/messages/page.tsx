@@ -18,6 +18,7 @@ import { useData } from "@/lib/data/use-app-data";
 import { cn } from "@/lib/utils";
 import type { MessageWithSender, Profile } from "@/lib/types";
 import { useI18n } from "@/lib/i18n/provider";
+import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 import { canUseTeamChat } from "@/lib/roles";
 import {
   EVERYONE_LABEL,
@@ -31,6 +32,7 @@ import {
 export default function MessagesPage() {
   const data = useData();
   const { t } = useI18n();
+  const label = useLocalizedDemoText();
   const [body, setBody] = useState("");
   const [cursor, setCursor] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -182,7 +184,7 @@ export default function MessagesPage() {
                       </p>
                     ) : null}
                     <MessageBody
-                      body={msg.body}
+                      body={label(msg.body)}
                       profiles={teammates}
                       mine={mine}
                     />

@@ -20,6 +20,8 @@ import { makeNotification } from "@/lib/notifications";
 export const DEMO_ORG_ID = "11111111-1111-4111-8111-111111111111";
 export const DEMO_ORG_2_ID = "11111111-1111-4111-8111-111111111133";
 export const DEMO_PERSONAL_ORG_ID = "11111111-1111-4111-8111-111111111122";
+export const DEMO_CLEANER_PERSONAL_ORG_ID =
+  "11111111-1111-4111-8111-111111111144";
 export const DEMO_OWNER_ID = "22222222-2222-4222-8222-222222222222";
 export const DEMO_OWNER_2_ID = "22222222-2222-4222-8222-222222222233";
 export const DEMO_EMPLOYEE_ID = "33333333-3333-4333-8333-333333333333";
@@ -44,6 +46,13 @@ export const demoPersonalOrg: Organization = {
   name: "Sam's personal ops",
   kind: "personal",
   created_at: "2026-01-01T00:00:00.000Z",
+};
+
+export const demoCleanerPersonalOrg: Organization = {
+  id: DEMO_CLEANER_PERSONAL_ORG_ID,
+  name: "Nok's personal ops",
+  kind: "personal",
+  created_at: "2026-01-15T00:00:00.000Z",
 };
 
 export const demoProfiles: Profile[] = [
@@ -83,7 +92,7 @@ export const demoProfiles: Profile[] = [
   {
     id: DEMO_CLEANER_ID,
     org_id: DEMO_ORG_ID,
-    personal_org_id: null,
+    personal_org_id: DEMO_CLEANER_PERSONAL_ORG_ID,
     role: "cleaner",
     full_name: "Nok Cleaning",
     phone: "+66819876543",
@@ -133,6 +142,7 @@ export const VILLA_IDS = {
   bamboo: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa6",
   cliff: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa7",
   tide: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa8",
+  reef: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa9",
 } as const;
 
 
@@ -269,6 +279,23 @@ export const demoVillas: Villa[] = [
     cleaning_status: "done",
     notes: null,
     created_by: DEMO_EMPLOYEE_ID,
+    updated_at: new Date().toISOString(),
+  },
+  // Nok's side work - personal org, not company inventory.
+  {
+    id: VILLA_IDS.reef,
+    org_id: DEMO_CLEANER_PERSONAL_ORG_ID,
+    name: "Reef Cottage",
+    area: "Thong Sala",
+    location_url: "https://maps.google.com/?q=Thong+Sala+Koh+Phangan",
+    description: "Side-client cottage Nok manages outside the company.",
+    photo_url: null,
+    status: "available",
+    check_in: null,
+    check_out: null,
+    cleaning_status: "done",
+    notes: "Personal list - not company inventory.",
+    created_by: DEMO_CLEANER_ID,
     updated_at: new Date().toISOString(),
   },
 ];
@@ -891,6 +918,7 @@ export function createFreshDemoStore(): DemoStore {
       structuredClone(demoOrg),
       structuredClone(demoOrg2),
       structuredClone(demoPersonalOrg),
+      structuredClone(demoCleanerPersonalOrg),
     ],
     accounts: structuredClone(demoAccounts),
     profiles: structuredClone(demoProfiles),

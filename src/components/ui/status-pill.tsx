@@ -1,5 +1,9 @@
+"use client";
+
 import { statusColors, type VillaStatus } from "@/lib/design-tokens";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/provider";
+import { labelVillaStatus } from "@/lib/i18n/labels";
 
 export function StatusPill({
   status,
@@ -8,6 +12,7 @@ export function StatusPill({
   status: VillaStatus;
   className?: string;
 }) {
+  const { t } = useI18n();
   const tone = statusColors[status];
   return (
     <span
@@ -17,7 +22,7 @@ export function StatusPill({
       )}
       style={{ backgroundColor: tone.soft, color: tone.fg }}
     >
-      {tone.label}
+      {labelVillaStatus(t, status)}
     </span>
   );
 }

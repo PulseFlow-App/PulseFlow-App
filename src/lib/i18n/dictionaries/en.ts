@@ -85,6 +85,18 @@ const en = {
   "home.myVillas": "My properties",
   "home.schedule": "Schedule",
   "home.loading": "Loading your ops pulse…",
+  "home.checkInsOuts": "Check-ins & outs",
+  "home.noMoves": "No moves on this day.",
+  "home.due": "due {date}",
+  "common.saved": "Saved.",
+  "villas.photo": "Property photo",
+  "villas.photoHint": "Upload from your gallery or take a photo. Staff see this when accepting a job so they can recognize the place.",
+  "villas.locationHint": "Paste a Google Maps / Apple Maps pin link for the exact spot.",
+  "villas.nameRequired": "Name is required.",
+  "villas.locationRequired": "Add a valid location / maps link.",
+  "villas.uploadError": "Could not upload photo.",
+  "order.reach.notOnApp": "Not on app - call them",
+  "order.reach.awaiting": "Not contacted (awaiting agreement)",
 
   "villas.title": "Properties",
   "villas.subtitle": "Company inventory first, then your personal list",
@@ -108,7 +120,7 @@ const en = {
   "villas.staffHint":
     "Guest check-in/out is for owners - you only need your work window.",
   "villas.personalHint":
-    "New propertys you add go to No company (your own list). Company properties appear when the owner assigns them - or when they Order you for a job.",
+    "New properties you add go to No company (your own list). You only see company properties assigned to you — not the full inventory. Booking you for a job also grants access.",
 
   "status.available": "Available",
   "status.occupied": "Occupied",
@@ -293,7 +305,7 @@ const en = {
   "settings.waitingToJoin": "Waiting to join",
   "settings.villaAccess": "Assign properties to team",
   "settings.villaAccessHint":
-    "Pick which properties each person can see. You can also set this on each property.",
+    "Pick which company properties each cleaner or staff member can see. You can also set this on each property. Booking them for a job grants access automatically.",
   "settings.teamMember": "Team member",
   "settings.selectPerson": "Select…",
   "settings.saveVillaAccess": "Save property access",
@@ -362,6 +374,113 @@ const en = {
 
   "demo.readOnlyBanner":
     "Demo only. Explore freely. Sign up for a real account to make changes.",
+
+  "demo.jobTitle.owner": "Owner",
+  "demo.jobTitle.manager": "On-site manager",
+  "demo.jobTitle.cleaner": "Lead cleaner",
+
+  "demo.villa.lotus.desc": "Sea-view 2BR with private pool near Srithanu.",
+  "demo.villa.lotus.notes": "Guests requested extra towels.",
+  "demo.villa.palm.desc": "Family villa close to Haad Yao beach.",
+  "demo.villa.palm.notes": "Deep clean before tomorrow check-in.",
+  "demo.villa.jungle.desc": "Quiet hillside retreat - AC unit pending repair.",
+  "demo.villa.jungle.notes": "AC compressor replacement scheduled.",
+  "demo.villa.sunset.desc": "Sunset-facing deck villa.",
+  "demo.villa.sunset.notes": "Checkout tomorrow 11:00.",
+  "demo.villa.cliff.desc": "Compact studio for side-client bookings.",
+  "demo.villa.cliff.notes": "Side client - not company inventory.",
+
+  "demo.contact.nokNotes": "Preferred for turnovers · on PulseFlow",
+  "demo.contact.somchaiNotes": "24h emergency",
+  "demo.contact.poolNotes": "Weekly Wednesdays",
+  "demo.contact.coolairNotes":
+    "Spare parts in Thong Sala · not on PulseFlow yet",
+  "demo.contact.roleAc": "AC/appliance repair",
+
+  "demo.task.palmDeepClean": "Finish Palm Villa deep clean",
+  "demo.task.meetAc": "Meet AC tech at Jungle Retreat",
+  "demo.task.sunsetCheckout": "Prepare Sunset Deck checkout checklist",
+  "demo.task.lotusTowels": "Deliver extra towels to Lotus House",
+  "demo.task.coralRestock": "Restock Coral Bungalow amenities",
+  "demo.task.poolChemicals": "Buy pool chemicals in Thong Sala",
+  "demo.task.bambooPump": "Inspect Bamboo Nest water pump",
+  "demo.task.lotusTurnover": "Turnover clean - Lotus House",
+  "demo.task.sunsetClean": "Checkout clean - Sunset Deck",
+
+  "demo.order.turnoverCleaning": "Turnover cleaning",
+  "demo.order.turnoverDetails":
+    "Full turnover after checkout. Extra towels in laundry room.",
+  "demo.order.deepClean": "Deep clean",
+  "demo.order.acRepair": "AC repair visit",
+  "demo.order.acRepairDetails":
+    "Compressor deposit already paid. Bring gauges.",
+
+  "demo.bill.cleaningSupplies": "Cleaning supplies for turnover",
+  "demo.bill.acDeposit": "AC compressor deposit",
+  "demo.bill.fuel": "Fuel for island runs",
+
+  "demo.notif.newJobTurnover": "New job: Turnover cleaning",
+  "demo.notif.newJobTurnoverBody":
+    "Lotus House · tomorrow 11:00-14:00 - tap Read & agreed",
+  "demo.notif.jobConfirmedDeep": "Job confirmed: Deep clean",
+  "demo.notif.jobConfirmedDeepBody": "Palm Villa · today 09:00-12:00",
+  "demo.notif.newMessageAlex": "New message from Alex",
+  "demo.notif.newMessageAlexBody": "Can someone confirm Palm Villa towels?",
+  "demo.notif.billSubmitted": "Bill submitted",
+  "demo.notif.billSubmittedBody": "Cleaning supplies for turnover · ฿1,250",
+
+  "demo.msg.morningPalm":
+    "Morning - Palm Villa needs to be guest-ready by tomorrow noon.",
+  "demo.msg.onIt":
+    "On it. Cleaning team is already there. Will update when done.",
+  "demo.msg.acConfirmed": "AC tech confirmed for Jungle Retreat at 2pm.",
+  "demo.msg.orderAgreed":
+    "📋 Service order for Nok Cleaning\nWhat: Deep clean\nWhere: Palm Villa\nWhen: today 09:00-12:00\nDetails: Deep clean before tomorrow check-in.\nFrom: Alex Owner\n\nStaff: open this and tap “Read and agreed” to confirm you got the job.",
+  "demo.msg.orderPending":
+    "📋 Service order for Nok Cleaning\nWhat: Turnover cleaning\nWhere: Lotus House\nWhen: tomorrow 11:00-14:00\nDetails: Full turnover after checkout. Extra towels in laundry room.\nFrom: Alex Owner\n\nStaff: open this and tap “Read and agreed” to confirm you got the job.",
+
+  "demo.endorse.turnovers": "Handled turnovers smoothly.",
+  "demo.endorse.guestComm": "Great guest communication.",
+  "demo.endorse.spotless": "Spotless Palm Villa.",
+  "demo.endorse.reliable": "Reliable across properties.",
+
+  "demo.day.today": "today",
+  "demo.day.tomorrow": "tomorrow",
+  "demo.day.yesterday": "yesterday",
+  "demo.day.daysAgo": "{count} days ago",
+
+  "demo.sys.appointmentTitle": "Appointment {when}",
+  "demo.sys.appointmentBody": "{service} · {location} · {window}",
+  "demo.sys.checkInTitle": "Check-in {when}",
+  "demo.sys.checkOutTitle": "Check-out {when}",
+  "demo.sys.villaDateBody": "{name} · {date}",
+  "demo.sys.billDueTitle": "Bill {when}",
+  "demo.sys.billOverdue":
+    "overdue by {count} day|overdue by {count} days",
+  "demo.sys.billDueToday": "due today",
+  "demo.sys.billDueWhen": "due {when}",
+  "demo.sys.billDueBody": "{description} · {amount}",
+  "demo.sys.newJobTitle": "New job: {serviceType}",
+  "demo.sys.newJobBody": "{location} · {when} - tap Read & agreed",
+  "demo.sys.jobConfirmedTitle": "Job confirmed: {serviceType}",
+  "demo.sys.completedJobTitle": "{name} completed a job",
+  "demo.sys.agreedTitle": "{name} agreed",
+  "demo.sys.jobBody": "{service} · {location} · {when}",
+  "demo.sys.jobBodyShort": "{service} · {when}",
+  "demo.sys.doneMsg": "✅ Done - {service} at {location} ({when})",
+  "demo.sys.agreedMsg":
+    "✅ Read and agreed - {service} at {location} ({when})",
+  "demo.sys.locationFallback": "location",
+  "demo.sys.villaFallback": "Villa",
+
+  "demo.orderChat.header": "📋 Service order for {name}",
+  "demo.orderChat.what": "What: {serviceType}",
+  "demo.orderChat.where": "Where: {location}",
+  "demo.orderChat.when": "When: {when}",
+  "demo.orderChat.details": "Details: {details}",
+  "demo.orderChat.from": "From: {name}",
+  "demo.orderChat.staffHint":
+    "Staff: open this and tap “Read and agreed” to confirm you got the job.",
 
   "contacts.subtitlePersonal": "Save numbers in one place — call from here",
   "contacts.subtitleCompany":

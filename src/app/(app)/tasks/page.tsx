@@ -11,13 +11,17 @@ import { useData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
 import { isStaffApp } from "@/lib/roles";
 import { formatShortDate, cn } from "@/lib/utils";
-import { capitalizeLabel } from "@/lib/format-label";
 import type { TaskPriority } from "@/lib/design-tokens";
+import { useI18n } from "@/lib/i18n/provider";
+import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import type { MessageKey } from "@/lib/i18n";
 
 type Filter = "all" | "mine" | "urgent";
 
 export default function TasksPage() {
   const data = useData();
+  const { t } = useI18n();
+  const label = useLocalizedDemoText();
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("all");
   const [showForm, setShowForm] = useState(false);
@@ -82,11 +86,11 @@ export default function TasksPage() {
     <div className="space-y-4 animate-rise">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Tasks</h1>
-          <p className="text-sm text-muted">{open.length} open</p>
+          <h1 className="font-display text-2xl font-bold text-ink">{t("tasks.title")}</h1>
+          <p className="text-sm text-muted">{t("tasks.openCount", { count: open.length })}</p>
         </div>
         <Button size="sm" onClick={() => setShowForm((v) => !v)}>
-          <Plus className="size-4" /> Add
+          <Plus className="size-4" /> {t("tasks.add")}
         </Button>
       </div>
 
@@ -103,7 +107,7 @@ export default function TasksPage() {
                 : "bg-card text-muted shadow-sm",
             )}
           >
-            {f}
+            {t(`tasks.filter.${f}` as MessageKey)}
           </button>
         ))}
       </div>
@@ -111,13 +115,13 @@ export default function TasksPage() {
       {showForm ? (
         <Card className="space-y-3 p-4">
           <div>
-            <Label>Title</Label>
+            <Label>{t("tasks.titleField")}</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div>
-            <Label>Property</Label>
+            <Label>{t("tasks.villa")}</Label>
             <Select value={villaId} onChange={(e) => setVillaId(e.target.value)}>
-              <option value="">General</option>
+              <option value="">{t("common.general")}</option>
               {data.villas.map((v) => (
                 <option key={v.id} value={v.id}>
                   {v.name}
@@ -127,17 +131,17 @@ export default function TasksPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Priority</Label>
+              <Label>{t("tasks.priority")}</Label>
               <Select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TaskPriority)}
               >
-                <option value="normal">Normal</option>
-                <option value="urgent">Urgent</option>
+                <option value="normal">{t("tasks.priority.normal")}</option>
+                <option value="urgent">{t("tasks.priority.urgent")}</option>
               </Select>
             </div>
             <div>
-              <Label>Day</Label>
+              <Label>{t("tasks.day")}</Label>
               <Input
                 type="date"
                 value={dueDate}
@@ -147,7 +151,7 @@ export default function TasksPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>From</Label>
+              <Label>{t("common.from")}</Label>
               <Input
                 type="time"
                 value={timeStart}
@@ -155,7 +159,7 @@ export default function TasksPage() {
               />
             </div>
             <div>
-              <Label>Until</Label>
+              <Label>{t("common.until")}</Label>
               <Input
                 type="time"
                 value={timeEnd}
@@ -164,12 +168,12 @@ export default function TasksPage() {
             </div>
           </div>
           <div>
-            <Label>Assignee</Label>
+            <Label>{t("tasks.assignee")}</Label>
             <Select
               value={assignee}
               onChange={(e) => setAssignee(e.target.value)}
             >
-              <option value="">Unassigned</option>
+              <option value="">{t("tasks.unassigned")}</option>
               {data.profiles.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.full_name}
@@ -179,15 +183,15 @@ export default function TasksPage() {
           </div>
           {error ? <p className="text-sm text-danger">{error}</p> : null}
           <Button className="w-full" onClick={() => void create()}>
-            Create task
+            {t("tasks.create")}
           </Button>
         </Card>
       ) : null}
 
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-muted">Open</h2>
+        <h2 className="text-sm font-semibold text-muted">{t("tasks.open")}</h2>
         {open.length === 0 ? (
-          <EmptyState title="No open tasks" description="Nice and clear." />
+          <EmptyState title={t("tasks.noOpen")} description={t("tasks.noOpenHint")} />
         ) : (
           open.map((task) => (
             <Card key={task.id} className="flex items-center gap-3 p-3">
@@ -199,10 +203,10 @@ export default function TasksPage() {
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold text-ink">
-                  {capitalizeLabel(task.title)}
+                  {label(task.title)}
                 </p>
                 <p className="truncate text-xs text-muted">
-                  {task.villa?.name ?? "General"}
+                  {task.villa?.name ?? t("common.general")}
                   {formatWorkWindow(
                     task.due_date,
                     task.time_start,
@@ -221,7 +225,7 @@ export default function TasksPage() {
               </div>
               {task.priority === "urgent" ? (
                 <span className="text-[10px] font-bold uppercase text-danger">
-                  Urgent
+                  {t("tasks.urgent")}
                 </span>
               ) : null}
             </Card>
@@ -230,9 +234,9 @@ export default function TasksPage() {
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-muted">Done</h2>
+        <h2 className="text-sm font-semibold text-muted">{t("tasks.done")}</h2>
         {done.length === 0 ? (
-          <p className="text-sm text-muted">No completed tasks yet.</p>
+          <p className="text-sm text-muted">{t("tasks.noDone")}</p>
         ) : (
           done.map((task) => (
             <Card
@@ -247,7 +251,7 @@ export default function TasksPage() {
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold line-through text-ink">
-                  {capitalizeLabel(task.title)}
+                  {label(task.title)}
                 </p>
               </div>
             </Card>

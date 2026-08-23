@@ -20,6 +20,8 @@ import { cn, lineDeepLink, phoneToWaMe } from "@/lib/utils";
 import type { Contact } from "@/lib/types";
 import { capitalizeLabel } from "@/lib/format-label";
 import type { Messenger } from "@/lib/design-tokens";
+import { useI18n } from "@/lib/i18n/provider";
+import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 
 const ROLE_ORDER = [
   "cleaning",
@@ -32,6 +34,8 @@ const ROLE_ORDER = [
 
 export default function ContactsPage() {
   const data = useData();
+  const { t } = useI18n();
+  const label = useLocalizedDemoText();
   const canEdit = data.profile ? canEditContacts(data.profile.role) : false;
   const canBook = data.profile
     ? canBookServices(data.profile.role, data.orgKind)
@@ -70,14 +74,14 @@ export default function ContactsPage() {
     return (
       <div className="space-y-4 animate-rise">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Contacts</h1>
-          <p className="text-sm text-muted">
-            Team directory - owners book you from their Contacts list
-          </p>
+          <h1 className="font-display text-2xl font-bold text-ink">
+            {t("contacts.title")}
+          </h1>
+          <p className="text-sm text-muted">{t("contacts.subtitleStaff")}</p>
         </div>
         <EmptyState
-          title="Field app"
-          description="Your jobs live under Jobs. Call teammates from Chat if needed."
+          title={t("contacts.fieldApp")}
+          description={t("contacts.fieldAppHint")}
         />
       </div>
     );
@@ -87,16 +91,18 @@ export default function ContactsPage() {
     <div className="space-y-4 animate-rise">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Contacts</h1>
+          <h1 className="font-display text-2xl font-bold text-ink">
+            {t("contacts.title")}
+          </h1>
           <p className="text-sm text-muted">
             {isPersonal
-              ? "Save numbers in one place - call from here"
-              : "Link a PulseFlow user to Order in-app; call others"}
+              ? t("contacts.subtitlePersonal")
+              : t("contacts.subtitleCompany")}
           </p>
         </div>
         {canEdit ? (
           <Button size="sm" onClick={() => setCreating(true)}>
-            <Plus className="size-4" /> Add
+            <Plus className="size-4" /> {t("common.add")}
           </Button>
         ) : null}
       </div>
@@ -280,8 +286,10 @@ function OrderForm({
     time_end?: string | null;
   }) => Promise<void>;
 }) {
+  const { t } = useI18n();
+  const label = useLocalizedDemoText();
   const [serviceType, setServiceType] = useState(
-    capitalizeLabel(contact.role),
+    label(contact.role),
   );
   const [villaId, setVillaId] = useState(villas[0]?.id ?? "");
   const [locationLabel, setLocationLabel] = useState("");

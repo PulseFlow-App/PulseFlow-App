@@ -9,13 +9,15 @@ import { HeroCard } from "@/components/home/hero-card";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import type { AppData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
-import { formatOrderWhen, orderStatusLabel } from "@/lib/service-orders";
-import { capitalizeLabel } from "@/lib/format-label";
+import { formatOrderWhen } from "@/lib/service-orders";
+import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
+import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 
 export function StaffHome({ data }: { data: AppData }) {
   const { t } = useI18n();
+  const label = useLocalizedDemoText();
   const today = new Date().toISOString().slice(0, 10);
 
   const villaPhotoById = useMemo(() => {
@@ -89,7 +91,7 @@ export function StaffHome({ data }: { data: AppData }) {
                 ) : null}
                 <div className="p-3">
                   <p className="font-semibold text-ink">
-                    {capitalizeLabel(order.service_type)}
+                    {label(order.service_type)}
                   </p>
                   <p className="text-sm text-muted">
                     {order.location_label} · {formatOrderWhen(order)}
@@ -119,7 +121,7 @@ export function StaffHome({ data }: { data: AppData }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="font-semibold text-ink">
-                  {capitalizeLabel(order.service_type)}
+                  {label(order.service_type)}
                 </p>
                 <p className="text-xs text-muted">
                   {order.location_label} · {formatOrderWhen(order)}
@@ -133,7 +135,7 @@ export function StaffHome({ data }: { data: AppData }) {
                     : "text-secondary",
                 )}
               >
-                {orderStatusLabel(order.status)}
+                {t(`order.status.${order.status}` as MessageKey)}
               </span>
             </div>
           </Card>
@@ -150,10 +152,10 @@ export function StaffHome({ data }: { data: AppData }) {
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold text-ink">
-                  {capitalizeLabel(task.title)}
+                  {label(task.title)}
                 </p>
                 <p className="text-xs text-muted">
-                  {task.villa?.name ?? "General"}
+                  {task.villa?.name ?? t("common.general")}
                   {formatWorkWindow(
                     task.due_date,
                     task.time_start,

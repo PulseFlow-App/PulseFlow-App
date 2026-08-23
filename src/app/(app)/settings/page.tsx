@@ -68,7 +68,9 @@ export default function SettingsPage() {
   const assignablePeople = useMemo(
     () =>
       data.profiles.filter(
-        (p) => p.role !== "owner" && p.id !== data.profile?.id,
+        (p) =>
+          (p.role === "cleaner" || p.role === "staff") &&
+          p.id !== data.profile?.id,
       ),
     [data.profiles, data.profile?.id],
   );

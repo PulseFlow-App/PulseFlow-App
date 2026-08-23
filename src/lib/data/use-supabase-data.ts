@@ -23,6 +23,7 @@ import {
   canBookServices,
   canCreateVillas,
   canViewAllBills,
+  isStaffApp,
   personalVillasOnly,
 } from "@/lib/roles";
 import {
@@ -595,6 +596,32 @@ export function useSupabaseData(enabled: boolean): AppData {
         entity_id: order.id,
         audience_profile_ids: [contact.linked_profile_id],
       });
+
+      // Staff booked on a company villa get property access automatically.
+      if (villa?.id && contact.linked_profile_id) {
+        const staffProfile = profiles.find(
+          (p) => p.id === contact.linked_profile_id,
+        );
+        if (staffProfile && isStaffApp(staffProfile.role)) {
+          const already = villaAssignments.some(
+            (a) =>
+              a.villa_id === villa.id &&
+              a.profile_id === contact.linked_profile_id,
+          );
+          if (!already) {
+            const { error: assignError } = await supabase
+              .from("villa_assignments")
+              .insert({
+                org_id: profile.org_id,
+                villa_id: villa.id,
+                profile_id: contact.linked_profile_id,
+              });
+            if (assignError) {
+              console.warn("villa_assignments insert", assignError.message);
+            }
+          }
+        }
+      }
 
       await refresh();
       return order as ServiceOrder;

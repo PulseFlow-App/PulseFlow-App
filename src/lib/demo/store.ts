@@ -15,7 +15,7 @@ import type {
   VillaListItem,
 } from "@/lib/types";
 import type { OrgKind, UserRole } from "@/lib/design-tokens";
-import { invitableRoles } from "@/lib/roles";
+import { invitableRoles, isStaffApp } from "@/lib/roles";
 import { weekKey } from "@/lib/endorsements";
 import {
   buildScheduleAlerts,
@@ -47,7 +47,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v10";
+const STORE_KEY = "pulseflow_demo_store_v11";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -127,6 +127,7 @@ function readStore(): DemoStore {
         "pulseflow_demo_store_v7",
         "pulseflow_demo_store_v8",
         "pulseflow_demo_store_v9",
+        "pulseflow_demo_store_v10",
       ]) {
         localStorage.removeItem(key);
       }
@@ -729,12 +730,31 @@ export function demoCreateServiceOrder(
       ...(s.notifications ?? []),
     ];
 
+    const staffProfile = s.profiles.find(
+      (p) => p.id === contact.linked_profile_id,
+    );
+    let nextAssignments = s.villaAssignments;
+    if (
+      order.villa_id &&
+      contact.linked_profile_id &&
+      staffProfile &&
+      isStaffApp(staffProfile.role)
+    ) {
+      nextAssignments = ensureVillaAssignment(
+        s,
+        actor.org_id,
+        order.villa_id,
+        contact.linked_profile_id,
+      );
+    }
+
     return {
       ...s,
       serviceOrders: [order, ...(s.serviceOrders ?? [])],
       tasks: nextTasks,
       messages: nextMessages,
       notifications: nextNotifs,
+      villaAssignments: nextAssignments,
     };
   });
 
@@ -983,16 +1003,42 @@ export function companyVillasFor(
   assignments: VillaAssignment[],
 ): Villa[] {
   const orgVillas = villas.filter((v) => v.org_id === profile.org_id);
-  if (profile.role === "owner") return orgVillas;
+  // Owners and managers share the full company inventory.
+  if (profile.role === "owner" || profile.role === "manager") return orgVillas;
 
+  // Cleaner / staff: only company villas assigned to them (not full inventory).
+  // Personal side properties live in personal_org via personalVillasFor / buildVillaList.
   const assignedIds = new Set(
     assignments
       .filter((a) => a.profile_id === profile.id)
       .map((a) => a.villa_id),
   );
-  return orgVillas.filter(
-    (v) => assignedIds.has(v.id) || v.created_by === profile.id,
+  return orgVillas.filter((v) => assignedIds.has(v.id));
+}
+
+/** Ensure staff get property access when booked on a company villa. */
+export function ensureVillaAssignment(
+  store: DemoStore,
+  orgId: string,
+  villaId: string,
+  profileId: string,
+): VillaAssignment[] {
+  const exists = store.villaAssignments.some(
+    (a) =>
+      a.org_id === orgId &&
+      a.villa_id === villaId &&
+      a.profile_id === profileId,
   );
+  if (exists) return store.villaAssignments;
+  return [
+    ...store.villaAssignments,
+    {
+      id: crypto.randomUUID(),
+      org_id: orgId,
+      villa_id: villaId,
+      profile_id: profileId,
+    },
+  ];
 }
 
 export function personalVillasFor(profile: Profile, villas: Villa[]): Villa[] {

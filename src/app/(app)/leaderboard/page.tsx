@@ -11,11 +11,14 @@ import {
   orgsForProfile,
   summarizeRatings,
 } from "@/lib/endorsements";
-import { ROLE_LABELS, canUseTeamReputation } from "@/lib/roles";
+import { canUseTeamReputation } from "@/lib/roles";
+import { useI18n } from "@/lib/i18n/provider";
+import { labelRole } from "@/lib/i18n/labels";
 import { cn } from "@/lib/utils";
 
 export default function LeaderboardPage() {
   const data = useData();
+  const { t } = useI18n();
   const isOwner = data.profile?.role === "owner";
 
   const myCompanies = useMemo(() => {
@@ -139,7 +142,7 @@ export default function LeaderboardPage() {
                       {mine ? " (you)" : ""}
                     </Link>
                     <p className="text-xs text-muted">
-                      {ROLE_LABELS[row.profile.role]}
+                      {labelRole(t, row.profile.role)}
                       {row.profile.job_title
                         ? ` · ${row.profile.job_title}`
                         : ""}

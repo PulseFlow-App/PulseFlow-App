@@ -13,8 +13,9 @@ import {
   summarizeRatings,
   weekLabel,
 } from "@/lib/endorsements";
-import { ROLE_LABELS } from "@/lib/roles";
 import { brand } from "@/lib/design-tokens";
+import { useI18n } from "@/lib/i18n/provider";
+import { labelRole } from "@/lib/i18n/labels";
 import type {
   Endorsement,
   OrgMembership,
@@ -37,6 +38,7 @@ export default function PublicProfilePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
+  const { t } = useI18n();
   const [data, setData] = useState<PublicData | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -126,7 +128,7 @@ export default function PublicProfilePage({
             {data.profile.full_name}
           </h1>
           <p className="text-sm text-muted">
-            {ROLE_LABELS[data.profile.role]}
+            {labelRole(t, data.profile.role)}
             {data.profile.job_title ? ` · ${data.profile.job_title}` : ""}
           </p>
         </div>

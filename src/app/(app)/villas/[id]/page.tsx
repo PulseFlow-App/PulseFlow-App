@@ -11,11 +11,17 @@ import { LoadingState } from "@/components/ui/empty-state";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
 import type { CleaningStatus, VillaStatus } from "@/lib/design-tokens";
-import { ROLE_LABELS, canEditVillaCore, isStaffApp } from "@/lib/roles";
+import { canEditVillaCore, isStaffApp } from "@/lib/roles";
 import { isValidLocationUrl, normalizeLocationUrl } from "@/lib/utils";
 import { formatWorkWindow } from "@/lib/notifications";
 import { formatOrderWhen } from "@/lib/service-orders";
-import { capitalizeLabel } from "@/lib/format-label";
+import { useI18n } from "@/lib/i18n/provider";
+import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import {
+  labelCleaningStatus,
+  labelRole,
+  labelVillaStatus,
+} from "@/lib/i18n/labels";
 
 export default function VillaDetailPage({
   params,
@@ -25,6 +31,8 @@ export default function VillaDetailPage({
   const { id } = use(params);
   const router = useRouter();
   const data = useData();
+  const { t } = useI18n();
+  const label = useLocalizedDemoText();
   const villaItem = data.villaList.find((v) => v.id === id);
   const villa =
     villaItem ??
@@ -32,9 +40,6 @@ export default function VillaDetailPage({
     data.allOrgVillas.find((v) => v.id === id);
   const isOwner = data.profile?.role === "owner";
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
-  const canEditCore = data.profile
-    ? canEditVillaCore(data.profile.role)
-    : false;
   const villaJobs = data.serviceOrders.filter(
     (o) =>
       o.villa_id === id &&
@@ -52,6 +57,10 @@ export default function VillaDetailPage({
     (data.profile?.personal_org_id != null &&
       villa?.org_id === data.profile.personal_org_id &&
       data.profile.org_id !== data.profile.personal_org_id);
+  // Owners/managers edit company cores; anyone can fully manage their personal list.
+  const canEditCore =
+    Boolean(isPersonal) ||
+    (data.profile ? canEditVillaCore(data.profile.role) : false);
   const canMerge =
     Boolean(isPersonal) &&
     data.orgKind === "company" &&
@@ -73,7 +82,10 @@ export default function VillaDetailPage({
   const [saved, setSaved] = useState(false);
 
   const team = useMemo(
-    () => data.profiles.filter((p) => p.role !== "owner"),
+    () =>
+      data.profiles.filter(
+        (p) => p.role === "cleaner" || p.role === "staff",
+      ),
     [data.profiles],
   );
 
@@ -216,7 +228,7 @@ export default function VillaDetailPage({
               />
             </div>
             <div>
-              <Label>Description (optional)</Label>
+              <Label>{t("villas.description")}</Label>
               <Textarea
                 rows={3}
                 value={description}
@@ -231,7 +243,7 @@ export default function VillaDetailPage({
             </h1>
             <p className="text-sm text-muted">{villa.area}</p>
             {villa.description ? (
-              <p className="mt-2 text-sm text-muted">{villa.description}</p>
+              <p className="mt-2 text-sm text-muted">{label(villa.description)}</p>
             ) : null}
             {villa.location_url ? (
               <a
@@ -241,7 +253,7 @@ export default function VillaDetailPage({
                 className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
               >
                 <ExternalLink className="size-3.5" />
-                Open location
+                {t("villas.locationLink")}
               </a>
             ) : null}
             <div className="mt-4 space-y-3">
@@ -254,7 +266,7 @@ export default function VillaDetailPage({
                 />
               </div>
               <div>
-                <Label>Description (optional)</Label>
+                <Label>{t("villas.description")}</Label>
                 <Textarea
                   rows={3}
                   value={description}
@@ -300,7 +312,7 @@ export default function VillaDetailPage({
 
         {isOwner && !isPersonal && data.orgKind === "company" ? (
           <div>
-            <Label>Assigned to</Label>
+            <Label>{t("villas.assignedTo")}</Label>
             <p className="mb-2 text-xs text-muted">
               Who can see and update this villa
             </p>
@@ -326,7 +338,7 @@ export default function VillaDetailPage({
                         {person.full_name}
                       </span>
                       <span className="text-muted">
-                        {ROLE_LABELS[person.role]}
+                        {labelRole(t, person.role)}
                       </span>
                     </label>
                   </li>
@@ -342,30 +354,38 @@ export default function VillaDetailPage({
         ) : null}
 
         <div>
-          <Label htmlFor="status">Status</Label>
+          <Label htmlFor="status">{t("villas.status")}</Label>
           <Select
             id="status"
             value={status}
             onChange={(e) => setStatus(e.target.value as VillaStatus)}
           >
-            <option value="available">Available</option>
-            <option value="occupied">Occupied</option>
-            <option value="turnover">Turnover</option>
-            <option value="maintenance">Maintenance</option>
+            <option value="available">
+              {labelVillaStatus(t, "available")}
+            </option>
+            <option value="occupied">
+              {labelVillaStatus(t, "occupied")}
+            </option>
+            <option value="turnover">
+              {labelVillaStatus(t, "turnover")}
+            </option>
+            <option value="maintenance">
+              {labelVillaStatus(t, "maintenance")}
+            </option>
           </Select>
         </div>
 
         {staff ? (
           <div className="space-y-2 rounded-2xl bg-[#F7F5F1] px-3 py-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-              Your jobs here
+              {t("villas.yourJobsHere")}
             </p>
             {villaJobs.length === 0 && villaTasks.length === 0 ? (
-              <p className="text-sm text-muted">No open jobs for this villa.</p>
+              <p className="text-sm text-muted">{t("villas.noJobsHere")}</p>
             ) : null}
             {villaJobs.map((o) => (
               <p key={o.id} className="text-sm font-semibold text-ink">
-                {capitalizeLabel(o.service_type)} · {formatOrderWhen(o)}
+                {label(o.service_type)} · {formatOrderWhen(o)}
               </p>
             ))}
             {villaTasks.map((t) => (
@@ -377,13 +397,13 @@ export default function VillaDetailPage({
               </p>
             ))}
             <p className="text-xs text-muted">
-              Guest check-in/out is for owners - you only need your work window.
+              {t("villas.staffHint")}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="check_in">Check-in</Label>
+              <Label htmlFor="check_in">{t("villas.checkIn")}</Label>
               <Input
                 id="check_in"
                 type="date"
@@ -392,7 +412,7 @@ export default function VillaDetailPage({
               />
             </div>
             <div>
-              <Label htmlFor="check_out">Check-out</Label>
+              <Label htmlFor="check_out">{t("villas.checkOut")}</Label>
               <Input
                 id="check_out"
                 type="date"
@@ -404,20 +424,26 @@ export default function VillaDetailPage({
         )}
 
         <div>
-          <Label htmlFor="cleaning">Cleaning</Label>
+          <Label htmlFor="cleaning">{t("villas.cleaning")}</Label>
           <Select
             id="cleaning"
             value={cleaning}
             onChange={(e) => setCleaning(e.target.value as CleaningStatus)}
           >
-            <option value="not_needed">Not needed</option>
-            <option value="in_progress">In progress</option>
-            <option value="done">Done</option>
+            <option value="not_needed">
+              {labelCleaningStatus(t, "not_needed")}
+            </option>
+            <option value="in_progress">
+              {labelCleaningStatus(t, "in_progress")}
+            </option>
+            <option value="done">
+              {labelCleaningStatus(t, "done")}
+            </option>
           </Select>
         </div>
 
         <div>
-          <Label htmlFor="notes">Notes</Label>
+          <Label htmlFor="notes">{t("common.notes")}</Label>
           <Textarea
             id="notes"
             rows={4}
@@ -428,11 +454,11 @@ export default function VillaDetailPage({
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
         {saved ? (
-          <p className="text-sm font-semibold text-secondary">Saved.</p>
+          <p className="text-sm font-semibold text-secondary">{t("common.saved")}</p>
         ) : null}
 
         <Button onClick={() => void save()} disabled={saving} className="w-full">
-          {saving ? "Saving…" : "Save changes"}
+          {saving ? `${t("common.save")}…` : t("common.save")}
         </Button>
       </Card>
     </div>
