@@ -259,6 +259,18 @@ export default function SettingsPage() {
                 {t("nav.leaderboard")}
               </Button>
             </Link>
+            <Link href="/messages">
+              <Button size="sm" variant="ghost">
+                {t("nav.chat")}
+              </Button>
+            </Link>
+            {profile.role === "owner" || profile.role === "manager" ? (
+              <Link href="/contacts">
+                <Button size="sm" variant="ghost">
+                  {t("nav.contacts")}
+                </Button>
+              </Link>
+            ) : null}
           </div>
           {profile.role !== "owner" ? (
             <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3">

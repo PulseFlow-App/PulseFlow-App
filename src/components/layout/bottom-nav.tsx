@@ -13,11 +13,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useData } from "@/lib/data/use-app-data";
-import { isStaffApp } from "@/lib/roles";
+import { canUseTeamChat, isStaffApp } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 
-const ownerTabs: {
+/** Personal workspace: no team chat. */
+const personalTabs: {
   href: string;
   labelKey: MessageKey;
   icon: typeof Home;
@@ -26,6 +27,19 @@ const ownerTabs: {
   { href: "/villas", labelKey: "nav.villas", icon: Building2 },
   { href: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
   { href: "/contacts", labelKey: "nav.contacts", icon: Users },
+  { href: "/bills", labelKey: "nav.bills", icon: Receipt },
+];
+
+/** Company owners + managers: chat in the tab bar (contacts stay reachable from jobs/home). */
+const companyOpsTabs: {
+  href: string;
+  labelKey: MessageKey;
+  icon: typeof Home;
+}[] = [
+  { href: "/home", labelKey: "nav.home", icon: Home },
+  { href: "/villas", labelKey: "nav.villas", icon: Building2 },
+  { href: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
+  { href: "/messages", labelKey: "nav.chat", icon: MessageCircle },
   { href: "/bills", labelKey: "nav.bills", icon: Receipt },
 ];
 
@@ -46,7 +60,12 @@ export function BottomNav() {
   const data = useData();
   const { t } = useI18n();
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
-  const tabs = staff ? staffTabs : ownerTabs;
+  const companyChat = canUseTeamChat(data.orgKind);
+  const tabs = staff
+    ? staffTabs
+    : companyChat
+      ? companyOpsTabs
+      : personalTabs;
 
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
