@@ -87,7 +87,7 @@ export default function PublicProfilePage({
     );
   }
 
-  if (!data || !rating) {
+  if (!data) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-sand px-4 font-sans">
         <Card className="w-full max-w-md space-y-3 p-6 text-center">
@@ -103,6 +103,8 @@ export default function PublicProfilePage({
       </div>
     );
   }
+
+  const ratingSummary = rating ?? summarizeRatings(data.endorsements, data.profile.id);
 
   const recent = [...data.endorsements]
     .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
@@ -132,13 +134,13 @@ export default function PublicProfilePage({
         <div className="rounded-[1.5rem] bg-gradient-to-br from-primary to-primary-dark p-5 text-white">
           <p className="text-sm text-white/85">Reputation</p>
           <p className="mt-1 text-4xl font-bold">
-            {rating.voteCount > 0 ? rating.average.toFixed(1) : "-"}
+            {ratingSummary.voteCount > 0 ? ratingSummary.average.toFixed(1) : "-"}
           </p>
           <div className="mt-2">
-            <StarsDisplay value={rating.average} size="lg" />
+            <StarsDisplay value={ratingSummary.average} size="lg" />
           </div>
           <p className="mt-3 text-sm text-white/90">
-            {rating.totalStars} stars collected · {rating.voteCount} weekly
+            {ratingSummary.totalStars} stars collected · {ratingSummary.voteCount} weekly
             endorsements
           </p>
         </div>

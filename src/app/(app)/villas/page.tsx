@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
-import { VillaPhotoThumb } from "@/components/properties/property-photo";
+import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
 import {
   formatShortDate,

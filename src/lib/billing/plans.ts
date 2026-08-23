@@ -65,9 +65,16 @@ export function resolvePlanTier(input: {
         noteKey: "plan.note.managerLimited",
       };
     }
+    if (onTrial) {
+      return {
+        tier: "trial",
+        labelKey: "plan.trial",
+        noteKey: "plan.note.managerIncluded",
+      };
+    }
     return {
-      tier: "free",
-      labelKey: "plan.free",
+      tier: "full",
+      labelKey: "plan.full",
       noteKey: "plan.note.managerIncluded",
     };
   }

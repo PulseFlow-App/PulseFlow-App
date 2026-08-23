@@ -336,15 +336,15 @@ const en = {
   "plan.trial": "Full trial",
   "plan.expired": "Full expired",
   "plan.title": "Your plan",
-  "plan.seePlans": "See Free and Full",
+  "plan.seePlans": "See Free and Full plans",
   "plan.note.personal":
     "Free forever for your own properties, tasks, and bills.",
   "plan.note.staff":
     "Free seat on this company — assigned properties, jobs, bills, and chat.",
   "plan.note.managerLimited":
-    "Free seat. Company Full is inactive, so exports and company writes are closed.",
+    "Free seat while company Full is inactive. Exports and company writes stay closed until the owner subscribes.",
   "plan.note.managerIncluded":
-    "Free seat. Reporting is included while the owner keeps Full active.",
+    "Your owner’s Full plan covers you — reporting, exports, and team features are included while it stays active.",
   "plan.note.ownerTrial":
     "30-day Full trial — invite the team and run company ops.",
   "plan.note.ownerFull":

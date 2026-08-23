@@ -86,8 +86,27 @@ export default function SettingsPage() {
       .catch(() => setReferralProgress(null));
   }, [showReferralYear]);
 
+  useEffect(() => {
+    if (!data.ready || !data.profile) return;
+    if (data.profile.role === "owner") return;
+    if (data.profile.share_slug?.trim()) return;
+    void fetch("/api/profile/share-slug", { method: "POST" })
+      .then((r) => r.json())
+      .then((payload: { share_slug?: string | null }) => {
+        if (payload.share_slug) void data.refresh();
+      })
+      .catch(() => undefined);
+  }, [
+    data.ready,
+    data.profile?.id,
+    data.profile?.role,
+    data.profile?.share_slug,
+    data.refresh,
+  ]);
+
   if (!data.ready || !data.profile) return <LoadingState />;
   const profile = data.profile;
+  const publicShareSlug = profile.share_slug?.trim() ?? null;
   const referralCode = profile.share_slug?.trim() || profile.id.slice(0, 8);
 
   const signOut = async () => {
@@ -244,37 +263,45 @@ export default function SettingsPage() {
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                 {t("settings.publicLink")}
               </p>
-              <p className="mt-1 break-all text-sm font-semibold text-ink">
-                {typeof window !== "undefined"
-                  ? `${window.location.origin}/u/${profile.share_slug}`
-                  : `/u/${profile.share_slug}`}
-              </p>
-              <div className="mt-3 flex gap-2">
-                <Button
-                  size="sm"
-                  className="flex-1"
-                  variant="secondary"
-                  onClick={async () => {
-                    const url = `${window.location.origin}/u/${profile.share_slug}`;
-                    await navigator.clipboard.writeText(url);
-                    setCopiedShare(true);
-                    setTimeout(() => setCopiedShare(false), 1500);
-                  }}
-                >
-                  <Copy className="size-4" />
-                  {copiedShare ? t("common.copied") : t("settings.copyShare")}
-                </Button>
-                <Link
-                  href={`/u/${profile.share_slug}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1"
-                >
-                  <Button size="sm" variant="ghost" className="w-full">
-                    {t("common.open")}
-                  </Button>
-                </Link>
-              </div>
+              {publicShareSlug ? (
+                <>
+                  <p className="mt-1 break-all text-sm font-semibold text-ink">
+                    {typeof window !== "undefined"
+                      ? `${window.location.origin}/u/${publicShareSlug}`
+                      : `/u/${publicShareSlug}`}
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      variant="secondary"
+                      onClick={async () => {
+                        const url = `${window.location.origin}/u/${publicShareSlug}`;
+                        await navigator.clipboard.writeText(url);
+                        setCopiedShare(true);
+                        setTimeout(() => setCopiedShare(false), 1500);
+                      }}
+                    >
+                      <Copy className="size-4" />
+                      {copiedShare ? t("common.copied") : t("settings.copyShare")}
+                    </Button>
+                    <Link
+                      href={`/u/${publicShareSlug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1"
+                    >
+                      <Button size="sm" variant="ghost" className="w-full">
+                        {t("common.open")}
+                      </Button>
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <p className="mt-1 text-sm text-muted">
+                  Preparing your public link…
+                </p>
+              )}
             </div>
           ) : null}
         </Card>

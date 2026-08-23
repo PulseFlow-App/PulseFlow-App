@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { slugifyName, uniqueShareSlug } from "@/lib/auth/helpers";
+import { ensureProfileShareSlug } from "@/lib/auth/share-slug";
 import { creditReferral } from "@/lib/billing/referrals";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 
@@ -152,6 +153,13 @@ export async function POST(request: Request) {
         phone: phone ?? existingProfile.phone,
       })
       .eq("id", userId);
+
+    await ensureProfileShareSlug(admin, {
+      id: userId,
+      full_name: existingProfile.full_name,
+      share_slug: existingProfile.share_slug as string | null,
+      role: invite.role,
+    });
   } else {
     const { data: created, error: createErr } =
       await admin.auth.admin.createUser({

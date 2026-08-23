@@ -12,7 +12,7 @@ export async function GET(
   context: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await context.params;
-  const clean = slug?.trim();
+  const clean = slug?.trim().toLowerCase();
   if (!clean) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
