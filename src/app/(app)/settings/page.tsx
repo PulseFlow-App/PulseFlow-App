@@ -313,7 +313,7 @@ export default function SettingsPage() {
                 </>
               ) : (
                 <p className="mt-1 text-sm text-muted">
-                  Preparing your public link…
+                  {t("settings.preparingShareLink")}
                 </p>
               )}
             </div>
@@ -469,7 +469,7 @@ export default function SettingsPage() {
                       {qrToken === inv.token && qrUrl ? (
                         <Card className="mt-3 space-y-2 p-4">
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                            Scan to join
+                            {t("settings.scanToJoin")}
                           </p>
                           <img
                             alt="Invite QR code"
@@ -619,10 +619,10 @@ export default function SettingsPage() {
       ) : null}
 
       <Card className="space-y-2 p-5">
-        <h2 className="font-display text-lg font-bold text-ink">Website</h2>
-        <p className="text-sm text-muted">
-          Product overview, plans, and guides on the public site.
-        </p>
+        <h2 className="font-display text-lg font-bold text-ink">
+          {t("settings.website")}
+        </h2>
+        <p className="text-sm text-muted">{t("settings.websiteHint")}</p>
         <a
           href="https://pulseflow.site"
           target="_blank"

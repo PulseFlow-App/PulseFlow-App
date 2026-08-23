@@ -548,6 +548,10 @@ const en = {
   "reports.noSnapshots": "No snapshots yet.",
   "settings.reportsLink": "Reports & exports",
   "settings.reportsHint": "CSV downloads, printable weekly summary, handoff snapshots.",
+  "settings.website": "Website",
+  "settings.websiteHint": "Product overview, plans, and guides on the public site.",
+  "settings.preparingShareLink": "Preparing your public link…",
+  "settings.scanToJoin": "Scan to join",
 } as const;
 
 export type MessageKey = keyof typeof en;
