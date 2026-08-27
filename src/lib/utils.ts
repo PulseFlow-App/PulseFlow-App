@@ -13,6 +13,16 @@ export function formatMoney(amount: number, currency = "THB") {
   }).format(amount);
 }
 
+/** Tighter currency for stat tiles (narrow symbol, no extra space). */
+export function formatMoneyCompact(amount: number, currency = "THB") {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    currencyDisplay: "narrowSymbol",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 export function formatShortDate(date: string | null) {
   if (!date) return "-";
   return format(parseISO(date), "d MMM");

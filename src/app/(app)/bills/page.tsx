@@ -13,7 +13,7 @@ import {
   canUseManagerReporting,
   historyCutoffIso,
 } from "@/lib/billing/reporting";
-import { cn, formatMoney, formatShortDate } from "@/lib/utils";
+import { cn, formatMoney, formatMoneyCompact, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 import type { MessageKey } from "@/lib/i18n";
@@ -429,23 +429,29 @@ export default function BillsPage() {
       ) : null}
 
       {showFinance ? (
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
-          <Card className="bg-gradient-to-br from-primary to-primary-dark p-4 text-white">
-            <p className="text-sm text-white/80">{t("bills.totalSpend")}</p>
-            <p className="font-display text-3xl font-bold">
-              {formatMoney(spendTotal)}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <Card className="min-w-0 bg-gradient-to-br from-primary to-primary-dark p-3 text-white sm:p-4">
+            <p className="text-[10px] leading-tight text-white/80 sm:text-sm">
+              {t("bills.totalSpend")}
+            </p>
+            <p className="mt-1 font-display text-sm font-bold tabular-nums leading-none sm:mt-1.5 sm:text-2xl">
+              {formatMoneyCompact(spendTotal)}
             </p>
           </Card>
-          <Card className="p-4">
-            <p className="text-sm text-muted">{t("bills.paidTotal")}</p>
-            <p className="font-display text-2xl font-bold text-secondary">
-              {formatMoney(paidTotal)}
+          <Card className="min-w-0 p-3 sm:p-4">
+            <p className="text-[10px] leading-tight text-muted sm:text-sm">
+              {t("bills.paidTotal")}
+            </p>
+            <p className="mt-1 font-display text-sm font-bold tabular-nums leading-none text-secondary sm:mt-1.5 sm:text-2xl">
+              {formatMoneyCompact(paidTotal)}
             </p>
           </Card>
-          <Card className="p-4">
-            <p className="text-sm text-muted">{t("bills.pendingTotal")}</p>
-            <p className="font-display text-2xl font-bold text-warning-dark">
-              {formatMoney(pendingTotal)}
+          <Card className="min-w-0 p-3 sm:p-4">
+            <p className="text-[10px] leading-tight text-muted sm:text-sm">
+              {t("bills.pendingTotal")}
+            </p>
+            <p className="mt-1 font-display text-sm font-bold tabular-nums leading-none text-warning-dark sm:mt-1.5 sm:text-2xl">
+              {formatMoneyCompact(pendingTotal)}
             </p>
           </Card>
         </div>
