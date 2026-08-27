@@ -276,7 +276,7 @@ const fr: Dictionary = {
   "settings.inviteError": "Impossible de créer l’invitation.",
   "settings.saveError": "Impossible d’enregistrer.",
   "billing.title": "Facturation",
-  "billing.subtitle": "Les forfaits entreprise incluent 30 jours d’essai. Les espaces perso restent gratuits. Seul le propriétaire est facturé.",
+  "billing.subtitle": "La facturation n'est pas encore active. Chaque compte a 3 mois de fonctionnalités complètes gratuites. Les espaces perso restent gratuits.",
   "billing.status": "Statut",
   "billing.trial": "Essai",
   "billing.daysLeft": "{count} jour restant|{count} jours restants",
@@ -316,14 +316,14 @@ const fr: Dictionary = {
   "plan.note.managerIncluded":
     "Free seat. Reporting is included while the owner keeps Full active.",
   "plan.note.ownerTrial":
-    "Company Full trial. Invite the team, assign properties, and run owner finances until the trial ends.",
+    "3 mois Full gratuits — invitez l'équipe tant que la facturation n'est pas active.",
   "plan.note.ownerFull":
     "Company Full. Your subscription covers the team workspace, including Basic reporting for managers.",
   "plan.note.ownerExpired":
     "Company Full has ended. Subscribe to reopen invites, company properties, and service orders.",
   "plan.referralTitle": "Invite 5 people → Get 1 year Full free",
   "plan.referralHint":
-    "Copy your referral link in Profile. You can invite people to your company, or simply to the app itself, both cases count.",
+    "Copiez votre lien de parrainage dans Profil. App ou staff compte. À l'ouverture de la facturation, 5 inscriptions = 1 an Full à partir de cette date.",
   "plan.referralProgress": "{count} of {goal} joins credited",
   "plan.referralRemaining": "{remaining} more for 1 year Full free",
   "plan.referralUnlocked": "Referral year active until {date}",
@@ -494,6 +494,8 @@ const fr: Dictionary = {
   "order.reach.awaiting": "Not contacted (awaiting agreement)",
   "settings.website": "Site web",
   "settings.websiteHint": "Présentation du produit, offres et guides sur le site public.",
+  "settings.supportLink": "Contacter le support",
+  "settings.supportHint": "Questions, bugs ou aide à la facturation.",
   "settings.preparingShareLink": "Préparation du lien public…",
   "settings.scanToJoin": "Scanner pour rejoindre",
 };

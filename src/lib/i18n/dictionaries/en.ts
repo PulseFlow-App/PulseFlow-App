@@ -317,7 +317,7 @@ const en = {
 
   "billing.title": "Billing",
   "billing.subtitle":
-    "One Full subscription covers your company. Personal workspaces stay free.",
+    "Billing is not live yet. Every account gets 3 months of full features free. Personal workspaces stay free after that.",
   "billing.status": "Status",
   "billing.trial": "Trial",
   "billing.daysLeft": "{count} day left|{count} days left",
@@ -358,14 +358,14 @@ const en = {
   "plan.note.managerIncluded":
     "Your owner’s Full plan covers you — reporting, exports, and team features are included while it stays active.",
   "plan.note.ownerTrial":
-    "30-day Full trial — invite the team and run company ops.",
+    "3 months of Full free — invite the team and run company ops while billing is not live.",
   "plan.note.ownerFull":
     "Your subscription covers the team. Managers get reporting automatically.",
   "plan.note.ownerExpired":
     "Company Full has ended. Subscribe to reopen invites, company properties, and service orders.",
   "plan.referralTitle": "Invite 5 people → Get 1 year Full free",
   "plan.referralHint":
-    "Copy your referral link in Profile. You can invite people to your company, or simply to the app itself, both cases count.",
+    "Copy your referral link in Profile. Inviting someone to the app or as staff to your company both count. When billing starts, 5 credited joins unlock 1 year of Full from that date.",
   "plan.referralProgress": "{count} of {goal} joins credited",
   "plan.referralRemaining": "{remaining} more for 1 year Full free",
   "plan.referralUnlocked": "Referral year active until {date}",
@@ -550,6 +550,8 @@ const en = {
   "settings.reportsHint": "CSV downloads, printable weekly summary, handoff snapshots.",
   "settings.website": "Website",
   "settings.websiteHint": "Product overview, plans, and guides on the public site.",
+  "settings.supportLink": "Contact support",
+  "settings.supportHint": "Questions, bugs, or billing help.",
   "settings.preparingShareLink": "Preparing your public link…",
   "settings.scanToJoin": "Scan to join",
 } as const;

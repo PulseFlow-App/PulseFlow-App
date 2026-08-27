@@ -13,7 +13,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="mt-1 text-muted">
-            {brand.name} · Last updated: 13 August 2026
+            {brand.name} · Last updated: 27 August 2026
           </p>
         </div>
 
@@ -40,10 +40,15 @@ export default function PrivacyPage() {
               receipt images you upload (stored in our cloud storage).
             </li>
             <li>
-              <strong className="text-ink">Billing data:</strong> for company
-              subscriptions, Stripe processes card details. We store Stripe
+              <strong className="text-ink">Billing data:</strong> when company
+              billing is enabled, Stripe processes card details. We store Stripe
               customer and subscription IDs on the organization, not full card
               numbers.
+            </li>
+            <li>
+              <strong className="text-ink">Referral data:</strong> referral
+              codes, invite links, and join records used to track referral
+              rewards.
             </li>
             <li>
               <strong className="text-ink">Technical data:</strong> device/browser
@@ -59,7 +64,7 @@ export default function PrivacyPage() {
             <li>Provide and improve rental operations features</li>
             <li>Authenticate users and enforce roles within an organization</li>
             <li>Send in-app notifications (jobs, chat mentions, bills)</li>
-            <li>Process company subscriptions and prevent abuse</li>
+            <li>Process company subscriptions and referral rewards when billing is active</li>
             <li>Respond to support requests and legal obligations</li>
           </ul>
           <p className="text-muted">
@@ -78,6 +83,7 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong className="text-ink">Stripe</strong> for company payments
+              when billing is enabled
             </li>
             <li>
               <strong className="text-ink">Your organization:</strong> teammates
@@ -115,7 +121,7 @@ export default function PrivacyPage() {
           <h2 className="font-display text-lg font-bold">6. Your choices</h2>
           <ul className="list-disc space-y-1 pl-5 text-muted">
             <li>Update profile and organization settings in the app</li>
-            <li>Manage or cancel company billing via the billing portal</li>
+            <li>Manage or cancel company billing via the billing portal when available</li>
             <li>
               Contact us to access, correct, or delete personal data where
               applicable
@@ -156,9 +162,9 @@ export default function PrivacyPage() {
             Privacy questions:{" "}
             <a
               className="font-semibold text-primary"
-              href="mailto:hello@pulseflow.site"
+              href={`mailto:${brand.supportEmail}`}
             >
-              hello@pulseflow.site
+              {brand.supportEmail}
             </a>
             . See also our{" "}
             <Link href="/terms" className="font-semibold text-primary">

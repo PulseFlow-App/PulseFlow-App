@@ -276,7 +276,7 @@ const my: Dictionary = {
   "settings.inviteError": "ဖိတ်ကြားမှု ဖန်တီးမရပါ။",
   "settings.saveError": "သိမ်းမရပါ။",
   "billing.title": "Billing",
-  "billing.subtitle": "Company plans include a 30-day free trial. Personal workspaces stay free. Only the owner is billed.",
+  "billing.subtitle": "Billing is not live yet. Every account gets 3 months of full features free. Personal workspaces stay free after that.",
   "billing.status": "Status",
   "billing.trial": "Trial",
   "billing.daysLeft": "{count} day left|{count} days left",
@@ -316,14 +316,14 @@ const my: Dictionary = {
   "plan.note.managerIncluded":
     "Free seat. Reporting is included while the owner keeps Full active.",
   "plan.note.ownerTrial":
-    "Company Full trial. Invite the team, assign properties, and run owner finances until the trial ends.",
+    "3 months of Full free — invite the team while billing is not live.",
   "plan.note.ownerFull":
     "Company Full. Your subscription covers the team workspace, including Basic reporting for managers.",
   "plan.note.ownerExpired":
     "Company Full has ended. Subscribe to reopen invites, company properties, and service orders.",
   "plan.referralTitle": "Invite 5 people → Get 1 year Full free",
   "plan.referralHint":
-    "Copy your referral link in Profile. You can invite people to your company, or simply to the app itself, both cases count.",
+    "Copy your referral link in Profile. Inviting someone to the app or as staff to your company both count. When billing starts, 5 credited joins unlock 1 year of Full from that date.",
   "plan.referralProgress": "{count} of {goal} joins credited",
   "plan.referralRemaining": "{remaining} more for 1 year Full free",
   "plan.referralUnlocked": "Referral year active until {date}",
@@ -494,6 +494,8 @@ const my: Dictionary = {
   "order.reach.awaiting": "Not contacted (awaiting agreement)",
   "settings.website": "ဝက်ဘ်ဆိုက်",
   "settings.websiteHint": "ထုတ်ကုန်အကျဉ်း၊ အစီအစဉ်များနှင့် လမ်းညွှန်များ အများသုံးဆိုက်တွင်။",
+  "settings.supportLink": "Contact support",
+  "settings.supportHint": "Questions, bugs, or billing help.",
   "settings.preparingShareLink": "အများသုံးလင့်ခ် ပြင်ဆင်နေသည်…",
   "settings.scanToJoin": "စကန်ဖတ်၍ ပါဝင်ရန်",
 };

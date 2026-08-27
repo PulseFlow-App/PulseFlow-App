@@ -237,8 +237,8 @@ export default function RegisterPage() {
               ) : null}
               {useKind === "company" ? (
                 <p className="text-xs text-muted">
-                  Company accounts include a 30-day free trial, then the owner
-                  subscribes. By creating an account you agree to our{" "}
+                  Company accounts include 3 months of full features free while
+                  billing is not live. By creating an account you agree to our{" "}
                   <Link href="/terms" className="font-semibold text-primary">
                     Terms
                   </Link>{" "}

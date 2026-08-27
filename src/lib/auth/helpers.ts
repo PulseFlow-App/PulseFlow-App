@@ -37,7 +37,7 @@ export type RegisterWorkspaceInput = {
   referredBy?: string | null;
 };
 
-export const COMPANY_TRIAL_DAYS = 30;
+export const COMPANY_TRIAL_DAYS = 90;
 
 export function companyTrialEndsAt(from = new Date()) {
   const d = new Date(from);

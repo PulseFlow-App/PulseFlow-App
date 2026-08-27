@@ -12,6 +12,7 @@ import { useData } from "@/lib/data/use-app-data";
 import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
 import type { UserRole } from "@/lib/design-tokens";
+import { brand } from "@/lib/design-tokens";
 import {
   canInvite,
   canManageVillaAssignments,
@@ -630,6 +631,19 @@ export default function SettingsPage() {
           className="inline-flex text-sm font-semibold text-primary"
         >
           pulseflow.site
+        </a>
+      </Card>
+
+      <Card className="space-y-2 p-5">
+        <h2 className="font-display text-lg font-bold text-ink">
+          {t("settings.supportLink")}
+        </h2>
+        <p className="text-sm text-muted">{t("settings.supportHint")}</p>
+        <a
+          href={`mailto:${brand.supportEmail}`}
+          className="inline-flex text-sm font-semibold text-primary"
+        >
+          {brand.supportEmail}
         </a>
       </Card>
 

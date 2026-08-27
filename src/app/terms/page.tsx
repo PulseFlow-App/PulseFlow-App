@@ -13,7 +13,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p className="mt-1 text-muted">
-            {brand.name} · Last updated: 13 August 2026
+            {brand.name} · Last updated: 27 August 2026
           </p>
         </div>
 
@@ -58,35 +58,47 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">3. Trials & billing</h2>
+          <h2 className="font-display text-lg font-bold">
+            3. Free access, billing & referrals
+          </h2>
+          <p className="text-muted">
+            We are still setting up paid billing. Until Stripe checkout is live:
+          </p>
           <ul className="list-disc space-y-1 pl-5 text-muted">
             <li>
-              New company organizations receive a{" "}
-              <strong className="text-ink">30-day free trial</strong> of company
-              features.
+              Every registered user receives a{" "}
+              <strong className="text-ink">3-month free period</strong> with full
+              features from registration.
             </li>
             <li>
-              After the trial, the{" "}
+              Personal workspaces stay free. Company owners are not charged while
+              billing is unavailable.
+            </li>
+            <li>
+              When billing goes live, the{" "}
               <strong className="text-ink">company owner</strong> must keep an
-              active paid subscription for invite, property, service-order, and
-              other gated company writes. Managers, cleaners, and staff are not
-              billed personally.
+              active subscription for invite, property, service-order, and other
+              gated company writes. Managers, cleaners, and staff are not billed
+              personally.
             </li>
             <li>
-              Subscriptions are processed by Stripe. Prices, renewal, and taxes
-              are shown at checkout or in the billing portal.
-            </li>
-            <li>
-              You may cancel or manage billing through the in-app portal where
-              available. Access to paid company features may end when a
-              subscription lapses.
+              Subscriptions will be processed by Stripe. Prices, renewal, and
+              taxes will appear at checkout or in the billing portal.
             </li>
             <li>
               Fees already charged for a billing period are generally
-              non-refundable except where required by law or stated otherwise at
-              purchase.
+              non-refundable except where required by law.
             </li>
           </ul>
+          <p className="text-muted">
+            <strong className="text-ink">Referral reward:</strong> invite 5 people
+            who register for the app or join your company as staff (both count).
+            Copy your referral link in Profile. When subscription billing starts,
+            5 credited joins unlock{" "}
+            <strong className="text-ink">1 year of Full</strong> starting from
+            that billing start date (or from the end of your initial 3-month free
+            period, whichever is later).
+          </p>
         </section>
 
         <section className="space-y-2">
@@ -181,9 +193,9 @@ export default function TermsPage() {
             Questions about these Terms:{" "}
             <a
               className="font-semibold text-primary"
-              href="mailto:hello@pulseflow.site"
+              href={`mailto:${brand.supportEmail}`}
             >
-              hello@pulseflow.site
+              {brand.supportEmail}
             </a>
             . See also our{" "}
             <Link href="/privacy" className="font-semibold text-primary">
@@ -192,11 +204,6 @@ export default function TermsPage() {
             .
           </p>
         </section>
-
-        <p className="text-xs text-muted">
-          These Terms are a practical product agreement, not a substitute for
-          advice from your own counsel.
-        </p>
 
         <div className="flex flex-wrap gap-4 pt-2 pb-8">
           <Link href="/privacy" className="font-semibold text-primary">

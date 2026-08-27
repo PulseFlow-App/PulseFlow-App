@@ -87,13 +87,23 @@ async function maybeGrantReferralYear(
   const target = await referrerCompanyOrgId(admin, referrerId);
   if (!target || target.claimed) return;
 
-  const bonusEnds = new Date(Date.now() + REFERRAL_BONUS_MS).toISOString();
+  const { data: org } = await admin
+    .from("organizations")
+    .select("trial_ends_at")
+    .eq("id", target.orgId)
+    .maybeSingle();
+
+  const billingStartMs = Math.max(
+    Date.now(),
+    org?.trial_ends_at ? new Date(org.trial_ends_at).getTime() : Date.now(),
+  );
+  const bonusEnds = new Date(billingStartMs + REFERRAL_BONUS_MS).toISOString();
+
   await admin
     .from("organizations")
     .update({
       referral_bonus_ends_at: bonusEnds,
       referral_year_claimed: true,
-      subscription_status: "active",
     })
     .eq("id", target.orgId);
 }

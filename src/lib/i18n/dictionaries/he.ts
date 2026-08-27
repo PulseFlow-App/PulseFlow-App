@@ -276,7 +276,7 @@ const he: Dictionary = {
   "settings.inviteError": "לא ניתן ליצור הזמנה.",
   "settings.saveError": "לא ניתן לשמור.",
   "billing.title": "חיוב",
-  "billing.subtitle": "תוכנית חברה כוללת ניסיון חינם ל־30 יום. סביבה אישית נשארת בחינם. רק הבעלים מחויב.",
+  "billing.subtitle": "חיוב עדיין לא פעיל. כל חשבון מקבל 3 חודשי Full בחינם. מרחבים אישיים נשארים בחינם",
   "billing.status": "סטטוס",
   "billing.trial": "ניסיון",
   "billing.daysLeft": "נותר יום אחד|{count} ימים נותרו",
@@ -316,14 +316,14 @@ const he: Dictionary = {
   "plan.note.managerIncluded":
     "Free seat. Reporting is included while the owner keeps Full active.",
   "plan.note.ownerTrial":
-    "Company Full trial. Invite the team, assign properties, and run owner finances until the trial ends.",
+    "3 חודשי Full בחינם — הזמינו את הצוות עד שהחיוב יופעל",
   "plan.note.ownerFull":
     "Company Full. Your subscription covers the team workspace, including Basic reporting for managers.",
   "plan.note.ownerExpired":
     "Company Full has ended. Subscribe to reopen invites, company properties, and service orders.",
   "plan.referralTitle": "Invite 5 people → Get 1 year Full free",
   "plan.referralHint":
-    "Copy your referral link in Profile. You can invite people to your company, or simply to the app itself, both cases count.",
+    "העתיקו קישור הפניה בפרופיל. אפליקציה או צוות נספרים. כשהחיוב יתחיל, 5 הצטרפויות = שנה Full מאותו תאריך",
   "plan.referralProgress": "{count} of {goal} joins credited",
   "plan.referralRemaining": "{remaining} more for 1 year Full free",
   "plan.referralUnlocked": "Referral year active until {date}",
@@ -494,6 +494,8 @@ const he: Dictionary = {
   "order.reach.awaiting": "Not contacted (awaiting agreement)",
   "settings.website": "אתר",
   "settings.websiteHint": "סקירת המוצר, מסלולים ומדריכים באתר הציבורי.",
+  "settings.supportLink": "צור קשר עם התמיכה",
+  "settings.supportHint": "שאלות, באגים או עזרה בחיוב.",
   "settings.preparingShareLink": "מכינים את הקישור הציבורי…",
   "settings.scanToJoin": "סרוק כדי להצטרף",
 };
