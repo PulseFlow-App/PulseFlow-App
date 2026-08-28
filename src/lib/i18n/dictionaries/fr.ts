@@ -65,6 +65,18 @@ const fr: Dictionary = {
   "auth.demoOwner": "Propriétaire",
   "auth.demoManager": "Manager",
   "auth.demoEmployee": "Employé",
+  "auth.signInWithPasskey": "Connexion avec Face ID",
+  "auth.signingInWithPasskey": "En attente de Face ID…",
+  "auth.passkeyDivider": "ou",
+  "auth.passkeyNotSupported": "Les clés d'accès ne sont pas prises en charge dans ce navigateur.",
+  "auth.passkeySignInFailed": "Échec de la connexion par clé d'accès. Essayez e-mail et mot de passe.",
+  "auth.passkeyCancelled": "Connexion par clé d'accès annulée.",
+  "auth.passkeyDisabled":
+    "Les clés d'accès ne sont pas activées dans Supabase. Activez-les dans le tableau de bord.",
+  "auth.passkeyNotRegistered":
+    "Aucune clé d'accès sur cet appareil. Connectez-vous par e-mail, puis activez Face ID dans les réglages.",
+  "auth.passkeyEmailNotConfirmed":
+    "Confirmez votre e-mail avant d'activer la connexion Face ID.",
   "home.ready": "Prêt pour une journée fluide ?",
   "home.hello": "Bonjour, {name}",
   "home.allSteady": "Toutes les properties sont stables aujourd’hui.",
@@ -273,6 +285,23 @@ const fr: Dictionary = {
   "settings.villaAccessSaved": "Accès aux biens mis à jour.",
   "settings.team": "Équipe",
   "settings.signOut": "Se déconnecter",
+  "settings.passkeyTitle": "Connexion Face ID",
+  "settings.passkeyHint":
+    "Connectez-vous plus vite avec Face ID, Touch ID ou le code de votre appareil. Activez cette option après une connexion par e-mail.",
+  "settings.passkeyAdd": "Activer la connexion Face ID",
+  "settings.passkeyAdding": "Configuration…",
+  "settings.passkeyAdded": "Connexion Face ID activée.",
+  "settings.passkeyRegistered": "Enregistré sur cet appareil",
+  "settings.passkeyLastUsed": "Dernière utilisation {date}",
+  "settings.passkeyRemove": "Supprimer",
+  "settings.passkeyRemoved": "Clé d'accès supprimée.",
+  "settings.passkeyUnavailable":
+    "Les clés d'accès nécessitent HTTPS et un navigateur compatible (Safari, Chrome ou Edge).",
+  "settings.passkeyDemoHint":
+    "Les clés d'accès sont disponibles avec un vrai compte, pas en mode démo.",
+  "settings.passkeyRegisterFailed": "Impossible d'enregistrer la clé d'accès. Réessayez.",
+  "settings.passkeyAlreadyRegistered": "Cet appareil a déjà une clé d'accès pour votre compte.",
+  "settings.passkeyListFailed": "Impossible de charger les clés d'accès.",
   "settings.inviteError": "Impossible de créer l’invitation.",
   "settings.saveError": "Impossible d’enregistrer.",
   "billing.title": "Facturation",

@@ -1,7 +1,15 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { LegalShell } from "@/components/legal/legal-shell";
 import { brand } from "@/lib/design-tokens";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Privacy Policy",
+  description: `Privacy Policy for ${brand.name}: how we handle account and operations data.`,
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

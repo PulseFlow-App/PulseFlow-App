@@ -7,6 +7,7 @@ import {
   Noto_Sans_Myanmar,
 } from "next/font/google";
 import { brand, colors } from "@/lib/design-tokens";
+import { APP_URL, OG_IMAGE } from "@/lib/seo";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -46,9 +47,27 @@ const myanmar = Noto_Sans_Myanmar({
 });
 
 export const metadata: Metadata = {
-  title: brand.name,
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: brand.name,
+    template: `%s · ${brand.name}`,
+  },
   description: brand.description,
   applicationName: brand.name,
+  openGraph: {
+    type: "website",
+    siteName: brand.name,
+    title: brand.name,
+    description: brand.description,
+    url: APP_URL,
+    images: [OG_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: brand.name,
+    description: brand.description,
+    images: [OG_IMAGE.url],
+  },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -65,6 +84,10 @@ export const metadata: Metadata = {
       { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  other: {
+    "og:image:width": String(OG_IMAGE.width),
+    "og:image:height": String(OG_IMAGE.height),
   },
 };
 

@@ -6,12 +6,18 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Fingerprint } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { brand } from "@/lib/design-tokens";
+import {
+  isPasskeyAvailable,
+  passkeyErrorMessage,
+  signInWithPasskey,
+} from "@/lib/auth/passkeys";
 import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { demoLogin, demoLogout } from "@/lib/demo/store";
 import { useI18n } from "@/lib/i18n/provider";
@@ -53,6 +59,8 @@ export default function LoginPage() {
   const [demoRole, setDemoRole] = useState<"owner" | "employee" | null>(null);
   const [inviteLink, setInviteLink] = useState("");
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [passkeyReady, setPasskeyReady] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
 
   const demoAccount = demoAccountFromParam(demoRole);
   const isDemoPrefill = Boolean(demoAccount);
@@ -81,6 +89,11 @@ export default function LoginPage() {
     if (isDemoMode()) {
       demoLogout();
     }
+  }, []);
+
+  useEffect(() => {
+    if (isDemoMode()) return;
+    void isPasskeyAvailable().then(setPasskeyReady);
   }, []);
 
   useEffect(() => {
@@ -132,6 +145,20 @@ export default function LoginPage() {
   const onSubmit = handleSubmit(async (values) => {
     await signIn(values.email, values.password);
   });
+
+  const signInWithPasskeyClick = async () => {
+    setError(null);
+    setPasskeyLoading(true);
+    try {
+      await signInWithPasskey();
+      router.replace("/home");
+      router.refresh();
+    } catch (e) {
+      setError(passkeyErrorMessage(e, t));
+    } finally {
+      setPasskeyLoading(false);
+    }
+  };
 
   const selectDemoRole = (role: "owner" | "employee") => {
     setDemoRole(role);
@@ -190,6 +217,27 @@ export default function LoginPage() {
                 </div>
                 <p className="text-center text-[11px] text-muted">
                   {t("auth.demoHint")}
+                </p>
+              </div>
+            ) : null}
+
+            {passkeyReady ? (
+              <div className="mb-4 space-y-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full"
+                  size="lg"
+                  disabled={isSubmitting || passkeyLoading}
+                  onClick={() => void signInWithPasskeyClick()}
+                >
+                  <Fingerprint className="size-5" aria-hidden />
+                  {passkeyLoading
+                    ? t("auth.signingInWithPasskey")
+                    : t("auth.signInWithPasskey")}
+                </Button>
+                <p className="text-center text-xs font-semibold uppercase tracking-wide text-muted">
+                  {t("auth.passkeyDivider")}
                 </p>
               </div>
             ) : null}

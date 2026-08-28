@@ -21,6 +21,7 @@ import {
 import { useI18n } from "@/lib/i18n/provider";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { BillingSettingsCard } from "@/components/billing/billing-card";
+import { PasskeySettingsCard } from "@/components/auth/passkey-settings-card";
 import type { MessageKey } from "@/lib/i18n";
 import {
   referralJoinUrl,
@@ -646,6 +647,8 @@ export default function SettingsPage() {
           {brand.supportEmail}
         </a>
       </Card>
+
+      <PasskeySettingsCard />
 
       <Button variant="danger" className="w-full" onClick={() => void signOut()}>
         {t("settings.signOut")}

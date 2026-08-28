@@ -66,6 +66,18 @@ const en = {
   "auth.demoOwner": "Owner",
   "auth.demoManager": "Manager",
   "auth.demoEmployee": "Employee",
+  "auth.signInWithPasskey": "Sign in with Face ID",
+  "auth.signingInWithPasskey": "Waiting for Face ID…",
+  "auth.passkeyDivider": "or",
+  "auth.passkeyNotSupported": "Passkeys aren't supported in this browser.",
+  "auth.passkeySignInFailed": "Passkey sign-in failed. Try email and password.",
+  "auth.passkeyCancelled": "Passkey sign-in was cancelled.",
+  "auth.passkeyDisabled":
+    "Passkeys are not enabled in Supabase. Turn on Passkey authentication in the dashboard.",
+  "auth.passkeyNotRegistered":
+    "No passkey on this device yet. Sign in with email, then enable Face ID in Settings.",
+  "auth.passkeyEmailNotConfirmed":
+    "Confirm your email before setting up Face ID sign-in.",
 
   "home.ready": "Ready for a smooth day?",
   "home.hello": "Hello, {name}",
@@ -312,6 +324,23 @@ const en = {
   "settings.villaAccessSaved": "Property access updated.",
   "settings.team": "Team",
   "settings.signOut": "Sign out",
+  "settings.passkeyTitle": "Face ID sign-in",
+  "settings.passkeyHint":
+    "Sign in faster with Face ID, Touch ID, or your device passcode. Set this up after signing in with email.",
+  "settings.passkeyAdd": "Enable Face ID sign-in",
+  "settings.passkeyAdding": "Setting up…",
+  "settings.passkeyAdded": "Face ID sign-in enabled.",
+  "settings.passkeyRegistered": "Registered on this device",
+  "settings.passkeyLastUsed": "Last used {date}",
+  "settings.passkeyRemove": "Remove",
+  "settings.passkeyRemoved": "Passkey removed.",
+  "settings.passkeyUnavailable":
+    "Passkeys require HTTPS and a supported browser (Safari, Chrome, or Edge).",
+  "settings.passkeyDemoHint":
+    "Passkeys are available with a real account, not in demo mode.",
+  "settings.passkeyRegisterFailed": "Could not register passkey. Try again.",
+  "settings.passkeyAlreadyRegistered": "This device already has a passkey for your account.",
+  "settings.passkeyListFailed": "Could not load passkeys.",
   "settings.inviteError": "Could not create invite.",
   "settings.saveError": "Could not save.",
 
