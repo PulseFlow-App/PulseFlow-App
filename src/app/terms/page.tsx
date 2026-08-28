@@ -28,7 +28,7 @@ export default function TermsPage() {
           <p className="text-muted">
             {brand.name} is an operations tool for property and short-term rental
             teams: property status, tasks, contacts, team chat, bills, and
-            related workflows. The Service is provided by the Pulse Flow Ops
+            related workflows. The Service is provided by the Pulse Flow
             product team (“we”, “us”).
           </p>
         </section>

@@ -1,4 +1,4 @@
-# Pulse Flow Ops
+# Pulse Flow
 
 **The pulse of your rental operations.** Mobile-first PWA for villa ops - owners and on-site staff sharing one live dataset.
 
