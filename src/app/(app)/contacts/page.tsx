@@ -9,14 +9,23 @@ import {
   Pencil,
   Trash2,
   CalendarPlus,
+  Star,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
+import { StarsPicker } from "@/components/endorsements/stars";
 import { useData } from "@/lib/data/use-app-data";
 import { contactReachability } from "@/lib/notifications";
-import { canBookServices, canBrowseTalent, canEditContacts, isStaffApp } from "@/lib/roles";
+import { weekKey } from "@/lib/endorsements";
+import {
+  canBookServices,
+  canBrowseTalent,
+  canCastEndorsement,
+  canEditContacts,
+  isStaffApp,
+} from "@/lib/roles";
 import { cn, lineDeepLink, phoneToWaMe } from "@/lib/utils";
 import type { Contact } from "@/lib/types";
 import { capitalizeLabel } from "@/lib/format-label";
@@ -41,6 +50,9 @@ export default function ContactsPage() {
   const canBook = data.profile
     ? canBookServices(data.profile.role, data.orgKind)
     : false;
+  const canReview = data.profile
+    ? canCastEndorsement(data.profile.role, data.orgKind)
+    : false;
   const showTalentBrowse = data.profile
     ? canBrowseTalent(data.profile.role, data.orgKind)
     : false;
@@ -49,6 +61,22 @@ export default function ContactsPage() {
   const [editing, setEditing] = useState<Contact | null>(null);
   const [creating, setCreating] = useState(false);
   const [ordering, setOrdering] = useState<Contact | null>(null);
+  const [reviewing, setReviewing] = useState<Contact | null>(null);
+  const currentWeek = weekKey();
+
+  const reviewedThisWeek = useMemo(() => {
+    if (!data.profile) return new Set<string>();
+    return new Set(
+      data.endorsements
+        .filter(
+          (e) =>
+            e.org_id === data.profile!.org_id &&
+            e.from_profile_id === data.profile!.id &&
+            e.week_key === currentWeek,
+        )
+        .map((e) => e.to_profile_id),
+    );
+  }, [data.endorsements, data.profile, currentWeek]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, Contact[]>();
@@ -138,6 +166,22 @@ export default function ContactsPage() {
               ...values,
             });
             setOrdering(null);
+          }}
+        />
+      ) : null}
+
+      {reviewing && canReview && reviewing.linked_profile_id ? (
+        <ReviewForm
+          contact={reviewing}
+          alreadyDone={reviewedThisWeek.has(reviewing.linked_profile_id)}
+          onCancel={() => setReviewing(null)}
+          onSave={async (stars, note) => {
+            await data.castEndorsement(
+              reviewing.linked_profile_id!,
+              stars,
+              note,
+            );
+            setReviewing(null);
           }}
         />
       ) : null}
@@ -238,10 +282,28 @@ export default function ContactsPage() {
                     {canBook && contact.linked_profile_id ? (
                       <button
                         type="button"
-                        onClick={() => setOrdering(contact)}
+                        onClick={() => {
+                          setReviewing(null);
+                          setOrdering(contact);
+                        }}
                         className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-primary/10 px-3 py-2 text-sm font-semibold text-primary"
                       >
-                        <CalendarPlus className="size-4" /> Order
+                        <CalendarPlus className="size-4" /> {t("contacts.order")}
+                      </button>
+                    ) : null}
+                    {canReview && contact.linked_profile_id ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOrdering(null);
+                          setReviewing(contact);
+                        }}
+                        className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-primary-soft px-3 py-2 text-sm font-semibold text-primary"
+                      >
+                        <Star className="size-4" />
+                        {reviewedThisWeek.has(contact.linked_profile_id)
+                          ? t("contacts.reviewDone")
+                          : t("contacts.review")}
                       </button>
                     ) : null}
                     {contact.phone ? (
@@ -284,6 +346,83 @@ export default function ContactsPage() {
         ))
       )}
     </div>
+  );
+}
+
+function ReviewForm({
+  contact,
+  alreadyDone,
+  onCancel,
+  onSave,
+}: {
+  contact: Contact;
+  alreadyDone: boolean;
+  onCancel: () => void;
+  onSave: (stars: 1 | 2 | 3 | 4 | 5, note: string) => Promise<void>;
+}) {
+  const { t } = useI18n();
+  const [stars, setStars] = useState<1 | 2 | 3 | 4 | 5>(5);
+  const [note, setNote] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  return (
+    <Card className="space-y-3 p-4">
+      <div>
+        <h2 className="text-lg font-bold text-ink">
+          {t("contacts.reviewTitle", { name: contact.name })}
+        </h2>
+        <p className="text-sm text-muted">{t("contacts.reviewHint")}</p>
+      </div>
+      {alreadyDone ? (
+        <p className="text-sm font-semibold text-secondary">
+          {t("contacts.reviewDone")}
+        </p>
+      ) : (
+        <>
+          <StarsPicker value={stars} onChange={setStars} />
+          <div>
+            <Label>{t("contacts.reviewNote")}</Label>
+            <Textarea
+              rows={2}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={t("contacts.reviewNotePlaceholder")}
+            />
+          </div>
+        </>
+      )}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      {ok ? <p className="text-sm font-semibold text-secondary">{ok}</p> : null}
+      <div className="flex gap-2">
+        <Button variant="ghost" className="flex-1" onClick={onCancel}>
+          {t("common.cancel")}
+        </Button>
+        {!alreadyDone ? (
+          <Button
+            className="flex-1"
+            disabled={saving}
+            onClick={() => {
+              setSaving(true);
+              setError(null);
+              void onSave(stars, note)
+                .then(() => setOk(t("contacts.reviewSaved")))
+                .catch((e: unknown) =>
+                  setError(
+                    e instanceof Error ? e.message : t("common.error"),
+                  ),
+                )
+                .finally(() => setSaving(false));
+            }}
+          >
+            {saving
+              ? t("common.loading")
+              : t("contacts.reviewSubmit", { stars })}
+          </Button>
+        ) : null}
+      </div>
+    </Card>
   );
 }
 

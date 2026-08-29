@@ -262,6 +262,10 @@ export function demoRegisterWorkspace(input: RegisterOwnerInput): Profile {
     job_search_visible: false,
     job_search_skills: [],
     job_search_bio: null,
+    job_search_location: null,
+    job_search_country: null,
+    job_search_lat: null,
+    job_search_lng: null,
     job_search_updated_at: null,
   };
   const account: DemoAccount = {
@@ -460,6 +464,10 @@ export function demoAcceptInvite(
     job_search_visible: false,
     job_search_skills: [],
     job_search_bio: null,
+    job_search_location: null,
+    job_search_country: null,
+    job_search_lat: null,
+    job_search_lng: null,
     job_search_updated_at: null,
   };
   const account: DemoAccount = {
@@ -506,8 +514,8 @@ export function demoCastEndorsement(
   stars: 1 | 2 | 3 | 4 | 5,
   note?: string,
 ): Endorsement {
-  if (actor.role !== "owner") {
-    throw new Error("Only owners can cast weekly endorsements.");
+  if (actor.role !== "owner" && actor.role !== "manager") {
+    throw new Error("Only owners and managers can cast weekly endorsements.");
   }
   const store = readStore();
   const target = store.profiles.find((p) => p.id === toProfileId);

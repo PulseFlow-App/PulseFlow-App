@@ -46,6 +46,7 @@ import {
   type NotificationInsert,
 } from "@/lib/notifications";
 import { formatMoney } from "@/lib/utils";
+import { normalizeBillCurrency } from "@/lib/billing/currencies";
 import { formatOrderWhen, canCancelServiceOrder } from "@/lib/service-orders";
 import {
   loadLocallyReadIds,
@@ -64,6 +65,16 @@ function normalizeProfile(row: Profile): Profile {
       ? row.job_search_skills
       : [],
     job_search_bio: row.job_search_bio ?? null,
+    job_search_location: row.job_search_location ?? null,
+    job_search_country: row.job_search_country ?? null,
+    job_search_lat:
+      row.job_search_lat == null || !Number.isFinite(Number(row.job_search_lat))
+        ? null
+        : Number(row.job_search_lat),
+    job_search_lng:
+      row.job_search_lng == null || !Number.isFinite(Number(row.job_search_lng))
+        ? null
+        : Number(row.job_search_lng),
     job_search_updated_at: row.job_search_updated_at ?? null,
   };
 }
@@ -1050,12 +1061,13 @@ export function useSupabaseData(enabled: boolean): AppData {
       requireCurrentOrgWrite();
       const supabase = createClient();
       const due_date = input.due_date?.trim() || null;
+      const currency = normalizeBillCurrency(input.currency);
       const { data: inserted, error } = await supabase
         .from("bills")
         .insert({
           org_id: profile.org_id,
           submitted_by: profile.id,
-          currency: "THB",
+          currency,
           status: "pending",
           category: input.category ?? "other",
           description: input.description,
@@ -1072,6 +1084,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         billId: inserted.id,
         description: input.description,
         amount: input.amount,
+        currency,
         due_date,
         submitted_by: profile.id,
         managerIds: ownerManagerIds(profiles, profile.org_id),

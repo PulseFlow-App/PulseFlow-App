@@ -3,7 +3,7 @@
 import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MapPin } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   summarizeRatings,
   weekLabel,
 } from "@/lib/endorsements";
+import { formatTalentPlace } from "@/lib/talent";
 import { brand } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
 import { labelRole } from "@/lib/i18n/labels";
@@ -164,6 +165,17 @@ export default function PublicProfilePage({
             {labelRole(t, data.profile.role)}
             {data.profile.job_title ? ` · ${data.profile.job_title}` : ""}
           </p>
+          {data.profile.job_search_visible
+            ? (() => {
+                const place = formatTalentPlace(data.profile);
+                return place ? (
+                  <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-secondary-dark">
+                    <MapPin className="size-3.5" />
+                    {place}
+                  </p>
+                ) : null;
+              })()
+            : null}
         </div>
 
         <div className="rounded-[1.5rem] bg-gradient-to-br from-primary to-primary-dark p-5 text-white">

@@ -110,6 +110,7 @@ export type AppData = {
   createBill: (input: {
     description: string;
     amount: number;
+    currency?: string;
     villa_id: string | null;
     category?: BillCategory;
     due_date?: string | null;

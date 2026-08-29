@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Briefcase } from "lucide-react";
+import { Briefcase, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label, Textarea } from "@/components/ui/input";
+import { Input, Label, Textarea } from "@/components/ui/input";
 import { useData } from "@/lib/data/use-app-data";
 import { isDemoMode } from "@/lib/supabase/client";
 import { canListInTalentSearch, TALENT_SKILLS } from "@/lib/talent";
@@ -19,7 +19,12 @@ export function JobSearchSettingsCard() {
   const [visible, setVisible] = useState(false);
   const [skills, setSkills] = useState<string[]>([]);
   const [bio, setBio] = useState("");
+  const [location, setLocation] = useState("");
+  const [country, setCountry] = useState("");
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [pinning, setPinning] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,11 +35,19 @@ export function JobSearchSettingsCard() {
     setVisible(Boolean(profile.job_search_visible));
     setSkills(profile.job_search_skills ?? []);
     setBio(profile.job_search_bio ?? "");
+    setLocation(profile.job_search_location ?? "");
+    setCountry(profile.job_search_country ?? "");
+    setLat(profile.job_search_lat ?? null);
+    setLng(profile.job_search_lng ?? null);
   }, [
     profile?.id,
     profile?.job_search_visible,
     profile?.job_search_skills,
     profile?.job_search_bio,
+    profile?.job_search_location,
+    profile?.job_search_country,
+    profile?.job_search_lat,
+    profile?.job_search_lng,
   ]);
 
   const skillLabel = useMemo(
@@ -50,6 +63,28 @@ export function JobSearchSettingsCard() {
   const toggleSkill = (skill: string) => {
     setSkills((prev) =>
       prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill],
+    );
+  };
+
+  const pinHere = () => {
+    if (!navigator.geolocation) {
+      setError(t("talent.geoUnavailable"));
+      return;
+    }
+    setPinning(true);
+    setError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLat(pos.coords.latitude);
+        setLng(pos.coords.longitude);
+        setPinning(false);
+        setMessage(t("talent.pinSet"));
+      },
+      () => {
+        setPinning(false);
+        setError(t("talent.geoDenied"));
+      },
+      { enableHighAccuracy: true, timeout: 15000 },
     );
   };
 
@@ -70,6 +105,11 @@ export function JobSearchSettingsCard() {
           visible,
           skills,
           bio: bio.trim() || null,
+          location: location.trim() || null,
+          country: country.trim() || null,
+          lat,
+          lng,
+          clear_pin: lat == null || lng == null,
         }),
       });
       const payload = (await res.json()) as { error?: string };
@@ -134,6 +174,62 @@ export function JobSearchSettingsCard() {
             );
           })}
         </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label htmlFor="job-search-location">{t("talent.settingsLocation")}</Label>
+          <Input
+            id="job-search-location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder={t("talent.settingsLocationPlaceholder")}
+          />
+        </div>
+        <div>
+          <Label htmlFor="job-search-country">{t("talent.settingsCountry")}</Label>
+          <Input
+            id="job-search-country"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            placeholder={t("talent.settingsCountryPlaceholder")}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={pinning}
+          onClick={pinHere}
+        >
+          <MapPin className="size-4" />
+          {pinning ? t("talent.pinning") : t("talent.pinHere")}
+        </Button>
+        {lat != null && lng != null ? (
+          <>
+            <span className="text-xs text-muted">
+              {t("talent.pinActive", {
+                lat: lat.toFixed(3),
+                lng: lng.toFixed(3),
+              })}
+            </span>
+            <button
+              type="button"
+              className="text-xs font-semibold text-danger"
+              onClick={() => {
+                setLat(null);
+                setLng(null);
+              }}
+            >
+              {t("talent.clearPin")}
+            </button>
+          </>
+        ) : (
+          <span className="text-xs text-muted">{t("talent.pinHint")}</span>
+        )}
       </div>
 
       <div>

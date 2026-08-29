@@ -69,6 +69,10 @@ export const demoProfiles: Profile[] = [
     job_search_visible: false,
     job_search_skills: [],
     job_search_bio: null,
+    job_search_location: null,
+    job_search_country: null,
+    job_search_lat: null,
+    job_search_lng: null,
     job_search_updated_at: null,
   },
   {
@@ -84,6 +88,10 @@ export const demoProfiles: Profile[] = [
     job_search_visible: false,
     job_search_skills: [],
     job_search_bio: null,
+    job_search_location: null,
+    job_search_country: null,
+    job_search_lat: null,
+    job_search_lng: null,
     job_search_updated_at: null,
   },
   {
@@ -99,6 +107,10 @@ export const demoProfiles: Profile[] = [
     job_search_visible: true,
     job_search_skills: ["manager", "maintenance"],
     job_search_bio: "On-site manager for villa portfolios in Phuket.",
+    job_search_location: "Phuket",
+    job_search_country: "Thailand",
+    job_search_lat: 7.8804,
+    job_search_lng: 98.3923,
     job_search_updated_at: "2026-08-01T00:00:00.000Z",
   },
   {
@@ -114,6 +126,10 @@ export const demoProfiles: Profile[] = [
     job_search_visible: true,
     job_search_skills: ["cleaner", "pool"],
     job_search_bio: "Villa turnover cleaning, pool checks, English & Thai.",
+    job_search_location: "Koh Samui",
+    job_search_country: "Thailand",
+    job_search_lat: 9.512,
+    job_search_lng: 100.0135,
     job_search_updated_at: "2026-08-01T00:00:00.000Z",
   },
 ];

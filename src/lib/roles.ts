@@ -42,6 +42,15 @@ export function canUseTeamReputation(orgKind?: OrgKind | null) {
   return isCompanyWorkspace(orgKind);
 }
 
+/** Owners and managers can cast weekly stars for teammates. */
+export function canCastEndorsement(
+  role: UserRole,
+  orgKind?: OrgKind | null,
+) {
+  if (!canUseTeamReputation(orgKind)) return false;
+  return role === "owner" || role === "manager";
+}
+
 export function canCreateVillas(role: UserRole) {
   return (
     role === "owner" ||

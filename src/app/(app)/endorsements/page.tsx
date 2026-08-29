@@ -14,7 +14,7 @@ import {
   weekKey,
   weekLabel,
 } from "@/lib/endorsements";
-import { canUseTeamReputation } from "@/lib/roles";
+import { canCastEndorsement, canUseTeamReputation } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 import { labelRole } from "@/lib/i18n/labels";
 
@@ -22,7 +22,9 @@ export default function EndorsementsPage() {
   const data = useData();
   const { t } = useI18n();
   const currentWeek = weekKey();
-  const isOwner = data.profile?.role === "owner";
+  const canVote = data.profile
+    ? canCastEndorsement(data.profile.role, data.orgKind)
+    : false;
 
   const teammates = useMemo(
     () =>
@@ -87,7 +89,7 @@ export default function EndorsementsPage() {
         </Link>
       </div>
 
-      {isOwner ? (
+      {canVote ? (
         <Card className="space-y-4 p-5">
           <div>
             <h2 className="text-lg font-bold text-ink">Vote this week</h2>

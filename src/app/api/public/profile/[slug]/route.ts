@@ -22,7 +22,7 @@ export async function GET(
     const { data: profile, error: profileError } = await admin
       .from("profiles")
       .select(
-        "id, full_name, role, email, org_id, personal_org_id, phone, job_title, share_slug",
+        "id, full_name, role, email, org_id, personal_org_id, phone, job_title, share_slug, job_search_visible, job_search_location, job_search_country, job_search_skills, job_search_bio",
       )
       .eq("share_slug", clean)
       .maybeSingle();
@@ -37,6 +37,9 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    const publicProfile = profile as Profile;
+    const showTalent = Boolean(publicProfile.job_search_visible);
+
     const [
       { data: endorsements },
       { data: memberships },
@@ -46,27 +49,27 @@ export async function GET(
       admin
         .from("endorsements")
         .select("*")
-        .eq("to_profile_id", profile.id),
+        .eq("to_profile_id", publicProfile.id),
       admin
         .from("org_memberships")
         .select("*")
-        .eq("profile_id", profile.id),
+        .eq("profile_id", publicProfile.id),
       admin
         .from("tasks")
         .select("id")
-        .eq("assigned_to", profile.id)
+        .eq("assigned_to", publicProfile.id)
         .eq("status", "done"),
       admin
         .from("tasks")
         .select("id")
-        .eq("assigned_to", profile.id)
+        .eq("assigned_to", publicProfile.id)
         .eq("status", "open"),
     ]);
 
     const orgIds = [
       ...new Set(
         [
-          profile.org_id,
+          publicProfile.org_id,
           ...(memberships ?? []).map((m: OrgMembership) => m.org_id),
         ].filter(Boolean),
       ),
@@ -82,7 +85,21 @@ export async function GET(
     }
 
     return NextResponse.json({
-      profile: profile as Profile,
+      profile: {
+        ...publicProfile,
+        job_search_location: showTalent
+          ? publicProfile.job_search_location
+          : null,
+        job_search_country: showTalent
+          ? publicProfile.job_search_country
+          : null,
+        job_search_skills: showTalent
+          ? publicProfile.job_search_skills ?? []
+          : [],
+        job_search_bio: showTalent ? publicProfile.job_search_bio : null,
+        job_search_lat: null,
+        job_search_lng: null,
+      } satisfies Profile,
       endorsements: (endorsements as Endorsement[]) ?? [],
       memberships: (memberships as OrgMembership[]) ?? [],
       orgs,

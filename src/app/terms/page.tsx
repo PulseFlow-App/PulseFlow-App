@@ -132,9 +132,10 @@ export default function TermsPage() {
           <h2 className="font-display text-lg font-bold">5. Talent directory</h2>
           <p className="text-muted">
             Field staff and managers may opt in to appear in the in-app talent
-            directory so property owners and managers can discover them. Listing
-            is voluntary and controlled in Settings. Public reputation pages may
-            show weekly endorsements and optional review notes from past teams.
+            directory so property owners and managers can discover them by skill
+            and location (including an optional map pin). Listing is voluntary
+            and controlled in Settings. Public reputation pages may show weekly
+            endorsements and optional review notes from past teams.
           </p>
           <ul className="list-disc space-y-1 pl-5 text-muted">
             <li>

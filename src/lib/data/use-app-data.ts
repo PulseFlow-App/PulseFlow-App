@@ -67,6 +67,7 @@ import {
   rememberLocallyRead,
 } from "@/lib/notifications-read";
 import { formatMoney, formatShortDate } from "@/lib/utils";
+import { normalizeBillCurrency } from "@/lib/billing/currencies";
 import { capitalizeLabel } from "@/lib/format-label";
 
 export type { AppData } from "@/lib/data/types";
@@ -553,6 +554,7 @@ function useDemoData(): AppData {
       if (!profile) return;
       const billId = uid("bill");
       const due_date = input.due_date?.trim() || null;
+      const currency = normalizeBillCurrency(input.currency);
       updateDemoStore((s) => ({
         ...s,
         bills: [
@@ -562,7 +564,7 @@ function useDemoData(): AppData {
             description: input.description,
             amount: input.amount,
             villa_id: input.villa_id,
-            currency: "THB",
+            currency,
             status: "pending",
             category: input.category ?? "other",
             due_date,
@@ -581,7 +583,7 @@ function useDemoData(): AppData {
           org_id: profile.org_id,
           kind: "bill_submitted",
           title: "Bill submitted",
-          body: `${input.description} · ${formatMoney(input.amount)}`,
+          body: `${input.description} · ${formatMoney(input.amount, currency)}`,
           href: "/bills",
           entity_id: billId,
           audience_profile_ids: managers.length ? managers : null,
@@ -593,7 +595,7 @@ function useDemoData(): AppData {
             org_id: profile.org_id,
             kind: "bill_due",
             title: `Bill due ${formatShortDate(due_date)}`,
-            body: `${input.description} · ${formatMoney(input.amount)}`,
+            body: `${input.description} · ${formatMoney(input.amount, currency)}`,
             href: "/bills",
             entity_id: billId,
             audience_profile_ids: managers.length

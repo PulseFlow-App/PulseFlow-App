@@ -60,9 +60,10 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong className="text-ink">Talent directory data:</strong> if you
-              opt in, your name, skills, optional bio, job title, ratings, and
-              public profile slug are visible to property owners and managers
-              searching for staff inside the Service.
+              opt in, your name, skills, city/country (and optional map pin),
+              optional bio, job title, ratings, and public profile slug are
+              visible to property owners and managers searching for staff inside
+              the Service.
             </li>
             <li>
               <strong className="text-ink">Technical data:</strong> device/browser
