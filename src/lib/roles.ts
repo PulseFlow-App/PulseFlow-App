@@ -5,6 +5,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   manager: "Management",
   cleaner: "Cleaning team",
   staff: "Staff",
+  guest: "Guest",
 };
 
 export function isCompanyWorkspace(kind: OrgKind | null | undefined) {
@@ -15,19 +16,43 @@ export function isPersonalWorkspace(kind: OrgKind | null | undefined) {
   return kind === "personal";
 }
 
-/** Roles an actor may assign when creating an invite (company only). */
+/** Staff invite roles (managers + field team) for company owner/manager. */
+export function invitableStaffRoles(
+  actorRole: UserRole,
+  orgKind?: OrgKind | null,
+): Array<"manager" | "cleaner" | "staff"> {
+  if (!isCompanyWorkspace(orgKind)) return [];
+  if (actorRole === "owner" || actorRole === "manager") {
+    return ["manager", "cleaner", "staff"];
+  }
+  return [];
+}
+
+/** @deprecated Prefer invitableStaffRoles + guest invites. */
 export function invitableRoles(
   actorRole: UserRole,
   orgKind?: OrgKind | null,
 ): UserRole[] {
-  if (!isCompanyWorkspace(orgKind)) return [];
-  if (actorRole === "owner") return ["manager", "cleaner", "staff"];
-  if (actorRole === "manager") return ["cleaner", "staff"];
-  return [];
+  return invitableStaffRoles(actorRole, orgKind);
 }
 
 export function canInvite(actorRole: UserRole, orgKind?: OrgKind | null) {
-  return invitableRoles(actorRole, orgKind).length > 0;
+  return invitableStaffRoles(actorRole, orgKind).length > 0;
+}
+
+/** Anyone with an account can share a generic register referral link. */
+export function canInviteAnyone(_role: UserRole) {
+  return true;
+}
+
+/** Company owners and managers can invite team (managers + staff). */
+export function canInviteStaff(role: UserRole, orgKind?: OrgKind | null) {
+  return invitableStaffRoles(role, orgKind).length > 0;
+}
+
+/** Company owners and managers can invite stay guests. */
+export function canInviteGuest(role: UserRole, orgKind?: OrgKind | null) {
+  return isCompanyWorkspace(orgKind) && (role === "owner" || role === "manager");
 }
 
 export function canManageVillaAssignments(
@@ -65,6 +90,11 @@ export function isStaffApp(role: UserRole) {
   return role === "cleaner" || role === "staff";
 }
 
+/** Stay guests get the guest stay app. */
+export function isGuestApp(role: UserRole) {
+  return role === "guest";
+}
+
 /** Owners and company managers can browse the talent directory. */
 export function canBrowseTalent(role: UserRole, orgKind?: OrgKind | null) {
   if (role === "owner") return true;
@@ -79,9 +109,11 @@ export function canBookServices(
   return role === "owner" || role === "manager";
 }
 
-/** In-app team chat - company workspaces only. */
-export function canUseTeamChat(orgKind?: OrgKind | null) {
-  return isCompanyWorkspace(orgKind);
+/** In-app team chat - company workspaces only (not guest stay chat). */
+export function canUseTeamChat(orgKind?: OrgKind | null, role?: UserRole) {
+  if (!isCompanyWorkspace(orgKind)) return false;
+  if (role === "guest") return false;
+  return true;
 }
 
 /** Personal-only villa creates (no company inventory) - for company staff side work. */
@@ -120,5 +152,5 @@ export function isOwnerApp(role: UserRole) {
 }
 
 export function isOpsApp(role: UserRole) {
-  return role !== "owner";
+  return role !== "owner" && role !== "guest";
 }

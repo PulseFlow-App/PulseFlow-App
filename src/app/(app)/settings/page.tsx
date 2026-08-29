@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Copy, NotebookPen, QrCode, Star, Trophy } from "lucide-react";
+import { Copy, NotebookPen, Star, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
@@ -11,12 +11,10 @@ import { LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
-import type { UserRole } from "@/lib/design-tokens";
 import { brand } from "@/lib/design-tokens";
 import {
-  canInvite,
+  canInviteAnyone,
   canManageVillaAssignments,
-  invitableRoles,
 } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
@@ -24,10 +22,9 @@ import { BillingSettingsCard } from "@/components/billing/billing-card";
 import { PasskeySettingsCard } from "@/components/auth/passkey-settings-card";
 import { JobSearchSettingsCard } from "@/components/settings/job-search-settings-card";
 import { PushSettingsCard } from "@/components/settings/push-settings-card";
+import { InviteFlipCards } from "@/components/settings/invite-flip-cards";
 import type { MessageKey } from "@/lib/i18n";
 import {
-  referralJoinUrl,
-  referralRegisterUrl,
   resolvePlanTier,
 } from "@/lib/billing/plans";
 import { canUseManagerReporting } from "@/lib/billing/reporting";
@@ -38,36 +35,15 @@ export default function SettingsPage() {
   const data = useData();
   const router = useRouter();
   const { t } = useI18n();
-  const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [copiedShare, setCopiedShare] = useState(false);
-  const [inviteError, setInviteError] = useState<string | null>(null);
-  const [inviteRole, setInviteRole] =
-    useState<Exclude<UserRole, "owner">>("manager");
-  const [inviteTitle, setInviteTitle] = useState("");
-  const [creating, setCreating] = useState(false);
   const [assignManagerId, setAssignManagerId] = useState("");
   const [selectedVillas, setSelectedVillas] = useState<string[]>([]);
   const [assignMsg, setAssignMsg] = useState<string | null>(null);
-  const [qrToken, setQrToken] = useState<string | null>(null);
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
-  const [copiedReferral, setCopiedReferral] = useState(false);
   const [referralProgress, setReferralProgress] =
     useState<ReferralProgress | null>(null);
 
-  const roleOptions = useMemo(
-    () =>
-      data.profile
-        ? invitableRoles(data.profile.role, data.orgKind)
-        : [],
-    [data.profile, data.orgKind],
-  );
-
   const isCompany = data.orgKind === "company";
   const isPersonal = data.orgKind === "personal";
-
-  const effectiveInviteRole = (
-    roleOptions.includes(inviteRole) ? inviteRole : roleOptions[0] ?? "cleaner"
-  ) as Exclude<UserRole, "owner">;
 
   const assignablePeople = useMemo(
     () =>
@@ -79,18 +55,15 @@ export default function SettingsPage() {
     [data.profiles, data.profile?.id],
   );
 
-  const showReferralYear =
-    !!data.profile &&
-    (data.profile.role === "owner" ||
-      (data.profile.role === "manager" && data.orgKind === "company"));
+  const showInvitePanel = !!data.profile && canInviteAnyone(data.profile.role);
 
   useEffect(() => {
-    if (!showReferralYear) return;
+    if (!showInvitePanel) return;
     void fetch("/api/referrals/progress")
       .then((r) => r.json())
       .then((payload) => setReferralProgress(payload as ReferralProgress))
       .catch(() => setReferralProgress(null));
-  }, [showReferralYear]);
+  }, [showInvitePanel]);
 
   useEffect(() => {
     if (!data.ready || !data.profile) return;
@@ -126,29 +99,6 @@ export default function SettingsPage() {
     router.refresh();
   };
 
-  const createInvite = async () => {
-    setInviteError(null);
-    setCreating(true);
-    try {
-      const invite = await data.createInvite({
-        role: effectiveInviteRole,
-        jobTitle: inviteTitle || undefined,
-      });
-      const link = referralJoinUrl(
-        window.location.origin,
-        invite.token,
-        referralCode,
-      );
-      await navigator.clipboard.writeText(link);
-      setCopiedToken(invite.token);
-      setInviteTitle("");
-    } catch (e) {
-      setInviteError(e instanceof Error ? e.message : t("settings.inviteError"));
-    } finally {
-      setCreating(false);
-    }
-  };
-
   const loadAssignments = (managerId: string) => {
     setAssignManagerId(managerId);
     const current = data.villaAssignments
@@ -174,7 +124,6 @@ export default function SettingsPage() {
     orgKind: data.orgKind,
     organization: data.organization,
   });
-  const canInviteTeammates = canInvite(profile.role, data.orgKind);
   const showReports = canUseManagerReporting({
     role: profile.role,
     orgKind: data.orgKind,
@@ -327,7 +276,7 @@ export default function SettingsPage() {
 
       <BillingSettingsCard />
 
-      {showReferralYear ? (
+      {showInvitePanel ? (
         <Card className="space-y-4 p-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">
@@ -357,171 +306,16 @@ export default function SettingsPage() {
                 ) : null}
               </div>
             ) : null}
+            <p className="mt-3 text-xs font-semibold text-secondary">
+              {t("settings.inviteCountsTowardReferral")}
+            </p>
           </div>
 
-          {canInviteTeammates ? (
-            <div className="space-y-3 border-t border-black/5 pt-4">
-              <div>
-                <h2 className="font-display text-lg font-bold text-ink">
-                  {t("settings.invite")}
-                </h2>
-                <p className="mt-1 text-sm text-muted">
-                  {t("settings.inviteHint")}
-                </p>
-                <p className="mt-1 text-xs font-semibold text-secondary">
-                  {t("settings.inviteCountsTowardReferral")}
-                </p>
-              </div>
-
-              <div>
-                <Label>{t("common.role")}</Label>
-                <Select
-                  value={effectiveInviteRole}
-                  onChange={(e) =>
-                    setInviteRole(e.target.value as Exclude<UserRole, "owner">)
-                  }
-                >
-                  {roleOptions.map((r) => (
-                    <option key={r} value={r}>
-                      {t(`roles.${r}` as MessageKey)}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div>
-                <Label>{t("settings.jobTitle")}</Label>
-                <Input
-                  value={inviteTitle}
-                  onChange={(e) => setInviteTitle(e.target.value)}
-                  placeholder={t("settings.jobTitlePlaceholder")}
-                />
-              </div>
-              {inviteError ? (
-                <p className="text-sm text-danger">{inviteError}</p>
-              ) : null}
-              {copiedToken ? (
-                <p className="text-sm font-semibold text-secondary">
-                  {t("settings.inviteCopied")}
-                </p>
-              ) : null}
-              <Button
-                className="w-full"
-                disabled={creating || roleOptions.length === 0}
-                onClick={() => void createInvite()}
-              >
-                {creating ? t("settings.creating") : t("settings.createInvite")}
-              </Button>
-
-              {data.invites.length > 0 ? (
-                <div className="space-y-2 border-t border-black/5 pt-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                    {t("settings.openInvites")}
-                  </p>
-                  {data.invites.map((inv) => (
-                    <div key={inv.id}>
-                      <div className="flex items-center justify-between gap-2 text-sm">
-                        <div>
-                          <p className="font-semibold text-ink">
-                            {t(`roles.${inv.role}` as MessageKey)}
-                            {inv.job_title ? ` · ${inv.job_title}` : ""}
-                          </p>
-                          <p className="text-xs text-muted">
-                            {t("settings.waitingToJoin")}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={async () => {
-                              const link = referralJoinUrl(
-                                window.location.origin,
-                                inv.token,
-                                referralCode,
-                              );
-                              await navigator.clipboard.writeText(link);
-                              setCopiedToken(inv.token);
-                            }}
-                          >
-                            {t("common.copy")}
-                          </Button>
-                          {profile.role === "owner" ? (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                if (qrToken === inv.token) {
-                                  setQrToken(null);
-                                  setQrUrl(null);
-                                  return;
-                                }
-                                const url = referralJoinUrl(
-                                  window.location.origin,
-                                  inv.token,
-                                  referralCode,
-                                );
-                                setQrToken(inv.token);
-                                setQrUrl(url);
-                              }}
-                            >
-                              <QrCode className="size-4" />
-                              QR
-                            </Button>
-                          ) : null}
-                        </div>
-                      </div>
-                      {qrToken === inv.token && qrUrl ? (
-                        <Card className="mt-3 space-y-2 p-4">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                            {t("settings.scanToJoin")}
-                          </p>
-                          <img
-                            alt="Invite QR code"
-                            className="mx-auto rounded-2xl border border-black/5"
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(
-                              qrUrl,
-                            )}`}
-                            width={260}
-                            height={260}
-                            loading="lazy"
-                          />
-                        </Card>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
-          <div className="space-y-3 border-t border-black/5 pt-4">
-            <div>
-              <h2 className="font-display text-lg font-bold text-ink">
-                {t("settings.inviteAnyone")}
-              </h2>
-              <p className="mt-1 text-sm text-muted">
-                {t("settings.inviteAnyoneHint")}
-              </p>
-            </div>
-            <Button
-              size="sm"
-              className="w-full"
-              variant="secondary"
-              onClick={async () => {
-                const url = referralRegisterUrl(
-                  window.location.origin,
-                  referralCode,
-                );
-                await navigator.clipboard.writeText(url);
-                setCopiedReferral(true);
-                setTimeout(() => setCopiedReferral(false), 1500);
-              }}
-            >
-              <Copy className="size-4" />
-              {copiedReferral ? t("plan.referralCopied") : t("plan.copyReferral")}
-            </Button>
-            <p className="text-[11px] text-muted">{t("settings.inviteAnyoneLinkHint")}</p>
-          </div>
+          <InviteFlipCards
+            referralCode={referralCode}
+            invites={data.invites}
+            isOwner={profile.role === "owner"}
+          />
         </Card>
       ) : null}
 

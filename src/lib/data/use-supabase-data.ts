@@ -22,7 +22,9 @@ import type {
 import {
   canBookServices,
   canCreateVillas,
+  canInviteGuest,
   canViewAllBills,
+  invitableStaffRoles,
   isStaffApp,
   personalVillasOnly,
 } from "@/lib/roles";
@@ -1224,6 +1226,15 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!profile) throw new Error("Not signed in.");
       if (organization?.kind !== "company") {
         throw new Error("Invites are only available for company workspaces.");
+      }
+      const allowed =
+        input.role === "guest"
+          ? canInviteGuest(profile.role, organization.kind)
+            ? (["guest"] as const)
+            : []
+          : invitableStaffRoles(profile.role, organization.kind);
+      if (!(allowed as readonly string[]).includes(input.role)) {
+        throw new Error("You cannot invite someone with that role.");
       }
       requireCurrentOrgWrite();
       const supabase = createClient();

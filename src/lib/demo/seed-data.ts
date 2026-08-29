@@ -22,10 +22,13 @@ export const DEMO_ORG_2_ID = "11111111-1111-4111-8111-111111111133";
 export const DEMO_PERSONAL_ORG_ID = "11111111-1111-4111-8111-111111111122";
 export const DEMO_CLEANER_PERSONAL_ORG_ID =
   "11111111-1111-4111-8111-111111111144";
+export const DEMO_GUEST_PERSONAL_ORG_ID =
+  "11111111-1111-4111-8111-111111111155";
 export const DEMO_OWNER_ID = "22222222-2222-4222-8222-222222222222";
 export const DEMO_OWNER_2_ID = "22222222-2222-4222-8222-222222222233";
 export const DEMO_EMPLOYEE_ID = "33333333-3333-4333-8333-333333333333";
 export const DEMO_CLEANER_ID = "33333333-3333-4333-8333-333333333344";
+export const DEMO_GUEST_ID = "33333333-3333-4333-8333-333333333355";
 
 export const demoOrg: Organization = {
   id: DEMO_ORG_ID,
@@ -53,6 +56,13 @@ export const demoCleanerPersonalOrg: Organization = {
   name: "Nok's personal ops",
   kind: "personal",
   created_at: "2026-01-15T00:00:00.000Z",
+};
+
+export const demoGuestPersonalOrg: Organization = {
+  id: DEMO_GUEST_PERSONAL_ORG_ID,
+  name: "Jordan's personal ops",
+  kind: "personal",
+  created_at: "2026-08-01T00:00:00.000Z",
 };
 
 export const demoProfiles: Profile[] = [
@@ -132,6 +142,25 @@ export const demoProfiles: Profile[] = [
     job_search_lng: 100.0135,
     job_search_updated_at: "2026-08-01T00:00:00.000Z",
   },
+  {
+    id: DEMO_GUEST_ID,
+    org_id: DEMO_ORG_ID,
+    personal_org_id: DEMO_GUEST_PERSONAL_ORG_ID,
+    role: "guest",
+    full_name: "Jordan Guest",
+    phone: "+66815550099",
+    email: "guest@pulseflow.site",
+    job_title: null,
+    share_slug: "jordan-guest",
+    job_search_visible: false,
+    job_search_skills: [],
+    job_search_bio: null,
+    job_search_location: null,
+    job_search_country: null,
+    job_search_lat: null,
+    job_search_lng: null,
+    job_search_updated_at: null,
+  },
 ];
 
 export const demoAccounts: DemoAccount[] = [
@@ -149,6 +178,11 @@ export const demoAccounts: DemoAccount[] = [
     email: "employee@pulseflow.site",
     password: "TestPass123!",
     profileId: DEMO_CLEANER_ID,
+  },
+  {
+    email: "guest@pulseflow.site",
+    password: "TestPass123!",
+    profileId: DEMO_GUEST_ID,
   },
 ];
 
@@ -813,6 +847,13 @@ export const demoMemberships: OrgMembership[] = [
     role: "manager",
     joined_at: "2026-03-01T00:00:00.000Z",
   },
+  {
+    id: "66666666-6666-4666-8666-666666666666",
+    org_id: DEMO_ORG_ID,
+    profile_id: DEMO_GUEST_ID,
+    role: "guest",
+    joined_at: "2026-08-10T00:00:00.000Z",
+  },
 ];
 
 export const demoEndorsements: Endorsement[] = [
@@ -951,6 +992,7 @@ export function createFreshDemoStore(): DemoStore {
       structuredClone(demoOrg2),
       structuredClone(demoPersonalOrg),
       structuredClone(demoCleanerPersonalOrg),
+      structuredClone(demoGuestPersonalOrg),
     ],
     accounts: structuredClone(demoAccounts),
     profiles: structuredClone(demoProfiles),

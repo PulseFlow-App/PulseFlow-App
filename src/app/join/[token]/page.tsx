@@ -164,6 +164,7 @@ export default function JoinPage({
   }
 
   const { invite, org, inviter } = ctx;
+  const isGuestInvite = invite.role === "guest";
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-sand px-4 py-10">
@@ -171,24 +172,25 @@ export default function JoinPage({
         <div className="mb-6 text-center">
           <PulseMark className="mx-auto mb-3 size-12" />
           <h1 className="font-display text-2xl font-bold text-ink">
-            Join {org?.name ?? "the team"}
+            {isGuestInvite
+              ? t("guest.joinTitle")
+              : t("join.staffTitle")}
           </h1>
           <p className="mt-2 text-sm text-muted">
-            You&apos;re registering for{" "}
+            {isGuestInvite ? t("guest.joinHint") : t("join.staffHint")}
+          </p>
+          <p className="mt-2 text-sm text-muted">
             <span className="font-semibold text-ink">
               {org?.name ?? "this organization"}
             </span>
             {inviter ? (
               <>
-                , invited by{" "}
-                <span className="font-semibold text-ink">
-                  {inviter.full_name}
-                </span>{" "}
-                ({labelRole(t, inviter.role)})
+                {" "}
+                · {inviter.full_name} ({labelRole(t, inviter.role)})
               </>
             ) : null}
-            .
           </p>
+          <p className="mt-2 text-xs text-muted">{t("join.accountNote")}</p>
         </div>
 
         <Card className="space-y-4 p-5">

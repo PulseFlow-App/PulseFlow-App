@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useData } from "@/lib/data/use-app-data";
-import { isStaffApp } from "@/lib/roles";
+import { isGuestApp, isStaffApp } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 
@@ -42,12 +42,30 @@ const staffTabs: {
   { href: "/bills", labelKey: "nav.bills", icon: Receipt },
 ];
 
+/** Lean guest stay app — stay home, company villas, support, deposit bills. */
+const guestTabs: {
+  href: string;
+  labelKey: MessageKey;
+  icon: typeof Home;
+}[] = [
+  { href: "/home", labelKey: "guest.nav.stay", icon: Home },
+  { href: "/villas", labelKey: "guest.nav.villas", icon: Building2 },
+  { href: "/messages", labelKey: "guest.nav.support", icon: MessageCircle },
+  { href: "/bills", labelKey: "guest.nav.bills", icon: Receipt },
+];
+
 export function BottomNav() {
   const pathname = usePathname();
   const data = useData();
   const { t } = useI18n();
-  const staff = data.profile ? isStaffApp(data.profile.role) : false;
-  const tabs = staff ? staffTabs : mainTabs;
+  const role = data.profile?.role;
+  const tabs = role
+    ? isGuestApp(role)
+      ? guestTabs
+      : isStaffApp(role)
+        ? staffTabs
+        : mainTabs
+    : mainTabs;
 
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))]">

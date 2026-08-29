@@ -20,6 +20,7 @@ export function billsToCsv(bills: BillWithRelations[]): string {
       "Status",
       "Submitted by",
       "Due date",
+      "Receipt URL",
     ],
     ...bills.map((b) => [
       b.created_at.slice(0, 10),
@@ -31,6 +32,64 @@ export function billsToCsv(bills: BillWithRelations[]): string {
       b.status,
       b.submitter?.full_name ?? "",
       b.due_date ?? "",
+      b.receipt_photo_url ?? "",
+    ]),
+  ];
+  return rowsToCsv(rows);
+}
+
+/** Budget-friendly shape for Google Sheets / Excel paste. */
+export function budgetSheetToCsv(bills: BillWithRelations[]): string {
+  const rows: (string | number | null)[][] = [
+    [
+      "Month",
+      "Property",
+      "Category",
+      "Amount",
+      "Currency",
+      "Paid?",
+      "Description",
+      "Date",
+      "Receipt URL",
+    ],
+    ...bills.map((b) => {
+      const date = b.created_at.slice(0, 10);
+      return [
+        date.slice(0, 7),
+        b.villa?.name ?? "General",
+        b.category ?? "other",
+        Number(b.amount),
+        b.currency ?? "THB",
+        b.status === "paid" ? "yes" : "no",
+        b.description,
+        date,
+        b.receipt_photo_url ?? "",
+      ];
+    }),
+  ];
+  return rowsToCsv(rows);
+}
+
+/** Occupancy / stay dates for calendar or sheet planning. */
+export function occupancyToCsv(villas: Villa[]): string {
+  const rows: (string | number | null)[][] = [
+    [
+      "Property",
+      "Area",
+      "Status",
+      "Check-in",
+      "Check-out",
+      "Cleaning",
+      "Notes",
+    ],
+    ...villas.map((v) => [
+      v.name,
+      v.area ?? "",
+      v.status,
+      v.check_in ?? "",
+      v.check_out ?? "",
+      v.cleaning_status,
+      v.notes ?? "",
     ]),
   ];
   return rowsToCsv(rows);

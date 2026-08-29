@@ -50,7 +50,7 @@ export const BILL_CATEGORIES: BillCategory[] = [
 ];
 
 export type Messenger = "whatsapp" | "line" | "none";
-export type UserRole = "owner" | "manager" | "cleaner" | "staff";
+export type UserRole = "owner" | "manager" | "cleaner" | "staff" | "guest";
 export type OrgKind = "personal" | "company";
 
 export const statusColors: Record<

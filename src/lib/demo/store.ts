@@ -15,7 +15,7 @@ import type {
   VillaListItem,
 } from "@/lib/types";
 import type { OrgKind, UserRole } from "@/lib/design-tokens";
-import { invitableRoles, isStaffApp } from "@/lib/roles";
+import { invitableStaffRoles, canInviteGuest, isStaffApp } from "@/lib/roles";
 import { weekKey } from "@/lib/endorsements";
 import {
   buildEndorsementReceivedNotification,
@@ -48,7 +48,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v11";
+const STORE_KEY = "pulseflow_demo_store_v12";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -129,6 +129,7 @@ function readStore(): DemoStore {
         "pulseflow_demo_store_v8",
         "pulseflow_demo_store_v9",
         "pulseflow_demo_store_v10",
+        "pulseflow_demo_store_v11",
       ]) {
         localStorage.removeItem(key);
       }
@@ -312,8 +313,13 @@ export function demoCreateInvite(
   if (!org || org.kind !== "company") {
     throw new Error("Invites are only available for company workspaces.");
   }
-  const allowed = invitableRoles(actor.role, org.kind);
-  if (!allowed.includes(input.role)) {
+  const allowed =
+    input.role === "guest"
+      ? canInviteGuest(actor.role, org.kind)
+        ? (["guest"] as const)
+        : []
+      : invitableStaffRoles(actor.role, org.kind);
+  if (!(allowed as readonly string[]).includes(input.role)) {
     throw new Error("You cannot invite someone with that role.");
   }
 

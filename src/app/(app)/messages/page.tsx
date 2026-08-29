@@ -86,7 +86,7 @@ export default function MessagesPage() {
 
   if (!data.ready || !data.profile) return <LoadingState />;
 
-  if (!canUseTeamChat(data.orgKind)) {
+  if (!canUseTeamChat(data.orgKind, data.profile.role)) {
     return (
       <EmptyState
         title={t("messages.companyOnly")}

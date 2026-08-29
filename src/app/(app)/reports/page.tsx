@@ -13,9 +13,11 @@ import { canUseManagerReporting } from "@/lib/billing/reporting";
 import { downloadCsv } from "@/lib/export/csv";
 import {
   billsToCsv,
+  budgetSheetToCsv,
   buildHandoffPayload,
   buildWeeklySummaryHtml,
   handoffToCsv,
+  occupancyToCsv,
   serviceOrdersToCsv,
   tasksToCsv,
   villasToCsv,
@@ -65,6 +67,7 @@ export default function ReportsPage() {
   const router = useRouter();
   const { t } = useI18n();
   const [period, setPeriod] = useState<PeriodKey>("all");
+  const [filterVilla, setFilterVilla] = useState("");
   const [snapshotLabel, setSnapshotLabel] = useState("");
   const [snapshots, setSnapshots] = useState<HandoffSnapshot[]>([]);
   const [savingSnapshot, setSavingSnapshot] = useState(false);
@@ -95,19 +98,38 @@ export default function ReportsPage() {
   }, [data.profile, allowed]);
 
   const filteredBills = useMemo(
-    () => data.bills.filter((b) => inPeriod(b.created_at, period)),
-    [data.bills, period],
+    () =>
+      data.bills.filter((b) => {
+        if (!inPeriod(b.created_at, period)) return false;
+        if (filterVilla && b.villa_id !== filterVilla) return false;
+        return true;
+      }),
+    [data.bills, period, filterVilla],
   );
   const filteredTasks = useMemo(
-    () => data.tasks.filter((task) => inPeriod(task.created_at, period)),
-    [data.tasks, period],
+    () =>
+      data.tasks.filter((task) => {
+        if (!inPeriod(task.created_at, period)) return false;
+        if (filterVilla && task.villa_id !== filterVilla) return false;
+        return true;
+      }),
+    [data.tasks, period, filterVilla],
   );
   const filteredOrders = useMemo(
     () =>
-      data.serviceOrders.filter((o) =>
-        inPeriod(o.scheduled_date ?? o.created_at, period),
-      ),
-    [data.serviceOrders, period],
+      data.serviceOrders.filter((o) => {
+        if (!inPeriod(o.scheduled_date ?? o.created_at, period)) return false;
+        if (filterVilla && o.villa_id !== filterVilla) return false;
+        return true;
+      }),
+    [data.serviceOrders, period, filterVilla],
+  );
+  const filteredVillas = useMemo(
+    () =>
+      filterVilla
+        ? data.allOrgVillas.filter((v) => v.id === filterVilla)
+        : data.allOrgVillas,
+    [data.allOrgVillas, filterVilla],
   );
 
   if (!data.ready || !data.profile || !allowed) return <LoadingState />;
@@ -188,17 +210,48 @@ export default function ReportsPage() {
       ) : null}
 
       <Card className="space-y-3 p-4">
-        <Select
-          value={period}
-          onChange={(e) => setPeriod(e.target.value as PeriodKey)}
-          aria-label={t("reports.period")}
-        >
-          <option value="all">{t("reports.periodAll")}</option>
-          <option value="this_month">{t("reports.periodMonth")}</option>
-          <option value="last_30">{t("reports.period30")}</option>
-          <option value="last_90">{t("reports.period90")}</option>
-        </Select>
         <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label>{t("reports.period")}</Label>
+            <Select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as PeriodKey)}
+              aria-label={t("reports.period")}
+            >
+              <option value="all">{t("reports.periodAll")}</option>
+              <option value="this_month">{t("reports.periodMonth")}</option>
+              <option value="last_30">{t("reports.period30")}</option>
+              <option value="last_90">{t("reports.period90")}</option>
+            </Select>
+          </div>
+          <div>
+            <Label>{t("reports.property")}</Label>
+            <Select
+              value={filterVilla}
+              onChange={(e) => setFilterVilla(e.target.value)}
+              aria-label={t("reports.property")}
+            >
+              <option value="">{t("reports.allProperties")}</option>
+              {data.allOrgVillas.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </div>
+        <p className="text-xs text-muted">{t("reports.exportHint")}</p>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() =>
+              downloadCsv(`budget-${stamp}.csv`, budgetSheetToCsv(filteredBills))
+            }
+          >
+            <Download className="size-4" />
+            {t("reports.exportBudget")}
+          </Button>
           <Button
             size="sm"
             variant="secondary"
@@ -223,7 +276,7 @@ export default function ReportsPage() {
             onClick={() =>
               downloadCsv(
                 `properties-${stamp}.csv`,
-                villasToCsv(data.allOrgVillas),
+                villasToCsv(filteredVillas),
               )
             }
           >
@@ -240,6 +293,18 @@ export default function ReportsPage() {
             }
           >
             {t("reports.exportJobs")}
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() =>
+              downloadCsv(
+                `occupancy-${stamp}.csv`,
+                occupancyToCsv(filteredVillas),
+              )
+            }
+          >
+            {t("reports.exportOccupancy")}
           </Button>
         </div>
         <Button className="w-full" size="sm" onClick={printWeekly}>

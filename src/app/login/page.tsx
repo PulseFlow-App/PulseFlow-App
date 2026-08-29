@@ -34,7 +34,7 @@ type FormValues = z.infer<typeof schema>;
 const DEMO_PASSWORD = "TestPass123!";
 
 const DEMO_ACCOUNTS: {
-  role: "owner" | "employee";
+  role: "owner" | "employee" | "guest";
   email: string;
   labelKey: MessageKey;
 }[] = [
@@ -43,6 +43,11 @@ const DEMO_ACCOUNTS: {
     role: "employee",
     email: "employee@pulseflow.site",
     labelKey: "auth.demoEmployee",
+  },
+  {
+    role: "guest",
+    email: "guest@pulseflow.site",
+    labelKey: "auth.demoGuest",
   },
 ];
 
@@ -56,7 +61,9 @@ export default function LoginPage() {
   const router = useRouter();
   const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
-  const [demoRole, setDemoRole] = useState<"owner" | "employee" | null>(null);
+  const [demoRole, setDemoRole] = useState<"owner" | "employee" | "guest" | null>(
+    null,
+  );
   const [inviteLink, setInviteLink] = useState("");
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [passkeyReady, setPasskeyReady] = useState(false);
@@ -81,7 +88,11 @@ export default function LoginPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const fromQuery = params.get("demo")?.trim().toLowerCase();
-    if (fromQuery === "owner" || fromQuery === "employee") {
+    if (
+      fromQuery === "owner" ||
+      fromQuery === "employee" ||
+      fromQuery === "guest"
+    ) {
       setDemoRole(fromQuery);
       return;
     }
@@ -160,7 +171,7 @@ export default function LoginPage() {
     }
   };
 
-  const selectDemoRole = (role: "owner" | "employee") => {
+  const selectDemoRole = (role: "owner" | "employee" | "guest") => {
     setDemoRole(role);
     const url = new URL(window.location.href);
     url.searchParams.set("demo", role);

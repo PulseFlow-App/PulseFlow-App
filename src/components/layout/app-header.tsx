@@ -17,8 +17,10 @@ export function AppHeader({
 }) {
   const { t } = useI18n();
   const data = useData();
-  const showReputation = canUseTeamReputation(data.orgKind);
-  const showChat = canUseTeamChat(data.orgKind);
+  const showReputation =
+    canUseTeamReputation(data.orgKind) &&
+    data.profile?.role !== "guest";
+  const showChat = canUseTeamChat(data.orgKind, data.profile?.role);
 
   return (
     <header className="flex w-full max-w-full items-center justify-between gap-2 overflow-hidden pb-3 pt-[max(0.65rem,env(safe-area-inset-top))]">

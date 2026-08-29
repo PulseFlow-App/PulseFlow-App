@@ -11,8 +11,9 @@ import { StaffHome } from "@/components/home/staff-home";
 import { LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import type { VillaStatus } from "@/lib/design-tokens";
-import { isStaffApp } from "@/lib/roles";
+import { isGuestApp, isStaffApp } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
+import { GuestHome } from "@/components/home/guest-home";
 
 export default function HomePage() {
   const data = useData();
@@ -37,6 +38,10 @@ export default function HomePage() {
 
   if (!data.ready || !data.profile) {
     return <LoadingState label={t("home.loading")} />;
+  }
+
+  if (isGuestApp(data.profile.role)) {
+    return <GuestHome name={data.profile.full_name} />;
   }
 
   if (isStaffApp(data.profile.role)) {
