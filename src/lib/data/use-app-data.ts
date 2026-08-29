@@ -268,6 +268,78 @@ function useDemoData(): AppData {
     return (store.serviceOrders ?? []).filter((o) => o.org_id === profile.org_id);
   }, [store.serviceOrders, profile]);
 
+  const guestStays = useMemo(() => {
+    if (!profile) return [];
+    const all = store.guestStays ?? [];
+    if (profile.role === "guest") {
+      return all.filter((s) => s.guest_profile_id === profile.id);
+    }
+    if (profile.role === "owner" || profile.role === "manager") {
+      return all.filter((s) => s.org_id === profile.org_id);
+    }
+    return [];
+  }, [store.guestStays, profile]);
+
+  const activeStay = useMemo(() => {
+    if (!profile || profile.role !== "guest") return null;
+    return (
+      guestStays.find((s) => s.status === "active") ??
+      guestStays.find((s) => s.status === "upcoming") ??
+      guestStays[0] ??
+      null
+    );
+  }, [guestStays, profile]);
+
+  const houseGuides = useMemo(() => {
+    if (!profile) return [];
+    return (store.houseGuides ?? []).filter((g) => g.org_id === profile.org_id);
+  }, [store.houseGuides, profile]);
+
+  const supportMessages = useMemo(() => {
+    if (!profile) return [];
+    const stayIds = new Set(guestStays.map((s) => s.id));
+    return [...(store.supportMessages ?? [])]
+      .filter((m) => stayIds.has(m.stay_id))
+      .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))
+      .map((m) => ({
+        ...m,
+        sender: orgProfiles.find((p) => p.id === m.sender_id) ?? null,
+      }));
+  }, [store.supportMessages, guestStays, orgProfiles, profile]);
+
+  const guestDeposits = useMemo(() => {
+    if (!profile) return [];
+    const stayIds = new Set(guestStays.map((s) => s.id));
+    return (store.guestDeposits ?? []).filter((d) => stayIds.has(d.stay_id));
+  }, [store.guestDeposits, guestStays, profile]);
+
+  const guestCharges = useMemo(() => {
+    if (!profile) return [];
+    const stayIds = new Set(guestStays.map((s) => s.id));
+    return (store.guestCharges ?? []).filter((c) => stayIds.has(c.stay_id));
+  }, [store.guestCharges, guestStays, profile]);
+
+  const stayPhotos = useMemo(() => {
+    if (!profile) return [];
+    const stayIds = new Set(guestStays.map((s) => s.id));
+    return (store.stayPhotos ?? []).filter((p) => stayIds.has(p.stay_id));
+  }, [store.stayPhotos, guestStays, profile]);
+
+  const stayDateRequests = useMemo(() => {
+    if (!profile) return [];
+    if (profile.role === "guest") {
+      return (store.stayDateRequests ?? []).filter(
+        (r) => r.guest_profile_id === profile.id,
+      );
+    }
+    if (profile.role === "owner" || profile.role === "manager") {
+      return (store.stayDateRequests ?? []).filter(
+        (r) => r.org_id === profile.org_id,
+      );
+    }
+    return [];
+  }, [store.stayDateRequests, profile]);
+
   return {
     ready: hydrated,
     profile,
@@ -293,6 +365,14 @@ function useDemoData(): AppData {
     serviceOrders,
     unreadNotificationCount,
     unreadMessageCount,
+    guestStays,
+    activeStay,
+    houseGuides,
+    supportMessages,
+    guestDeposits,
+    guestCharges,
+    stayPhotos,
+    stayDateRequests,
     refresh: async () => undefined,
     markNotificationRead: async (id) => {
       if (!profile) return;
@@ -727,6 +807,149 @@ function useDemoData(): AppData {
       assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       demoCastEndorsement(profile, toProfileId, stars, note);
+    },
+    sendSupportMessage: async (body, stayId) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      const stay =
+        (stayId
+          ? guestStays.find((s) => s.id === stayId)
+          : null) ??
+        activeStay ??
+        (profile.role === "owner" || profile.role === "manager"
+          ? guestStays[0]
+          : null);
+      if (!stay) throw new Error("No stay for support chat.");
+      const canReply =
+        profile.id === stay.guest_profile_id ||
+        profile.role === "owner" ||
+        profile.role === "manager";
+      if (!canReply) throw new Error("Only guest or host can use support chat.");
+      const text = body.trim();
+      if (!text) return;
+      updateDemoStore((s) => ({
+        ...s,
+        supportMessages: [
+          ...s.supportMessages,
+          {
+            id: uid("support"),
+            org_id: stay.org_id,
+            stay_id: stay.id,
+            sender_id: profile.id,
+            body: text,
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
+      const recipients =
+        profile.id === stay.guest_profile_id
+          ? ownerManagerIds(store.profiles, stay.org_id)
+          : [stay.guest_profile_id];
+      demoPushNotifications([
+        makeNotification({
+          org_id: stay.org_id,
+          kind: "message",
+          title: "Support message",
+          body: text.slice(0, 120),
+          href: "/messages",
+          entity_id: stay.id,
+          audience_profile_ids: recipients,
+        }),
+      ]);
+    },
+    upsertHouseGuide: async (villaId, patch) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can edit the house guide.");
+      }
+      updateDemoStore((s) => {
+        const existing = s.houseGuides.find((g) => g.villa_id === villaId);
+        const now = new Date().toISOString();
+        if (existing) {
+          return {
+            ...s,
+            houseGuides: s.houseGuides.map((g) =>
+              g.villa_id === villaId ? { ...g, ...patch, updated_at: now } : g,
+            ),
+          };
+        }
+        return {
+          ...s,
+          houseGuides: [
+            ...s.houseGuides,
+            {
+              id: uid("guide"),
+              org_id: profile.org_id,
+              villa_id: villaId,
+              wifi_ssid: null,
+              wifi_password: null,
+              gate_code: null,
+              bins_notes: null,
+              quiet_hours: null,
+              checkout_checklist: null,
+              extra_notes: null,
+              ...patch,
+              updated_at: now,
+            },
+          ],
+        };
+      });
+    },
+    requestStayDates: async (input) => {
+      assertDemoWritable();
+      if (!profile || profile.role !== "guest") {
+        throw new Error("Only guests can request dates.");
+      }
+      updateDemoStore((s) => ({
+        ...s,
+        stayDateRequests: [
+          ...s.stayDateRequests,
+          {
+            id: uid("dates"),
+            org_id: profile.org_id,
+            villa_id: input.villa_id,
+            guest_profile_id: profile.id,
+            check_in: input.check_in,
+            check_out: input.check_out,
+            note: input.note?.trim() || null,
+            status: "pending",
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
+      demoPushNotifications([
+        makeNotification({
+          org_id: profile.org_id,
+          kind: "appointment",
+          title: "Date request",
+          body: `${profile.full_name} requested stay dates`,
+          href: "/villas",
+          entity_id: input.villa_id,
+          audience_profile_ids: ownerManagerIds(store.profiles, profile.org_id),
+        }),
+      ]);
+    },
+    addStayPhoto: async (input) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      if (!activeStay) throw new Error("No active stay.");
+      updateDemoStore((s) => ({
+        ...s,
+        stayPhotos: [
+          ...s.stayPhotos,
+          {
+            id: uid("photo"),
+            org_id: activeStay.org_id,
+            stay_id: activeStay.id,
+            kind: input.kind,
+            photo_url: input.photo_url,
+            note: input.note?.trim() || null,
+            uploaded_by: profile.id,
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
     },
   };
 }

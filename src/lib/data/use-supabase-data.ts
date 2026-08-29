@@ -163,6 +163,14 @@ export function useSupabaseData(enabled: boolean): AppData {
     serviceOrders: [],
     unreadNotificationCount: 0,
     unreadMessageCount: 0,
+    guestStays: [],
+    activeStay: null,
+    houseGuides: [],
+    supportMessages: [],
+    guestDeposits: [],
+    guestCharges: [],
+    stayPhotos: [],
+    stayDateRequests: [],
     refresh: async () => undefined,
     markNotificationRead: async () => undefined,
     markAllNotificationsRead: async () => undefined,
@@ -192,6 +200,10 @@ export function useSupabaseData(enabled: boolean): AppData {
     setVillaAssignments: async () => undefined,
     setVillaAssignees: async () => undefined,
     castEndorsement: async () => undefined,
+    sendSupportMessage: async () => undefined,
+    upsertHouseGuide: async () => undefined,
+    requestStayDates: async () => undefined,
+    addStayPhoto: async () => undefined,
   };
 
   const [ready, setReady] = useState(!enabled);
@@ -543,6 +555,14 @@ export function useSupabaseData(enabled: boolean): AppData {
     serviceOrders,
     unreadNotificationCount,
     unreadMessageCount,
+    guestStays: [],
+    activeStay: null,
+    houseGuides: [],
+    supportMessages: [],
+    guestDeposits: [],
+    guestCharges: [],
+    stayPhotos: [],
+    stayDateRequests: [],
     refresh,
     markNotificationRead: async (id) => {
       if (!profile) return;
@@ -1332,6 +1352,18 @@ export function useSupabaseData(enabled: boolean): AppData {
         ]);
       }
       await refresh();
+    },
+    sendSupportMessage: async () => {
+      throw new Error("Support chat needs migration 023 on Supabase.");
+    },
+    upsertHouseGuide: async () => {
+      throw new Error("House guide needs migration 023 on Supabase.");
+    },
+    requestStayDates: async () => {
+      throw new Error("Date requests need migration 023 on Supabase.");
+    },
+    addStayPhoto: async () => {
+      throw new Error("Stay photos need migration 023 on Supabase.");
     },
   };
 }

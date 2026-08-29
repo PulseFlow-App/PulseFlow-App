@@ -22,7 +22,7 @@ export function rememberLocallyRead(profileId: string, ids: string[]) {
   if (typeof window === "undefined" || !ids.length) return;
   const next = new Set(loadLocallyReadIds(profileId));
   for (const id of ids) next.add(id);
-  // Cap growth — keep the newest ~500 ids
+  // Cap growth - keep the newest ~500 ids
   const list = [...next];
   const trimmed = list.length > 500 ? list.slice(list.length - 500) : list;
   window.localStorage.setItem(storageKey(profileId), JSON.stringify(trimmed));

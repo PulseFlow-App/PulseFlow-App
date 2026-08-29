@@ -22,6 +22,7 @@ import {
   labelRole,
   labelVillaStatus,
 } from "@/lib/i18n/labels";
+import { HouseGuideEditor } from "@/components/villas/house-guide-editor";
 
 export default function VillaDetailPage({
   params,
@@ -110,7 +111,7 @@ export default function VillaDetailPage({
     setLocationUrl(villa.location_url ?? "");
     setDescription(villa.description ?? "");
     setPhotoUrl(villa.photo_url ?? null);
-    // Only hydrate when opening a villa — re-syncing on every server refresh
+    // Only hydrate when opening a villa - re-syncing on every server refresh
     // would wipe a just-uploaded photo before Save.
   }, [villa?.id]);
 
@@ -461,6 +462,8 @@ export default function VillaDetailPage({
           {saving ? `${t("common.save")}…` : t("common.save")}
         </Button>
       </Card>
+
+      {canEditCore && !staff ? <HouseGuideEditor villaId={id} /> : null}
     </div>
   );
 }

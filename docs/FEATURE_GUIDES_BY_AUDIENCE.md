@@ -1,4 +1,4 @@
-# Pulse Flow — feature matrix by audience
+# Pulse Flow - feature matrix by audience
 
 Use this to redesign **in-app / marketing guides** per group (owners, managers, field staff, guests, personal users).  
 Status: **shipped** vs **planned** are separated. Guest stay tools beyond invite/shell are mostly planned.
@@ -27,7 +27,7 @@ These belong in every group’s guide intro (wording can change; capability is s
 | Language | Settings language switcher; `?lang=` on marketing |
 | Profile basics | Name, email, role label |
 | Notifications (in-app) | Bell + list; kinds vary by role |
-| Web Push (PWA) | Optional phone alerts — Settings → Phone alerts |
+| Web Push (PWA) | Optional phone alerts - Settings → Phone alerts |
 | Invite anyone | Referral register link → `/register` (personal vs company). Counts toward “invite 5 → 1 year Full” when credited |
 | Public reputation profile | `/u/{slug}` for non-owners (stars from endorsements). Guests: low priority in guide |
 | Brand / Settings | App name, support email, legal links, sign out |
@@ -50,7 +50,7 @@ These belong in every group’s guide intro (wording can change; capability is s
 | Owner home dashboard | Status tiles, urgent tasks, date strip, weekly chart |
 | Tasks (full) | Create / assign / complete across company |
 | Contacts + Order | Vendor book; in-app Order for linked staff; WA/LINE links |
-| Bills — finance view | All bills, category spend, multi-currency, mark paid |
+| Bills - finance view | All bills, category spend, multi-currency, mark paid |
 | Reports / CSV | Budget sheet, bills, tasks, properties, jobs, occupancy; weekly print; handoff snapshots |
 | Talent directory | Browse opted-in staff by skill / place / map |
 | Endorsements | Cast weekly stars; reviews from Contacts |
@@ -82,30 +82,32 @@ These belong in every group’s guide intro (wording can change; capability is s
 | Jobs | Work windows by property (not guest check-in times) |
 | Villas (limited) | Assigned / visible properties; less owner chrome |
 | Team chat | Company chat |
-| Bills — submit | Own receipts; not full finance totals |
+| Bills - submit | Own receipts; not full finance totals |
 | Personal villas | Side personal org / personal villas for own clients |
 | Talent opt-in | Settings: skills, bio, **location + map pin** |
 | Reputation | Receive endorsements; share `/u/{slug}`; see leaderboard as team member |
 | Invite anyone only | No staff/guest invite cards |
 | **No** | Contacts Order, talent browse, reports CSV, mark-all-bills-paid finance, villa ACL, guest invite |
 
-### D. Guest (company guest role) — shipped shell only
+### D. Guest (company guest role)
 
-**Core job (intended):** Stay updated, ask support, see deposit/bills, return for next trip.
+**Core job:** Stay updated, ask support, see deposit/bills, return for next trip.
 
-| Shipped now | Guide should say |
+| Shipped (demo + migration 023) | Detail |
 |-------------|------------------|
 | Guest role + invite link | Owner/manager “Invite your guest” → `/join/{token}` |
-| Guest home placeholder | “Stay tools coming next” |
-| Guest nav shell | Stay · Villas · Support · Bills (routes not fully guest-scoped yet) |
-| Invite anyone | Same referral register link |
-| Personal org on accept | Signup also creates personal space (join copy explains this) |
+| Stay home | Villa, dates, owner notices, house guide, arrival/departure photos |
+| House guide | Wi‑Fi, gate, bins, quiet hours, checkout - owner/manager editable on villa |
+| Support chat | One thread per stay; guest ↔ owner/manager only |
+| Guest bills / deposit | Held deposit + deductions with remaining balance |
+| Company villas browse | Catalog + request dates |
+| Guest nav | Stay · Villas · Support · Bills |
 
 | Explicitly **not** for guests | |
 |-------------------------------|--|
-| Team chat with cleaners | Support chat planned with **owner/manager only** |
-| Contacts / talent / endorsements vote | Hide in guides |
-| Internal ops bills / tasks | Only guest-facing deposit & charges (planned) |
+| Team chat with cleaners | Support chat only with **owner/manager** |
+| Contacts / talent / endorsements vote | Hidden |
+| Internal ops bills / tasks | Guest-facing deposit & charges only |
 
 ### E. Personal workspace (solo)
 
@@ -120,7 +122,7 @@ These belong in every group’s guide intro (wording can change; capability is s
 
 ---
 
-## 3. Matrix (shipped) — quick scan
+## 3. Matrix (shipped) - quick scan
 
 Legend: ● = yes · ◐ = limited / own only · ○ = no · ▢ = shell / invite only
 
@@ -135,7 +137,7 @@ Legend: ● = yes · ◐ = limited / own only · ○ = no · ▢ = shell / invit
 | Contacts + Order | ● | ● | ○ | ○ | ◐ call |
 | Bills submit | ● | ● | ● | ▢ | ● |
 | Bills finance / mark paid | ● | ● | ○ | ○ | ◐ own |
-| Multi-currency bills | ● | ● | ● | — | ● |
+| Multi-currency bills | ● | ● | ● | - | ● |
 | Team chat | ● | ● | ● | ○* | ○ |
 | Talent browse | ● | ● | ○ | ○ | ○ |
 | Talent opt-in + location | ○ | ◐ | ● | ○ | ○ |
@@ -159,17 +161,11 @@ Legend: ● = yes · ◐ = limited / own only · ○ = no · ▢ = shell / invit
 
 Keep these in a separate “Coming soon” section so Claude doesn’t describe them as live.
 
-### 4a. Guest stay MVP (priority order)
+### 4a. Guest stay MVP - shipped in demo (apply migration 023 for Supabase)
 
-1. **Stay home** — current villa, dates, owner notices  
-2. **House guide** — Wi‑Fi, gates, bins, quiet hours, checkout checklist (owner-editable)  
-3. **Support chat** — one thread per stay; **owner + manager only** (never cleaners)  
-4. **Guest bills / deposit** — held → deductions with photo proof → refunded; guest-facing invoices only  
-5. **Arrival / departure photos** — optional conflict trail  
-6. **Company villas browse** — catalog + **Request dates** to owner/manager (no public booking engine)  
-7. Soft-expire after checkout; keep deposit history + return path  
+Stay home, house guide, support chat (owner/manager only), deposit/charges, arrival photos, villa browse + date requests are live in demo mode. Soft-expire after checkout and richer host reply inbox can still deepen.
 
-### 4b. Integrations (after CSV — already shipped)
+### 4b. Integrations (after CSV - already shipped)
 
 | Near | Medium | Later |
 |------|--------|-------|
@@ -191,14 +187,15 @@ Keep these in a separate “Coming soon” section so Claude doesn’t describe 
 
 Per audience page (`/owners`, `/employees`, `/staff`, `/guests`):
 
-1. **Hero** — one line + short sub + CTA (no screenshot)
-2. **What you use every day** — 3–4 flagship features with phone-framed screenshots (placeholders where assets are missing)
-3. **Everything included** — 2–3 text bullet clusters, zero screenshots
-4. **What you don't see** — one short paragraph
-5. **Coming soon** — only where relevant (mainly Guest)
-6. Demo + CTA
+1. **Hero** - one line + short sub + CTA (no screenshot)
+2. **What you use every day** - 3-4 flagship features with phone-framed screenshots (placeholders where assets are missing)
+3. **Everything included** - 2-3 text bullet clusters, zero screenshots
+4. **Coming soon** - only where relevant (mainly Guest)
+5. Demo + CTA
 
-**Screenshot budget:** Owner 4 · Manager reuses Owner home/villas + chat + reports placeholder · Field 3 + optional talent placeholder · Guest 0–1 shell placeholder · Personal = reuse Owner villas caption only (no fifth card; one line under Plans).
+Do **not** add a “What you don't see” section on Owner / Manager / Field guides - it kills close energy and belongs (if anywhere) as an optional footer cross-link, not a negative block before the CTA. Guest may keep a short boundary note where it prevents real confusion (e.g. never message cleaners).
+
+**Screenshot budget:** Owner 4 · Manager reuses Owner home/villas + chat + reports placeholder · Field 3 + optional talent placeholder · Guest 0-1 shell placeholder · Personal = reuse Owner villas caption only (no fifth card; one line under Plans).
 
 Selector on home: Owner, Manager, Field staff, Guest (lighter card), Personal mention under pricing.
 

@@ -19,7 +19,11 @@ import { cn } from "@/lib/utils";
 import type { MessageWithSender, Profile } from "@/lib/types";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
-import { canUseTeamChat } from "@/lib/roles";
+import { canUseTeamChat, isGuestApp } from "@/lib/roles";
+import {
+  GuestSupportChat,
+  HostSupportInbox,
+} from "@/components/home/guest-support";
 import {
   EVERYONE_LABEL,
   applyMention,
@@ -86,6 +90,10 @@ export default function MessagesPage() {
 
   if (!data.ready || !data.profile) return <LoadingState />;
 
+  if (isGuestApp(data.profile.role)) {
+    return <GuestSupportChat />;
+  }
+
   if (!canUseTeamChat(data.orgKind, data.profile.role)) {
     return (
       <EmptyState
@@ -140,7 +148,9 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="flex h-[calc(100dvh-9.5rem)] flex-col animate-rise">
+    <div className="space-y-3 animate-rise">
+      <HostSupportInbox />
+      <div className="flex h-[calc(100dvh-9.5rem)] flex-col">
       <div className="mb-3">
         <h1 className="font-display text-2xl font-bold text-ink">
           {t("messages.title")}
@@ -302,6 +312,7 @@ export default function MessagesPage() {
           </div>
         </div>
       </Card>
+      </div>
     </div>
   );
 }

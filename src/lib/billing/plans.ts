@@ -99,7 +99,7 @@ export function readReferralParam(
   return searchParams.get("ref")?.trim() || null;
 }
 
-/** Generic app invite — recipient picks personal or company on /register. */
+/** Generic app invite - recipient picks personal or company on /register. */
 export function referralRegisterUrl(origin: string, refCode: string) {
   const url = new URL(`${origin}/register`);
   url.searchParams.set(REFERRAL_QUERY_PARAM, refCode);

@@ -114,7 +114,7 @@ export function tasksToCsv(tasks: TaskWithRelations[]): string {
       t.status,
       t.assignee?.full_name ?? "",
       t.due_date ?? "",
-      [t.time_start, t.time_end].filter(Boolean).join("–") || "",
+      [t.time_start, t.time_end].filter(Boolean).join("-") || "",
       t.created_at.slice(0, 10),
     ]),
   ];
@@ -182,7 +182,7 @@ export function buildWeeklySummaryHtml(data: WeeklySummaryData): string {
       : data.urgentTasks
           .map(
             (t) =>
-              `<li><strong>${escapeHtml(t.title)}</strong> — ${escapeHtml(t.villa?.name ?? "General")}${t.due_date ? ` · due ${formatShortDate(t.due_date)}` : ""}</li>`,
+              `<li><strong>${escapeHtml(t.title)}</strong> - ${escapeHtml(t.villa?.name ?? "General")}${t.due_date ? ` · due ${formatShortDate(t.due_date)}` : ""}</li>`,
           )
           .join("");
 
@@ -192,7 +192,7 @@ export function buildWeeklySummaryHtml(data: WeeklySummaryData): string {
       : data.pendingBills
           .map(
             (b) =>
-              `<li>${escapeHtml(b.description)} — ${formatMoney(Number(b.amount))} · ${escapeHtml(b.villa?.name ?? "General")}</li>`,
+              `<li>${escapeHtml(b.description)} - ${formatMoney(Number(b.amount))} · ${escapeHtml(b.villa?.name ?? "General")}</li>`,
           )
           .join("");
 
@@ -200,7 +200,7 @@ export function buildWeeklySummaryHtml(data: WeeklySummaryData): string {
     .filter((v) => v.status === "turnover" || v.check_in || v.check_out)
     .map(
       (v) =>
-        `<li><strong>${escapeHtml(v.name)}</strong> — ${v.status}${v.check_in ? ` · in ${formatShortDate(v.check_in)}` : ""}${v.check_out ? ` · out ${formatShortDate(v.check_out)}` : ""}</li>`,
+        `<li><strong>${escapeHtml(v.name)}</strong> - ${v.status}${v.check_in ? ` · in ${formatShortDate(v.check_in)}` : ""}${v.check_out ? ` · out ${formatShortDate(v.check_out)}` : ""}</li>`,
     )
     .join("") || "<li>None flagged</li>";
 

@@ -4,12 +4,19 @@ import type {
   BillWithRelations,
   Contact,
   Endorsement,
+  GuestCharge,
+  GuestDeposit,
+  GuestStay,
+  HouseGuide,
   Invite,
   MessageWithSender,
   OrgMembership,
   Organization,
   Profile,
   ServiceOrder,
+  StayDateRequest,
+  StayPhoto,
+  SupportMessageWithSender,
   TaskWithRelations,
   Villa,
   VillaAssignment,
@@ -44,6 +51,15 @@ export type AppData = {
   serviceOrders: ServiceOrder[];
   unreadNotificationCount: number;
   unreadMessageCount: number;
+  /** Guest stay loop */
+  guestStays: GuestStay[];
+  activeStay: GuestStay | null;
+  houseGuides: HouseGuide[];
+  supportMessages: SupportMessageWithSender[];
+  guestDeposits: GuestDeposit[];
+  guestCharges: GuestCharge[];
+  stayPhotos: StayPhoto[];
+  stayDateRequests: StayDateRequest[];
   refresh: () => Promise<void>;
   markNotificationRead: (id: string) => Promise<void>;
   /** Mark all visible unread as read. Pass kind to limit (e.g. message badges). */
@@ -131,4 +147,22 @@ export type AppData = {
     stars: 1 | 2 | 3 | 4 | 5,
     note?: string,
   ) => Promise<void>;
+  sendSupportMessage: (body: string, stayId?: string) => Promise<void>;
+  upsertHouseGuide: (
+    villaId: string,
+    patch: Partial<
+      Omit<HouseGuide, "id" | "org_id" | "villa_id" | "updated_at">
+    >,
+  ) => Promise<void>;
+  requestStayDates: (input: {
+    villa_id: string;
+    check_in: string;
+    check_out: string;
+    note?: string | null;
+  }) => Promise<void>;
+  addStayPhoto: (input: {
+    kind: StayPhoto["kind"];
+    photo_url: string;
+    note?: string | null;
+  }) => Promise<void>;
 };

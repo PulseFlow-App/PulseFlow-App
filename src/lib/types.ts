@@ -274,3 +274,100 @@ export type HandoffSnapshot = {
   payload: Record<string, unknown>;
   created_at: string;
 };
+
+/** Guest stay record (one booking / visit). */
+export type GuestStayStatus = "upcoming" | "active" | "completed";
+
+export type GuestStay = {
+  id: string;
+  org_id: string;
+  villa_id: string;
+  guest_profile_id: string;
+  check_in: string;
+  check_out: string;
+  status: GuestStayStatus;
+  owner_notices: string | null;
+  created_at: string;
+};
+
+/** Owner-editable house guide per villa. */
+export type HouseGuide = {
+  id: string;
+  org_id: string;
+  villa_id: string;
+  wifi_ssid: string | null;
+  wifi_password: string | null;
+  gate_code: string | null;
+  bins_notes: string | null;
+  quiet_hours: string | null;
+  checkout_checklist: string | null;
+  extra_notes: string | null;
+  updated_at: string;
+};
+
+/** Support chat: guest ↔ owner/manager only (one thread per stay). */
+export type SupportMessage = {
+  id: string;
+  org_id: string;
+  stay_id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
+};
+
+export type SupportMessageWithSender = SupportMessage & {
+  sender?: Pick<Profile, "id" | "full_name" | "role"> | null;
+};
+
+export type GuestDepositStatus = "held" | "partial" | "refunded";
+
+export type GuestDeposit = {
+  id: string;
+  org_id: string;
+  stay_id: string;
+  amount: number;
+  currency: string;
+  status: GuestDepositStatus;
+  refunded_amount: number;
+  notes: string | null;
+  created_at: string;
+};
+
+export type GuestCharge = {
+  id: string;
+  org_id: string;
+  stay_id: string;
+  deposit_id: string | null;
+  description: string;
+  amount: number;
+  currency: string;
+  proof_photo_url: string | null;
+  created_at: string;
+};
+
+export type StayPhotoKind = "arrival" | "departure";
+
+export type StayPhoto = {
+  id: string;
+  org_id: string;
+  stay_id: string;
+  kind: StayPhotoKind;
+  photo_url: string;
+  note: string | null;
+  uploaded_by: string;
+  created_at: string;
+};
+
+export type StayDateRequestStatus = "pending" | "accepted" | "declined";
+
+export type StayDateRequest = {
+  id: string;
+  org_id: string;
+  villa_id: string;
+  guest_profile_id: string;
+  check_in: string;
+  check_out: string;
+  note: string | null;
+  status: StayDateRequestStatus;
+  created_at: string;
+};

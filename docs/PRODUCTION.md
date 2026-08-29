@@ -1,6 +1,6 @@
 # Production launch checklist
 
-## Phase 0 — Foundations
+## Phase 0 - Foundations
 
 - [x] Supabase project created (staging + production)
 - [x] Env vars set in Vercel / `.env.local` from `.env.example`
@@ -8,7 +8,7 @@
 - [x] `npm run seed` succeeds on staging
 - [x] Seeded owner can open `/home` with `NEXT_PUBLIC_DEMO_MODE=false`
 
-## Phase 1 — Auth
+## Phase 1 - Auth
 
 - [x] Register personal owner end-to-end
 - [x] Register company owner (trial fields set, `subscription_status=trialing`)
@@ -16,7 +16,7 @@
 - [x] Email confirm / magic link via `/auth/callback` if confirmation enabled
 - [x] Middleware refreshes session cookies on App Router navigations
 
-## Phase 2 — Parity
+## Phase 2 - Parity
 
 - [ ] Service orders: book → agree → complete
 - [x] Personal villas via `personal_org_id` / ensure-personal API
@@ -25,7 +25,7 @@
 - [x] Notifications + endorsements load and update
 - [x] Realtime updates for messages / orders / notifications
 
-## Phase 3 — Billing
+## Phase 3 - Billing
 
 - [ ] Stripe test product + monthly Company price ID
 - [ ] Checkout + Customer Portal from Settings → Billing
@@ -34,7 +34,7 @@
 - [ ] Hard gates block invite / company villa / service order when expired
 - [ ] Personal orgs never see Billing or gates
 
-## Phase 4 — Hardening
+## Phase 4 - Hardening
 
 - [ ] `NEXT_PUBLIC_DEMO_MODE=false` on production; demo credentials hidden
 - [ ] Error monitoring (e.g. Sentry) + webhook logging
@@ -44,7 +44,7 @@
 - [ ] PWA audit on `app.pulseflow.site` (separate from marketing site)
 - [ ] Multi-org membership + RLS smoke tests
 
-## Phase 5 — Launch sequence
+## Phase 5 - Launch sequence
 
 1. Staging: Supabase + Vercel preview + Stripe **test** mode
 2. Checklist: register company → invite → job photo → bill → trial clock → subscribe → cancel → gates

@@ -15,7 +15,13 @@ import {
   isValidLocationUrl,
   normalizeLocationUrl,
 } from "@/lib/utils";
-import { canCreateVillas, isStaffApp, personalVillasOnly } from "@/lib/roles";
+import {
+  canCreateVillas,
+  isGuestApp,
+  isStaffApp,
+  personalVillasOnly,
+} from "@/lib/roles";
+import { GuestVillasBrowse } from "@/components/home/guest-villas";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 import type { MessageKey } from "@/lib/i18n";
@@ -53,6 +59,9 @@ export default function VillasPage() {
   );
 
   if (!data.ready) return <LoadingState />;
+  if (data.profile && isGuestApp(data.profile.role)) {
+    return <GuestVillasBrowse />;
+  }
 
   const assigneesFor = (villaId: string) =>
     data.villaAssignments

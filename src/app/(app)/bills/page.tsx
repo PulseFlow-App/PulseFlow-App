@@ -8,7 +8,8 @@ import { Input, Label, Select } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import { BILL_CATEGORIES, type BillCategory } from "@/lib/design-tokens";
-import { canMarkBillsPaid, canViewBillFinance } from "@/lib/roles";
+import { canMarkBillsPaid, canViewBillFinance, isGuestApp } from "@/lib/roles";
+import { GuestBillsView } from "@/components/home/guest-bills";
 import {
   canUseManagerReporting,
   historyCutoffIso,
@@ -222,6 +223,9 @@ export default function BillsPage() {
   }, [filtered, data.villas, t, canSumTotals]);
 
   if (!data.ready) return <LoadingState />;
+  if (data.profile && isGuestApp(data.profile.role)) {
+    return <GuestBillsView />;
+  }
 
   const submit = async () => {
     setError(null);
@@ -521,7 +525,7 @@ export default function BillsPage() {
               <p className="mt-1 font-display text-sm font-bold tabular-nums leading-none sm:mt-1.5 sm:text-2xl">
                 {canSumTotals
                   ? formatMoneyCompact(spendTotal, totalsCurrency)
-                  : "—"}
+                  : "-"}
               </p>
             </Card>
             <Card className="min-w-0 p-3 sm:p-4">
@@ -531,7 +535,7 @@ export default function BillsPage() {
               <p className="mt-1 font-display text-sm font-bold tabular-nums leading-none text-secondary sm:mt-1.5 sm:text-2xl">
                 {canSumTotals
                   ? formatMoneyCompact(paidTotal, totalsCurrency)
-                  : "—"}
+                  : "-"}
               </p>
             </Card>
             <Card className="min-w-0 p-3 sm:p-4">
@@ -541,7 +545,7 @@ export default function BillsPage() {
               <p className="mt-1 font-display text-sm font-bold tabular-nums leading-none text-warning-dark sm:mt-1.5 sm:text-2xl">
                 {canSumTotals
                   ? formatMoneyCompact(pendingTotal, totalsCurrency)
-                  : "—"}
+                  : "-"}
               </p>
             </Card>
           </div>

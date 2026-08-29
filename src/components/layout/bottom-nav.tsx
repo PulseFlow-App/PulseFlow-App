@@ -42,7 +42,7 @@ const staffTabs: {
   { href: "/bills", labelKey: "nav.bills", icon: Receipt },
 ];
 
-/** Lean guest stay app — stay home, company villas, support, deposit bills. */
+/** Lean guest stay app - stay home, company villas, support, deposit bills. */
 const guestTabs: {
   href: string;
   labelKey: MessageKey;

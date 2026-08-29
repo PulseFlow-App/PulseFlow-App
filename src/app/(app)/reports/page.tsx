@@ -59,7 +59,7 @@ function weekLabel(now = new Date()) {
   start.setDate(start.getDate() - start.getDay());
   const end = new Date(start);
   end.setDate(end.getDate() + 6);
-  return `${formatShortDate(start.toISOString())} – ${formatShortDate(end.toISOString())}`;
+  return `${formatShortDate(start.toISOString())} - ${formatShortDate(end.toISOString())}`;
 }
 
 export default function ReportsPage() {

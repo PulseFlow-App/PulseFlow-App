@@ -48,7 +48,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v12";
+const STORE_KEY = "pulseflow_demo_store_v13";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -60,7 +60,7 @@ let scheduleSynced = false;
 /** Replace em/en dashes so cached demo copy stays clean. */
 function plainDash(value: string | null | undefined) {
   if (value == null) return value as null | undefined;
-  return value.replaceAll("—", "-").replaceAll("–", "-");
+  return value.replaceAll("-", "-").replaceAll("-", "-");
 }
 
 function normalizeStore(store: DemoStore): DemoStore {
@@ -106,6 +106,13 @@ function normalizeStore(store: DemoStore): DemoStore {
       body: plainDash(m.body) ?? m.body,
       service_order_id: m.service_order_id ?? null,
     })),
+    guestStays: store.guestStays ?? [],
+    houseGuides: store.houseGuides ?? [],
+    supportMessages: store.supportMessages ?? [],
+    guestDeposits: store.guestDeposits ?? [],
+    guestCharges: store.guestCharges ?? [],
+    stayPhotos: store.stayPhotos ?? [],
+    stayDateRequests: store.stayDateRequests ?? [],
   };
 }
 
@@ -130,6 +137,7 @@ function readStore(): DemoStore {
         "pulseflow_demo_store_v9",
         "pulseflow_demo_store_v10",
         "pulseflow_demo_store_v11",
+        "pulseflow_demo_store_v12",
       ]) {
         localStorage.removeItem(key);
       }
@@ -1122,8 +1130,15 @@ export function companyVillasFor(
   assignments: VillaAssignment[],
 ): Villa[] {
   const orgVillas = villas.filter((v) => v.org_id === profile.org_id);
-  // Owners and managers share the full company inventory.
-  if (profile.role === "owner" || profile.role === "manager") return orgVillas;
+  // Owners, managers, and stay guests share the full company inventory
+  // (guests browse the catalog; staff stay assignment-scoped).
+  if (
+    profile.role === "owner" ||
+    profile.role === "manager" ||
+    profile.role === "guest"
+  ) {
+    return orgVillas;
+  }
 
   // Cleaner / staff: only company villas assigned to them (not full inventory).
   // Personal side properties live in personal_org via personalVillasFor / buildVillaList.

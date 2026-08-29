@@ -4,12 +4,19 @@ import type {
   Contact,
   DemoAccount,
   Endorsement,
+  GuestCharge,
+  GuestDeposit,
+  GuestStay,
+  HouseGuide,
   Invite,
   Message,
   Organization,
   OrgMembership,
   Profile,
   ServiceOrder,
+  StayDateRequest,
+  StayPhoto,
+  SupportMessage,
   Task,
   Villa,
   VillaAssignment,
@@ -29,6 +36,8 @@ export const DEMO_OWNER_2_ID = "22222222-2222-4222-8222-222222222233";
 export const DEMO_EMPLOYEE_ID = "33333333-3333-4333-8333-333333333333";
 export const DEMO_CLEANER_ID = "33333333-3333-4333-8333-333333333344";
 export const DEMO_GUEST_ID = "33333333-3333-4333-8333-333333333355";
+export const DEMO_STAY_ID = "77777777-7777-4777-8777-777777777771";
+export const DEMO_DEPOSIT_ID = "77777777-7777-4777-8777-777777777772";
 
 export const demoOrg: Organization = {
   id: DEMO_ORG_ID,
@@ -944,7 +953,108 @@ export type DemoStore = {
   endorsements: Endorsement[];
   notifications: AppNotification[];
   serviceOrders: ServiceOrder[];
+  guestStays: GuestStay[];
+  houseGuides: HouseGuide[];
+  supportMessages: SupportMessage[];
+  guestDeposits: GuestDeposit[];
+  guestCharges: GuestCharge[];
+  stayPhotos: StayPhoto[];
+  stayDateRequests: StayDateRequest[];
 };
+
+export const demoGuestStays: GuestStay[] = [
+  {
+    id: DEMO_STAY_ID,
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.sunset,
+    guest_profile_id: DEMO_GUEST_ID,
+    check_in: daysAgo(5),
+    check_out: daysFromNow(1),
+    status: "active",
+    owner_notices:
+      "Welcome! Pool heater is on from 16:00. Checkout is 11:00 - leave keys on the kitchen counter.",
+    created_at: daysAgo(12) + "T08:00:00.000Z",
+  },
+];
+
+export const demoHouseGuides: HouseGuide[] = [
+  {
+    id: "77777777-7777-4777-8777-777777777773",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.sunset,
+    wifi_ssid: "SunsetDeck-Guest",
+    wifi_password: "oceanbreeze26",
+    gate_code: "4821#",
+    bins_notes: "Blue bin outside the side gate. Pickup Tue / Fri mornings.",
+    quiet_hours: "22:00 - 08:00",
+    checkout_checklist:
+      "Close all windows\nTurn off AC and lights\nLeave keys on kitchen counter\nLock the side gate",
+    extra_notes: "Beach towels in the left cupboard. Extra water under the sink.",
+    updated_at: daysAgo(2) + "T10:00:00.000Z",
+  },
+];
+
+export const demoSupportMessages: SupportMessage[] = [
+  {
+    id: "77777777-7777-4777-8777-777777777774",
+    org_id: DEMO_ORG_ID,
+    stay_id: DEMO_STAY_ID,
+    sender_id: DEMO_GUEST_ID,
+    body: "Hi - is the pool heater already on this evening?",
+    created_at: daysAgo(1) + "T15:20:00.000Z",
+  },
+  {
+    id: "77777777-7777-4777-8777-777777777775",
+    org_id: DEMO_ORG_ID,
+    stay_id: DEMO_STAY_ID,
+    sender_id: DEMO_OWNER_ID,
+    body: "Yes, it turns on at 16:00 every day. Enjoy the sunset!",
+    created_at: daysAgo(1) + "T15:35:00.000Z",
+  },
+];
+
+export const demoGuestDeposits: GuestDeposit[] = [
+  {
+    id: DEMO_DEPOSIT_ID,
+    org_id: DEMO_ORG_ID,
+    stay_id: DEMO_STAY_ID,
+    amount: 10000,
+    currency: "THB",
+    status: "held",
+    refunded_amount: 0,
+    notes: "Security deposit held at check-in.",
+    created_at: daysAgo(5) + "T12:00:00.000Z",
+  },
+];
+
+export const demoGuestCharges: GuestCharge[] = [
+  {
+    id: "77777777-7777-4777-8777-777777777776",
+    org_id: DEMO_ORG_ID,
+    stay_id: DEMO_STAY_ID,
+    deposit_id: DEMO_DEPOSIT_ID,
+    description: "Broken wine glass (replacement)",
+    amount: 350,
+    currency: "THB",
+    proof_photo_url: null,
+    created_at: daysAgo(2) + "T09:00:00.000Z",
+  },
+];
+
+export const demoStayPhotos: StayPhoto[] = [
+  {
+    id: "77777777-7777-4777-8777-777777777777",
+    org_id: DEMO_ORG_ID,
+    stay_id: DEMO_STAY_ID,
+    kind: "arrival",
+    photo_url: villaPhoto("Arrival living room", "#7BA3A8"),
+    note: "Living room on arrival",
+    uploaded_by: DEMO_GUEST_ID,
+    created_at: daysAgo(5) + "T13:00:00.000Z",
+  },
+];
+
+export const demoStayDateRequests: StayDateRequest[] = [];
 
 export const demoVillaAssignments: VillaAssignment[] = [
   {
@@ -1007,5 +1117,12 @@ export function createFreshDemoStore(): DemoStore {
     endorsements: structuredClone(demoEndorsements),
     notifications: structuredClone(demoNotifications),
     serviceOrders: structuredClone(demoServiceOrders),
+    guestStays: structuredClone(demoGuestStays),
+    houseGuides: structuredClone(demoHouseGuides),
+    supportMessages: structuredClone(demoSupportMessages),
+    guestDeposits: structuredClone(demoGuestDeposits),
+    guestCharges: structuredClone(demoGuestCharges),
+    stayPhotos: structuredClone(demoStayPhotos),
+    stayDateRequests: structuredClone(demoStayDateRequests),
   };
 }

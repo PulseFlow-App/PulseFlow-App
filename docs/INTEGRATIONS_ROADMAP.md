@@ -1,4 +1,4 @@
-# Integrations & guest app — future steps
+# Integrations & guest app - future steps
 
 Status as of 2026-08-29. **CSV exports are done** (Reports). Everything below is parked for later.
 
@@ -12,7 +12,7 @@ Available to entitled company owners and managers:
 
 | Export | Columns / purpose |
 |--------|-------------------|
-| **Budget sheet** | `Month \| Property \| Category \| Amount \| Currency \| Paid? \| Description \| Date \| Receipt URL` — paste into Google Sheets / Excel for P&L |
+| **Budget sheet** | `Month \| Property \| Category \| Amount \| Currency \| Paid? \| Description \| Date \| Receipt URL` - paste into Google Sheets / Excel for P&L |
 | **Bills** | Full bill detail including receipt URL |
 | **Tasks** | Ops task list |
 | **Properties** | Villa inventory |
@@ -51,7 +51,7 @@ Code: `src/lib/export/ops-export.ts`, `src/app/(app)/reports/page.tsx`.
 ### 4. LINE / WhatsApp notify bridges
 
 - Same events as in-app: job needs Read & agreed, bill submitted, check-in tomorrow
-- Alerts only — not a CRM
+- Alerts only - not a CRM
 
 ### 5. Zapier / Make webhooks
 
@@ -76,7 +76,7 @@ Code: `src/lib/export/ops-export.ts`, `src/app/(app)/reports/page.tsx`.
 
 ### Positioning
 
-> Pulse Flow runs the day-to-day. Your budget stays in Sheets/Xero — we export and sync the spend and schedule so you don’t retype receipts.
+> Pulse Flow runs the day-to-day. Your budget stays in Sheets/Xero - we export and sync the spend and schedule so you don’t retype receipts.
 
 ---
 
@@ -96,11 +96,11 @@ Lean loop agreed:
 
 ### Next guest steps (build in order)
 
-1. **Stay home** — current villa, dates, status notices from owner/manager
-2. **House guide** — Wi‑Fi, gates, bins, quiet hours, checkout checklist (owner-editable)
-3. **Support chat** — one thread per stay with **owner/manager only** (never cleaners)
-4. **Guest bills / deposit** — guest-facing bills only (deposit held → deductions with photo → refund); arrival/departure photo set optional
-5. **Company villas browse** — photos, area, sleeps; **Request dates** → owner/manager (no public booking engine yet)
+1. **Stay home** - current villa, dates, status notices from owner/manager
+2. **House guide** - Wi‑Fi, gates, bins, quiet hours, checkout checklist (owner-editable)
+3. **Support chat** - one thread per stay with **owner/manager only** (never cleaners)
+4. **Guest bills / deposit** - guest-facing bills only (deposit held → deductions with photo → refund); arrival/departure photo set optional
+5. **Company villas browse** - photos, area, sleeps; **Request dates** → owner/manager (no public booking engine yet)
 6. Soft-expire guest access after checkout but keep deposit history + “book again”
 
 ### Guest access rules
