@@ -18,6 +18,7 @@ import type { OrgKind, UserRole } from "@/lib/design-tokens";
 import { invitableRoles, isStaffApp } from "@/lib/roles";
 import { weekKey } from "@/lib/endorsements";
 import {
+  buildEndorsementReceivedNotification,
   buildScheduleAlerts,
   formatWorkWindow,
   makeNotification,
@@ -549,6 +550,19 @@ export function demoCastEndorsement(
     ...s,
     endorsements: [endorsement, ...s.endorsements],
   }));
+
+  demoPushNotifications([
+    buildEndorsementReceivedNotification({
+      org_id: actor.org_id,
+      fromProfileId: actor.id,
+      fromName: actor.full_name,
+      toProfileId,
+      stars,
+      note,
+      weekKey: key,
+    }),
+  ]);
+
   return endorsement;
 }
 

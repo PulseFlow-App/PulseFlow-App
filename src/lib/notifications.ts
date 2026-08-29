@@ -222,6 +222,32 @@ export function buildBillCreateNotifications(input: {
   return alerts;
 }
 
+/** Notify the teammate when an owner/manager leaves weekly stars. */
+export function buildEndorsementReceivedNotification(input: {
+  org_id: string;
+  fromProfileId: string;
+  fromName: string;
+  toProfileId: string;
+  stars: 1 | 2 | 3 | 4 | 5;
+  note?: string | null;
+  weekKey: string;
+}): AppNotification {
+  const note = input.note?.trim();
+  const body = note
+    ? `${input.fromName} gave you ${input.stars}★ · ${note.slice(0, 120)}`
+    : `${input.fromName} gave you ${input.stars}★ this week`;
+  return makeNotification({
+    org_id: input.org_id,
+    kind: "endorsement",
+    title: "New endorsement",
+    body,
+    href: "/endorsements",
+    entity_id: input.toProfileId,
+    audience_profile_ids: [input.toProfileId],
+    dedupe_key: `endorsement_received:${input.org_id}:${input.fromProfileId}:${input.toProfileId}:${input.weekKey}`,
+  });
+}
+
 export function buildVillaDateNotifications(input: {
   org_id: string;
   villaId: string;

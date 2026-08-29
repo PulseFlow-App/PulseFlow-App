@@ -30,9 +30,11 @@ import {
   ENTITLEMENT_BLOCKED_MESSAGE,
   isCompanyEntitled,
 } from "@/lib/billing/entitlement";
+import { weekKey } from "@/lib/endorsements";
 import {
   buildScheduleAlerts,
   buildBillCreateNotifications,
+  buildEndorsementReceivedNotification,
   buildTaskCreateNotifications,
   buildVillaDateNotifications,
   insertNotifications,
@@ -1290,14 +1292,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!profile) throw new Error("Not signed in.");
       requireCurrentOrgWrite();
       const supabase = createClient();
-      const now = new Date();
-      const week_key = `${now.getUTCFullYear()}-W${Math.ceil(
-        ((Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
-          Date.UTC(now.getUTCFullYear(), 0, 1)) /
-          86400000 +
-          1) /
-          7,
-      )}`;
+      const week_key = weekKey();
       const { error } = await supabase.from("endorsements").upsert(
         {
           org_id: profile.org_id,
@@ -1310,6 +1305,21 @@ export function useSupabaseData(enabled: boolean): AppData {
         { onConflict: "org_id,from_profile_id,to_profile_id,week_key" },
       );
       if (error) throw error;
+      if (toProfileId !== profile.id) {
+        await insertNotifications(supabase, [
+          toInsertRow(
+            buildEndorsementReceivedNotification({
+              org_id: profile.org_id,
+              fromProfileId: profile.id,
+              fromName: profile.full_name,
+              toProfileId,
+              stars,
+              note,
+              weekKey: week_key,
+            }),
+          ),
+        ]);
+      }
       await refresh();
     },
   };
