@@ -31,17 +31,42 @@ import {
   isCompanyEntitled,
 } from "@/lib/billing/entitlement";
 import {
+  buildScheduleAlerts,
+  buildBillCreateNotifications,
+  buildTaskCreateNotifications,
+  buildVillaDateNotifications,
+  insertNotifications,
+  makeNotification,
   notificationVisibleTo,
+  orgMemberIds,
   ownerManagerIds,
+  toInsertRow,
   unreadNotifications,
+  villaOpsAudience,
+  type NotificationInsert,
 } from "@/lib/notifications";
+import { formatMoney } from "@/lib/utils";
+import { formatOrderWhen, canCancelServiceOrder } from "@/lib/service-orders";
 import {
   loadLocallyReadIds,
   mergeReadBy,
   rememberLocallyRead,
 } from "@/lib/notifications-read";
-import { formatOrderWhen } from "@/lib/service-orders";
 import { capitalizeLabel } from "@/lib/format-label";
+
+const scheduleSyncedOrgs = new Set<string>();
+
+function normalizeProfile(row: Profile): Profile {
+  return {
+    ...row,
+    job_search_visible: Boolean(row.job_search_visible),
+    job_search_skills: Array.isArray(row.job_search_skills)
+      ? row.job_search_skills
+      : [],
+    job_search_bio: row.job_search_bio ?? null,
+    job_search_updated_at: row.job_search_updated_at ?? null,
+  };
+}
 
 function enrichTasks(
   tasks: Task[],
@@ -130,6 +155,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       throw new Error("Connect Supabase to book services.");
     },
     agreeServiceOrder: async () => undefined,
+    cancelServiceOrder: async () => undefined,
     completeServiceOrder: async () => undefined,
     updateVilla: async () => undefined,
     createVilla: async () => undefined,
@@ -193,7 +219,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       setReady(true);
       return;
     }
-    const p = profileRow as Profile;
+    const p = normalizeProfile(profileRow as Profile);
     setProfile(p);
     const orgId = p.org_id;
     const personalId = p.personal_org_id;
@@ -274,6 +300,48 @@ export function useSupabaseData(enabled: boolean): AppData {
     );
     setServiceOrders((ordersRes.data as ServiceOrder[]) ?? []);
     setReady(true);
+
+    const orgVillas = ((villasRes.data as Villa[]) ?? []).filter(
+      (v) => v.org_id === orgId,
+    );
+    const orgBills = (billsRes.data as Bill[]) ?? [];
+    const orgOrders = (ordersRes.data as ServiceOrder[]) ?? [];
+    const orgNotifications = (
+      (notificationsRes.data as AppNotification[]) ?? []
+    ).map((n) => ({
+      ...n,
+      read_by: Array.isArray(n.read_by) ? n.read_by : [],
+    }));
+
+    if (!scheduleSyncedOrgs.has(orgId)) {
+      scheduleSyncedOrgs.add(orgId);
+      const alerts = buildScheduleAlerts({
+        villas: orgVillas,
+        bills: orgBills,
+        orders: orgOrders,
+        existing: orgNotifications,
+        profiles: (profilesRes.data as Profile[]) ?? [],
+        assignments: (assignRes.data as VillaAssignment[]) ?? [],
+        endorsements: (endorsementsRes.data as Endorsement[]) ?? [],
+      });
+      if (alerts.length) {
+        await insertNotifications(
+          supabase,
+          alerts.map((n) => toInsertRow(n)),
+        );
+        const { data: freshNotes } = await supabase
+          .from("notifications")
+          .select("*")
+          .eq("org_id", orgId)
+          .order("created_at", { ascending: false });
+        setNotifications(
+          ((freshNotes as AppNotification[]) ?? []).map((n) => ({
+            ...n,
+            read_by: Array.isArray(n.read_by) ? n.read_by : [],
+          })),
+        );
+      }
+    }
   }, [enabled]);
 
   useEffect(() => {
@@ -587,15 +655,17 @@ export function useSupabaseData(enabled: boolean): AppData {
         })
         .eq("id", order.id);
 
-      await supabase.from("notifications").insert({
-        org_id: profile.org_id,
-        kind: "appointment",
-        title: "New service order",
-        body: title,
-        href: "/jobs",
-        entity_id: order.id,
-        audience_profile_ids: [contact.linked_profile_id],
-      });
+      await insertNotifications(supabase, [
+        {
+          org_id: profile.org_id,
+          kind: "appointment",
+          title: "New service order",
+          body: title,
+          href: "/jobs",
+          entity_id: order.id,
+          audience_profile_ids: [contact.linked_profile_id],
+        },
+      ]);
 
       // Staff booked on a company villa get property access automatically.
       if (villa?.id && contact.linked_profile_id) {
@@ -650,15 +720,87 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (error) throw error;
 
       if (order?.ordered_by && order.ordered_by !== profile.id) {
-        await supabase.from("notifications").insert({
-          org_id: profile.org_id,
-          kind: "appointment",
-          title: `${profile.full_name} agreed`,
-          body: `${order.service_type} · ${formatOrderWhen(order)}`,
-          href: "/jobs",
-          entity_id: orderId,
-          audience_profile_ids: [order.ordered_by],
-        });
+        await insertNotifications(supabase, [
+          {
+            org_id: profile.org_id,
+            kind: "appointment",
+            title: `${profile.full_name} agreed`,
+            body: `${order.service_type} · ${formatOrderWhen(order)}`,
+            href: "/jobs",
+            entity_id: orderId,
+            audience_profile_ids: [order.ordered_by],
+          },
+        ]);
+      }
+      await refresh();
+    },
+    cancelServiceOrder: async (orderId) => {
+      if (!profile) throw new Error("Not signed in.");
+      const supabase = createClient();
+      let order = serviceOrders.find((o) => o.id === orderId) ?? null;
+      if (!order) {
+        const { data } = await supabase
+          .from("service_orders")
+          .select("*")
+          .eq("id", orderId)
+          .single();
+        order = (data as ServiceOrder | null) ?? null;
+      }
+      if (!order) throw new Error("Order not found.");
+      requireOrgWrite(order.org_id);
+      if (!canCancelServiceOrder(profile, order, organization?.kind ?? null)) {
+        throw new Error("You cannot cancel this job.");
+      }
+      const declined =
+        order.staff_profile_id === profile.id &&
+        order.status === "pending_ack";
+      const { error } = await supabase
+        .from("service_orders")
+        .update({ status: "cancelled" })
+        .eq("id", orderId);
+      if (error) throw error;
+      if (order.task_id) {
+        await supabase
+          .from("tasks")
+          .update({
+            status: "done",
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", order.task_id);
+      }
+      const location = order.location_label ?? "location";
+      const when = formatOrderWhen(order);
+      await supabase.from("messages").insert({
+        org_id: order.org_id,
+        sender_id: profile.id,
+        body: declined
+          ? `Declined - ${order.service_type} at ${location} (${when})`
+          : `Cancelled - ${order.service_type} at ${location} (${when})`,
+        service_order_id: orderId,
+      });
+      const audience = declined
+        ? [
+            order.ordered_by,
+            ...ownerManagerIds(profiles, order.org_id),
+          ].filter((id) => id !== profile.id)
+        : [order.staff_profile_id, order.ordered_by].filter(
+            (id): id is string => Boolean(id) && id !== profile.id,
+          );
+      const uniqueAudience = [...new Set(audience)];
+      if (uniqueAudience.length) {
+        await insertNotifications(supabase, [
+          toInsertRow(
+            makeNotification({
+              org_id: order.org_id,
+              kind: "appointment",
+              title: declined ? "Job declined" : "Job cancelled",
+              body: `${order.service_type} · ${location} · ${when}`,
+              href: "/jobs",
+              entity_id: orderId,
+              audience_profile_ids: uniqueAudience,
+            }),
+          ),
+        ]);
       }
       await refresh();
     },
@@ -705,15 +847,17 @@ export function useSupabaseData(enabled: boolean): AppData {
         (id) => id !== profile.id,
       );
       if (audience.length) {
-        await supabase.from("notifications").insert({
-          org_id: order.org_id,
-          kind: "appointment",
-          title: `${profile.full_name} completed a job`,
-          body: `${order.service_type} · ${location} · ${when}`,
-          href: "/jobs",
-          entity_id: orderId,
-          audience_profile_ids: audience,
-        });
+        await insertNotifications(supabase, [
+          {
+            org_id: order.org_id,
+            kind: "appointment",
+            title: `${profile.full_name} completed a job`,
+            body: `${order.service_type} · ${location} · ${when}`,
+            href: "/jobs",
+            entity_id: orderId,
+            audience_profile_ids: audience,
+          },
+        ]);
       }
       await refresh();
     },
@@ -726,6 +870,30 @@ export function useSupabaseData(enabled: boolean): AppData {
         .update({ ...patch, updated_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw error;
+      if (villa) {
+        const alerts = buildVillaDateNotifications({
+          org_id: villa.org_id,
+          villaId: villa.id,
+          villaName: villa.name,
+          before: {
+            check_in: villa.check_in,
+            check_out: villa.check_out,
+          },
+          patch,
+          audience_profile_ids: villaOpsAudience(
+            villa.org_id,
+            villa.id,
+            profiles,
+            villaAssignments,
+          ),
+        });
+        if (alerts.length) {
+          await insertNotifications(
+            supabase,
+            alerts.map((n) => toInsertRow(n)),
+          );
+        }
+      }
       await refresh();
     },
     createVilla: async (input) => {
@@ -788,14 +956,34 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!profile) return;
       requireCurrentOrgWrite();
       const supabase = createClient();
-      const { error } = await supabase.from("tasks").insert({
-        org_id: profile.org_id,
-        created_by: profile.id,
-        status: "open",
-        ...input,
-        title: capitalizeLabel(input.title),
-      });
+      const title = capitalizeLabel(input.title);
+      const { data: inserted, error } = await supabase
+        .from("tasks")
+        .insert({
+          org_id: profile.org_id,
+          created_by: profile.id,
+          status: "open",
+          ...input,
+          title,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+      const alerts = buildTaskCreateNotifications({
+        org_id: profile.org_id,
+        taskId: inserted.id,
+        title,
+        priority: input.priority,
+        assigned_to: input.assigned_to ?? null,
+        created_by: profile.id,
+        memberIds: orgMemberIds(profiles, profile.org_id),
+      });
+      if (alerts.length) {
+        await insertNotifications(
+          supabase,
+          alerts.map((n) => toInsertRow(n)),
+        );
+      }
       await refresh();
     },
     setTaskStatus: async (id, status) => {
@@ -810,6 +998,27 @@ export function useSupabaseData(enabled: boolean): AppData {
         })
         .eq("id", id);
       if (error) throw error;
+      if (
+        task &&
+        status === "done" &&
+        profile &&
+        task.assigned_to === profile.id &&
+        task.created_by !== profile.id
+      ) {
+        await insertNotifications(supabase, [
+          toInsertRow(
+            makeNotification({
+              org_id: task.org_id,
+              kind: "task_completed",
+              title: "Task completed",
+              body: task.title,
+              href: "/tasks",
+              entity_id: task.id,
+              audience_profile_ids: [task.created_by],
+            }),
+          ),
+        ]);
+      }
       await refresh();
     },
     createContact: async (input) => {
@@ -840,26 +1049,67 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!profile) return;
       requireCurrentOrgWrite();
       const supabase = createClient();
-      const { error } = await supabase.from("bills").insert({
+      const due_date = input.due_date?.trim() || null;
+      const { data: inserted, error } = await supabase
+        .from("bills")
+        .insert({
+          org_id: profile.org_id,
+          submitted_by: profile.id,
+          currency: "THB",
+          status: "pending",
+          category: input.category ?? "other",
+          description: input.description,
+          amount: input.amount,
+          villa_id: input.villa_id,
+          due_date,
+          receipt_photo_url: input.receipt_photo_url ?? null,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      const alerts = buildBillCreateNotifications({
         org_id: profile.org_id,
-        submitted_by: profile.id,
-        currency: "THB",
-        status: "pending",
-        category: input.category ?? "other",
+        billId: inserted.id,
         description: input.description,
         amount: input.amount,
-        villa_id: input.villa_id,
-        due_date: input.due_date ?? null,
-        receipt_photo_url: input.receipt_photo_url ?? null,
+        due_date,
+        submitted_by: profile.id,
+        managerIds: ownerManagerIds(profiles, profile.org_id),
       });
-      if (error) throw error;
+      if (alerts.length) {
+        await insertNotifications(
+          supabase,
+          alerts.map((n) => toInsertRow(n)),
+        );
+      }
       await refresh();
     },
     setBillStatus: async (id, status) => {
       requireCurrentOrgWrite();
+      const bill = bills.find((b) => b.id === id);
       const supabase = createClient();
       const { error } = await supabase.from("bills").update({ status }).eq("id", id);
       if (error) throw error;
+      if (
+        bill &&
+        status === "paid" &&
+        profile &&
+        bill.submitted_by !== profile.id
+      ) {
+        await insertNotifications(supabase, [
+          toInsertRow(
+            makeNotification({
+              org_id: bill.org_id,
+              kind: "bill_paid",
+              title: "Bill marked paid",
+              body: `${bill.description} · ${formatMoney(Number(bill.amount), bill.currency)}`,
+              href: "/bills",
+              entity_id: bill.id,
+              audience_profile_ids: [bill.submitted_by],
+            }),
+          ),
+        ]);
+      }
       await refresh();
     },
     sendMessage: async (body) => {
@@ -919,7 +1169,18 @@ export function useSupabaseData(enabled: boolean): AppData {
         });
       }
       if (rows.length) {
-        await supabase.from("notifications").insert(rows);
+        await insertNotifications(
+          supabase,
+          rows.map((r) => ({
+            org_id: r.org_id,
+            kind: r.kind as NotificationInsert["kind"],
+            title: r.title,
+            body: r.body,
+            href: r.href,
+            entity_id: r.entity_id,
+            audience_profile_ids: r.audience_profile_ids,
+          })),
+        );
       }
       await refresh();
     },

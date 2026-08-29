@@ -224,7 +224,7 @@ export default function PublicProfilePage({
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Recent endorsements
+            {t("talent.reviewsSection")}
           </p>
           {recent.length === 0 ? (
             <p className="mt-2 text-sm text-muted">No votes yet.</p>

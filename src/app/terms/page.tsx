@@ -21,7 +21,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p className="mt-1 text-muted">
-            {brand.name} · Last updated: 27 August 2026
+            {brand.name} · Last updated: 28 August 2026
           </p>
         </div>
 
@@ -129,7 +129,31 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">5. Your content & data</h2>
+          <h2 className="font-display text-lg font-bold">5. Talent directory</h2>
+          <p className="text-muted">
+            Field staff and managers may opt in to appear in the in-app talent
+            directory so property owners and managers can discover them. Listing
+            is voluntary and controlled in Settings. Public reputation pages may
+            show weekly endorsements and optional review notes from past teams.
+          </p>
+          <ul className="list-disc space-y-1 pl-5 text-muted">
+            <li>
+              {brand.name} is a discovery and reputation tool, not an employer,
+              staffing agency, or party to any work agreement between users.
+            </li>
+            <li>
+              Owners and managers are solely responsible for vetting, hiring,
+              paying, and supervising anyone they contact through the directory.
+            </li>
+            <li>
+              We may remove or hide listings that violate these Terms or create
+              risk for other users.
+            </li>
+          </ul>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="font-display text-lg font-bold">6. Your content & data</h2>
           <p className="text-muted">
             You retain ownership of properties, tasks, contacts, messages, bills,
             photos, and other data you submit (“Customer Content”). You grant us
@@ -144,7 +168,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">6. Service availability</h2>
+          <h2 className="font-display text-lg font-bold">7. Service availability</h2>
           <p className="text-muted">
             We aim for reliable uptime but do not guarantee uninterrupted access.
             Features may change as we improve the product. We may perform
@@ -153,7 +177,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">7. Disclaimers</h2>
+          <h2 className="font-display text-lg font-bold">8. Disclaimers</h2>
           <p className="text-muted">
             The Service is provided “as is”. To the fullest extent permitted by
             law, we disclaim warranties of merchantability, fitness for a
@@ -164,7 +188,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">8. Limitation of liability</h2>
+          <h2 className="font-display text-lg font-bold">9. Limitation of liability</h2>
           <p className="text-muted">
             To the fullest extent permitted by law, we are not liable for
             indirect, incidental, special, consequential, or lost-profit
@@ -176,7 +200,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">9. Termination</h2>
+          <h2 className="font-display text-lg font-bold">10. Termination</h2>
           <p className="text-muted">
             You may stop using the Service at any time. We may suspend or end
             access for breach of these Terms, non-payment, or if we discontinue
@@ -187,7 +211,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">10. Changes</h2>
+          <h2 className="font-display text-lg font-bold">11. Changes</h2>
           <p className="text-muted">
             We may update these Terms. Material changes will be posted on this
             page with a new “Last updated” date. Continued use after changes
@@ -196,7 +220,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">11. Contact</h2>
+          <h2 className="font-display text-lg font-bold">12. Contact</h2>
           <p className="text-muted">
             Questions about these Terms:{" "}
             <a

@@ -22,6 +22,8 @@ import { useI18n } from "@/lib/i18n/provider";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { BillingSettingsCard } from "@/components/billing/billing-card";
 import { PasskeySettingsCard } from "@/components/auth/passkey-settings-card";
+import { JobSearchSettingsCard } from "@/components/settings/job-search-settings-card";
+import { PushSettingsCard } from "@/components/settings/push-settings-card";
 import type { MessageKey } from "@/lib/i18n";
 import {
   referralJoinUrl,
@@ -518,6 +520,7 @@ export default function SettingsPage() {
               <Copy className="size-4" />
               {copiedReferral ? t("plan.referralCopied") : t("plan.copyReferral")}
             </Button>
+            <p className="text-[11px] text-muted">{t("settings.inviteAnyoneLinkHint")}</p>
           </div>
         </Card>
       ) : null}
@@ -649,6 +652,10 @@ export default function SettingsPage() {
       </Card>
 
       <PasskeySettingsCard />
+
+      <PushSettingsCard />
+
+      <JobSearchSettingsCard />
 
       <Button variant="danger" className="w-full" onClick={() => void signOut()}>
         {t("settings.signOut")}

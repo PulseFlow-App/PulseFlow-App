@@ -21,7 +21,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="mt-1 text-muted">
-            {brand.name} · Last updated: 27 August 2026
+            {brand.name} · Last updated: 28 August 2026
           </p>
         </div>
 
@@ -59,6 +59,12 @@ export default function PrivacyPage() {
               rewards.
             </li>
             <li>
+              <strong className="text-ink">Talent directory data:</strong> if you
+              opt in, your name, skills, optional bio, job title, ratings, and
+              public profile slug are visible to property owners and managers
+              searching for staff inside the Service.
+            </li>
+            <li>
               <strong className="text-ink">Technical data:</strong> device/browser
               type, IP address, and basic usage logs needed to secure and
               operate the Service.
@@ -72,6 +78,7 @@ export default function PrivacyPage() {
             <li>Provide and improve rental operations features</li>
             <li>Authenticate users and enforce roles within an organization</li>
             <li>Send in-app notifications (jobs, chat mentions, bills)</li>
+            <li>Operate the optional talent directory and public reputation pages</li>
             <li>Process company subscriptions and referral rewards when billing is active</li>
             <li>Respond to support requests and legal obligations</li>
           </ul>
@@ -94,8 +101,9 @@ export default function PrivacyPage() {
               when billing is enabled
             </li>
             <li>
-              <strong className="text-ink">Your organization:</strong> teammates
-              you invite can see data according to their role and assignments
+              <strong className="text-ink">Other Pulse Flow users:</strong> when
+              you opt into the talent directory, owners and managers can see your
+              listing; teammates you invite can see org data according to role
             </li>
             <li>
               Authorities when required by law or to protect the Service and

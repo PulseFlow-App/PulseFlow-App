@@ -56,6 +56,12 @@ export function isStaffApp(role: UserRole) {
   return role === "cleaner" || role === "staff";
 }
 
+/** Owners and company managers can browse the talent directory. */
+export function canBrowseTalent(role: UserRole, orgKind?: OrgKind | null) {
+  if (role === "owner") return true;
+  return role === "manager" && isCompanyWorkspace(orgKind);
+}
+
 export function canBookServices(
   role: UserRole,
   orgKind?: OrgKind | null,

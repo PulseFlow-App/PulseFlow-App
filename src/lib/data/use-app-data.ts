@@ -7,6 +7,7 @@ import { useSupabaseData } from "@/lib/data/use-supabase-data";
 import {
   buildVillaList,
   demoAgreeServiceOrder,
+  demoCancelServiceOrder,
   demoCompleteServiceOrder,
   demoCastEndorsement,
   demoCreateInvite,
@@ -56,6 +57,8 @@ import {
   notificationVisibleTo,
   orgMemberIds,
   ownerManagerIds,
+  buildVillaDateNotifications,
+  villaOpsAudience,
   unreadNotifications,
 } from "@/lib/notifications";
 import {
@@ -323,6 +326,11 @@ function useDemoData(): AppData {
       if (!profile) throw new Error("Not signed in.");
       demoAgreeServiceOrder(profile, orderId);
     },
+    cancelServiceOrder: async (orderId) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      demoCancelServiceOrder(profile, orderId);
+    },
     completeServiceOrder: async (orderId) => {
       assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
@@ -340,41 +348,19 @@ function useDemoData(): AppData {
         ),
       }));
       if (!before || !profile) return;
-      const alerts: AppNotification[] = [];
-      if (
-        patch.check_in !== undefined &&
-        patch.check_in &&
-        patch.check_in !== before.check_in
-      ) {
-        alerts.push(
-          makeNotification({
-            org_id: before.org_id,
-            kind: "check_in",
-            title: "Check-in updated",
-            body: `${before.name} · ${formatShortDate(patch.check_in)}`,
-            href: `/villas/${before.id}`,
-            entity_id: before.id,
-            dedupe_key: `check_in_set:${before.id}:${patch.check_in}`,
-          }),
-        );
-      }
-      if (
-        patch.check_out !== undefined &&
-        patch.check_out &&
-        patch.check_out !== before.check_out
-      ) {
-        alerts.push(
-          makeNotification({
-            org_id: before.org_id,
-            kind: "check_out",
-            title: "Check-out updated",
-            body: `${before.name} · ${formatShortDate(patch.check_out)}`,
-            href: `/villas/${before.id}`,
-            entity_id: before.id,
-            dedupe_key: `check_out_set:${before.id}:${patch.check_out}`,
-          }),
-        );
-      }
+      const alerts = buildVillaDateNotifications({
+        org_id: before.org_id,
+        villaId: before.id,
+        villaName: before.name,
+        before: { check_in: before.check_in, check_out: before.check_out },
+        patch,
+        audience_profile_ids: villaOpsAudience(
+          before.org_id,
+          before.id,
+          store.profiles,
+          store.villaAssignments,
+        ),
+      });
       demoPushNotifications(alerts);
     },
     createVilla: async (input) => {
@@ -503,6 +489,7 @@ function useDemoData(): AppData {
     },
     setTaskStatus: async (id, status) => {
       assertDemoWritable();
+      const task = store.tasks.find((t) => t.id === id);
       updateDemoStore((s) => ({
         ...s,
         tasks: s.tasks.map((t) =>
@@ -516,6 +503,25 @@ function useDemoData(): AppData {
             : t,
         ),
       }));
+      if (
+        task &&
+        status === "done" &&
+        profile &&
+        task.assigned_to === profile.id &&
+        task.created_by !== profile.id
+      ) {
+        demoPushNotifications([
+          makeNotification({
+            org_id: task.org_id,
+            kind: "task_completed",
+            title: "Task completed",
+            body: task.title,
+            href: "/tasks",
+            entity_id: task.id,
+            audience_profile_ids: [task.created_by],
+          }),
+        ]);
+      }
     },
     createContact: async (input) => {
       assertDemoWritable();
@@ -604,10 +610,28 @@ function useDemoData(): AppData {
       if (!profile || !canMarkBillsPaid(profile.role)) {
         throw new Error("Only owners or managers can mark bills paid.");
       }
+      const bill = store.bills.find((b) => b.id === id);
       updateDemoStore((s) => ({
         ...s,
         bills: s.bills.map((b) => (b.id === id ? { ...b, status } : b)),
       }));
+      if (
+        bill &&
+        status === "paid" &&
+        bill.submitted_by !== profile.id
+      ) {
+        demoPushNotifications([
+          makeNotification({
+            org_id: bill.org_id,
+            kind: "bill_paid",
+            title: "Bill marked paid",
+            body: `${bill.description} · ${formatMoney(Number(bill.amount), bill.currency)}`,
+            href: "/bills",
+            entity_id: bill.id,
+            audience_profile_ids: [bill.submitted_by],
+          }),
+        ]);
+      }
     },
     sendMessage: async (body) => {
       assertDemoWritable();

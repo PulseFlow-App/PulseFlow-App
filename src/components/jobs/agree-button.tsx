@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useData } from "@/lib/data/use-app-data";
+import { canCancelServiceOrder } from "@/lib/service-orders";
 import { useI18n } from "@/lib/i18n/provider";
 
 export function AgreeButton({
@@ -28,9 +29,15 @@ export function AgreeButton({
     );
   }
 
+  const canDecline = canCancelServiceOrder(
+    data.profile,
+    order,
+    data.orgKind,
+  );
+
   return (
-    <div className={className}>
-      {error ? <p className="mb-2 text-sm text-danger">{error}</p> : null}
+    <div className={className ? `space-y-2 ${className}` : "space-y-2"}>
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
       <Button
         className="w-full"
         disabled={busy}
@@ -48,6 +55,25 @@ export function AgreeButton({
         <Check className="size-4" />
         {busy ? t("jobs.saving") : t("jobs.readAgreed")}
       </Button>
+      {canDecline ? (
+        <Button
+          className="w-full"
+          variant="ghost"
+          disabled={busy}
+          onClick={() => {
+            setBusy(true);
+            setError(null);
+            void data
+              .cancelServiceOrder(orderId)
+              .catch((e: unknown) =>
+                setError(e instanceof Error ? e.message : t("common.error")),
+              )
+              .finally(() => setBusy(false));
+          }}
+        >
+          {t("jobs.decline")}
+        </Button>
+      ) : null}
     </div>
   );
 }

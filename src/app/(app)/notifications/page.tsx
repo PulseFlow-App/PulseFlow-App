@@ -12,6 +12,7 @@ import {
   MessageCircle,
   Receipt,
   ClipboardList,
+  Trophy,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,12 +34,18 @@ function kindIcon(kind: NotificationKind) {
     case "urgent_task":
       return AlertTriangle;
     case "task_assigned":
+    case "task_completed":
       return ClipboardList;
     case "message":
       return MessageCircle;
     case "bill_due":
     case "bill_submitted":
+    case "bill_paid":
       return Receipt;
+    case "team_joined":
+      return Bell;
+    case "endorsement":
+      return Trophy;
     case "appointment":
       return CalendarClock;
     default:

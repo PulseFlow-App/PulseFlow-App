@@ -239,6 +239,35 @@ export async function POST(request: Request) {
     })
     .eq("id", invite.id);
 
+  const { data: orgProfiles } = await admin
+    .from("profiles")
+    .select("id, role")
+    .eq("org_id", invite.org_id);
+  const audience = (orgProfiles ?? [])
+    .filter(
+      (p) =>
+        (p.role === "owner" || p.role === "manager") && p.id !== userId,
+    )
+    .map((p) => p.id);
+  if (audience.length) {
+    const note = {
+      org_id: invite.org_id as string,
+      kind: "team_joined" as const,
+      title: "New team member",
+      body: `${fullName} joined as ${invite.role}`,
+      href: "/settings",
+      entity_id: userId,
+      audience_profile_ids: audience,
+    };
+    await admin.from("notifications").insert(note);
+    try {
+      const { sendWebPush } = await import("@/lib/push/web-push");
+      await sendWebPush(note);
+    } catch (e) {
+      console.warn("team_joined push failed", e);
+    }
+  }
+
   try {
     await creditReferral(admin, {
       referrerCode: body.referredBy,

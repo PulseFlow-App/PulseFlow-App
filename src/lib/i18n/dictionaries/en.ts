@@ -184,6 +184,8 @@ const en = {
     "Guest check-in times live with the owner - you only need your work window.",
   "jobs.agreed": "You agreed to this job",
   "jobs.readAgreed": "Read and agreed",
+  "jobs.decline": "Decline job",
+  "jobs.cancelOrder": "Cancel job",
   "jobs.saving": "Saving…",
 
   "order.status.pending_ack": "Awaiting Read & agreed",
@@ -287,6 +289,10 @@ const en = {
   "notifications.kind.message": "Chat",
   "notifications.kind.bill_due": "Bill due",
   "notifications.kind.bill_submitted": "Bill",
+  "notifications.kind.bill_paid": "Bill paid",
+  "notifications.kind.task_completed": "Task done",
+  "notifications.kind.team_joined": "Team",
+  "notifications.kind.endorsement": "Endorsement",
   "notifications.kind.appointment": "Appointment",
 
   "settings.title": "Profile",
@@ -307,7 +313,9 @@ const en = {
     "Company invites and app sign-ups both count.",
   "settings.inviteAnyone": "Invite anyone to the app",
   "settings.inviteAnyoneHint":
-    "Invite other property owners or anyone who wants to use the app for personal use.",
+    "Share a sign-up link. They choose personal or company workspace on the create-account page - not a preset role.",
+  "settings.inviteAnyoneLinkHint":
+    "Link format: app.pulseflow.site/register?from=your-code. The code tracks your referral only.",
   "settings.jobTitle": "Job title (optional)",
   "settings.jobTitlePlaceholder": "e.g. On-site manager, Lead cleaner",
   "settings.createInvite": "Create & copy invite link",
@@ -341,6 +349,20 @@ const en = {
   "settings.passkeyRegisterFailed": "Could not register passkey. Try again.",
   "settings.passkeyAlreadyRegistered": "This device already has a passkey for your account.",
   "settings.passkeyListFailed": "Could not load passkeys.",
+  "settings.pushTitle": "Phone alerts",
+  "settings.pushHint":
+    "Get jobs, bills, and urgent tasks on your lock screen when the app is closed. Install the PWA first on iPhone.",
+  "settings.pushEnable": "Enable alerts on this device",
+  "settings.pushDisable": "Turn off alerts on this device",
+  "settings.pushWorking": "Updating…",
+  "settings.pushEnabled": "Lock-screen alerts enabled on this device.",
+  "settings.pushDisabled": "Alerts turned off on this device.",
+  "settings.pushUnavailable":
+    "Push alerts need HTTPS and a browser that supports Web Push.",
+  "settings.pushDemoHint":
+    "Phone alerts work with a real account, not in demo mode.",
+  "settings.pushIosHint":
+    "On iPhone: Share → Add to Home Screen, open Pulse Flow from the icon, then enable alerts here.",
   "settings.inviteError": "Could not create invite.",
   "settings.saveError": "Could not save.",
 
@@ -583,6 +605,44 @@ const en = {
   "settings.supportHint": "Questions, bugs, or billing help.",
   "settings.preparingShareLink": "Preparing your public link…",
   "settings.scanToJoin": "Scan to join",
+
+  "register.referralSaved":
+    "Invite link recognized. Choose personal or company below - you are not signing up as anyone's employee automatically.",
+
+  "talent.title": "Find staff",
+  "talent.subtitle":
+    "Search cleaners, technicians, and managers who opted in to Pulse Flow's talent directory.",
+  "talent.searchPlaceholder": "Search by name, skill, or bio…",
+  "talent.allSkills": "All",
+  "talent.empty": "No one matches yet. Try another skill or check back later.",
+  "talent.forbidden": "Talent search is available to property owners and company managers.",
+  "talent.viewProfile": "View profile",
+  "talent.noReviews": "No reviews yet",
+  "talent.reviewCount": "{count} review|{count} reviews",
+  "talent.settingsTitle": "Talent directory",
+  "talent.settingsHint":
+    "Let property owners and managers find you for jobs. You control visibility and can turn this off anytime.",
+  "talent.settingsVisible": "List me in talent search",
+  "talent.settingsVisibleHint":
+    "Shows your name, skills, ratings, and optional bio to owners and managers on Pulse Flow.",
+  "talent.settingsSkills": "Skills & trades",
+  "talent.settingsBio": "Short bio (optional)",
+  "talent.settingsBioPlaceholder":
+    "e.g. 5 years villa cleaning in Phuket, own transport, English & Thai.",
+  "talent.settingsSave": "Save talent profile",
+  "talent.settingsSaved": "Talent profile updated.",
+  "talent.demoReadOnly": "Talent settings are read-only in demo mode.",
+  "talent.skill.cleaner": "Cleaning",
+  "talent.skill.electrician": "Electrician",
+  "talent.skill.ac": "AC / HVAC",
+  "talent.skill.plumber": "Plumber",
+  "talent.skill.gardener": "Gardener",
+  "talent.skill.pool": "Pool care",
+  "talent.skill.maintenance": "Maintenance",
+  "talent.skill.handyman": "Handyman",
+  "talent.skill.manager": "On-site manager",
+  "talent.reviewsSection": "Reviews & endorsements",
+  "talent.browseLink": "Browse talent directory",
 } as const;
 
 export type MessageKey = keyof typeof en;

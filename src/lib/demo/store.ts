@@ -24,7 +24,7 @@ import {
   notificationVisibleTo,
   ownerManagerIds,
 } from "@/lib/notifications";
-import { buildOrderChatBody, formatOrderWhen } from "@/lib/service-orders";
+import { buildOrderChatBody, canCancelServiceOrder, formatOrderWhen } from "@/lib/service-orders";
 import { capitalizeLabel } from "@/lib/format-label";
 
 function slugifyName(name: string) {
@@ -259,6 +259,10 @@ export function demoRegisterWorkspace(input: RegisterOwnerInput): Profile {
     email,
     job_title: input.kind === "personal" ? "Personal" : "Owner",
     share_slug,
+    job_search_visible: false,
+    job_search_skills: [],
+    job_search_bio: null,
+    job_search_updated_at: null,
   };
   const account: DemoAccount = {
     email,
@@ -453,6 +457,10 @@ export function demoAcceptInvite(
     email,
     job_title: invite.job_title,
     share_slug,
+    job_search_visible: false,
+    job_search_skills: [],
+    job_search_bio: null,
+    job_search_updated_at: null,
   };
   const account: DemoAccount = {
     email,
@@ -605,6 +613,9 @@ export function demoSyncScheduleAlerts() {
     bills: store.bills,
     orders: store.serviceOrders ?? [],
     existing: store.notifications ?? [],
+    profiles: store.profiles,
+    assignments: store.villaAssignments,
+    endorsements: store.endorsements,
   });
   if (alerts.length) {
     updateDemoStore((s) => ({
@@ -864,6 +875,86 @@ export function demoAgreeServiceOrder(actor: Profile, orderId: string) {
               href: "/jobs",
               entity_id: orderId,
               audience_profile_ids: [order.ordered_by],
+            }),
+          ]
+        : []),
+      ...(s.notifications ?? []).map((n) =>
+        n.entity_id === orderId && n.kind === "appointment"
+          ? {
+              ...n,
+              read_by: n.read_by.includes(actor.id)
+                ? n.read_by
+                : [...n.read_by, actor.id],
+            }
+          : n,
+      ),
+    ],
+  }));
+}
+
+export function demoCancelServiceOrder(actor: Profile, orderId: string) {
+  const store = readStore();
+  const order = store.serviceOrders.find((o) => o.id === orderId);
+  if (!order) throw new Error("Order not found.");
+  const org = store.orgs.find((o) => o.id === order.org_id);
+  if (!canCancelServiceOrder(actor, order, org?.kind ?? null)) {
+    throw new Error("You cannot cancel this job.");
+  }
+  const declined =
+    order.staff_profile_id === actor.id && order.status === "pending_ack";
+  const now = new Date().toISOString();
+  const chatMsg = {
+    id: crypto.randomUUID(),
+    org_id: order.org_id,
+    sender_id: actor.id,
+    body: declined
+      ? `Declined - ${order.service_type} at ${
+          order.location_label ?? "location"
+        } (${formatOrderWhen(order)})`
+      : `Cancelled - ${order.service_type} at ${
+          order.location_label ?? "location"
+        } (${formatOrderWhen(order)})`,
+    created_at: now,
+    service_order_id: orderId,
+  };
+  const audience = declined
+    ? [
+        order.ordered_by,
+        ...ownerManagerIds(store.profiles, order.org_id),
+      ].filter((id) => id !== actor.id)
+    : [order.staff_profile_id, order.ordered_by].filter(
+        (id): id is string => Boolean(id) && id !== actor.id,
+      );
+  const uniqueAudience = [...new Set(audience)];
+
+  updateDemoStore((s) => ({
+    ...s,
+    serviceOrders: s.serviceOrders.map((o) =>
+      o.id === orderId ? { ...o, status: "cancelled" as const } : o,
+    ),
+    tasks: s.tasks.map((t) =>
+      t.id === order.task_id
+        ? {
+            ...t,
+            status: "done" as const,
+            completed_at: now,
+          }
+        : t,
+    ),
+    messages: [...s.messages, chatMsg],
+    notifications: [
+      ...(uniqueAudience.length
+        ? [
+            makeNotification({
+              org_id: order.org_id,
+              kind: "appointment",
+              title: declined ? "Job declined" : "Job cancelled",
+              body: `${order.service_type} · ${
+                order.location_label ?? "location"
+              } · ${formatOrderWhen(order)}`,
+              href: "/jobs",
+              entity_id: orderId,
+              audience_profile_ids: uniqueAudience,
             }),
           ]
         : []),

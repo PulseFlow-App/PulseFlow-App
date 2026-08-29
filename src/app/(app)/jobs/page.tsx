@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,42 @@ import { AgreeButton } from "@/components/jobs/agree-button";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
-import { formatOrderWhen } from "@/lib/service-orders";
+import { canCancelServiceOrder, formatOrderWhen } from "@/lib/service-orders";
 import { isStaffApp, canBookServices } from "@/lib/roles";
 import { cn, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 import type { MessageKey } from "@/lib/i18n";
+
+function CancelOrderButton({ orderId }: { orderId: string }) {
+  const data = useData();
+  const { t } = useI18n();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <div className="space-y-1">
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      <Button
+        size="sm"
+        variant="ghost"
+        className="w-full"
+        disabled={busy}
+        onClick={() => {
+          setBusy(true);
+          setError(null);
+          void data
+            .cancelServiceOrder(orderId)
+            .catch((e: unknown) =>
+              setError(e instanceof Error ? e.message : t("common.error")),
+            )
+            .finally(() => setBusy(false));
+        }}
+      >
+        {busy ? t("jobs.saving") : t("jobs.cancelOrder")}
+      </Button>
+    </div>
+  );
+}
 
 export default function JobsPage() {
   const data = useData();
@@ -162,6 +192,15 @@ export default function JobsPage() {
                     >
                       {t("jobs.markDone")}
                     </Button>
+                  ) : null}
+                  {!staff &&
+                  data.profile &&
+                  canCancelServiceOrder(
+                    data.profile,
+                    order,
+                    data.orgKind,
+                  ) ? (
+                    <CancelOrderButton orderId={order.id} />
                   ) : null}
                 </div>
               </Card>

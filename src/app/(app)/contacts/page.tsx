@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Phone,
   MessageCircle,
@@ -15,7 +16,7 @@ import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import { contactReachability } from "@/lib/notifications";
-import { canBookServices, canEditContacts, isStaffApp } from "@/lib/roles";
+import { canBookServices, canBrowseTalent, canEditContacts, isStaffApp } from "@/lib/roles";
 import { cn, lineDeepLink, phoneToWaMe } from "@/lib/utils";
 import type { Contact } from "@/lib/types";
 import { capitalizeLabel } from "@/lib/format-label";
@@ -39,6 +40,9 @@ export default function ContactsPage() {
   const canEdit = data.profile ? canEditContacts(data.profile.role) : false;
   const canBook = data.profile
     ? canBookServices(data.profile.role, data.orgKind)
+    : false;
+  const showTalentBrowse = data.profile
+    ? canBrowseTalent(data.profile.role, data.orgKind)
     : false;
   const isPersonal = data.orgKind === "personal";
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
@@ -106,6 +110,22 @@ export default function ContactsPage() {
           </Button>
         ) : null}
       </div>
+
+      {showTalentBrowse ? (
+        <Card className="flex items-center justify-between gap-3 p-4">
+          <div>
+            <p className="font-display text-sm font-bold text-ink">
+              {t("talent.title")}
+            </p>
+            <p className="text-xs text-muted">{t("talent.subtitle")}</p>
+          </div>
+          <Link href="/talent">
+            <Button size="sm" variant="secondary">
+              {t("talent.browseLink")}
+            </Button>
+          </Link>
+        </Card>
+      ) : null}
 
       {ordering && canBook && ordering.linked_profile_id ? (
         <OrderForm

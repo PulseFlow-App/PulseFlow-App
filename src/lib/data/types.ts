@@ -59,6 +59,7 @@ export type AppData = {
     time_end?: string | null;
   }) => Promise<ServiceOrder>;
   agreeServiceOrder: (orderId: string) => Promise<void>;
+  cancelServiceOrder: (orderId: string) => Promise<void>;
   completeServiceOrder: (orderId: string) => Promise<void>;
   updateVilla: (
     id: string,

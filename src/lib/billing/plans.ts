@@ -87,9 +87,23 @@ export function resolvePlanTier(input: {
 }
 
 export const REFERRAL_STORAGE_KEY = "pulseflow_referral_code";
+export const REFERRAL_QUERY_PARAM = "from";
 
+/** Read referrer code from URL (?from= preferred, ?ref= legacy). */
+export function readReferralParam(
+  searchParams: URLSearchParams | null | undefined,
+): string | null {
+  if (!searchParams) return null;
+  const from = searchParams.get(REFERRAL_QUERY_PARAM)?.trim();
+  if (from) return from;
+  return searchParams.get("ref")?.trim() || null;
+}
+
+/** Generic app invite — recipient picks personal or company on /register. */
 export function referralRegisterUrl(origin: string, refCode: string) {
-  return `${origin}/register?ref=${encodeURIComponent(refCode)}`;
+  const url = new URL(`${origin}/register`);
+  url.searchParams.set(REFERRAL_QUERY_PARAM, refCode);
+  return url.toString();
 }
 
 /** Teammate join links also carry the inviter's referral code toward the year unlock. */
@@ -99,7 +113,7 @@ export function referralJoinUrl(
   refCode: string,
 ) {
   const url = new URL(`${origin}/join/${inviteToken}`);
-  url.searchParams.set("ref", refCode);
+  url.searchParams.set(REFERRAL_QUERY_PARAM, refCode);
   return url.toString();
 }
 

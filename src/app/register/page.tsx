@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import {
   REFERRAL_STORAGE_KEY,
+  readReferralParam,
   rememberReferralCode,
 } from "@/lib/billing/plans";
 import { DEMO_READ_ONLY_MESSAGE } from "@/lib/demo/guard";
@@ -37,9 +38,9 @@ export default function RegisterPage() {
   const [referralCode, setReferralCode] = useState<string | null>(null);
 
   useEffect(() => {
-    const fromQuery = new URLSearchParams(window.location.search)
-      .get("ref")
-      ?.trim();
+    const fromQuery = readReferralParam(
+      new URLSearchParams(window.location.search),
+    );
     if (fromQuery) {
       rememberReferralCode(fromQuery);
       setReferralCode(fromQuery);
@@ -136,7 +137,7 @@ export default function RegisterPage() {
           <p className="mt-1 text-sm text-muted">{t("brand.tagline")}</p>
           {referralCode ? (
             <p className="mt-2 text-xs font-semibold text-secondary">
-              Referral code saved: {referralCode}
+              {t("register.referralSaved")}
             </p>
           ) : null}
         </div>

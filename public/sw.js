@@ -1,4 +1,4 @@
-const CACHE = "pulseflow-shell-v4";
+const CACHE = "pulseflow-shell-v5";
 const SHELL = [
   "/",
   "/login",
@@ -47,5 +47,46 @@ self.addEventListener("fetch", (event) => {
           headers: { "Content-Type": "text/plain" },
         });
       }),
+  );
+});
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Pulse Flow", {
+      body: data.body || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data: { href: data.href || "/notifications" },
+      tag: data.tag || "pulseflow",
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const href = event.notification.data?.href || "/notifications";
+  event.waitUntil(
+    (async () => {
+      const allClients = await clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
+      for (const client of allClients) {
+        if ("focus" in client) {
+          await client.focus();
+          if ("navigate" in client) {
+            await client.navigate(href);
+          }
+          return;
+        }
+      }
+      await clients.openWindow(href);
+    })(),
   );
 });

@@ -1,6 +1,8 @@
 import type { ServiceOrder, ServiceOrderStatus } from "@/lib/types";
+import type { UserRole } from "@/lib/design-tokens";
 import { formatWorkWindow } from "@/lib/notifications";
 import type { MessageKey } from "@/lib/i18n";
+import { canBookServices } from "@/lib/roles";
 
 type TFn = (key: MessageKey, params?: Record<string, string | number>) => string;
 
@@ -42,6 +44,23 @@ export function formatOrderWhen(order: ServiceOrder) {
       order.time_end,
     ) ?? order.scheduled_date
   );
+}
+
+/** Staff can decline while awaiting ack. Owners/managers can cancel until done. */
+export function canCancelServiceOrder(
+  actor: { id: string; role: UserRole },
+  order: ServiceOrder,
+  orgKind?: "personal" | "company" | null,
+) {
+  if (order.status === "done" || order.status === "cancelled") return false;
+  if (
+    order.staff_profile_id === actor.id &&
+    order.status === "pending_ack"
+  ) {
+    return true;
+  }
+  if (canBookServices(actor.role, orgKind)) return true;
+  return false;
 }
 
 export function buildOrderChatBody(input: {

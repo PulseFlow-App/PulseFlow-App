@@ -48,6 +48,11 @@ export type Profile = {
   job_title: string | null;
   /** Public slug for shareable reputation page */
   share_slug: string;
+  /** Opt-in listing in the talent directory for owners/managers to discover staff */
+  job_search_visible: boolean;
+  job_search_skills: string[];
+  job_search_bio: string | null;
+  job_search_updated_at: string | null;
 };
 
 export type OrgMembership = {
@@ -207,10 +212,14 @@ export type NotificationKind =
   | "check_out"
   | "urgent_task"
   | "task_assigned"
+  | "task_completed"
   | "message"
   | "bill_due"
   | "bill_submitted"
-  | "appointment";
+  | "bill_paid"
+  | "appointment"
+  | "team_joined"
+  | "endorsement";
 
 export type AppNotification = {
   id: string;

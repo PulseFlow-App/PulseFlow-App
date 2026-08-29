@@ -66,6 +66,10 @@ export const demoProfiles: Profile[] = [
     email: "owner@pulseflow.site",
     job_title: "Owner",
     share_slug: "alex-owner",
+    job_search_visible: false,
+    job_search_skills: [],
+    job_search_bio: null,
+    job_search_updated_at: null,
   },
   {
     id: DEMO_OWNER_2_ID,
@@ -77,6 +81,10 @@ export const demoProfiles: Profile[] = [
     email: "bee@pulseflow.site",
     job_title: "Owner",
     share_slug: "bee-host",
+    job_search_visible: false,
+    job_search_skills: [],
+    job_search_bio: null,
+    job_search_updated_at: null,
   },
   {
     id: DEMO_EMPLOYEE_ID,
@@ -88,6 +96,10 @@ export const demoProfiles: Profile[] = [
     email: "manager@pulseflow.site",
     job_title: "On-site manager",
     share_slug: "sam-manager",
+    job_search_visible: true,
+    job_search_skills: ["manager", "maintenance"],
+    job_search_bio: "On-site manager for villa portfolios in Phuket.",
+    job_search_updated_at: "2026-08-01T00:00:00.000Z",
   },
   {
     id: DEMO_CLEANER_ID,
@@ -99,6 +111,10 @@ export const demoProfiles: Profile[] = [
     email: "employee@pulseflow.site",
     job_title: "Lead cleaner",
     share_slug: "nok-cleaning",
+    job_search_visible: true,
+    job_search_skills: ["cleaner", "pool"],
+    job_search_bio: "Villa turnover cleaning, pool checks, English & Thai.",
+    job_search_updated_at: "2026-08-01T00:00:00.000Z",
   },
 ];
 
