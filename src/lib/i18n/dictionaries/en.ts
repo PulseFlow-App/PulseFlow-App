@@ -10,6 +10,7 @@ const en = {
   "common.open": "Open",
   "common.close": "Close",
   "common.back": "Back",
+  "common.saving": "Saving…",
   "common.copy": "Copy",
   "common.copied": "Copied",
   "common.submit": "Submit",
@@ -45,6 +46,11 @@ const en = {
   "nav.endorsements": "Endorsements",
   "nav.leaderboard": "Leaderboard",
   "nav.language": "Language",
+  "nav.menu": "Menu",
+  "nav.reports": "Reports & handoffs",
+  "nav.talent": "Staff search",
+  "nav.invites": "Invites",
+  "nav.company": "Company",
 
   "brand.tagline": "The pulse of your rental operations",
   "brand.opsPulse": "Ops pulse",
@@ -312,6 +318,7 @@ const en = {
 
   "settings.title": "Profile",
   "settings.organization": "Organization",
+  "settings.companyNameSaved": "Company name updated.",
   "settings.workspace": "Workspace",
   "settings.reputation": "Reputation",
   "settings.reputationOwner":
@@ -387,6 +394,8 @@ const en = {
   "billing.status": "Status",
   "billing.trial": "Trial",
   "billing.daysLeft": "{count} day left|{count} days left",
+  "billing.daysLeftOf":
+    "{count} of {total} days left|{count} of {total} days left",
   "billing.ended": "Ended",
   "billing.writesEnabled": "Writes enabled",
   "billing.yes": "Yes",
@@ -668,7 +677,8 @@ const en = {
   "guest.guideSave": "Save house guide",
   "guest.joinTitle": "You're invited as a guest",
   "guest.joinHint":
-    "Create your account to follow this stay. You'll also get a personal Pulse Flow space.",
+    "Create your account to follow this stay and get a personal Pulse Flow space.",
+  "guest.joinContinue": "Continue",
   "join.staffTitle": "You're invited to the team",
   "join.staffHint":
     "Fill in your details to join. You'll keep a personal workspace alongside this company.",

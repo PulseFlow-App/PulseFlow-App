@@ -184,6 +184,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     createVilla: async () => undefined,
     deleteVilla: async () => undefined,
     mergeVillaToCompany: async () => undefined,
+    updateOrganizationName: async () => undefined,
     createTask: async () => undefined,
     setTaskStatus: async () => undefined,
     createContact: async () => undefined,
@@ -984,6 +985,22 @@ export function useSupabaseData(enabled: boolean): AppData {
         .from("villas")
         .update({ org_id: profile.org_id })
         .eq("id", villaId);
+      if (error) throw error;
+      await refresh();
+    },
+    updateOrganizationName: async (name) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner") {
+        throw new Error("Only the owner can rename the company.");
+      }
+      const trimmed = name.trim();
+      if (!trimmed) throw new Error("Company name is required.");
+      requireOrgWrite(profile.org_id);
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("organizations")
+        .update({ name: trimmed })
+        .eq("id", profile.org_id);
       if (error) throw error;
       await refresh();
     },

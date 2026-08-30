@@ -9,10 +9,16 @@ import {
   isCompanyEntitled,
   trialDaysRemaining,
 } from "@/lib/billing/entitlement";
+import { COMPANY_TRIAL_DAYS } from "@/lib/auth/helpers";
 import { isDemoMode } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/provider";
+import { cn } from "@/lib/utils";
 
-export function BillingSettingsCard() {
+export function BillingSettingsCard({
+  embedded = false,
+}: {
+  embedded?: boolean;
+}) {
   const data = useData();
   const { t } = useI18n();
   const [busy, setBusy] = useState(false);
@@ -58,16 +64,22 @@ export function BillingSettingsCard() {
     }
   };
 
-  return (
-    <Card className="space-y-3 p-5">
-      <div>
-        <h2 className="font-display text-lg font-bold text-ink">
-          {t("billing.title")}
-        </h2>
-        <p className="mt-1 text-sm text-muted" dir="auto">
+  const body = (
+    <>
+      {!embedded ? (
+        <div>
+          <h2 className="font-display text-lg font-bold text-ink">
+            {t("billing.title")}
+          </h2>
+          <p className="mt-1 text-sm text-muted" dir="auto">
+            {t("billing.subtitle")}
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted" dir="auto">
           {t("billing.subtitle")}
         </p>
-      </div>
+      )}
 
       <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3 text-sm">
         <div className="flex justify-between gap-3 py-1">
@@ -79,7 +91,10 @@ export function BillingSettingsCard() {
             <span className="text-muted">{t("billing.trial")}</span>
             <span className="font-semibold text-ink">
               {days > 0
-                ? t("billing.daysLeft", { count: days })
+                ? t("billing.daysLeftOf", {
+                    count: days,
+                    total: COMPANY_TRIAL_DAYS,
+                  })
                 : t("billing.ended")}
             </span>
           </div>
@@ -129,15 +144,6 @@ export function BillingSettingsCard() {
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       <p className="text-xs text-muted">
-        <a
-          href="https://pulseflow.site/subscription"
-          target="_blank"
-          rel="noreferrer"
-          className="font-semibold text-primary"
-        >
-          {t("plan.seePlans")}
-        </a>
-        {" · "}
         <Link href="/terms" className="font-semibold text-primary">
           {t("billing.terms")}
         </Link>
@@ -146,8 +152,14 @@ export function BillingSettingsCard() {
           {t("billing.privacy")}
         </Link>
       </p>
-    </Card>
+    </>
   );
+
+  if (embedded) {
+    return <div className="space-y-3 border-t border-black/5 pt-3">{body}</div>;
+  }
+
+  return <Card className={cn("space-y-3 p-5")}>{body}</Card>;
 }
 
 export function TrialBanner() {

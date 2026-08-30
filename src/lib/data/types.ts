@@ -107,6 +107,7 @@ export type AppData = {
   }) => Promise<void>;
   deleteVilla: (id: string) => Promise<void>;
   mergeVillaToCompany: (villaId: string) => Promise<void>;
+  updateOrganizationName: (name: string) => Promise<void>;
   createTask: (input: {
     title: string;
     villa_id: string | null;

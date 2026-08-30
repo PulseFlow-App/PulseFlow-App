@@ -190,7 +190,9 @@ export default function JoinPage({
               </>
             ) : null}
           </p>
-          <p className="mt-2 text-xs text-muted">{t("join.accountNote")}</p>
+          {!isGuestInvite ? (
+            <p className="mt-2 text-xs text-muted">{t("join.accountNote")}</p>
+          ) : null}
         </div>
 
         <Card className="space-y-4 p-5">
@@ -263,7 +265,11 @@ export default function JoinPage({
             disabled={saving}
             onClick={() => void accept()}
           >
-            {saving ? "Joining…" : "Accept invite & join"}
+            {saving
+              ? "Joining…"
+              : isGuestInvite
+                ? t("guest.joinContinue")
+                : "Accept invite & join"}
           </Button>
         </Card>
       </div>

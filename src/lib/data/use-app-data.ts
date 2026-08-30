@@ -508,6 +508,21 @@ function useDemoData(): AppData {
       if (!profile) throw new Error("Not signed in.");
       demoMergeVillaToCompany(profile, villaId);
     },
+    updateOrganizationName: async (name) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner") {
+        throw new Error("Only the owner can rename the company.");
+      }
+      const trimmed = name.trim();
+      if (!trimmed) throw new Error("Company name is required.");
+      updateDemoStore((s) => ({
+        ...s,
+        orgs: s.orgs.map((o) =>
+          o.id === profile.org_id ? { ...o, name: trimmed } : o,
+        ),
+      }));
+    },
     createTask: async (input) => {
       assertDemoWritable();
       if (!profile) return;

@@ -126,7 +126,9 @@ export default function LoginPage() {
   const signIn = async (email: string, password: string) => {
     setError(null);
     try {
-      if (isDemoMode()) {
+      const useDemoSeat = isDemoMode() || Boolean(demoRole);
+
+      if (useDemoSeat) {
         const profile = demoLogin(email, password);
         if (!profile) {
           setError(t("auth.invalidCredentials"));
@@ -146,6 +148,7 @@ export default function LoginPage() {
         setError(signInError.message);
         return;
       }
+      demoLogout();
       router.replace("/home");
       router.refresh();
     } catch {
@@ -201,7 +204,7 @@ export default function LoginPage() {
           </div>
 
           <Card className="p-5">
-            {isDemoMode() && isDemoPrefill ? (
+            {isDemoPrefill ? (
               <div className="mb-5 space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                   {t("auth.demoAccounts")}

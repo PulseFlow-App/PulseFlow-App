@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Languages, MessageCircle, Settings, Star } from "lucide-react";
+import { Bell, MessageCircle, Settings } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { brand } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
 import { useData } from "@/lib/data/use-app-data";
-import { canUseTeamChat, canUseTeamReputation } from "@/lib/roles";
+import { canUseTeamChat } from "@/lib/roles";
+import { AppMenuButton } from "./app-menu";
 
 export function AppHeader({
   unreadMessages = 0,
@@ -17,9 +18,6 @@ export function AppHeader({
 }) {
   const { t } = useI18n();
   const data = useData();
-  const showReputation =
-    canUseTeamReputation(data.orgKind) &&
-    data.profile?.role !== "guest";
   const showChat = canUseTeamChat(data.orgKind, data.profile?.role);
 
   return (
@@ -32,13 +30,6 @@ export function AppHeader({
       </Link>
       <div className="flex shrink-0 items-center gap-1">
         <Link
-          href="/settings#language"
-          className="flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
-          aria-label={t("nav.language")}
-        >
-          <Languages className="size-4" />
-        </Link>
-        <Link
           href="/notifications"
           className="relative flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
           aria-label={t("nav.notifications")}
@@ -50,15 +41,6 @@ export function AppHeader({
             </span>
           ) : null}
         </Link>
-        {showReputation ? (
-          <Link
-            href="/endorsements"
-            className="flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
-            aria-label={t("nav.endorsements")}
-          >
-            <Star className="size-4" />
-          </Link>
-        ) : null}
         {showChat ? (
           <Link
             href="/messages"
@@ -78,6 +60,7 @@ export function AppHeader({
         >
           <Settings className="size-4" />
         </Link>
+        <AppMenuButton />
       </div>
     </header>
   );

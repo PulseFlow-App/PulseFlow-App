@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isDemoMode } from "@/lib/env";
+import { DEMO_USER_COOKIE, isDemoMode } from "@/lib/env";
 
 const PUBLIC_PREFIXES = [
   "/login",
@@ -26,15 +26,22 @@ function isPublicPath(pathname: string) {
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
   const { pathname } = request.nextUrl;
+  const demoCookie = request.cookies.get(DEMO_USER_COOKIE);
+  const demoSession =
+    isDemoMode(request.headers.get("cookie")) || Boolean(demoCookie?.value);
 
-  if (isDemoMode()) {
-    const demoCookie = request.cookies.get("pulseflow_demo_user");
+  if (demoSession) {
     if (!demoCookie && !isPublicPath(pathname)) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       return NextResponse.redirect(url);
     }
-    if (demoCookie && (pathname === "/" || pathname === "/register")) {
+    if (
+      demoCookie &&
+      (pathname === "/" ||
+        pathname === "/register" ||
+        (pathname === "/login" && !request.nextUrl.searchParams.get("demo")))
+    ) {
       const url = request.nextUrl.clone();
       url.pathname = "/home";
       return NextResponse.redirect(url);
