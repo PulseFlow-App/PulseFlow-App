@@ -161,6 +161,13 @@ export type AppData = {
     category?: GuestBriefingCategory;
   }) => Promise<void>;
   confirmGuestBriefing: (briefingId: string) => Promise<void>;
+  /** Owner/manager records or updates the security deposit held for a stay. */
+  upsertGuestDeposit: (input: {
+    stay_id: string;
+    amount: number;
+    currency?: string;
+    notes?: string | null;
+  }) => Promise<void>;
   upsertHouseGuide: (
     villaId: string,
     patch: Partial<

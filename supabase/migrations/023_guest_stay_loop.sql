@@ -104,23 +104,28 @@ alter table public.stay_photos enable row level security;
 alter table public.stay_date_requests enable row level security;
 
 -- Guest sees own stays; owners/managers see org stays
+drop policy if exists guest_stays_select on public.guest_stays;
 create policy guest_stays_select on public.guest_stays for select using (
   guest_profile_id = auth.uid()
   or public.is_org_manager_or_owner(org_id)
 );
+drop policy if exists guest_stays_write on public.guest_stays;
 create policy guest_stays_write on public.guest_stays for all using (
   public.is_org_manager_or_owner(org_id)
 ) with check (public.is_org_manager_or_owner(org_id));
 
 -- House guides: guests in org can read; owners/managers write
+drop policy if exists house_guides_select on public.house_guides;
 create policy house_guides_select on public.house_guides for select using (
   public.in_org(org_id)
 );
+drop policy if exists house_guides_write on public.house_guides;
 create policy house_guides_write on public.house_guides for all using (
   public.is_org_manager_or_owner(org_id)
 ) with check (public.is_org_manager_or_owner(org_id));
 
 -- Support: guest on stay or owner/manager
+drop policy if exists support_messages_select on public.support_messages;
 create policy support_messages_select on public.support_messages for select using (
   public.is_org_manager_or_owner(org_id)
   or exists (
@@ -128,6 +133,7 @@ create policy support_messages_select on public.support_messages for select usin
     where s.id = stay_id and s.guest_profile_id = auth.uid()
   )
 );
+drop policy if exists support_messages_insert on public.support_messages;
 create policy support_messages_insert on public.support_messages for insert with check (
   sender_id = auth.uid()
   and (
@@ -139,6 +145,7 @@ create policy support_messages_insert on public.support_messages for insert with
   )
 );
 
+drop policy if exists guest_deposits_select on public.guest_deposits;
 create policy guest_deposits_select on public.guest_deposits for select using (
   public.is_org_manager_or_owner(org_id)
   or exists (
@@ -146,10 +153,12 @@ create policy guest_deposits_select on public.guest_deposits for select using (
     where s.id = stay_id and s.guest_profile_id = auth.uid()
   )
 );
+drop policy if exists guest_deposits_write on public.guest_deposits;
 create policy guest_deposits_write on public.guest_deposits for all using (
   public.is_org_manager_or_owner(org_id)
 ) with check (public.is_org_manager_or_owner(org_id));
 
+drop policy if exists guest_charges_select on public.guest_charges;
 create policy guest_charges_select on public.guest_charges for select using (
   public.is_org_manager_or_owner(org_id)
   or exists (
@@ -157,10 +166,12 @@ create policy guest_charges_select on public.guest_charges for select using (
     where s.id = stay_id and s.guest_profile_id = auth.uid()
   )
 );
+drop policy if exists guest_charges_write on public.guest_charges;
 create policy guest_charges_write on public.guest_charges for all using (
   public.is_org_manager_or_owner(org_id)
 ) with check (public.is_org_manager_or_owner(org_id));
 
+drop policy if exists stay_photos_select on public.stay_photos;
 create policy stay_photos_select on public.stay_photos for select using (
   public.is_org_manager_or_owner(org_id)
   or exists (
@@ -168,6 +179,7 @@ create policy stay_photos_select on public.stay_photos for select using (
     where s.id = stay_id and s.guest_profile_id = auth.uid()
   )
 );
+drop policy if exists stay_photos_insert on public.stay_photos;
 create policy stay_photos_insert on public.stay_photos for insert with check (
   uploaded_by = auth.uid()
   and (
@@ -179,14 +191,17 @@ create policy stay_photos_insert on public.stay_photos for insert with check (
   )
 );
 
+drop policy if exists stay_date_requests_select on public.stay_date_requests;
 create policy stay_date_requests_select on public.stay_date_requests for select using (
   guest_profile_id = auth.uid()
   or public.is_org_manager_or_owner(org_id)
 );
+drop policy if exists stay_date_requests_insert on public.stay_date_requests;
 create policy stay_date_requests_insert on public.stay_date_requests for insert with check (
   guest_profile_id = auth.uid()
   and public.in_org(org_id)
 );
+drop policy if exists stay_date_requests_update on public.stay_date_requests;
 create policy stay_date_requests_update on public.stay_date_requests for update using (
   public.is_org_manager_or_owner(org_id)
 );

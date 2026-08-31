@@ -1,215 +1,201 @@
-# Pulse Flow - feature matrix by audience
+# Pulse Flow - what it is, and features by audience
 
-Use this to redesign **in-app / marketing guides** per group (owners, managers, field staff, guests, personal users).  
-Status: **shipped** vs **planned** are separated. Guest stay tools beyond invite/shell are mostly planned.
+## Why this app exists
 
-**Audiences**
+Pulse Flow is the shared operating system for rental villas: one place where owners, managers, field staff, and guests see the same live truth about properties, work, money, and stays.
 
-| ID | Who | Workspace |
-|----|-----|-----------|
-| **Owner** | Company owner (pays Full / trial / referral year) | Company |
-| **Manager** | Invited management | Company |
-| **Field staff** | Cleaner + staff roles (same field app) | Company (+ optional personal side villas) |
-| **Guest** | Stay guest invited by owner/manager | Company membership as `guest` (+ personal org on signup) |
-| **Personal** | Solo owner of a personal workspace | Personal (free) |
+Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll check and get back to you.” Occupancy is unclear, jobs get lost, receipts go missing, and guests keep asking for Wi‑Fi and gate codes. Pulse Flow puts that pulse in one phone app so the company runs without constant chase-ups, and guests have a clean stay channel that never dumps them into the cleaning crew chat.
 
-Field staff = **cleaner** and **staff** (same simplified nav). Guides can say “field team” unless a difference matters.
+**Who it’s for**
+
+| Audience | Why they need it |
+|----------|------------------|
+| **Owner** | See occupancy, urgent work, and spend without calling for a status update; pay for the company workspace |
+| **Manager** | Run day-to-day ops and reports like an owner, without owning the Stripe bill |
+| **Field staff** (cleaner / staff) | Know today’s jobs, confirm them, submit receipts, keep a reputation that travels |
+| **Guest** | One stay hub: house guide, support to host only, deposit/bills, request next dates |
+| **Personal** | Solo villas and light ops with no team (free forever) |
 
 ---
 
-## 1. Common (shared by almost everyone with an account)
+## Shared by almost everyone
 
-These belong in every group’s guide intro (wording can change; capability is shared).
-
-| Feature | Notes |
+| Feature | Detail |
 |---------|--------|
-| Sign in / sign out | Email/password; passkeys where enabled |
-| Language | Settings language switcher; `?lang=` on marketing |
-| Profile basics | Name, email, role label |
-| Notifications (in-app) | Bell + list; kinds vary by role |
-| Web Push (PWA) | Optional phone alerts - Settings → Phone alerts |
-| Invite anyone | Referral register link → `/register` (personal vs company). Counts toward “invite 5 → 1 year Full” when credited |
-| Public reputation profile | `/u/{slug}` for non-owners (stars from endorsements). Guests: low priority in guide |
-| Brand / Settings | App name, support email, legal links, sign out |
-
-**Not common:** team chat, talent browse, reports/CSV, villa assignments, guest stay tools, contacts Order, endorsements voting.
+| Sign in / sign out | Email + password |
+| Face ID / passkeys | Optional fast sign-in after register or from Settings |
+| Language | In-app language switcher |
+| Edit your name | Settings → Name (all roles) |
+| In-app notifications | Bell inbox (kinds vary by role) |
+| Phone push (PWA) | Settings → Phone alerts; per account on that device; iPhone needs Home Screen install |
+| Invite anyone | Personal referral link (`/register?from=…`); counts toward invite-5 → 1 year Full |
+| Website + support links | Burger menu |
+| Sign out | Settings |
 
 ---
 
-## 2. Unique / primary by category (shipped)
+## Owner (company)
 
-### A. Owner (company)
+**Job:** Run the company ops workspace and pay for Full (or trial / referral year).
 
-**Core job:** Run the company ops workspace and pay for Full.
+### Everyday
 
-| Unique or owner-led | Detail |
-|---------------------|--------|
-| Company billing | Stripe checkout / portal; trial & Full entitlement |
-| Villa access assignments | Assign which properties field staff can see |
-| Full property inventory | Company villas; status, check-in/out, cleaning, photos, maps |
-| Owner home dashboard | Status tiles, urgent tasks, date strip, weekly chart |
-| Tasks (full) | Create / assign / complete across company |
-| Contacts + Order | Vendor book; in-app Order for linked staff; WA/LINE links |
-| Bills - finance view | All bills, category spend, multi-currency, mark paid |
-| Reports / CSV | Budget sheet, bills, tasks, properties, jobs, occupancy; weekly print; handoff snapshots |
-| Talent directory | Browse opted-in staff by skill / place / map |
-| Endorsements | Cast weekly stars; reviews from Contacts |
-| Team chat | Company messages + @mentions |
-| Invite staff + invite guest | Flip cards in Settings (plus invite anyone) |
-| Invite managers | Via staff invite role picker |
-| Referral progress | 5 joins → 1 year Full |
-| Jobs / service orders | Book linked contacts; cancel / track |
-| Leaderboard | Company reputation board |
+- **Home dashboard** - occupancy pulse, urgent work, date strip, weekly spend chart  
+- **Villas inventory** - status, check-in/out (auto from dates), cleaning, photos, map/location, notes  
+- **House guide** per villa - Wi‑Fi, gate, bins, quiet hours, checkout checklist (visible to guests)  
+- **Tasks** - create, assign, prioritize, complete across the company  
+- **Contacts + Order** - vendor book; Call / WhatsApp / LINE; in-app Order to linked staff  
+- **Jobs / service orders** - book linked contacts; track agree / complete / cancel  
+- **Bills - finance** - all receipts, categories, multi-currency, mark paid  
+- **Team chat** - company thread with @mentions (not guest support)  
+- **Guests panel** (footer) - confirmed stays, record security deposit, send briefings (guest must tick as read), shortcut to date requests + support  
+- **Date requests** - accept/decline guest stay dates; accept books villa dates and creates the stay  
+- **Reports / exports** - CSV (bills, tasks, villas, jobs, occupancy), printable weekly ops, handoff snapshots  
+- **Talent directory** - browse opted-in field talent by skills / place / map  
+- **Endorsements + leaderboard** - weekly stars for the team  
 
-### B. Manager (company)
+### Company control
 
-**Core job:** Day-to-day ops like an owner, without paying or assigning villa ACL.
+- **Rename organization** - Settings; name shows to team and guests  
+- **Invite staff, managers, guests** - invite links / QR  
+- **Villa access assignments** - which properties each field person sees  
+- **Billing** - Stripe Full subscription / portal; trial window; referral progress (5 joins → 1 year Full)  
 
-| Same as owner (ops) | Difference from owner |
-|---------------------|------------------------|
-| Home dashboard, villas (edit core), tasks, contacts+Order, bills finance, team chat, talent, endorsements (cast), jobs, reports/CSV when company entitled, invite staff/guest/anyone, referral progress | **No** Stripe billing ownership |
-| | **No** villa access assignment UI (owner-only) |
-| | Reporting / extended history tied to company entitlement (Full includes managers) |
-| | Can invite managers + field staff + guests (same flip cards as owner) |
+---
 
-### C. Field staff (cleaner / staff)
+## Manager (company)
 
-**Core job:** Do assigned work on the island; light personal side ops.
+**Job:** Day-to-day ops like an owner, without paying or owning villa ACL.
 
-| Unique / field-app | Detail |
-|--------------------|--------|
-| Field home | Jobs-focused home (`StaffHome`) |
-| Jobs | Work windows by property (not guest check-in times) |
-| Villas (limited) | Assigned / visible properties; less owner chrome |
-| Team chat | Company chat |
-| Bills - submit | Own receipts; not full finance totals |
-| Personal villas | Side personal org / personal villas for own clients |
-| Talent opt-in | Settings: skills, bio, **location + map pin** |
-| Reputation | Receive endorsements; share `/u/{slug}`; see leaderboard as team member |
-| Invite anyone only | No staff/guest invite cards |
-| **No** | Contacts Order, talent browse, reports CSV, mark-all-bills-paid finance, villa ACL, guest invite |
+### Same as owner (ops)
 
-### D. Guest (company guest role)
+Home, villas (edit), house guides, tasks, contacts + Order, jobs, bills finance, team chat, Guests panel (deposit + briefings), date requests accept/decline, talent browse, endorsements, reports when company is entitled, invite staff / guests / anyone, referral progress, Face ID, push, rename own display name.
 
-**Core job:** Stay updated, ask support, see deposit/bills, return for next trip.
-
-| Shipped (demo + migration 023) | Detail |
-|-------------|------------------|
-| Guest role + invite link | Owner/manager “Invite your guest” → `/join/{token}` |
-| Stay home | Villa, dates, owner notices, house guide, arrival/departure photos |
-| House guide | Wi‑Fi, gate, bins, quiet hours, checkout - owner/manager editable on villa |
-| Support chat | One thread per stay; guest ↔ owner/manager only |
-| Guest bills / deposit | Held deposit + deductions with remaining balance |
-| Company villas browse | Catalog + request dates |
-| Guest nav | Stay · Villas · Support · Bills |
-
-| Explicitly **not** for guests | |
-|-------------------------------|--|
-| Team chat with cleaners | Support chat only with **owner/manager** |
-| Contacts / talent / endorsements vote | Hidden |
-| Internal ops bills / tasks | Guest-facing deposit & charges only |
-
-### E. Personal workspace (solo)
-
-**Core job:** Own properties without a company team.
+### Different from owner
 
 | Has | Does not have |
 |-----|----------------|
-| Villas, tasks, bills (own) | Team invites, team chat, Order bookings, endorsements, leaderboard, talent browse, villa ACL |
-| Contacts as phone book (call) | WA/LINE / Order as company vendors |
-| Invite anyone (grow Pulse Flow) | Invite staff / guest into a company |
-| Free forever | Stripe company Full |
+| Full day-to-day ops when company is on trial/Full | Stripe company billing ownership |
+| Reporting when company entitled | Villa access assignment UI (owner-only) |
+| Invite managers + field + guests | Rename the company org (owner-only) |
 
 ---
 
-## 3. Matrix (shipped) - quick scan
+## Field staff (cleaner / staff)
 
-Legend: ● = yes · ◐ = limited / own only · ○ = no · ▢ = shell / invite only
+**Job:** Do assigned work; light personal side ops; build a portable reputation.
+
+### Field app
+
+- **Field home** - jobs-first home  
+- **Jobs** - work windows by property; Read & agreed; complete  
+- **Villas** - only assigned / visible company properties  
+- **Team chat** - company thread  
+- **Bills** - submit own receipts (not company-wide finance)  
+- **Talent profile** - opt in: skills, bio, location + map pin  
+- **Reputation** - receive endorsements; share public `/u/{slug}`; company leaderboard  
+- **Invite anyone** only (referral) - no staff/guest company invites  
+- **Personal villas** - optional side personal workspace for own clients  
+
+### Not for field staff
+
+Contacts Order booking UI, talent *browse*, reports CSV, mark-all-paid finance, villa ACL, guest invite, Guests panel, guest support inbox.
+
+---
+
+## Guest (invited stay guest)
+
+**Job:** Stay informed, reach the host, see money held for the stay, book the next visit.
+
+### Guest app (black footer only)
+
+| Tab | What it does |
+|-----|----------------|
+| **Stay** | Confirmed stay: villa, dates, host notices, house guide, briefings (tick as read), arrival/departure photos |
+| **Villas** | Browse this host’s company properties; request stay dates (calendar from **today** only) |
+| **Support** | Chat with owner/manager only - **opens after a confirmed stay** |
+| **Bills** | Security deposit held, deductions, remaining balance |
+
+### Also
+
+- Guest invite join flow → company guest role + personal workspace on signup  
+- In-app + push notifications for stay updates (when push enabled on that account/device)  
+- Edit own name, language, Face ID, phone alerts in Settings  
+
+### Explicitly not for guests
+
+Team chat with cleaners, contacts, talent, endorsements voting, company tasks/ops bills, Guests host panel.
+
+---
+
+## Personal workspace (solo)
+
+**Job:** Own a few properties with no company team. Free forever.
+
+| Has | Does not have |
+|-----|----------------|
+| Villas, tasks, own bills | Team invites, team chat, Order bookings |
+| Contacts as a simple phone book | Company vendor Order / WA-LINE ops stack |
+| Invite anyone (grow Pulse Flow) | Invite staff/guest into a company |
+| Rename personal workspace (owner of that org) | Stripe Full company billing, endorsements, leaderboard, talent browse, Guests panel |
+
+---
+
+## Quick matrix (shipped)
+
+Legend: ● yes · ◐ limited · ○ no
 
 | Feature | Owner | Manager | Field | Guest | Personal |
 |---------|:-----:|:-------:|:-----:|:-----:|:--------:|
-| Home (ops dashboard) | ● | ● | ○ | ○ | ● |
+| Ops home dashboard | ● | ● | ○ | ○ | ● |
 | Field jobs home | ○ | ○ | ● | ○ | ○ |
-| Guest stay home | ○ | ○ | ○ | ▢ | ○ |
-| Villas | ● | ● | ◐ | ▢ | ● |
+| Guest stay home | ○ | ○ | ○ | ● | ○ |
+| Villas | ● | ● | ◐ | ◐ browse | ● |
+| House guide edit | ● | ● | ○ | read | ○ |
 | Tasks | ● | ● | ◐ | ○ | ● |
-| Jobs / orders | ● | ● | ● | ○ | ○ |
+| Jobs / service orders | ● | ● | ● | ○ | ○ |
 | Contacts + Order | ● | ● | ○ | ○ | ◐ call |
-| Bills submit | ● | ● | ● | ▢ | ● |
+| Bills submit | ● | ● | ● | ○ | ● |
 | Bills finance / mark paid | ● | ● | ○ | ○ | ◐ own |
-| Multi-currency bills | ● | ● | ● | - | ● |
-| Team chat | ● | ● | ● | ○* | ○ |
+| Guest deposit / charges view | ○ | ○ | ○ | ● | ○ |
+| Set guest deposit (Guests) | ● | ● | ○ | ○ | ○ |
+| Guest briefings | ● send | ● send | ○ | ● read | ○ |
+| Date requests | ● accept | ● accept | ○ | ● request | ○ |
+| Team chat | ● | ● | ● | ○ | ○ |
+| Support chat (host↔guest) | ● | ● | ○ | ●* | ○ |
 | Talent browse | ● | ● | ○ | ○ | ○ |
-| Talent opt-in + location | ○ | ◐ | ● | ○ | ○ |
-| Endorsements cast | ● | ● | ○ | ○ | ○ |
-| Reputation / leaderboard | ● | ● | ● | ○ | ○ |
+| Talent opt-in | ○ | ◐ | ● | ○ | ○ |
+| Endorsements / leaderboard | ● | ● | ● | ○ | ○ |
 | Reports / CSV | ● | ●† | ○ | ○ | ○ |
 | Villa assignments | ● | ○ | ○ | ○ | ○ |
+| Invite staff / guest | ● | ● | ○ | ○ | ○ |
 | Invite anyone | ● | ● | ● | ● | ● |
-| Invite staff | ● | ● | ○ | ○ | ○ |
-| Invite guest | ● | ● | ○ | ○ | ○ |
-| Company billing (Stripe) | ● | ○ | ○ | ○ | ○ |
-| Web Push | ● | ● | ● | ● | ● |
+| Rename org | ● | ○ | ○ | ○ | ● workspace |
+| Edit own name | ● | ● | ● | ● | ● |
+| Company billing | ● | ○ | ○ | ○ | ○ |
+| Web push | ● | ● | ● | ● | ● |
+| Face ID / passkeys | ● | ● | ● | ● | ● |
 | Language | ● | ● | ● | ● | ● |
 
-\* Planned: guest **support** chat ≠ team chat.  
-† When company is entitled (Full / trial / referral year).
+\* Support only after confirmed stay.  
+† When company is entitled (trial / Full / referral year).
 
 ---
 
-## 4. Planned features (mention in guides as “coming” / roadmap)
+## Coming later (do not sell as live)
 
-Keep these in a separate “Coming soon” section so Claude doesn’t describe them as live.
-
-### 4a. Guest stay MVP - shipped in demo (apply migration 023 for Supabase)
-
-Stay home, house guide, support chat (owner/manager only), deposit/charges, arrival photos, villa browse + date requests are live in demo mode. Soft-expire after checkout and richer host reply inbox can still deepen.
-
-### 4b. Integrations (after CSV - already shipped)
-
-| Near | Medium | Later |
-|------|--------|-------|
-| Google Sheets sync (paid bills / weekly spend) | LINE / WhatsApp ops alerts | Zapier/Make webhooks |
-| iCal subscribe (check-in/out, jobs) | Bookkeeper pack polish | One PMS / Airbnb iCal import |
-| | | |
-
-**Do not promise early:** full accounting product, “integrate with everything.”
-
-### 4c. Product polish already discussed but not guide-critical
-
-- Richer guest-facing copy & marketing pages for guest invite  
-- Further talent/map polish  
-- Push coverage for every event type  
+- Soft auto-archive of completed stays; richer host tools  
+- Google Sheets / iCal / LINE-WhatsApp ops bridges (see `INTEGRATIONS_ROADMAP.md`)  
+- Full accounting product, “integrate with everything”
 
 ---
 
-## 5. Guide structure (marketing pages)
-
-Per audience page (`/owners`, `/employees`, `/staff`, `/guests`):
-
-1. **Hero** - one line + short sub + CTA (no screenshot)
-2. **What you use every day** - 3-4 flagship features with phone-framed screenshots (placeholders where assets are missing)
-3. **Everything included** - 2-3 text bullet clusters, zero screenshots
-4. **Coming soon** - only where relevant (mainly Guest)
-5. Demo + CTA
-
-Do **not** add a “What you don't see” section on Owner / Manager / Field guides - it kills close energy and belongs (if anywhere) as an optional footer cross-link, not a negative block before the CTA. Guest may keep a short boundary note where it prevents real confusion (e.g. never message cleaners).
-
-**Screenshot budget:** Owner 4 · Manager reuses Owner home/villas + chat + reports placeholder · Field 3 + optional talent placeholder · Guest 0-1 shell placeholder · Personal = reuse Owner villas caption only (no fifth card; one line under Plans).
-
-Selector on home: Owner, Manager, Field staff, Guest (lighter card), Personal mention under pricing.
-
----
-
-## 6. Source of truth in code / docs
+## Code / docs map
 
 | Topic | Where |
 |-------|--------|
 | Role gates | `src/lib/roles.ts` |
+| Guest stay + deposit + briefings | `src/app/(app)/guests/`, migrations `023`–`025` |
 | Company vs personal | `docs/COMPANY_FEATURES.md` |
-| Integrations + guest roadmap | `docs/INTEGRATIONS_ROADMAP.md` |
-| Reports CSV | `src/app/(app)/reports/page.tsx`, `src/lib/export/ops-export.ts` |
-| Invite flip cards | `src/components/settings/invite-flip-cards.tsx` |
-| Guest migration | `supabase/migrations/022_guest_role.sql` |
-
-Update this file when a planned row ships so marketing guides stay accurate.
+| Reports | `src/app/(app)/reports/`, `src/lib/export/ops-export.ts` |
+| Push | `src/lib/push/`, Settings → Phone alerts |

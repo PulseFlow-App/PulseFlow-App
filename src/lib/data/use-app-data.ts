@@ -965,6 +965,67 @@ function useDemoData(): AppData {
         ),
       }));
     },
+    upsertGuestDeposit: async (input) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can set guest deposits.");
+      }
+      const stay = guestStays.find((s) => s.id === input.stay_id);
+      if (!stay || stay.org_id !== profile.org_id) {
+        throw new Error("Stay not found.");
+      }
+      const amount = Number(input.amount);
+      if (!Number.isFinite(amount) || amount < 0) {
+        throw new Error("Enter a valid deposit amount.");
+      }
+      const currency = (input.currency?.trim() || "THB").toUpperCase();
+      const notes = input.notes?.trim() || null;
+      const existing = (store.guestDeposits ?? []).find(
+        (d) => d.stay_id === stay.id,
+      );
+      updateDemoStore((s) => {
+        const deposits = s.guestDeposits ?? [];
+        if (existing) {
+          return {
+            ...s,
+            guestDeposits: deposits.map((d) =>
+              d.stay_id === stay.id
+                ? { ...d, amount, currency, notes, status: "held" as const }
+                : d,
+            ),
+          };
+        }
+        return {
+          ...s,
+          guestDeposits: [
+            ...deposits,
+            {
+              id: uid("deposit"),
+              org_id: stay.org_id,
+              stay_id: stay.id,
+              amount,
+              currency,
+              status: "held",
+              refunded_amount: 0,
+              notes,
+              created_at: new Date().toISOString(),
+            },
+          ],
+        };
+      });
+      demoPushNotifications([
+        makeNotification({
+          org_id: stay.org_id,
+          kind: "guest_update",
+          title: "Security deposit recorded",
+          body: `${amount.toLocaleString()} ${currency} held for your stay`,
+          href: "/bills",
+          entity_id: stay.id,
+          audience_profile_ids: [stay.guest_profile_id],
+        }),
+      ]);
+    },
     upsertHouseGuide: async (villaId, patch) => {
       assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");

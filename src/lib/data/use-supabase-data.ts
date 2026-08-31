@@ -215,6 +215,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     sendSupportMessage: async () => undefined,
     createGuestBriefing: async () => undefined,
     confirmGuestBriefing: async () => undefined,
+    upsertGuestDeposit: async () => undefined,
     upsertHouseGuide: async () => undefined,
     requestStayDates: async () => undefined,
     respondStayDateRequest: async () => undefined,
@@ -1713,6 +1714,73 @@ export function useSupabaseData(enabled: boolean): AppData {
               }
             : b,
         ),
+      );
+      await refresh();
+    },
+    upsertGuestDeposit: async (input) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can set guest deposits.");
+      }
+      const stay = scopedGuestStays.find((s) => s.id === input.stay_id);
+      if (!stay) throw new Error("Stay not found.");
+      const amount = Number(input.amount);
+      if (!Number.isFinite(amount) || amount < 0) {
+        throw new Error("Enter a valid deposit amount.");
+      }
+      const currency = (input.currency?.trim() || "THB").toUpperCase();
+      const notes = input.notes?.trim() || null;
+      const supabase = createClient();
+      const existing = scopedGuestDeposits.find((d) => d.stay_id === stay.id);
+      if (existing) {
+        const { error } = await supabase
+          .from("guest_deposits")
+          .update({ amount, currency, notes, status: "held" })
+          .eq("id", existing.id);
+        if (error) {
+          if (
+            error.code === "42P01" ||
+            error.code === "PGRST205" ||
+            error.message.includes("does not exist")
+          ) {
+            throw new Error("Guest deposits need migration 023 on Supabase.");
+          }
+          throw error;
+        }
+      } else {
+        const { error } = await supabase.from("guest_deposits").insert({
+          org_id: stay.org_id,
+          stay_id: stay.id,
+          amount,
+          currency,
+          status: "held",
+          refunded_amount: 0,
+          notes,
+        });
+        if (error) {
+          if (
+            error.code === "42P01" ||
+            error.code === "PGRST205" ||
+            error.message.includes("does not exist")
+          ) {
+            throw new Error("Guest deposits need migration 023 on Supabase.");
+          }
+          throw error;
+        }
+      }
+      await insertNotifications(
+        supabase,
+        [
+          makeNotification({
+            org_id: stay.org_id,
+            kind: "guest_update",
+            title: "Security deposit recorded",
+            body: `${amount.toLocaleString()} ${currency} held for your stay`,
+            href: "/bills",
+            entity_id: stay.id,
+            audience_profile_ids: [stay.guest_profile_id],
+          }),
+        ].map((n) => toInsertRow(n)),
       );
       await refresh();
     },

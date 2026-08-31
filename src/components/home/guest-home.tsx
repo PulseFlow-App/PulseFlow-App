@@ -3,12 +3,9 @@
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  BedDouble,
   Camera,
   KeyRound,
   MapPin,
-  MessageCircle,
-  Receipt,
   Wifi,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -277,33 +274,6 @@ export function GuestHome({ name }: { name: string }) {
           </div>
         ) : null}
       </Card>
-
-      <div className="grid grid-cols-3 gap-3">
-        <Link href="/villas">
-          <Card className="space-y-2 p-4 transition hover:bg-primary-soft/40">
-            <BedDouble className="size-5 text-primary" />
-            <p className="text-sm font-semibold text-ink">
-              {t("guest.nav.villas")}
-            </p>
-          </Card>
-        </Link>
-        <Link href="/messages">
-          <Card className="space-y-2 p-4 transition hover:bg-primary-soft/40">
-            <MessageCircle className="size-5 text-secondary" />
-            <p className="text-sm font-semibold text-ink">
-              {t("guest.nav.support")}
-            </p>
-          </Card>
-        </Link>
-        <Link href="/bills">
-          <Card className="space-y-2 p-4 transition hover:bg-primary-soft/40">
-            <Receipt className="size-5 text-warning-dark" />
-            <p className="text-sm font-semibold text-ink">
-              {t("guest.nav.bills")}
-            </p>
-          </Card>
-        </Link>
-      </div>
     </div>
   );
 }

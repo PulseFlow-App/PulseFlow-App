@@ -40,6 +40,7 @@ create index if not exists guest_briefings_stay_idx
 
 alter table public.guest_briefings enable row level security;
 
+drop policy if exists guest_briefings_select on public.guest_briefings;
 create policy guest_briefings_select on public.guest_briefings for select using (
   public.is_org_manager_or_owner(org_id)
   or exists (
@@ -48,11 +49,13 @@ create policy guest_briefings_select on public.guest_briefings for select using 
   )
 );
 
+drop policy if exists guest_briefings_insert on public.guest_briefings;
 create policy guest_briefings_insert on public.guest_briefings for insert with check (
   public.is_org_manager_or_owner(org_id)
   and created_by = auth.uid()
 );
 
+drop policy if exists guest_briefings_update on public.guest_briefings;
 create policy guest_briefings_update on public.guest_briefings for update using (
   public.is_org_manager_or_owner(org_id)
   or exists (

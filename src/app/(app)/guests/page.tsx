@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
-import { formatShortDate } from "@/lib/utils";
+import { formatMoney, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 import type { GuestBriefingCategory } from "@/lib/types";
@@ -34,9 +34,14 @@ export default function GuestsPage() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [category, setCategory] = useState<GuestBriefingCategory>("custom");
+  const [depositAmount, setDepositAmount] = useState("");
+  const [depositCurrency, setDepositCurrency] = useState("THB");
+  const [depositNotes, setDepositNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [depositBusy, setDepositBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
+  const [depositMsg, setDepositMsg] = useState<string | null>(null);
 
   const canManage =
     data.profile?.role === "owner" || data.profile?.role === "manager";
@@ -60,11 +65,30 @@ export default function GuestsPage() {
     if (!stayId && stays[0]) setStayId(stays[0].id);
   }, [stayId, stays]);
 
+  const activeId = stayId ?? stays[0]?.id ?? null;
+  const activeStay = stays.find((s) => s.id === activeId) ?? null;
+  const deposit = activeId
+    ? data.guestDeposits.find((d) => d.stay_id === activeId) ?? null
+    : null;
+
+  useEffect(() => {
+    if (!activeId) return;
+    const row = data.guestDeposits.find((d) => d.stay_id === activeId);
+    if (row) {
+      setDepositAmount(String(row.amount));
+      setDepositCurrency(row.currency || "THB");
+      setDepositNotes(row.notes ?? "");
+    } else {
+      setDepositAmount("");
+      setDepositCurrency("THB");
+      setDepositNotes("");
+    }
+    setDepositMsg(null);
+  }, [activeId, data.guestDeposits]);
+
   if (!data.ready || !data.profile) return <LoadingState />;
   if (!canManage) return <LoadingState />;
 
-  const activeId = stayId ?? stays[0]?.id ?? null;
-  const activeStay = stays.find((s) => s.id === activeId) ?? null;
   const briefings = data.guestBriefings.filter((b) => b.stay_id === activeId);
   const pendingDates = data.stayDateRequests.filter(
     (r) => r.status === "pending",
@@ -90,6 +114,25 @@ export default function GuestsPage() {
       setError(e instanceof Error ? e.message : t("common.error"));
     } finally {
       setBusy(false);
+    }
+  };
+
+  const saveDeposit = async () => {
+    if (!activeId) return;
+    setDepositBusy(true);
+    setDepositMsg(null);
+    try {
+      await data.upsertGuestDeposit({
+        stay_id: activeId,
+        amount: Number(depositAmount),
+        currency: depositCurrency,
+        notes: depositNotes,
+      });
+      setDepositMsg(t("guests.depositSaved"));
+    } catch (e) {
+      setDepositMsg(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setDepositBusy(false);
     }
   };
 
@@ -163,6 +206,85 @@ export default function GuestsPage() {
               </Link>
             </Card>
           ) : null}
+
+          <Card className="space-y-3 p-4">
+            <div>
+              <p className="font-display text-lg font-bold text-ink">
+                {t("guests.depositTitle")}
+              </p>
+              <p className="text-xs text-muted">{t("guests.depositHint")}</p>
+              <p className="mt-1 text-sm font-semibold text-ink">
+                {deposit
+                  ? t("guests.depositCurrent", {
+                      amount: formatMoney(
+                        Number(deposit.amount),
+                        deposit.currency,
+                      ),
+                    })
+                  : t("guests.depositNone")}
+              </p>
+            </div>
+            <div className="grid grid-cols-[1fr_auto] gap-2">
+              <div>
+                <Label htmlFor="deposit-amount">
+                  {t("guests.depositAmount")}
+                </Label>
+                <Input
+                  id="deposit-amount"
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step="0.01"
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="deposit-currency">
+                  {t("guests.depositCurrency")}
+                </Label>
+                <Input
+                  id="deposit-currency"
+                  value={depositCurrency}
+                  onChange={(e) =>
+                    setDepositCurrency(e.target.value.toUpperCase())
+                  }
+                  className="w-24"
+                  maxLength={3}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="deposit-notes">{t("guests.depositNotes")}</Label>
+              <Input
+                id="deposit-notes"
+                value={depositNotes}
+                onChange={(e) => setDepositNotes(e.target.value)}
+                placeholder={t("guests.depositNotesPh")}
+              />
+            </div>
+            {depositMsg ? (
+              <p
+                className={cn(
+                  "text-sm font-semibold",
+                  depositMsg === t("guests.depositSaved")
+                    ? "text-secondary"
+                    : "text-danger",
+                )}
+              >
+                {depositMsg}
+              </p>
+            ) : null}
+            <Button
+              type="button"
+              disabled={
+                depositBusy || !depositAmount.trim() || !activeId
+              }
+              onClick={() => void saveDeposit()}
+            >
+              {depositBusy ? t("common.saving") : t("guests.depositSave")}
+            </Button>
+          </Card>
 
           <Card className="space-y-3 p-4">
             <div>
