@@ -10,7 +10,6 @@ import { LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
-import { brand } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { BillingSettingsCard } from "@/components/billing/billing-card";
@@ -173,34 +172,6 @@ export default function SettingsPage() {
           </span>
         </div>
         <BillingSettingsCard embedded />
-      </Card>
-
-      <Card className="space-y-2 p-5">
-        <h2 className="font-display text-lg font-bold text-ink">
-          {t("settings.website")}
-        </h2>
-        <p className="text-sm text-muted">{t("settings.websiteHint")}</p>
-        <a
-          href="https://pulseflow.site"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex text-sm font-semibold text-primary"
-        >
-          pulseflow.site
-        </a>
-      </Card>
-
-      <Card className="space-y-2 p-5">
-        <h2 className="font-display text-lg font-bold text-ink">
-          {t("settings.supportLink")}
-        </h2>
-        <p className="text-sm text-muted">{t("settings.supportHint")}</p>
-        <a
-          href={`mailto:${brand.supportEmail}`}
-          className="inline-flex text-sm font-semibold text-primary"
-        >
-          {brand.supportEmail}
-        </a>
       </Card>
 
       <PasskeySettingsCard />

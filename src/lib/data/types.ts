@@ -161,6 +161,10 @@ export type AppData = {
     check_out: string;
     note?: string | null;
   }) => Promise<void>;
+  respondStayDateRequest: (
+    requestId: string,
+    decision: "accepted" | "declined",
+  ) => Promise<void>;
   addStayPhoto: (input: {
     kind: StayPhoto["kind"];
     photo_url: string;

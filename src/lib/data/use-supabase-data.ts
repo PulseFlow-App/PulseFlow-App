@@ -205,6 +205,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     sendSupportMessage: async () => undefined,
     upsertHouseGuide: async () => undefined,
     requestStayDates: async () => undefined,
+    respondStayDateRequest: async () => undefined,
     addStayPhoto: async () => undefined,
   };
 
@@ -358,8 +359,41 @@ export function useSupabaseData(enabled: boolean): AppData {
 
     if (!scheduleSyncedOrgs.has(orgId)) {
       scheduleSyncedOrgs.add(orgId);
+      const { dateDrivenVillaPatch } = await import(
+        "@/lib/villas/status-from-dates"
+      );
+      let syncedVillas = orgVillas;
+      const statusUpdates: { id: string; patch: Record<string, unknown> }[] =
+        [];
+      for (const villa of orgVillas) {
+        const patch = dateDrivenVillaPatch(villa);
+        if (!patch) continue;
+        statusUpdates.push({
+          id: villa.id,
+          patch: { ...patch, updated_at: new Date().toISOString() },
+        });
+      }
+      if (statusUpdates.length) {
+        await Promise.all(
+          statusUpdates.map(({ id, patch }) =>
+            supabase.from("villas").update(patch).eq("id", id),
+          ),
+        );
+        const { data: refreshed } = await supabase
+          .from("villas")
+          .select("*")
+          .in("org_id", orgIds)
+          .order("name");
+        if (refreshed) {
+          setVillas(refreshed as Villa[]);
+          syncedVillas = (refreshed as Villa[]).filter(
+            (v) => v.org_id === orgId,
+          );
+        }
+      }
+
       const alerts = buildScheduleAlerts({
-        villas: orgVillas,
+        villas: syncedVillas,
         bills: orgBills,
         orders: orgOrders,
         existing: orgNotifications,
@@ -1399,8 +1433,8 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (profile.role !== "guest") {
         throw new Error("Only guests can request dates.");
       }
-      const today = new Date();
-      const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      const { todayIsoDate } = await import("@/lib/villas/status-from-dates");
+      const todayIso = todayIsoDate();
       if (input.check_in < todayIso) {
         throw new Error("Check-in can't be in the past.");
       }
@@ -1408,6 +1442,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         throw new Error("Check-out must be after check-in.");
       }
       const supabase = createClient();
+      const villa = villas.find((v) => v.id === input.villa_id);
       const { data: inserted, error } = await supabase
         .from("stay_date_requests")
         .insert({
@@ -1440,14 +1475,114 @@ export function useSupabaseData(enabled: boolean): AppData {
               org_id: profile.org_id,
               kind: "appointment",
               title: "Date request",
-              body: `${profile.full_name} requested stay dates`,
-              href: "/villas",
-              entity_id: input.villa_id,
+              body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}`,
+              href: "/date-requests",
+              entity_id: inserted.id,
               audience_profile_ids: managers,
             }),
           ].map((n) => toInsertRow(n)),
         );
       }
+      await refresh();
+    },
+    respondStayDateRequest: async (requestId, decision) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can respond.");
+      }
+      const request = stayDateRequests.find((r) => r.id === requestId);
+      if (!request) throw new Error("Request not found.");
+      if (request.status !== "pending") {
+        throw new Error("This request was already handled.");
+      }
+      const {
+        todayIsoDate,
+        statusFromStayDates,
+        guestStayStatusFromDates,
+      } = await import("@/lib/villas/status-from-dates");
+      const today = todayIsoDate();
+      const derived =
+        statusFromStayDates(request.check_in, request.check_out, today) ??
+        "available";
+      const stayStatus = guestStayStatusFromDates(
+        request.check_in,
+        request.check_out,
+        today,
+      );
+      const supabase = createClient();
+      const { error: reqError } = await supabase
+        .from("stay_date_requests")
+        .update({ status: decision })
+        .eq("id", requestId);
+      if (reqError) throw reqError;
+
+      if (decision === "accepted") {
+        const { error: villaError } = await supabase
+          .from("villas")
+          .update({
+            check_in: request.check_in,
+            check_out: request.check_out,
+            status: derived,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", request.villa_id);
+        if (villaError) throw villaError;
+
+        const { data: existingStay } = await supabase
+          .from("guest_stays")
+          .select("id")
+          .eq("guest_profile_id", request.guest_profile_id)
+          .eq("villa_id", request.villa_id)
+          .neq("status", "completed")
+          .maybeSingle();
+        if (existingStay?.id) {
+          await supabase
+            .from("guest_stays")
+            .update({
+              check_in: request.check_in,
+              check_out: request.check_out,
+              status: stayStatus,
+            })
+            .eq("id", existingStay.id);
+        } else {
+          const { error: stayError } = await supabase.from("guest_stays").insert({
+            org_id: request.org_id,
+            villa_id: request.villa_id,
+            guest_profile_id: request.guest_profile_id,
+            check_in: request.check_in,
+            check_out: request.check_out,
+            status: stayStatus,
+            owner_notices: null,
+          });
+          if (
+            stayError &&
+            !stayError.message.includes("does not exist") &&
+            stayError.code !== "42P01" &&
+            stayError.code !== "PGRST205"
+          ) {
+            throw stayError;
+          }
+        }
+      }
+
+      const villa = villas.find((v) => v.id === request.villa_id);
+      await insertNotifications(
+        supabase,
+        [
+          makeNotification({
+            org_id: profile.org_id,
+            kind: "appointment",
+            title: decision === "accepted" ? "Dates accepted" : "Dates declined",
+            body:
+              decision === "accepted"
+                ? `${villa?.name ?? "Villa"} · ${request.check_in} → ${request.check_out}`
+                : `${villa?.name ?? "Villa"} · your date request was declined`,
+            href: decision === "accepted" ? "/home" : "/villas",
+            entity_id: requestId,
+            audience_profile_ids: [request.guest_profile_id],
+          }),
+        ].map((n) => toInsertRow(n)),
+      );
       await refresh();
     },
     addStayPhoto: async () => {

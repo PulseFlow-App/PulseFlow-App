@@ -916,20 +916,21 @@ function useDemoData(): AppData {
       if (!profile || profile.role !== "guest") {
         throw new Error("Only guests can request dates.");
       }
-      const today = new Date();
-      const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      const { todayIsoDate } = await import("@/lib/villas/status-from-dates");
+      const todayIso = todayIsoDate();
       if (input.check_in < todayIso) {
         throw new Error("Check-in can't be in the past.");
       }
       if (input.check_out <= input.check_in) {
         throw new Error("Check-out must be after check-in.");
       }
+      const requestId = uid("dates");
       updateDemoStore((s) => ({
         ...s,
         stayDateRequests: [
           ...s.stayDateRequests,
           {
-            id: uid("dates"),
+            id: requestId,
             org_id: profile.org_id,
             villa_id: input.villa_id,
             guest_profile_id: profile.id,
@@ -941,15 +942,122 @@ function useDemoData(): AppData {
           },
         ],
       }));
+      const villa = store.villas.find((v) => v.id === input.villa_id);
       demoPushNotifications([
         makeNotification({
           org_id: profile.org_id,
           kind: "appointment",
           title: "Date request",
-          body: `${profile.full_name} requested stay dates`,
-          href: "/villas",
-          entity_id: input.villa_id,
+          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}`,
+          href: "/date-requests",
+          entity_id: requestId,
           audience_profile_ids: ownerManagerIds(store.profiles, profile.org_id),
+        }),
+      ]);
+    },
+    respondStayDateRequest: async (requestId, decision) => {
+      assertDemoWritable();
+      if (!profile || (profile.role !== "owner" && profile.role !== "manager")) {
+        throw new Error("Only owners or managers can respond.");
+      }
+      const request = (store.stayDateRequests ?? []).find(
+        (r) => r.id === requestId && r.org_id === profile.org_id,
+      );
+      if (!request) throw new Error("Request not found.");
+      if (request.status !== "pending") {
+        throw new Error("This request was already handled.");
+      }
+
+      const {
+        todayIsoDate,
+        statusFromStayDates,
+        guestStayStatusFromDates,
+      } = await import("@/lib/villas/status-from-dates");
+      const today = todayIsoDate();
+      const derived =
+        statusFromStayDates(request.check_in, request.check_out, today) ??
+        "available";
+      const stayStatus = guestStayStatusFromDates(
+        request.check_in,
+        request.check_out,
+        today,
+      );
+
+      updateDemoStore((s) => {
+        let villas = s.villas;
+        let guestStays = s.guestStays ?? [];
+        if (decision === "accepted") {
+          villas = s.villas.map((v) =>
+            v.id === request.villa_id
+              ? {
+                  ...v,
+                  check_in: request.check_in,
+                  check_out: request.check_out,
+                  status: derived,
+                  updated_at: new Date().toISOString(),
+                }
+              : v,
+          );
+          const existing = guestStays.find(
+            (g) =>
+              g.guest_profile_id === request.guest_profile_id &&
+              g.villa_id === request.villa_id &&
+              g.status !== "completed",
+          );
+          if (existing) {
+            guestStays = guestStays.map((g) =>
+              g.id === existing.id
+                ? {
+                    ...g,
+                    check_in: request.check_in,
+                    check_out: request.check_out,
+                    status: stayStatus,
+                  }
+                : g,
+            );
+          } else {
+            guestStays = [
+              ...guestStays,
+              {
+                id: uid("stay"),
+                org_id: request.org_id,
+                villa_id: request.villa_id,
+                guest_profile_id: request.guest_profile_id,
+                check_in: request.check_in,
+                check_out: request.check_out,
+                status: stayStatus,
+                owner_notices: null,
+                created_at: new Date().toISOString(),
+              },
+            ];
+          }
+        }
+        return {
+          ...s,
+          villas,
+          guestStays,
+          stayDateRequests: (s.stayDateRequests ?? []).map((r) =>
+            r.id === requestId ? { ...r, status: decision } : r,
+          ),
+        };
+      });
+
+      const villa = store.villas.find((v) => v.id === request.villa_id);
+      demoPushNotifications([
+        makeNotification({
+          org_id: profile.org_id,
+          kind: "appointment",
+          title:
+            decision === "accepted"
+              ? "Dates accepted"
+              : "Dates declined",
+          body:
+            decision === "accepted"
+              ? `${villa?.name ?? "Villa"} · ${request.check_in} → ${request.check_out}`
+              : `${villa?.name ?? "Villa"} · your date request was declined`,
+          href: decision === "accepted" ? "/home" : "/villas",
+          entity_id: requestId,
+          audience_profile_ids: [request.guest_profile_id],
         }),
       ]);
     },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,27 +11,47 @@ import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
-
-function todayIsoDate() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
+import { todayIsoDate } from "@/lib/villas/status-from-dates";
 
 export function GuestVillasBrowse() {
   const data = useData();
   const { t } = useI18n();
   const label = useLocalizedDemoText();
   const villas = data.villaList.filter((v) => v.bucket === "company");
-  const minDate = useMemo(() => todayIsoDate(), []);
+  const minDate = todayIsoDate();
   const [requestFor, setRequestFor] = useState<string | null>(null);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
+
+  const setSafeCheckIn = (value: string) => {
+    if (value && value < minDate) {
+      setCheckIn("");
+      setError(t("guest.requestPastDates"));
+      return;
+    }
+    setError(null);
+    setCheckIn(value);
+    if (checkOut && value && checkOut <= value) setCheckOut("");
+  };
+
+  const setSafeCheckOut = (value: string) => {
+    const floor = checkIn && checkIn > minDate ? checkIn : minDate;
+    if (value && value <= floor) {
+      setCheckOut("");
+      setError(t("guest.requestCheckoutAfter"));
+      return;
+    }
+    if (value && value < minDate) {
+      setCheckOut("");
+      setError(t("guest.requestPastDates"));
+      return;
+    }
+    setError(null);
+    setCheckOut(value);
+  };
 
   const submit = async (villaId: string) => {
     setError(null);
@@ -134,7 +154,10 @@ export function GuestVillasBrowse() {
                           type="date"
                           min={minDate}
                           value={checkIn}
-                          onChange={(e) => setCheckIn(e.target.value)}
+                          onChange={(e) => setSafeCheckIn(e.target.value)}
+                          onBlur={() => {
+                            if (checkIn && checkIn < minDate) setSafeCheckIn("");
+                          }}
                         />
                       </div>
                       <div>
@@ -144,9 +167,14 @@ export function GuestVillasBrowse() {
                         <Input
                           id={`out-${v.id}`}
                           type="date"
-                          min={checkIn || minDate}
+                          min={checkIn && checkIn > minDate ? checkIn : minDate}
                           value={checkOut}
-                          onChange={(e) => setCheckOut(e.target.value)}
+                          onChange={(e) => setSafeCheckOut(e.target.value)}
+                          onBlur={() => {
+                            if (checkOut && checkOut < minDate) {
+                              setSafeCheckOut("");
+                            }
+                          }}
                         />
                       </div>
                     </div>
@@ -179,7 +207,13 @@ export function GuestVillasBrowse() {
                     type="button"
                     variant="ghost"
                     className="rounded-full"
-                    onClick={() => setRequestFor(v.id)}
+                    onClick={() => {
+                      setRequestFor(v.id);
+                      setCheckIn("");
+                      setCheckOut("");
+                      setNote("");
+                      setError(null);
+                    }}
                   >
                     {t("guest.requestDates")}
                   </Button>

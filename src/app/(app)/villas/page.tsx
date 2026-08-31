@@ -71,6 +71,11 @@ export default function VillasPage() {
 
   const defaultScope =
     isOwner && inCompany ? "company" : "personal";
+  const pendingDateRequests = data.stayDateRequests.filter(
+    (r) => r.status === "pending",
+  ).length;
+  const canManageDates =
+    data.profile?.role === "owner" || data.profile?.role === "manager";
 
   return (
     <div className="relative space-y-4 animate-rise">
@@ -99,6 +104,28 @@ export default function VillasPage() {
           </Button>
         ) : null}
       </div>
+
+      {canManageDates && pendingDateRequests > 0 ? (
+        <Link href="/date-requests">
+          <Card className="flex items-center justify-between gap-3 bg-primary-soft/50 p-4 transition hover:bg-primary-soft">
+            <div>
+              <p className="font-semibold text-ink">
+                {t("dateRequests.title")}
+              </p>
+              <p className="text-sm text-muted">
+                {pendingDateRequests === 1
+                  ? t("dateRequests.pendingOne")
+                  : t("dateRequests.pendingMany", {
+                      count: pendingDateRequests,
+                    })}
+              </p>
+            </div>
+            <span className="text-sm font-bold text-primary">
+              {t("common.open")}
+            </span>
+          </Card>
+        </Link>
+      ) : null}
 
       {canAdd ? (
         <Button

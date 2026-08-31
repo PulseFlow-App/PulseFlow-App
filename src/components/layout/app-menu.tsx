@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ClipboardList,
+  Globe,
+  LifeBuoy,
   LogOut,
   Menu,
   Star,
@@ -13,6 +15,7 @@ import {
   Users,
   X,
   Search,
+  CalendarClock,
 } from "lucide-react";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
@@ -24,12 +27,14 @@ import {
 import { canUseManagerReporting } from "@/lib/billing/reporting";
 import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
+import { brand } from "@/lib/design-tokens";
 import { cn } from "@/lib/utils";
 
 type MenuLink = {
   href: string;
   label: string;
   icon: typeof Star;
+  external?: boolean;
 };
 
 export function AppMenuButton() {
@@ -91,6 +96,13 @@ export function AppMenuButton() {
   }
   if (isCompany && (profile.role === "owner" || profile.role === "manager")) {
     links.push({
+      href: "/date-requests",
+      label: t("nav.dateRequests"),
+      icon: CalendarClock,
+    });
+  }
+  if (isCompany && (profile.role === "owner" || profile.role === "manager")) {
+    links.push({
       href: "/company",
       label: t("nav.company"),
       icon: Users,
@@ -110,6 +122,18 @@ export function AppMenuButton() {
       icon: Search,
     });
   }
+  links.push({
+    href: "https://pulseflow.site",
+    label: t("settings.website"),
+    icon: Globe,
+    external: true,
+  });
+  links.push({
+    href: `mailto:${brand.supportEmail}`,
+    label: t("settings.supportLink"),
+    icon: LifeBuoy,
+    external: true,
+  });
 
   const signOut = async () => {
     setOpen(false);
@@ -166,16 +190,31 @@ export function AppMenuButton() {
             </div>
             <nav className="flex-1 overflow-y-auto px-3 pb-8">
               <ul className="space-y-1">
-                {links.map(({ href, label, icon: Icon }) => (
+                {links.map(({ href, label, icon: Icon, external }) => (
                   <li key={href + label}>
-                    <Link
-                      href={href}
-                      onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-ink transition hover:bg-white"
-                    >
-                      <Icon className="size-4 shrink-0 text-muted" />
-                      {label}
-                    </Link>
+                    {external ? (
+                      <a
+                        href={href}
+                        target={href.startsWith("http") ? "_blank" : undefined}
+                        rel={
+                          href.startsWith("http") ? "noreferrer" : undefined
+                        }
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-ink transition hover:bg-white"
+                      >
+                        <Icon className="size-4 shrink-0 text-muted" />
+                        {label}
+                      </a>
+                    ) : (
+                      <Link
+                        href={href}
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-ink transition hover:bg-white"
+                      >
+                        <Icon className="size-4 shrink-0 text-muted" />
+                        {label}
+                      </Link>
+                    )}
                   </li>
                 ))}
                 <li>

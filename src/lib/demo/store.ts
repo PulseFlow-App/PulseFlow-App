@@ -27,6 +27,7 @@ import {
 } from "@/lib/notifications";
 import { buildOrderChatBody, canCancelServiceOrder, formatOrderWhen } from "@/lib/service-orders";
 import { capitalizeLabel } from "@/lib/format-label";
+import { dateDrivenVillaPatch } from "@/lib/villas/status-from-dates";
 
 function slugifyName(name: string) {
   return (
@@ -639,11 +640,18 @@ export function demoMarkAllNotificationsRead(
   }));
 }
 
-/** Once per page-load: upcoming check-ins/outs + bill due windows. */
+/** Once per page-load: upcoming check-ins/outs + bill due windows + date-driven status. */
 export function demoSyncScheduleAlerts() {
   if (typeof window === "undefined" || scheduleSynced) return;
   scheduleSynced = true;
   const store = readStore();
+  const villaPatches = store.villas
+    .map((v) => ({ id: v.id, patch: dateDrivenVillaPatch(v) }))
+    .filter(
+      (x): x is { id: string; patch: NonNullable<ReturnType<typeof dateDrivenVillaPatch>> } =>
+        Boolean(x.patch),
+    );
+
   const alerts = buildScheduleAlerts({
     villas: store.villas,
     bills: store.bills,
@@ -653,12 +661,23 @@ export function demoSyncScheduleAlerts() {
     assignments: store.villaAssignments,
     endorsements: store.endorsements,
   });
-  if (alerts.length) {
-    updateDemoStore((s) => ({
-      ...s,
-      notifications: [...alerts, ...(s.notifications ?? [])],
-    }));
-  }
+
+  if (!villaPatches.length && !alerts.length) return;
+
+  updateDemoStore((s) => ({
+    ...s,
+    villas: villaPatches.length
+      ? s.villas.map((v) => {
+          const hit = villaPatches.find((p) => p.id === v.id);
+          return hit
+            ? { ...v, ...hit.patch, updated_at: new Date().toISOString() }
+            : v;
+        })
+      : s.villas,
+    notifications: alerts.length
+      ? [...alerts, ...(s.notifications ?? [])]
+      : s.notifications,
+  }));
 }
 
 export function demoCreateServiceOrder(

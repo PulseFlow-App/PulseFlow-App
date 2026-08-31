@@ -52,6 +52,7 @@ const ru: Dictionary = {
   "nav.talent": "Staff search",
   "nav.invites": "Invites",
   "nav.company": "Company",
+  "nav.dateRequests": "Date requests",
   "brand.tagline": "Пульс ваших операций аренды",
   "brand.opsPulse": "Операционный пульс",
   "auth.login": "Войти",
@@ -604,6 +605,19 @@ const ru: Dictionary = {
   "join.staffTitle": "You're invited to the team",
   "join.staffHint": "Fill in your details to join. You'll keep a personal workspace alongside this company.",
   "join.accountNote": "After signup you can use Pulse Flow personally too - Personal vs Company is available if you later create your own workspace.",
+  "dateRequests.title": "Date requests",
+  "dateRequests.subtitle":
+    "Accept to book the villa dates on your calendar, or decline the request.",
+  "dateRequests.empty": "No pending requests",
+  "dateRequests.emptyHint":
+    "When a guest asks for stay dates, it shows up here for accept or decline.",
+  "dateRequests.accept": "Accept & book",
+  "dateRequests.decline": "Decline",
+  "dateRequests.recent": "Recently handled",
+  "dateRequests.unknownVilla": "Villa",
+  "dateRequests.pendingOne": "1 guest is waiting for a yes or no.",
+  "dateRequests.pendingMany":
+    "{count} guests are waiting for a yes or no.",
   "language.title": "Язык",
   "language.choose": "Язык приложения",
 
