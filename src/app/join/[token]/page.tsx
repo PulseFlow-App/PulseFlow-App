@@ -137,7 +137,7 @@ export default function JoinPage({
 
   if (!loaded) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-sand text-sm text-muted">
+      <div className="flex h-dvh items-center justify-center overflow-y-auto bg-sand text-sm text-muted">
         Loading invite…
       </div>
     );
@@ -145,7 +145,7 @@ export default function JoinPage({
 
   if (!ctx?.invite) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-sand px-4">
+      <div className="flex h-dvh items-center justify-center overflow-y-auto bg-sand px-4">
         <Card className="w-full max-w-md space-y-3 p-6 text-center">
           <PulseMark className="mx-auto size-12" />
           <h1 className="font-display text-xl font-bold text-ink">
@@ -167,8 +167,8 @@ export default function JoinPage({
   const isGuestInvite = invite.role === "guest";
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-sand px-4 py-10">
-      <div className="w-full max-w-md animate-rise">
+    <div className="h-dvh overflow-x-hidden overflow-y-auto overscroll-contain bg-sand px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
+      <div className="mx-auto w-full max-w-md animate-rise">
         <div className="mb-6 text-center">
           <PulseMark className="mx-auto mb-3 size-12" />
           <h1 className="font-display text-2xl font-bold text-ink">

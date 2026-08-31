@@ -7,6 +7,7 @@ import {
   Menu,
   Star,
   Trophy,
+  UserPlus,
   Users,
   X,
   Search,
@@ -15,7 +16,6 @@ import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import {
   canInviteAnyone,
-  canManageVillaAssignments,
   canUseTeamReputation,
   isGuestApp,
 } from "@/lib/roles";
@@ -53,7 +53,6 @@ export function AppMenuButton() {
     organization: data.organization,
   });
   const showInvites = canInviteAnyone(profile.role);
-  const showVillaAccess = canManageVillaAssignments(profile.role, data.orgKind);
 
   const links: MenuLink[] = [];
   if (showReputation) {
@@ -82,11 +81,18 @@ export function AppMenuButton() {
       icon: Search,
     });
   }
-  if (showInvites || showVillaAccess || isCompany) {
+  if (isCompany && (profile.role === "owner" || profile.role === "manager")) {
     links.push({
       href: "/company",
       label: t("nav.company"),
       icon: Users,
+    });
+  }
+  if (showInvites) {
+    links.push({
+      href: "/invites",
+      label: t("nav.invites"),
+      icon: UserPlus,
     });
   }
   if (profile.role !== "owner") {
