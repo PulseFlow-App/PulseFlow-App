@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ClipboardList,
+  LogOut,
   Menu,
   Star,
   Trophy,
@@ -20,6 +22,8 @@ import {
   isGuestApp,
 } from "@/lib/roles";
 import { canUseManagerReporting } from "@/lib/billing/reporting";
+import { isDemoMode, createClient } from "@/lib/supabase/client";
+import { demoLogout } from "@/lib/demo/store";
 import { cn } from "@/lib/utils";
 
 type MenuLink = {
@@ -31,6 +35,7 @@ type MenuLink = {
 export function AppMenuButton() {
   const data = useData();
   const { t } = useI18n();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const profile = data.profile;
 
@@ -43,16 +48,19 @@ export function AppMenuButton() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  if (!profile || isGuestApp(profile.role)) return null;
+  if (!profile) return null;
 
+  const isGuest = isGuestApp(profile.role);
   const isCompany = data.orgKind === "company";
-  const showReputation = canUseTeamReputation(data.orgKind);
-  const showReports = canUseManagerReporting({
-    role: profile.role,
-    orgKind: data.orgKind,
-    organization: data.organization,
-  });
-  const showInvites = canInviteAnyone(profile.role);
+  const showReputation = !isGuest && canUseTeamReputation(data.orgKind);
+  const showReports =
+    !isGuest &&
+    canUseManagerReporting({
+      role: profile.role,
+      orgKind: data.orgKind,
+      organization: data.organization,
+    });
+  const showInvites = !isGuest && canInviteAnyone(profile.role);
 
   const links: MenuLink[] = [];
   if (showReputation) {
@@ -95,7 +103,7 @@ export function AppMenuButton() {
       icon: UserPlus,
     });
   }
-  if (profile.role !== "owner") {
+  if (!isGuest && profile.role !== "owner") {
     links.push({
       href: "/settings#talent-profile",
       label: t("talent.settingsTitle"),
@@ -103,7 +111,17 @@ export function AppMenuButton() {
     });
   }
 
-  if (links.length === 0) return null;
+  const signOut = async () => {
+    setOpen(false);
+    if (isDemoMode()) {
+      demoLogout();
+    } else {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    }
+    router.replace("/login");
+    router.refresh();
+  };
 
   return (
     <>
@@ -160,6 +178,16 @@ export function AppMenuButton() {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => void signOut()}
+                    className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-semibold text-danger transition hover:bg-white"
+                  >
+                    <LogOut className="size-4 shrink-0" />
+                    {t("settings.signOut")}
+                  </button>
+                </li>
               </ul>
             </nav>
           </div>

@@ -85,6 +85,12 @@ const en = {
     "No passkey on this device yet. Sign in with email, then enable Face ID in Settings.",
   "auth.passkeyEmailNotConfirmed":
     "Confirm your email before setting up Face ID sign-in.",
+  "auth.setupPasskeyTitle": "Sign in faster next time",
+  "auth.setupPasskeyHint":
+    "Enable Face ID, Touch ID, or your device passcode so you can open Pulse Flow without typing your password.",
+  "auth.setupPasskeyLater":
+    "You can skip this and turn it on later in Settings.",
+  "auth.setupPasskeySkip": "Skip for now",
 
   "home.ready": "Ready for a smooth day?",
   "home.hello": "Hello, {name}",
@@ -671,6 +677,8 @@ const en = {
   "guest.requestNotePh": "Optional message to your host",
   "guest.sendRequest": "Send request",
   "guest.requestNeedDates": "Pick check-in and check-out dates.",
+  "guest.requestPastDates": "Check-in can't be in the past.",
+  "guest.requestCheckoutAfter": "Check-out must be after check-in.",
   "guest.requestSent": "Request sent to your host.",
   "guest.requestPending": "Pending request: {from} → {to}",
   "guest.guideEditTitle": "House guide (guest-facing)",

@@ -15,6 +15,7 @@ import type {
   Organization,
   Profile,
   ServiceOrder,
+  StayDateRequest,
   Task,
   Villa,
   VillaAssignment,
@@ -226,6 +227,9 @@ export function useSupabaseData(enabled: boolean): AppData {
   const [endorsements, setEndorsements] = useState<Endorsement[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>([]);
+  const [stayDateRequests, setStayDateRequests] = useState<StayDateRequest[]>(
+    [],
+  );
   const [localReadIds, setLocalReadIds] = useState<string[]>([]);
 
   const refresh = useCallback(async () => {
@@ -269,6 +273,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       endorsementsRes,
       notificationsRes,
       ordersRes,
+      dateRequestsRes,
     ] = await Promise.all([
       supabase.from("organizations").select("*").eq("id", orgId).single(),
       supabase.from("organizations").select("*").in("id", orgIds),
@@ -305,6 +310,11 @@ export function useSupabaseData(enabled: boolean): AppData {
         .select("*")
         .eq("org_id", orgId)
         .order("created_at", { ascending: false }),
+      supabase
+        .from("stay_date_requests")
+        .select("*")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false }),
     ]);
 
     setOrganization((orgRes.data as Organization) ?? null);
@@ -327,6 +337,11 @@ export function useSupabaseData(enabled: boolean): AppData {
       })),
     );
     setServiceOrders((ordersRes.data as ServiceOrder[]) ?? []);
+    setStayDateRequests(
+      dateRequestsRes.error
+        ? []
+        : ((dateRequestsRes.data as StayDateRequest[]) ?? []),
+    );
     setReady(true);
 
     const orgVillas = ((villasRes.data as Villa[]) ?? []).filter(
@@ -563,7 +578,10 @@ export function useSupabaseData(enabled: boolean): AppData {
     guestDeposits: [],
     guestCharges: [],
     stayPhotos: [],
-    stayDateRequests: [],
+    stayDateRequests:
+      profile?.role === "guest"
+        ? stayDateRequests.filter((r) => r.guest_profile_id === profile.id)
+        : stayDateRequests,
     refresh,
     markNotificationRead: async (id) => {
       if (!profile) return;
@@ -1376,8 +1394,61 @@ export function useSupabaseData(enabled: boolean): AppData {
     upsertHouseGuide: async () => {
       throw new Error("House guide needs migration 023 on Supabase.");
     },
-    requestStayDates: async () => {
-      throw new Error("Date requests need migration 023 on Supabase.");
+    requestStayDates: async (input) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "guest") {
+        throw new Error("Only guests can request dates.");
+      }
+      const today = new Date();
+      const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      if (input.check_in < todayIso) {
+        throw new Error("Check-in can't be in the past.");
+      }
+      if (input.check_out <= input.check_in) {
+        throw new Error("Check-out must be after check-in.");
+      }
+      const supabase = createClient();
+      const { data: inserted, error } = await supabase
+        .from("stay_date_requests")
+        .insert({
+          org_id: profile.org_id,
+          villa_id: input.villa_id,
+          guest_profile_id: profile.id,
+          check_in: input.check_in,
+          check_out: input.check_out,
+          note: input.note?.trim() || null,
+          status: "pending",
+        })
+        .select("id")
+        .single();
+      if (error) {
+        if (
+          error.message.includes("does not exist") ||
+          error.code === "42P01" ||
+          error.code === "PGRST205"
+        ) {
+          throw new Error("Date requests need migration 023 on Supabase.");
+        }
+        throw error;
+      }
+      const managers = ownerManagerIds(profiles, profile.org_id);
+      if (managers.length && inserted?.id) {
+        await insertNotifications(
+          supabase,
+          [
+            makeNotification({
+              org_id: profile.org_id,
+              kind: "appointment",
+              title: "Date request",
+              body: `${profile.full_name} requested stay dates`,
+              href: "/villas",
+              entity_id: input.villa_id,
+              audience_profile_ids: managers,
+            }),
+          ].map((n) => toInsertRow(n)),
+        );
+      }
+      await refresh();
     },
     addStayPhoto: async () => {
       throw new Error("Stay photos need migration 023 on Supabase.");

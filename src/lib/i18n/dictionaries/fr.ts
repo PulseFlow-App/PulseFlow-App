@@ -84,6 +84,12 @@ const fr: Dictionary = {
     "Aucune clé d'accès sur cet appareil. Connectez-vous par e-mail, puis activez Face ID dans les réglages.",
   "auth.passkeyEmailNotConfirmed":
     "Confirmez votre e-mail avant d'activer la connexion Face ID.",
+  "auth.setupPasskeyTitle": "Sign in faster next time",
+  "auth.setupPasskeyHint":
+    "Enable Face ID, Touch ID, or your device passcode so you can open Pulse Flow without typing your password.",
+  "auth.setupPasskeyLater":
+    "You can skip this and turn it on later in Settings.",
+  "auth.setupPasskeySkip": "Skip for now",
   "home.ready": "Prêt pour une journée fluide ?",
   "home.hello": "Bonjour, {name}",
   "home.allSteady": "Toutes les properties sont stables aujourd’hui.",
@@ -587,6 +593,8 @@ const fr: Dictionary = {
   "guest.requestNotePh": "Optional message to your host",
   "guest.sendRequest": "Send request",
   "guest.requestNeedDates": "Pick check-in and check-out dates.",
+  "guest.requestPastDates": "Check-in can't be in the past.",
+  "guest.requestCheckoutAfter": "Check-out must be after check-in.",
   "guest.requestSent": "Request sent to your host.",
   "guest.requestPending": "Pending request: {from} → {to}",
   "guest.guideEditTitle": "House guide (guest-facing)",

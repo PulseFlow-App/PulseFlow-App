@@ -916,6 +916,14 @@ function useDemoData(): AppData {
       if (!profile || profile.role !== "guest") {
         throw new Error("Only guests can request dates.");
       }
+      const today = new Date();
+      const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      if (input.check_in < todayIso) {
+        throw new Error("Check-in can't be in the past.");
+      }
+      if (input.check_out <= input.check_in) {
+        throw new Error("Check-out must be after check-in.");
+      }
       updateDemoStore((s) => ({
         ...s,
         stayDateRequests: [

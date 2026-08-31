@@ -114,7 +114,7 @@ export default function RegisterPage() {
         password,
       });
       if (signInError) throw signInError;
-      router.replace("/home");
+      router.replace("/setup-passkey");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not register.");

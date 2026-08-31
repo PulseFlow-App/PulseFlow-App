@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,20 @@ import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 
+function todayIsoDate() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 export function GuestVillasBrowse() {
   const data = useData();
   const { t } = useI18n();
   const label = useLocalizedDemoText();
   const villas = data.villaList.filter((v) => v.bucket === "company");
+  const minDate = useMemo(() => todayIsoDate(), []);
   const [requestFor, setRequestFor] = useState<string | null>(null);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
@@ -29,6 +38,14 @@ export function GuestVillasBrowse() {
     setOk(null);
     if (!checkIn || !checkOut) {
       setError(t("guest.requestNeedDates"));
+      return;
+    }
+    if (checkIn < minDate) {
+      setError(t("guest.requestPastDates"));
+      return;
+    }
+    if (checkOut <= checkIn) {
+      setError(t("guest.requestCheckoutAfter"));
       return;
     }
     try {
@@ -75,93 +92,99 @@ export function GuestVillasBrowse() {
             (r) => r.villa_id === v.id && r.status === "pending",
           );
           return (
-            <Card key={v.id} className="space-y-3 p-4">
-              <div className="flex gap-3">
-                <VillaPhotoThumb src={v.photo_url} alt={v.name} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="font-display text-lg font-bold text-ink">
-                      {label(v.name)}
-                    </p>
-                    <StatusPill status={v.status} />
-                  </div>
-                  {v.area ? (
-                    <p className="mt-1 flex items-center gap-1 text-sm text-muted">
-                      <MapPin className="size-3.5" />
-                      {label(v.area)}
-                    </p>
-                  ) : null}
-                  {v.description ? (
-                    <p className="mt-1 text-sm text-muted">
-                      {label(v.description)}
-                    </p>
-                  ) : null}
+            <Card key={v.id} className="space-y-3 overflow-hidden p-0">
+              <VillaPhotoThumb
+                src={v.photo_url}
+                alt={v.name}
+                className="rounded-none rounded-t-[1.5rem]"
+              />
+              <div className="space-y-3 px-4 pb-4">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-display text-lg font-bold text-ink">
+                    {label(v.name)}
+                  </p>
+                  <StatusPill status={v.status} />
                 </div>
-              </div>
+                {v.area ? (
+                  <p className="flex items-center gap-1 text-sm text-muted">
+                    <MapPin className="size-3.5" />
+                    {label(v.area)}
+                  </p>
+                ) : null}
+                {v.description ? (
+                  <p className="text-sm text-muted">{label(v.description)}</p>
+                ) : null}
 
-              {pending ? (
-                <p className="text-sm text-muted">
-                  {t("guest.requestPending", {
-                    from: pending.check_in,
-                    to: pending.check_out,
-                  })}
-                </p>
-              ) : requestFor === v.id ? (
-                <div className="space-y-2 rounded-2xl bg-[#F7F5F1] p-3">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label htmlFor={`in-${v.id}`}>{t("guest.checkIn")}</Label>
-                      <Input
-                        id={`in-${v.id}`}
-                        type="date"
-                        value={checkIn}
-                        onChange={(e) => setCheckIn(e.target.value)}
-                      />
+                {pending ? (
+                  <p className="text-sm text-muted">
+                    {t("guest.requestPending", {
+                      from: pending.check_in,
+                      to: pending.check_out,
+                    })}
+                  </p>
+                ) : requestFor === v.id ? (
+                  <div className="space-y-2 rounded-2xl bg-[#F7F5F1] p-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label htmlFor={`in-${v.id}`}>
+                          {t("guest.checkIn")}
+                        </Label>
+                        <Input
+                          id={`in-${v.id}`}
+                          type="date"
+                          min={minDate}
+                          value={checkIn}
+                          onChange={(e) => setCheckIn(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`out-${v.id}`}>
+                          {t("guest.checkOut")}
+                        </Label>
+                        <Input
+                          id={`out-${v.id}`}
+                          type="date"
+                          min={checkIn || minDate}
+                          value={checkOut}
+                          onChange={(e) => setCheckOut(e.target.value)}
+                        />
+                      </div>
                     </div>
                     <div>
-                      <Label htmlFor={`out-${v.id}`}>
-                        {t("guest.checkOut")}
+                      <Label htmlFor={`note-${v.id}`}>
+                        {t("guest.requestNote")}
                       </Label>
                       <Input
-                        id={`out-${v.id}`}
-                        type="date"
-                        value={checkOut}
-                        onChange={(e) => setCheckOut(e.target.value)}
+                        id={`note-${v.id}`}
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder={t("guest.requestNotePh")}
                       />
                     </div>
+                    <div className="flex gap-2">
+                      <Button type="button" onClick={() => void submit(v.id)}>
+                        {t("guest.sendRequest")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setRequestFor(null)}
+                      >
+                        {t("common.cancel")}
+                      </Button>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor={`note-${v.id}`}>{t("guest.requestNote")}</Label>
-                    <Input
-                      id={`note-${v.id}`}
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      placeholder={t("guest.requestNotePh")}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button type="button" onClick={() => void submit(v.id)}>
-                      {t("guest.sendRequest")}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => setRequestFor(null)}
-                    >
-                      {t("common.cancel")}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="rounded-full"
-                  onClick={() => setRequestFor(v.id)}
-                >
-                  {t("guest.requestDates")}
-                </Button>
-              )}
+                ) : (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="rounded-full"
+                    onClick={() => setRequestFor(v.id)}
+                  >
+                    {t("guest.requestDates")}
+                  </Button>
+                )}
+              </div>
             </Card>
           );
         })}
