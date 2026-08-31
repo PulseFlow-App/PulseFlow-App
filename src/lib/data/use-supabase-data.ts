@@ -9,6 +9,11 @@ import type {
   Bill,
   Contact,
   Endorsement,
+  GuestBriefing,
+  GuestCharge,
+  GuestDeposit,
+  GuestStay,
+  HouseGuide,
   Invite,
   MessageWithSender,
   OrgMembership,
@@ -16,10 +21,13 @@ import type {
   Profile,
   ServiceOrder,
   StayDateRequest,
+  StayPhoto,
+  SupportMessageWithSender,
   Task,
   Villa,
   VillaAssignment,
 } from "@/lib/types";
+import { pickConfirmedStay } from "@/lib/guest/confirmed-stay";
 import {
   canBookServices,
   canCreateVillas,
@@ -168,6 +176,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     activeStay: null,
     houseGuides: [],
     supportMessages: [],
+    guestBriefings: [],
     guestDeposits: [],
     guestCharges: [],
     stayPhotos: [],
@@ -186,6 +195,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     deleteVilla: async () => undefined,
     mergeVillaToCompany: async () => undefined,
     updateOrganizationName: async () => undefined,
+    updateProfileName: async () => undefined,
     createTask: async () => undefined,
     setTaskStatus: async () => undefined,
     createContact: async () => undefined,
@@ -203,6 +213,8 @@ export function useSupabaseData(enabled: boolean): AppData {
     setVillaAssignees: async () => undefined,
     castEndorsement: async () => undefined,
     sendSupportMessage: async () => undefined,
+    createGuestBriefing: async () => undefined,
+    confirmGuestBriefing: async () => undefined,
     upsertHouseGuide: async () => undefined,
     requestStayDates: async () => undefined,
     respondStayDateRequest: async () => undefined,
@@ -231,6 +243,15 @@ export function useSupabaseData(enabled: boolean): AppData {
   const [stayDateRequests, setStayDateRequests] = useState<StayDateRequest[]>(
     [],
   );
+  const [guestStays, setGuestStays] = useState<GuestStay[]>([]);
+  const [houseGuides, setHouseGuides] = useState<HouseGuide[]>([]);
+  const [supportMessages, setSupportMessages] = useState<
+    SupportMessageWithSender[]
+  >([]);
+  const [guestBriefings, setGuestBriefings] = useState<GuestBriefing[]>([]);
+  const [guestDeposits, setGuestDeposits] = useState<GuestDeposit[]>([]);
+  const [guestCharges, setGuestCharges] = useState<GuestCharge[]>([]);
+  const [stayPhotos, setStayPhotos] = useState<StayPhoto[]>([]);
   const [localReadIds, setLocalReadIds] = useState<string[]>([]);
 
   const refresh = useCallback(async () => {
@@ -275,6 +296,13 @@ export function useSupabaseData(enabled: boolean): AppData {
       notificationsRes,
       ordersRes,
       dateRequestsRes,
+      guestStaysRes,
+      houseGuidesRes,
+      supportMessagesRes,
+      guestBriefingsRes,
+      guestDepositsRes,
+      guestChargesRes,
+      stayPhotosRes,
     ] = await Promise.all([
       supabase.from("organizations").select("*").eq("id", orgId).single(),
       supabase.from("organizations").select("*").in("id", orgIds),
@@ -316,6 +344,35 @@ export function useSupabaseData(enabled: boolean): AppData {
         .select("*")
         .eq("org_id", orgId)
         .order("created_at", { ascending: false }),
+      supabase
+        .from("guest_stays")
+        .select("*")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false }),
+      supabase.from("house_guides").select("*").eq("org_id", orgId),
+      supabase
+        .from("support_messages")
+        .select(
+          "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
+        )
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("guest_briefings")
+        .select("*")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false }),
+      supabase.from("guest_deposits").select("*").eq("org_id", orgId),
+      supabase
+        .from("guest_charges")
+        .select("*")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("stay_photos")
+        .select("*")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false }),
     ]);
 
     setOrganization((orgRes.data as Organization) ?? null);
@@ -342,6 +399,48 @@ export function useSupabaseData(enabled: boolean): AppData {
       dateRequestsRes.error
         ? []
         : ((dateRequestsRes.data as StayDateRequest[]) ?? []),
+    );
+    const missingGuestTable = (err: { code?: string; message?: string } | null) =>
+      Boolean(
+        err &&
+          (err.code === "42P01" ||
+            err.code === "PGRST205" ||
+            err.message?.includes("does not exist")),
+      );
+    setGuestStays(
+      guestStaysRes.error && missingGuestTable(guestStaysRes.error)
+        ? []
+        : guestStaysRes.error
+          ? []
+          : ((guestStaysRes.data as GuestStay[]) ?? []),
+    );
+    setHouseGuides(
+      houseGuidesRes.error
+        ? []
+        : ((houseGuidesRes.data as HouseGuide[]) ?? []),
+    );
+    setSupportMessages(
+      supportMessagesRes.error
+        ? []
+        : ((supportMessagesRes.data as SupportMessageWithSender[]) ?? []),
+    );
+    setGuestBriefings(
+      guestBriefingsRes.error
+        ? []
+        : ((guestBriefingsRes.data as GuestBriefing[]) ?? []),
+    );
+    setGuestDeposits(
+      guestDepositsRes.error
+        ? []
+        : ((guestDepositsRes.data as GuestDeposit[]) ?? []),
+    );
+    setGuestCharges(
+      guestChargesRes.error
+        ? []
+        : ((guestChargesRes.data as GuestCharge[]) ?? []),
+    );
+    setStayPhotos(
+      stayPhotosRes.error ? [] : ((stayPhotosRes.data as StayPhoto[]) ?? []),
     );
     setReady(true);
 
@@ -556,6 +655,31 @@ export function useSupabaseData(enabled: boolean): AppData {
       ).filter((n) => n.kind === "message").length
     : 0;
 
+  const scopedGuestStays = (() => {
+    if (!profile) return [] as GuestStay[];
+    if (profile.role === "guest") {
+      return guestStays.filter((s) => s.guest_profile_id === profile.id);
+    }
+    if (profile.role === "owner" || profile.role === "manager") {
+      return guestStays.filter((s) => s.org_id === profile.org_id);
+    }
+    return [] as GuestStay[];
+  })();
+  const activeStay =
+    profile?.role === "guest" ? pickConfirmedStay(scopedGuestStays) : null;
+  const stayIds = new Set(scopedGuestStays.map((s) => s.id));
+  const scopedSupportMessages = supportMessages.filter((m) =>
+    stayIds.has(m.stay_id),
+  );
+  const scopedGuestBriefings = guestBriefings.filter((b) =>
+    stayIds.has(b.stay_id),
+  );
+  const scopedGuestDeposits = guestDeposits.filter((d) =>
+    stayIds.has(d.stay_id),
+  );
+  const scopedGuestCharges = guestCharges.filter((c) => stayIds.has(c.stay_id));
+  const scopedStayPhotos = stayPhotos.filter((p) => stayIds.has(p.stay_id));
+
   const markIdsRead = (ids: string[]) => {
     if (!profile || !ids.length) return;
     rememberLocallyRead(profile.id, ids);
@@ -605,13 +729,14 @@ export function useSupabaseData(enabled: boolean): AppData {
     serviceOrders,
     unreadNotificationCount,
     unreadMessageCount,
-    guestStays: [],
-    activeStay: null,
-    houseGuides: [],
-    supportMessages: [],
-    guestDeposits: [],
-    guestCharges: [],
-    stayPhotos: [],
+    guestStays: scopedGuestStays,
+    activeStay,
+    houseGuides,
+    supportMessages: scopedSupportMessages,
+    guestBriefings: scopedGuestBriefings,
+    guestDeposits: scopedGuestDeposits,
+    guestCharges: scopedGuestCharges,
+    stayPhotos: scopedStayPhotos,
     stayDateRequests:
       profile?.role === "guest"
         ? stayDateRequests.filter((r) => r.guest_profile_id === profile.id)
@@ -1043,16 +1168,28 @@ export function useSupabaseData(enabled: boolean): AppData {
     updateOrganizationName: async (name) => {
       if (!profile) throw new Error("Not signed in.");
       if (profile.role !== "owner") {
-        throw new Error("Only the owner can rename the company.");
+        throw new Error("Only the owner can rename the organization.");
       }
       const trimmed = name.trim();
-      if (!trimmed) throw new Error("Company name is required.");
+      if (!trimmed) throw new Error("Organization name is required.");
       requireOrgWrite(profile.org_id);
       const supabase = createClient();
       const { error } = await supabase
         .from("organizations")
         .update({ name: trimmed })
         .eq("id", profile.org_id);
+      if (error) throw error;
+      await refresh();
+    },
+    updateProfileName: async (name) => {
+      if (!profile) throw new Error("Not signed in.");
+      const trimmed = name.trim();
+      if (!trimmed) throw new Error("Name is required.");
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("profiles")
+        .update({ full_name: trimmed })
+        .eq("id", profile.id);
       if (error) throw error;
       await refresh();
     },
@@ -1422,11 +1559,218 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       await refresh();
     },
-    sendSupportMessage: async () => {
-      throw new Error("Support chat needs migration 023 on Supabase.");
+    sendSupportMessage: async (body, stayId) => {
+      if (!profile) throw new Error("Not signed in.");
+      const text = body.trim();
+      if (!text) return;
+
+      const stay =
+        (stayId
+          ? scopedGuestStays.find((s) => s.id === stayId)
+          : null) ??
+        activeStay ??
+        (profile.role === "owner" || profile.role === "manager"
+          ? pickConfirmedStay(scopedGuestStays)
+          : null);
+      if (!stay || (stay.status !== "active" && stay.status !== "upcoming")) {
+        throw new Error(
+          "Support chat opens once you have a confirmed stay.",
+        );
+      }
+      const canReply =
+        profile.id === stay.guest_profile_id ||
+        profile.role === "owner" ||
+        profile.role === "manager";
+      if (!canReply) {
+        throw new Error("Only guest or host can use support chat.");
+      }
+
+      const supabase = createClient();
+      const { data: inserted, error } = await supabase
+        .from("support_messages")
+        .insert({
+          org_id: stay.org_id,
+          stay_id: stay.id,
+          sender_id: profile.id,
+          body: text,
+        })
+        .select(
+          "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
+        )
+        .single();
+      if (error) {
+        if (
+          error.code === "42P01" ||
+          error.code === "PGRST205" ||
+          error.message.includes("does not exist")
+        ) {
+          throw new Error("Support chat needs migration 023 on Supabase.");
+        }
+        throw error;
+      }
+      if (inserted) {
+        setSupportMessages((prev) => [
+          ...prev,
+          inserted as SupportMessageWithSender,
+        ]);
+      }
+      const recipients =
+        profile.id === stay.guest_profile_id
+          ? ownerManagerIds(profiles, stay.org_id)
+          : [stay.guest_profile_id];
+      await insertNotifications(
+        supabase,
+        [
+          makeNotification({
+            org_id: stay.org_id,
+            kind: "guest_update",
+            title: "Support message",
+            body: text.slice(0, 120),
+            href: "/messages",
+            entity_id: stay.id,
+            audience_profile_ids: recipients,
+          }),
+        ].map((n) => toInsertRow(n)),
+      );
+      await refresh();
     },
-    upsertHouseGuide: async () => {
-      throw new Error("House guide needs migration 023 on Supabase.");
+    createGuestBriefing: async (input) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can send guest briefings.");
+      }
+      const stay = scopedGuestStays.find((s) => s.id === input.stay_id);
+      if (!stay) throw new Error("Stay not found.");
+      const title = input.title.trim();
+      const body = input.body.trim();
+      if (!title || !body) throw new Error("Title and message are required.");
+      const supabase = createClient();
+      const { data: inserted, error } = await supabase
+        .from("guest_briefings")
+        .insert({
+          org_id: stay.org_id,
+          stay_id: stay.id,
+          title,
+          body,
+          category: input.category ?? "custom",
+          created_by: profile.id,
+        })
+        .select("*")
+        .single();
+      if (error) {
+        if (
+          error.code === "42P01" ||
+          error.code === "PGRST205" ||
+          error.message.includes("does not exist")
+        ) {
+          throw new Error("Guest briefings need migration 025 on Supabase.");
+        }
+        throw error;
+      }
+      if (inserted) {
+        setGuestBriefings((prev) => [inserted as GuestBriefing, ...prev]);
+      }
+      await insertNotifications(
+        supabase,
+        [
+          makeNotification({
+            org_id: stay.org_id,
+            kind: "guest_update",
+            title,
+            body: body.slice(0, 120),
+            href: "/home",
+            entity_id: (inserted as GuestBriefing | null)?.id ?? stay.id,
+            audience_profile_ids: [stay.guest_profile_id],
+          }),
+        ].map((n) => toInsertRow(n)),
+      );
+      await refresh();
+    },
+    confirmGuestBriefing: async (briefingId) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "guest") {
+        throw new Error("Only the guest can confirm a briefing.");
+      }
+      const briefing = scopedGuestBriefings.find((b) => b.id === briefingId);
+      if (!briefing) throw new Error("Briefing not found.");
+      if (briefing.confirmed_at) return;
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("guest_briefings")
+        .update({
+          confirmed_at: new Date().toISOString(),
+          confirmed_by: profile.id,
+        })
+        .eq("id", briefingId);
+      if (error) throw error;
+      setGuestBriefings((prev) =>
+        prev.map((b) =>
+          b.id === briefingId
+            ? {
+                ...b,
+                confirmed_at: new Date().toISOString(),
+                confirmed_by: profile.id,
+              }
+            : b,
+        ),
+      );
+      await refresh();
+    },
+    upsertHouseGuide: async (villaId, patch) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can edit the house guide.");
+      }
+      const villa =
+        villas.find((v) => v.id === villaId) ??
+        allOrgVillas.find((v) => v.id === villaId);
+      if (!villa || villa.org_id !== profile.org_id) {
+        throw new Error("Villa not found.");
+      }
+      const supabase = createClient();
+      const now = new Date().toISOString();
+      const existing = houseGuides.find((g) => g.villa_id === villaId);
+      if (existing) {
+        const { error } = await supabase
+          .from("house_guides")
+          .update({ ...patch, updated_at: now })
+          .eq("id", existing.id);
+        if (error) {
+          if (
+            error.code === "42P01" ||
+            error.code === "PGRST205" ||
+            error.message.includes("does not exist")
+          ) {
+            throw new Error("House guide needs migration 023 on Supabase.");
+          }
+          throw error;
+        }
+      } else {
+        const { error } = await supabase.from("house_guides").insert({
+          org_id: profile.org_id,
+          villa_id: villaId,
+          wifi_ssid: null,
+          wifi_password: null,
+          gate_code: null,
+          bins_notes: null,
+          quiet_hours: null,
+          checkout_checklist: null,
+          extra_notes: null,
+          ...patch,
+          updated_at: now,
+        });
+        if (error) {
+          if (
+            error.code === "42P01" ||
+            error.code === "PGRST205" ||
+            error.message.includes("does not exist")
+          ) {
+            throw new Error("House guide needs migration 023 on Supabase.");
+          }
+          throw error;
+        }
+      }
+      await refresh();
     },
     requestStayDates: async (input) => {
       if (!profile) throw new Error("Not signed in.");
@@ -1554,12 +1898,16 @@ export function useSupabaseData(enabled: boolean): AppData {
             status: stayStatus,
             owner_notices: null,
           });
-          if (
-            stayError &&
-            !stayError.message.includes("does not exist") &&
-            stayError.code !== "42P01" &&
-            stayError.code !== "PGRST205"
-          ) {
+          if (stayError) {
+            if (
+              stayError.message.includes("does not exist") ||
+              stayError.code === "42P01" ||
+              stayError.code === "PGRST205"
+            ) {
+              throw new Error(
+                "Guest stays need migration 023 on Supabase.",
+              );
+            }
             throw stayError;
           }
         }
@@ -1585,8 +1933,32 @@ export function useSupabaseData(enabled: boolean): AppData {
       );
       await refresh();
     },
-    addStayPhoto: async () => {
-      throw new Error("Stay photos need migration 023 on Supabase.");
+    addStayPhoto: async (input) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (!activeStay) throw new Error("No active stay.");
+      if (profile.role === "guest" && activeStay.guest_profile_id !== profile.id) {
+        throw new Error("No active stay.");
+      }
+      const supabase = createClient();
+      const { error } = await supabase.from("stay_photos").insert({
+        org_id: activeStay.org_id,
+        stay_id: activeStay.id,
+        kind: input.kind,
+        photo_url: input.photo_url,
+        note: input.note?.trim() || null,
+        uploaded_by: profile.id,
+      });
+      if (error) {
+        if (
+          error.code === "42P01" ||
+          error.code === "PGRST205" ||
+          error.message.includes("does not exist")
+        ) {
+          throw new Error("Stay photos need migration 023 on Supabase.");
+        }
+        throw error;
+      }
+      await refresh();
     },
   };
 }

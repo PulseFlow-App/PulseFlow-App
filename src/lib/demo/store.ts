@@ -49,7 +49,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v13";
+const STORE_KEY = "pulseflow_demo_store_v14";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -110,6 +110,7 @@ function normalizeStore(store: DemoStore): DemoStore {
     guestStays: store.guestStays ?? [],
     houseGuides: store.houseGuides ?? [],
     supportMessages: store.supportMessages ?? [],
+    guestBriefings: store.guestBriefings ?? [],
     guestDeposits: store.guestDeposits ?? [],
     guestCharges: store.guestCharges ?? [],
     stayPhotos: store.stayPhotos ?? [],
@@ -139,6 +140,7 @@ function readStore(): DemoStore {
         "pulseflow_demo_store_v10",
         "pulseflow_demo_store_v11",
         "pulseflow_demo_store_v12",
+        "pulseflow_demo_store_v13",
       ]) {
         localStorage.removeItem(key);
       }

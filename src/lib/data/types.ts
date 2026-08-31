@@ -4,6 +4,8 @@ import type {
   BillWithRelations,
   Contact,
   Endorsement,
+  GuestBriefing,
+  GuestBriefingCategory,
   GuestCharge,
   GuestDeposit,
   GuestStay,
@@ -60,6 +62,7 @@ export type AppData = {
   guestCharges: GuestCharge[];
   stayPhotos: StayPhoto[];
   stayDateRequests: StayDateRequest[];
+  guestBriefings: GuestBriefing[];
   refresh: () => Promise<void>;
   markNotificationRead: (id: string) => Promise<void>;
   /** Mark all visible unread as read. Pass kind to limit (e.g. message badges). */
@@ -108,6 +111,8 @@ export type AppData = {
   deleteVilla: (id: string) => Promise<void>;
   mergeVillaToCompany: (villaId: string) => Promise<void>;
   updateOrganizationName: (name: string) => Promise<void>;
+  /** Any signed-in user can update their own display name. */
+  updateProfileName: (name: string) => Promise<void>;
   createTask: (input: {
     title: string;
     villa_id: string | null;
@@ -149,6 +154,13 @@ export type AppData = {
     note?: string,
   ) => Promise<void>;
   sendSupportMessage: (body: string, stayId?: string) => Promise<void>;
+  createGuestBriefing: (input: {
+    stay_id: string;
+    title: string;
+    body: string;
+    category?: GuestBriefingCategory;
+  }) => Promise<void>;
+  confirmGuestBriefing: (briefingId: string) => Promise<void>;
   upsertHouseGuide: (
     villaId: string,
     patch: Partial<

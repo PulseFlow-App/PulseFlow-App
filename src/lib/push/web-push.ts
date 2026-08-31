@@ -23,6 +23,7 @@ export const PUSH_KINDS = new Set<NotificationKind>([
   "team_joined",
   "check_in",
   "check_out",
+  "guest_update",
 ]);
 
 function vapidConfigured() {

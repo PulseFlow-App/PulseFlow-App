@@ -96,6 +96,11 @@ export function AppMenuButton() {
   }
   if (isCompany && (profile.role === "owner" || profile.role === "manager")) {
     links.push({
+      href: "/contacts",
+      label: t("nav.contacts"),
+      icon: Users,
+    });
+    links.push({
       href: "/date-requests",
       label: t("nav.dateRequests"),
       icon: CalendarClock,

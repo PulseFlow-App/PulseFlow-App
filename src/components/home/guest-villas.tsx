@@ -5,6 +5,7 @@ import { MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
+import { DateField } from "@/components/ui/date-field";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
@@ -12,6 +13,15 @@ import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 import { todayIsoDate } from "@/lib/villas/status-from-dates";
+
+function nextDayIso(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const dt = new Date(y, m - 1, d + 1);
+  const yy = dt.getFullYear();
+  const mm = String(dt.getMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getDate()).padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
+}
 
 export function GuestVillasBrowse() {
   const data = useData();
@@ -26,6 +36,9 @@ export function GuestVillasBrowse() {
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
 
+  const checkOutMin =
+    checkIn && checkIn >= minDate ? nextDayIso(checkIn) : nextDayIso(minDate);
+
   const setSafeCheckIn = (value: string) => {
     if (value && value < minDate) {
       setCheckIn("");
@@ -38,15 +51,9 @@ export function GuestVillasBrowse() {
   };
 
   const setSafeCheckOut = (value: string) => {
-    const floor = checkIn && checkIn > minDate ? checkIn : minDate;
-    if (value && value <= floor) {
+    if (value && value < checkOutMin) {
       setCheckOut("");
       setError(t("guest.requestCheckoutAfter"));
-      return;
-    }
-    if (value && value < minDate) {
-      setCheckOut("");
-      setError(t("guest.requestPastDates"));
       return;
     }
     setError(null);
@@ -100,6 +107,11 @@ export function GuestVillasBrowse() {
         <h1 className="font-display text-2xl font-bold text-ink">
           {t("guest.villasTitle")}
         </h1>
+        {data.orgName ? (
+          <p className="text-sm font-semibold text-ink">
+            {t("guest.villasHost", { name: data.orgName })}
+          </p>
+        ) : null}
         <p className="text-sm text-muted">{t("guest.villasHint")}</p>
       </div>
 
@@ -143,38 +155,32 @@ export function GuestVillasBrowse() {
                     })}
                   </p>
                 ) : requestFor === v.id ? (
-                  <div className="space-y-2 rounded-2xl bg-[#F7F5F1] p-3">
+                  <div className="space-y-2 rounded-2xl bg-white/60 p-3 ring-1 ring-black/5">
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <Label htmlFor={`in-${v.id}`}>
                           {t("guest.checkIn")}
                         </Label>
-                        <Input
+                        <DateField
                           id={`in-${v.id}`}
-                          type="date"
-                          min={minDate}
                           value={checkIn}
-                          onChange={(e) => setSafeCheckIn(e.target.value)}
-                          onBlur={() => {
-                            if (checkIn && checkIn < minDate) setSafeCheckIn("");
-                          }}
+                          min={minDate}
+                          onChange={setSafeCheckIn}
+                          placeholder={t("guest.checkIn")}
+                          aria-label={t("guest.checkIn")}
                         />
                       </div>
                       <div>
                         <Label htmlFor={`out-${v.id}`}>
                           {t("guest.checkOut")}
                         </Label>
-                        <Input
+                        <DateField
                           id={`out-${v.id}`}
-                          type="date"
-                          min={checkIn && checkIn > minDate ? checkIn : minDate}
                           value={checkOut}
-                          onChange={(e) => setSafeCheckOut(e.target.value)}
-                          onBlur={() => {
-                            if (checkOut && checkOut < minDate) {
-                              setSafeCheckOut("");
-                            }
-                          }}
+                          min={checkOutMin}
+                          onChange={setSafeCheckOut}
+                          placeholder={t("guest.checkOut")}
+                          aria-label={t("guest.checkOut")}
                         />
                       </div>
                     </div>

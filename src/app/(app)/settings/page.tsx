@@ -24,6 +24,10 @@ export default function SettingsPage() {
   const data = useData();
   const router = useRouter();
   const { t } = useI18n();
+  const [displayName, setDisplayName] = useState("");
+  const [nameEditing, setNameEditing] = useState(false);
+  const [nameBusy, setNameBusy] = useState(false);
+  const [nameMsg, setNameMsg] = useState<string | null>(null);
   const [orgName, setOrgName] = useState("");
   const [orgEditing, setOrgEditing] = useState(false);
   const [orgBusy, setOrgBusy] = useState(false);
@@ -33,7 +37,7 @@ export default function SettingsPage() {
   const profile = data.profile;
   const isCompany = data.orgKind === "company";
   const isPersonal = data.orgKind === "personal";
-  const canRenameCompany = isCompany && profile.role === "owner";
+  const canRenameOrg = profile.role === "owner";
 
   const signOut = async () => {
     if (isDemoMode()) {
@@ -52,6 +56,20 @@ export default function SettingsPage() {
     orgKind: data.orgKind,
     organization: data.organization,
   });
+
+  const saveDisplayName = async () => {
+    setNameBusy(true);
+    setNameMsg(null);
+    try {
+      await data.updateProfileName(displayName);
+      setNameEditing(false);
+      setNameMsg(t("settings.displayNameSaved"));
+    } catch (e) {
+      setNameMsg(e instanceof Error ? e.message : t("settings.saveError"));
+    } finally {
+      setNameBusy(false);
+    }
+  };
 
   const saveOrgName = async () => {
     setOrgBusy(true);
@@ -81,14 +99,74 @@ export default function SettingsPage() {
       </Card>
 
       <Card className="space-y-3 p-5">
-        <Info label={t("common.name")} value={profile.full_name} />
+        <div>
+          <Label>{t("common.name")}</Label>
+          {nameEditing ? (
+            <div className="mt-1 space-y-2">
+              <Input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                autoComplete="name"
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  disabled={nameBusy || !displayName.trim()}
+                  onClick={() => void saveDisplayName()}
+                >
+                  {nameBusy ? t("common.saving") : t("common.save")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="flex-1"
+                  disabled={nameBusy}
+                  onClick={() => {
+                    setNameEditing(false);
+                    setNameMsg(null);
+                  }}
+                >
+                  {t("common.cancel")}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-1 flex items-center justify-between gap-3">
+              <p className="font-semibold text-ink">{profile.full_name}</p>
+              <button
+                type="button"
+                className="shrink-0 text-sm font-semibold text-primary"
+                onClick={() => {
+                  setDisplayName(profile.full_name);
+                  setNameEditing(true);
+                  setNameMsg(null);
+                }}
+              >
+                {t("common.edit")}
+              </button>
+            </div>
+          )}
+          {nameMsg ? (
+            <p className="mt-1 text-sm font-semibold text-secondary">{nameMsg}</p>
+          ) : null}
+        </div>
+
         <Info label={t("common.email")} value={profile.email} />
         {isCompany ? (
           <Info label={t("common.role")} value={t(roleKey)} />
         ) : null}
-        {canRenameCompany ? (
+
+        {canRenameOrg ? (
           <div>
-            <Label>{t("settings.organization")}</Label>
+            <Label>
+              {isPersonal ? t("settings.workspace") : t("settings.organization")}
+            </Label>
+            {isCompany ? (
+              <p className="mt-0.5 text-xs text-muted">
+                {t("settings.orgNameHint")}
+              </p>
+            ) : null}
             {orgEditing ? (
               <div className="mt-1 space-y-2">
                 <Input

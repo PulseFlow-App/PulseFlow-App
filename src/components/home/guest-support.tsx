@@ -10,6 +10,7 @@ import { useData } from "@/lib/data/use-app-data";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { isGuestApp } from "@/lib/roles";
+import { isConfirmedStay } from "@/lib/guest/confirmed-stay";
 
 export function GuestSupportChat() {
   const data = useData();
@@ -18,7 +19,7 @@ export function GuestSupportChat() {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const stay = data.activeStay;
+  const stay = isConfirmedStay(data.activeStay) ? data.activeStay : null;
   const messages = data.supportMessages.filter((m) => m.stay_id === stay?.id);
   const me = data.profile?.id;
 

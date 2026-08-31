@@ -481,6 +481,7 @@ export const NOTIFICATION_META: Record<
   team_joined: { label: "Team", tone: "text-primary" },
   endorsement: { label: "Endorsement", tone: "text-primary" },
   appointment: { label: "Appointment", tone: "text-secondary" },
+  guest_update: { label: "Guest update", tone: "text-primary" },
 };
 
 export function formatWorkWindow(

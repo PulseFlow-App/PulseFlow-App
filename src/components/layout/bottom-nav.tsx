@@ -10,6 +10,7 @@ import {
   Receipt,
   CalendarClock,
   MessageCircle,
+  BedDouble,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useData } from "@/lib/data/use-app-data";
@@ -30,6 +31,19 @@ const mainTabs: {
   { href: "/bills", labelKey: "nav.bills", icon: Receipt },
 ];
 
+/** Company owner/manager: Guests panel in the footer for stays + briefings. */
+const companyHostTabs: {
+  href: string;
+  labelKey: MessageKey;
+  icon: typeof Home;
+}[] = [
+  { href: "/home", labelKey: "nav.home", icon: Home },
+  { href: "/villas", labelKey: "nav.villas", icon: Building2 },
+  { href: "/guests", labelKey: "nav.guests", icon: BedDouble },
+  { href: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
+  { href: "/bills", labelKey: "nav.bills", icon: Receipt },
+];
+
 const staffTabs: {
   href: string;
   labelKey: MessageKey;
@@ -42,29 +56,47 @@ const staffTabs: {
   { href: "/bills", labelKey: "nav.bills", icon: Receipt },
 ];
 
-/** Lean guest stay app - stay home, company villas, support, deposit bills. */
-const guestTabs: {
+/** Lean guest stay app - stay home, company villas, support (after confirmed stay), deposit bills. */
+const guestTabsBase: {
   href: string;
   labelKey: MessageKey;
   icon: typeof Home;
 }[] = [
   { href: "/home", labelKey: "guest.nav.stay", icon: Home },
   { href: "/villas", labelKey: "guest.nav.villas", icon: Building2 },
-  { href: "/messages", labelKey: "guest.nav.support", icon: MessageCircle },
   { href: "/bills", labelKey: "guest.nav.bills", icon: Receipt },
 ];
+
+const guestSupportTab = {
+  href: "/messages",
+  labelKey: "guest.nav.support" as MessageKey,
+  icon: MessageCircle,
+};
 
 export function BottomNav() {
   const pathname = usePathname();
   const data = useData();
   const { t } = useI18n();
   const role = data.profile?.role;
+  const guestHasConfirmedStay = Boolean(data.activeStay);
+  const isCompanyHost =
+    data.orgKind === "company" &&
+    (role === "owner" || role === "manager");
   const tabs = role
     ? isGuestApp(role)
-      ? guestTabs
+      ? guestHasConfirmedStay
+        ? [
+            guestTabsBase[0],
+            guestTabsBase[1],
+            guestSupportTab,
+            guestTabsBase[2],
+          ]
+        : guestTabsBase
       : isStaffApp(role)
         ? staffTabs
-        : mainTabs
+        : isCompanyHost
+          ? companyHostTabs
+          : mainTabs
     : mainTabs;
 
   return (

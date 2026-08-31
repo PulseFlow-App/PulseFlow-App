@@ -225,7 +225,8 @@ export type NotificationKind =
   | "bill_paid"
   | "appointment"
   | "team_joined"
-  | "endorsement";
+  | "endorsement"
+  | "guest_update";
 
 export type AppNotification = {
   id: string;
@@ -317,6 +318,28 @@ export type SupportMessage = {
 
 export type SupportMessageWithSender = SupportMessage & {
   sender?: Pick<Profile, "id" | "full_name" | "role"> | null;
+};
+
+export type GuestBriefingCategory =
+  | "check_in"
+  | "keys"
+  | "emergency"
+  | "app_help"
+  | "house"
+  | "custom";
+
+/** Host-sent stay briefing the guest confirms as read. */
+export type GuestBriefing = {
+  id: string;
+  org_id: string;
+  stay_id: string;
+  title: string;
+  body: string;
+  category: GuestBriefingCategory;
+  created_by: string;
+  created_at: string;
+  confirmed_at: string | null;
+  confirmed_by: string | null;
 };
 
 export type GuestDepositStatus = "held" | "partial" | "refunded";

@@ -48,6 +48,8 @@ function kindIcon(kind: NotificationKind) {
       return Trophy;
     case "appointment":
       return CalendarClock;
+    case "guest_update":
+      return Bell;
     default:
       return Bell;
   }

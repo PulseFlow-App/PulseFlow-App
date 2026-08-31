@@ -52,6 +52,7 @@ import {
   canViewAllBills,
   personalVillasOnly,
 } from "@/lib/roles";
+import { pickConfirmedStay } from "@/lib/guest/confirmed-stay";
 import {
   makeNotification,
   notificationVisibleTo,
@@ -282,12 +283,7 @@ function useDemoData(): AppData {
 
   const activeStay = useMemo(() => {
     if (!profile || profile.role !== "guest") return null;
-    return (
-      guestStays.find((s) => s.status === "active") ??
-      guestStays.find((s) => s.status === "upcoming") ??
-      guestStays[0] ??
-      null
-    );
+    return pickConfirmedStay(guestStays);
   }, [guestStays, profile]);
 
   const houseGuides = useMemo(() => {
@@ -306,6 +302,14 @@ function useDemoData(): AppData {
         sender: orgProfiles.find((p) => p.id === m.sender_id) ?? null,
       }));
   }, [store.supportMessages, guestStays, orgProfiles, profile]);
+
+  const guestBriefings = useMemo(() => {
+    if (!profile) return [];
+    const stayIds = new Set(guestStays.map((s) => s.id));
+    return [...(store.guestBriefings ?? [])]
+      .filter((b) => stayIds.has(b.stay_id))
+      .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+  }, [store.guestBriefings, guestStays, profile]);
 
   const guestDeposits = useMemo(() => {
     if (!profile) return [];
@@ -369,6 +373,7 @@ function useDemoData(): AppData {
     activeStay,
     houseGuides,
     supportMessages,
+    guestBriefings,
     guestDeposits,
     guestCharges,
     stayPhotos,
@@ -512,14 +517,26 @@ function useDemoData(): AppData {
       assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       if (profile.role !== "owner") {
-        throw new Error("Only the owner can rename the company.");
+        throw new Error("Only the owner can rename the organization.");
       }
       const trimmed = name.trim();
-      if (!trimmed) throw new Error("Company name is required.");
+      if (!trimmed) throw new Error("Organization name is required.");
       updateDemoStore((s) => ({
         ...s,
         orgs: s.orgs.map((o) =>
           o.id === profile.org_id ? { ...o, name: trimmed } : o,
+        ),
+      }));
+    },
+    updateProfileName: async (name) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      const trimmed = name.trim();
+      if (!trimmed) throw new Error("Name is required.");
+      updateDemoStore((s) => ({
+        ...s,
+        profiles: s.profiles.map((p) =>
+          p.id === profile.id ? { ...p, full_name: trimmed } : p,
         ),
       }));
     },
@@ -832,9 +849,13 @@ function useDemoData(): AppData {
           : null) ??
         activeStay ??
         (profile.role === "owner" || profile.role === "manager"
-          ? guestStays[0]
+          ? pickConfirmedStay(guestStays)
           : null);
-      if (!stay) throw new Error("No stay for support chat.");
+      if (!stay || (stay.status !== "active" && stay.status !== "upcoming")) {
+        throw new Error(
+          "Support chat opens once you have a confirmed stay.",
+        );
+      }
       const canReply =
         profile.id === stay.guest_profile_id ||
         profile.role === "owner" ||
@@ -863,7 +884,7 @@ function useDemoData(): AppData {
       demoPushNotifications([
         makeNotification({
           org_id: stay.org_id,
-          kind: "message",
+          kind: "guest_update",
           title: "Support message",
           body: text.slice(0, 120),
           href: "/messages",
@@ -871,6 +892,78 @@ function useDemoData(): AppData {
           audience_profile_ids: recipients,
         }),
       ]);
+    },
+    createGuestBriefing: async (input) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can send guest briefings.");
+      }
+      const stay = guestStays.find((s) => s.id === input.stay_id);
+      if (!stay || stay.org_id !== profile.org_id) {
+        throw new Error("Stay not found.");
+      }
+      const title = input.title.trim();
+      const body = input.body.trim();
+      if (!title || !body) throw new Error("Title and message are required.");
+      const briefingId = uid("briefing");
+      updateDemoStore((s) => ({
+        ...s,
+        guestBriefings: [
+          ...(s.guestBriefings ?? []),
+          {
+            id: briefingId,
+            org_id: stay.org_id,
+            stay_id: stay.id,
+            title,
+            body,
+            category: input.category ?? "custom",
+            created_by: profile.id,
+            created_at: new Date().toISOString(),
+            confirmed_at: null,
+            confirmed_by: null,
+          },
+        ],
+      }));
+      demoPushNotifications([
+        makeNotification({
+          org_id: stay.org_id,
+          kind: "guest_update",
+          title,
+          body: body.slice(0, 120),
+          href: "/home",
+          entity_id: briefingId,
+          audience_profile_ids: [stay.guest_profile_id],
+        }),
+      ]);
+    },
+    confirmGuestBriefing: async (briefingId) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "guest") {
+        throw new Error("Only the guest can confirm a briefing.");
+      }
+      const briefing = (store.guestBriefings ?? []).find(
+        (b) => b.id === briefingId,
+      );
+      if (!briefing) throw new Error("Briefing not found.");
+      const stay = guestStays.find((s) => s.id === briefing.stay_id);
+      if (!stay || stay.guest_profile_id !== profile.id) {
+        throw new Error("Briefing not found.");
+      }
+      if (briefing.confirmed_at) return;
+      updateDemoStore((s) => ({
+        ...s,
+        guestBriefings: (s.guestBriefings ?? []).map((b) =>
+          b.id === briefingId
+            ? {
+                ...b,
+                confirmed_at: new Date().toISOString(),
+                confirmed_by: profile.id,
+              }
+            : b,
+        ),
+      }));
     },
     upsertHouseGuide: async (villaId, patch) => {
       assertDemoWritable();

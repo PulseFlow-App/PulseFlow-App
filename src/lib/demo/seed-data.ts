@@ -4,6 +4,7 @@ import type {
   Contact,
   DemoAccount,
   Endorsement,
+  GuestBriefing,
   GuestCharge,
   GuestDeposit,
   GuestStay,
@@ -956,6 +957,7 @@ export type DemoStore = {
   guestStays: GuestStay[];
   houseGuides: HouseGuide[];
   supportMessages: SupportMessage[];
+  guestBriefings: GuestBriefing[];
   guestDeposits: GuestDeposit[];
   guestCharges: GuestCharge[];
   stayPhotos: StayPhoto[];
@@ -1010,6 +1012,33 @@ export const demoSupportMessages: SupportMessage[] = [
     sender_id: DEMO_OWNER_ID,
     body: "Yes, it turns on at 16:00 every day. Enjoy the sunset!",
     created_at: daysAgo(1) + "T15:35:00.000Z",
+  },
+];
+
+export const demoGuestBriefings: GuestBriefing[] = [
+  {
+    id: "77777777-7777-4777-8777-777777777776",
+    org_id: DEMO_ORG_ID,
+    stay_id: DEMO_STAY_ID,
+    title: "Gate & keys",
+    body: "Side gate code is 4821#. Leave keys on the kitchen counter at checkout.",
+    category: "keys",
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(4) + "T09:00:00.000Z",
+    confirmed_at: daysAgo(4) + "T11:20:00.000Z",
+    confirmed_by: DEMO_GUEST_ID,
+  },
+  {
+    id: "77777777-7777-4777-8777-777777777777",
+    org_id: DEMO_ORG_ID,
+    stay_id: DEMO_STAY_ID,
+    title: "How to reach us",
+    body: "Use Support in this app for anything urgent. We reply as the host team only.",
+    category: "app_help",
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(2) + "T08:30:00.000Z",
+    confirmed_at: null,
+    confirmed_by: null,
   },
 ];
 
@@ -1120,6 +1149,7 @@ export function createFreshDemoStore(): DemoStore {
     guestStays: structuredClone(demoGuestStays),
     houseGuides: structuredClone(demoHouseGuides),
     supportMessages: structuredClone(demoSupportMessages),
+    guestBriefings: structuredClone(demoGuestBriefings),
     guestDeposits: structuredClone(demoGuestDeposits),
     guestCharges: structuredClone(demoGuestCharges),
     stayPhotos: structuredClone(demoStayPhotos),
