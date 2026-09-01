@@ -69,6 +69,7 @@ import {
 } from "@/lib/notifications-read";
 import { formatMoney, formatShortDate } from "@/lib/utils";
 import { normalizeBillCurrency } from "@/lib/billing/currencies";
+import { DEFAULT_IN_PERSON_PAYMENT_NOTE, formatStayQuoteLine } from "@/lib/guest/stay-pricing";
 import { capitalizeLabel } from "@/lib/format-label";
 
 export type { AppData } from "@/lib/data/types";
@@ -1079,6 +1080,15 @@ function useDemoData(): AppData {
         throw new Error("Check-out must be after check-in.");
       }
       const requestId = uid("dates");
+      const guestPrice =
+        input.guest_price_amount != null &&
+        Number.isFinite(Number(input.guest_price_amount)) &&
+        Number(input.guest_price_amount) > 0
+          ? Number(input.guest_price_amount)
+          : null;
+      const guestCurrency = guestPrice
+        ? normalizeBillCurrency(input.guest_price_currency ?? "THB")
+        : null;
       updateDemoStore((s) => ({
         ...s,
         stayDateRequests: [
@@ -1092,24 +1102,33 @@ function useDemoData(): AppData {
             check_out: input.check_out,
             note: input.note?.trim() || null,
             status: "pending",
+            guest_price_amount: guestPrice,
+            guest_price_currency: guestCurrency,
+            quoted_price_amount: null,
+            quoted_price_currency: null,
+            payment_note: null,
             created_at: new Date().toISOString(),
           },
         ],
       }));
       const villa = store.villas.find((v) => v.id === input.villa_id);
+      const priceHint =
+        guestPrice && guestCurrency
+          ? ` · ${formatMoney(guestPrice, guestCurrency)} offered`
+          : "";
       demoPushNotifications([
         makeNotification({
           org_id: profile.org_id,
           kind: "appointment",
           title: "Date request",
-          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}`,
+          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}${priceHint}`,
           href: "/date-requests",
           entity_id: requestId,
           audience_profile_ids: ownerManagerIds(store.profiles, profile.org_id),
         }),
       ]);
     },
-    respondStayDateRequest: async (requestId, decision) => {
+    respondStayDateRequest: async (requestId, decision, pricing) => {
       assertDemoWritable();
       if (!profile || (profile.role !== "owner" && profile.role !== "manager")) {
         throw new Error("Only owners or managers can respond.");
@@ -1121,6 +1140,23 @@ function useDemoData(): AppData {
       if (request.status !== "pending") {
         throw new Error("This request was already handled.");
       }
+      if (decision === "accepted") {
+        const amount = Number(pricing?.quoted_price_amount);
+        if (!Number.isFinite(amount) || amount <= 0) {
+          throw new Error("Enter the total price for these dates before accepting.");
+        }
+      }
+
+      const quotedAmount =
+        decision === "accepted" ? Number(pricing!.quoted_price_amount) : null;
+      const quotedCurrency =
+        decision === "accepted"
+          ? normalizeBillCurrency(pricing!.quoted_price_currency)
+          : null;
+      const paymentNote =
+        decision === "accepted"
+          ? (pricing?.payment_note?.trim() || DEFAULT_IN_PERSON_PAYMENT_NOTE)
+          : null;
 
       const {
         todayIsoDate,
@@ -1191,23 +1227,40 @@ function useDemoData(): AppData {
           villas,
           guestStays,
           stayDateRequests: (s.stayDateRequests ?? []).map((r) =>
-            r.id === requestId ? { ...r, status: decision } : r,
+            r.id === requestId
+              ? {
+                  ...r,
+                  status: decision,
+                  quoted_price_amount: quotedAmount,
+                  quoted_price_currency: quotedCurrency,
+                  payment_note: paymentNote,
+                }
+              : r,
           ),
         };
       });
 
       const villa = store.villas.find((v) => v.id === request.villa_id);
+      const acceptBody =
+        decision === "accepted" && quotedAmount && quotedCurrency
+          ? `${formatStayQuoteLine({
+              amount: quotedAmount,
+              currency: quotedCurrency,
+              checkIn: request.check_in,
+              checkOut: request.check_out,
+            })}. ${paymentNote}`
+          : `${villa?.name ?? "Villa"} · your date request was declined`;
       demoPushNotifications([
         makeNotification({
           org_id: profile.org_id,
           kind: "appointment",
           title:
             decision === "accepted"
-              ? "Dates accepted"
+              ? "Dates accepted — price confirmed"
               : "Dates declined",
           body:
             decision === "accepted"
-              ? `${villa?.name ?? "Villa"} · ${request.check_in} → ${request.check_out}`
+              ? acceptBody
               : `${villa?.name ?? "Villa"} · your date request was declined`,
           href: decision === "accepted" ? "/home" : "/villas",
           entity_id: requestId,

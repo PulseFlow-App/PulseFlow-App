@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   Bar,
   BarChart,
@@ -13,29 +14,36 @@ import { Card } from "@/components/ui/card";
 import { weeklyTaskOps } from "@/lib/utils";
 import type { Task } from "@/lib/types";
 import { colors } from "@/lib/design-tokens";
+import { useI18n } from "@/lib/i18n/provider";
 
 export function WeeklyChart({ tasks }: { tasks: Task[] }) {
-  const data = weeklyTaskOps(tasks, 5);
+  const { t, locale } = useI18n();
+  const data = useMemo(
+    () => weeklyTaskOps(tasks, 5, locale),
+    [tasks, locale],
+  );
   const closed = data.reduce((sum, d) => sum + d.closed, 0);
   const opened = data.reduce((sum, d) => sum + d.opened, 0);
   const total = closed + opened;
   const pct = total === 0 ? 0 : Math.round((closed / total) * 100);
+  const openedLabel = t("home.chartOpened");
+  const closedLabel = t("home.chartClosed");
 
   return (
     <Card className="p-4">
       <div className="mb-3 flex items-end justify-between gap-3">
         <div>
           <p className="font-display text-3xl font-bold text-ink">{pct}%</p>
-          <p className="text-sm text-muted">
-            of this week&apos;s task volume closed
-          </p>
+          <p className="text-sm text-muted">{t("home.weekVolumeClosed")}</p>
         </div>
         <div className="text-right text-xs text-muted">
           <p>
-            <span className="font-semibold text-secondary">{closed}</span> closed
+            <span className="font-semibold text-secondary">{closed}</span>{" "}
+            {t("home.closedLabel")}
           </p>
           <p>
-            <span className="font-semibold text-primary">{opened}</span> opened
+            <span className="font-semibold text-primary">{opened}</span>{" "}
+            {t("home.openedLabel")}
           </p>
         </div>
       </div>
@@ -67,13 +75,13 @@ export function WeeklyChart({ tasks }: { tasks: Task[] }) {
               dataKey="opened"
               fill="#FFD2B8"
               radius={[10, 10, 10, 10]}
-              name="Opened"
+              name={openedLabel}
             />
             <Bar
               dataKey="closed"
               fill={colors.primary}
               radius={[10, 10, 10, 10]}
-              name="Closed"
+              name={closedLabel}
             />
           </BarChart>
         </ResponsiveContainer>

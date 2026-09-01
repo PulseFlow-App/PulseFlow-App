@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
-import { brand } from "@/lib/design-tokens";
+import { useI18n } from "@/lib/i18n/provider";
+import { useBrandName } from "@/lib/i18n/use-brand-name";
 import {
   isPasskeyAvailable,
   passkeyErrorMessage,
@@ -20,7 +21,6 @@ import {
 } from "@/lib/auth/passkeys";
 import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { demoLogin, demoLogout } from "@/lib/demo/store";
-import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 import { extractInviteToken } from "@/lib/billing/plans";
 
@@ -60,6 +60,7 @@ function demoAccountFromParam(demo: string | null) {
 export default function LoginPage() {
   const router = useRouter();
   const { t } = useI18n();
+  const brandName = useBrandName();
   const [error, setError] = useState<string | null>(null);
   const [demoRole, setDemoRole] = useState<"owner" | "employee" | "guest" | null>(
     null,
@@ -191,14 +192,14 @@ export default function LoginPage() {
       <div className="mx-auto flex min-h-full w-full max-w-md items-center">
         <div className="w-full animate-rise">
           <div className="mb-4 flex justify-end">
-            <LanguageSwitcher compact />
+            <LanguageSwitcher variant="inline" />
           </div>
           <div className="mb-6 text-center">
             <div className="mx-auto mb-4 flex justify-center">
               <PulseMark className="size-16" />
             </div>
             <h1 className="font-display text-4xl font-bold tracking-tight text-ink">
-              {brand.name}
+              {brandName}
             </h1>
             <p className="mt-2 text-sm text-muted">{t("brand.tagline")}</p>
           </div>

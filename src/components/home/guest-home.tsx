@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { useData } from "@/lib/data/use-app-data";
 import { formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
+import { LocalizedText } from "@/components/i18n/localized-text";
+import { StayQuoteCard } from "@/components/guest/stay-quote-card";
 
 export function GuestHome({ name }: { name: string }) {
   const data = useData();
@@ -27,6 +29,13 @@ export function GuestHome({ name }: { name: string }) {
     ? data.houseGuides.find((g) => g.villa_id === stay.villa_id)
     : null;
   const photos = data.stayPhotos.filter((p) => p.stay_id === stay?.id);
+  const acceptedQuote = data.stayDateRequests.find(
+    (r) =>
+      r.villa_id === stay?.villa_id &&
+      r.guest_profile_id === stay?.guest_profile_id &&
+      r.status === "accepted" &&
+      r.quoted_price_amount != null,
+  );
   const [photoError, setPhotoError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [photoKind, setPhotoKind] = useState<"arrival" | "departure">("arrival");
@@ -89,6 +98,8 @@ export function GuestHome({ name }: { name: string }) {
         </p>
       </div>
 
+      {acceptedQuote ? <StayQuoteCard request={acceptedQuote} /> : null}
+
       <Card className="space-y-3 overflow-hidden p-0">
         {villa.photo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -114,7 +125,11 @@ export function GuestHome({ name }: { name: string }) {
               <p className="mb-1 text-xs font-bold uppercase tracking-wide text-primary">
                 {t("guest.notices")}
               </p>
-              {stay.owner_notices}
+              <LocalizedText
+                text={stay.owner_notices}
+                as="p"
+                multiline
+              />
             </div>
           ) : null}
         </div>
@@ -135,8 +150,15 @@ export function GuestHome({ name }: { name: string }) {
                 key={b.id}
                 className="rounded-2xl bg-[#F7F5F1] p-3 text-sm text-ink"
               >
-                <p className="font-bold">{b.title}</p>
-                <p className="mt-1 whitespace-pre-wrap">{b.body}</p>
+                <p className="font-bold">
+                  <LocalizedText text={b.title} />
+                </p>
+                <LocalizedText
+                  text={b.body}
+                  as="p"
+                  className="mt-1"
+                  multiline
+                />
                 {b.confirmed_at ? (
                   <p className="mt-2 text-xs font-bold text-secondary">
                     {t("guest.confirmedRead")}
@@ -193,7 +215,8 @@ export function GuestHome({ name }: { name: string }) {
             ) : null}
             {guide.bins_notes ? (
               <p>
-                <strong>{t("guest.bins")}</strong>: {guide.bins_notes}
+                <strong>{t("guest.bins")}</strong>:{" "}
+                <LocalizedText text={guide.bins_notes} />
               </p>
             ) : null}
             {checklist.length ? (
@@ -201,13 +224,17 @@ export function GuestHome({ name }: { name: string }) {
                 <strong>{t("guest.checkout")}</strong>
                 <ul className="mt-1 list-disc pl-5 text-muted">
                   {checklist.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item}>
+                      <LocalizedText text={item} />
+                    </li>
                   ))}
                 </ul>
               </div>
             ) : null}
             {guide.extra_notes ? (
-              <p className="text-muted">{guide.extra_notes}</p>
+              <p className="text-muted">
+                <LocalizedText text={guide.extra_notes} />
+              </p>
             ) : null}
           </div>
         </Card>

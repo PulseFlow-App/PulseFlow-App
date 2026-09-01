@@ -179,10 +179,13 @@ export type AppData = {
     check_in: string;
     check_out: string;
     note?: string | null;
+    guest_price_amount?: number | null;
+    guest_price_currency?: string | null;
   }) => Promise<void>;
   respondStayDateRequest: (
     requestId: string,
     decision: "accepted" | "declined",
+    pricing?: import("@/lib/guest/stay-pricing").StayDateRequestPricing,
   ) => Promise<void>;
   addStayPhoto: (input: {
     kind: StayPhoto["kind"];

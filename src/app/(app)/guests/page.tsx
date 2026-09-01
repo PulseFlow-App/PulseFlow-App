@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
-import { formatMoney, formatShortDate } from "@/lib/utils";
+import { formatShortDate } from "@/lib/utils";
+import { useDisplayCurrency } from "@/lib/billing/use-display-currency";
 import { useI18n } from "@/lib/i18n/provider";
-import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import { LocalizedText } from "@/components/i18n/localized-text";
 import type { GuestBriefingCategory } from "@/lib/types";
 import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -28,7 +29,7 @@ const CATEGORIES: GuestBriefingCategory[] = [
 export default function GuestsPage() {
   const data = useData();
   const { t } = useI18n();
-  const label = useLocalizedDemoText();
+  const { formatDisplay } = useDisplayCurrency();
   const router = useRouter();
   const [stayId, setStayId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -186,7 +187,7 @@ export default function GuestsPage() {
                   )}
                 >
                   {guest?.full_name ?? t("guests.guest")}
-                  {villa ? ` · ${label(villa.name)}` : ""}
+                  {villa ? ` · ${villa.name}` : ""}
                 </button>
               );
             })}
@@ -213,10 +214,13 @@ export default function GuestsPage() {
                 {t("guests.depositTitle")}
               </p>
               <p className="text-xs text-muted">{t("guests.depositHint")}</p>
+              <p className="mt-1 text-xs text-muted">
+                {t("dateRequests.depositHint")}
+              </p>
               <p className="mt-1 text-sm font-semibold text-ink">
                 {deposit
                   ? t("guests.depositCurrent", {
-                      amount: formatMoney(
+                      amount: formatDisplay(
                         Number(deposit.amount),
                         deposit.currency,
                       ),
@@ -358,7 +362,9 @@ export default function GuestsPage() {
                       <p className="text-xs font-bold uppercase tracking-wide text-muted">
                         {t(`guests.cat.${b.category}` as MessageKey)}
                       </p>
-                      <p className="font-semibold text-ink">{b.title}</p>
+                      <p className="font-semibold text-ink">
+                        <LocalizedText text={b.title} />
+                      </p>
                     </div>
                     {b.confirmed_at ? (
                       <span className="inline-flex items-center gap-1 text-xs font-bold text-secondary">
@@ -372,7 +378,12 @@ export default function GuestsPage() {
                       </span>
                     )}
                   </div>
-                  <p className="whitespace-pre-wrap text-sm text-ink">{b.body}</p>
+                  <LocalizedText
+                    text={b.body}
+                    as="p"
+                    className="whitespace-pre-wrap text-sm text-ink"
+                    multiline
+                  />
                 </Card>
               ))
             )}

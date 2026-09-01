@@ -23,9 +23,12 @@ import {
   rememberPreferredBillCurrency,
   type BillCurrency,
 } from "@/lib/billing/currencies";
-import { cn, formatMoney, formatMoneyCompact, formatShortDate } from "@/lib/utils";
+import { DisplayCurrencySelect } from "@/components/billing/display-currency-select";
+import { DisplayMoney } from "@/components/billing/display-money";
+import { useDisplayCurrency } from "@/lib/billing/use-display-currency";
+import { cn, formatMoneyCompact, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
-import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
 
 type PeriodKey = "all" | "this_month" | "last_30" | "last_90" | "custom";
@@ -71,7 +74,6 @@ function inPeriod(
 export default function BillsPage() {
   const data = useData();
   const { t } = useI18n();
-  const label = useLocalizedDemoText();
   const canPay = data.profile
     ? canMarkBillsPaid(data.profile.role)
     : false;
@@ -106,17 +108,17 @@ export default function BillsPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const { displayCurrency, convertToDisplay } = useDisplayCurrency();
+
   const [period, setPeriod] = useState<PeriodKey>("this_month");
   const [filterVilla, setFilterVilla] = useState("");
   const [filterCategory, setFilterCategory] = useState<"" | BillCategory>("");
-  const [filterCurrency, setFilterCurrency] = useState<"" | BillCurrency>("");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const preferred = readPreferredBillCurrency();
-    setCurrency(preferred);
+    setCurrency(readPreferredBillCurrency());
   }, []);
 
   const filtered = useMemo(() => {
@@ -131,12 +133,6 @@ export default function BillsPage() {
       if (filterCategory && (b.category ?? "other") !== filterCategory) {
         return false;
       }
-      if (
-        filterCurrency &&
-        normalizeBillCurrency(b.currency) !== filterCurrency
-      ) {
-        return false;
-      }
       if (!showFinance) return true;
       return inPeriod(b.created_at, period, customFrom, customTo);
     });
@@ -144,7 +140,6 @@ export default function BillsPage() {
     data.bills,
     filterVilla,
     filterCategory,
-    filterCurrency,
     showFinance,
     period,
     customFrom,
@@ -152,63 +147,66 @@ export default function BillsPage() {
     historyCutoff,
   ]);
 
-  const currenciesInView = useMemo(() => {
+  const hasMixedCurrencies = useMemo(() => {
     const set = new Set(
       filtered.map((b) => normalizeBillCurrency(b.currency)),
     );
-    return [...set].sort();
+    return set.size > 1;
   }, [filtered]);
-
-  const totalsCurrency = filterCurrency || currenciesInView[0] || currency;
-  const canSumTotals =
-    Boolean(filterCurrency) || currenciesInView.length <= 1;
 
   const pendingTotal = useMemo(
     () =>
-      canSumTotals
-        ? filtered
-            .filter((b) => b.status === "pending")
-            .reduce((sum, b) => sum + Number(b.amount), 0)
-        : 0,
-    [filtered, canSumTotals],
+      filtered
+        .filter((b) => b.status === "pending")
+        .reduce(
+          (sum, b) => sum + convertToDisplay(Number(b.amount), b.currency),
+          0,
+        ),
+    [filtered, displayCurrency, convertToDisplay],
   );
 
   const paidTotal = useMemo(
     () =>
-      canSumTotals
-        ? filtered
-            .filter((b) => b.status === "paid")
-            .reduce((sum, b) => sum + Number(b.amount), 0)
-        : 0,
-    [filtered, canSumTotals],
+      filtered
+        .filter((b) => b.status === "paid")
+        .reduce(
+          (sum, b) => sum + convertToDisplay(Number(b.amount), b.currency),
+          0,
+        ),
+    [filtered, displayCurrency, convertToDisplay],
   );
 
   const spendTotal = useMemo(
     () =>
-      canSumTotals
-        ? filtered.reduce((sum, b) => sum + Number(b.amount), 0)
-        : 0,
-    [filtered, canSumTotals],
+      filtered.reduce(
+        (sum, b) => sum + convertToDisplay(Number(b.amount), b.currency),
+        0,
+      ),
+    [filtered, displayCurrency, convertToDisplay],
   );
 
   const byCategory = useMemo(() => {
-    if (!canSumTotals) return [];
     const map = new Map<string, number>();
     for (const b of filtered) {
       const key = b.category ?? "other";
-      map.set(key, (map.get(key) ?? 0) + Number(b.amount));
+      map.set(
+        key,
+        (map.get(key) ?? 0) + convertToDisplay(Number(b.amount), b.currency),
+      );
     }
     return [...map.entries()]
       .map(([cat, total]) => ({ cat: cat as BillCategory, total }))
       .sort((a, b) => b.total - a.total);
-  }, [filtered, canSumTotals]);
+  }, [filtered, displayCurrency]);
 
   const byVilla = useMemo(() => {
-    if (!canSumTotals) return [];
     const map = new Map<string, number>();
     for (const b of filtered) {
       const key = b.villa_id ?? "__general__";
-      map.set(key, (map.get(key) ?? 0) + Number(b.amount));
+      map.set(
+        key,
+        (map.get(key) ?? 0) + convertToDisplay(Number(b.amount), b.currency),
+      );
     }
     return [...map.entries()]
       .map(([id, total]) => ({
@@ -220,7 +218,7 @@ export default function BillsPage() {
         total,
       }))
       .sort((a, b) => b.total - a.total);
-  }, [filtered, data.villas, t, canSumTotals]);
+  }, [filtered, data.villas, t, displayCurrency]);
 
   if (!data.ready) return <LoadingState />;
   if (data.profile && isGuestApp(data.profile.role)) {
@@ -422,23 +420,7 @@ export default function BillsPage() {
             </div>
             <div>
               <Label>{t("bills.currency")}</Label>
-              <Select
-                value={filterCurrency}
-                onChange={(e) =>
-                  setFilterCurrency(
-                    e.target.value
-                      ? normalizeBillCurrency(e.target.value)
-                      : "",
-                  )
-                }
-              >
-                <option value="">{t("bills.allCurrencies")}</option>
-                {BILL_CURRENCIES.map((code) => (
-                  <option key={code} value={code}>
-                    {billCurrencyLabel(code)}
-                  </option>
-                ))}
-              </Select>
+              <DisplayCurrencySelect aria-label={t("bills.currency")} />
             </div>
           </div>
           <div>
@@ -514,7 +496,7 @@ export default function BillsPage() {
 
       {showFinance ? (
         <div className="space-y-2">
-          {!canSumTotals ? (
+          {hasMixedCurrencies ? (
             <p className="text-xs text-muted">{t("bills.mixedCurrencyHint")}</p>
           ) : null}
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -523,9 +505,7 @@ export default function BillsPage() {
                 {t("bills.totalSpend")}
               </p>
               <p className="mt-1 font-display text-sm font-bold tabular-nums leading-none sm:mt-1.5 sm:text-2xl">
-                {canSumTotals
-                  ? formatMoneyCompact(spendTotal, totalsCurrency)
-                  : "-"}
+                {formatMoneyCompact(spendTotal, displayCurrency)}
               </p>
             </Card>
             <Card className="min-w-0 p-3 sm:p-4">
@@ -533,9 +513,7 @@ export default function BillsPage() {
                 {t("bills.paidTotal")}
               </p>
               <p className="mt-1 font-display text-sm font-bold tabular-nums leading-none text-secondary sm:mt-1.5 sm:text-2xl">
-                {canSumTotals
-                  ? formatMoneyCompact(paidTotal, totalsCurrency)
-                  : "-"}
+                {formatMoneyCompact(paidTotal, displayCurrency)}
               </p>
             </Card>
             <Card className="min-w-0 p-3 sm:p-4">
@@ -543,9 +521,7 @@ export default function BillsPage() {
                 {t("bills.pendingTotal")}
               </p>
               <p className="mt-1 font-display text-sm font-bold tabular-nums leading-none text-warning-dark sm:mt-1.5 sm:text-2xl">
-                {canSumTotals
-                  ? formatMoneyCompact(pendingTotal, totalsCurrency)
-                  : "-"}
+                {formatMoneyCompact(pendingTotal, displayCurrency)}
               </p>
             </Card>
           </div>
@@ -570,7 +546,7 @@ export default function BillsPage() {
                     {categoryLabel(row.cat)}
                   </span>
                   <span className="font-semibold text-ink">
-                    {formatMoney(row.total, totalsCurrency)}
+                    {formatMoneyCompact(row.total, displayCurrency)}
                   </span>
                 </div>
               ))
@@ -588,13 +564,26 @@ export default function BillsPage() {
                 >
                   <span className="text-ink">{row.name}</span>
                   <span className="font-semibold text-ink">
-                    {formatMoney(row.total, totalsCurrency)}
+                    {formatMoneyCompact(row.total, displayCurrency)}
                   </span>
                 </div>
               ))
             )}
           </Card>
         </div>
+      ) : null}
+
+      {!showFinance ? (
+        <Card className="flex items-center justify-between gap-3 p-4">
+          <div>
+            <p className="text-sm font-semibold text-ink">{t("bills.currency")}</p>
+            <p className="text-xs text-muted">{t("bills.displayCurrencyHint")}</p>
+          </div>
+          <DisplayCurrencySelect
+            aria-label={t("bills.currency")}
+            className="max-w-[9rem]"
+          />
+        </Card>
       ) : null}
 
       {filtered.length === 0 ? (
@@ -609,7 +598,9 @@ export default function BillsPage() {
               <Card className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-ink">{label(bill.description)}</p>
+                    <p className="font-semibold text-ink">
+                      <LocalizedText text={bill.description} />
+                    </p>
                     <p className="mt-1">
                       <span className="rounded-full bg-[#F7F5F1] px-2 py-0.5 text-[11px] font-semibold text-ink">
                         {categoryLabel(bill.category ?? "other")}
@@ -625,9 +616,11 @@ export default function BillsPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-display text-lg font-bold text-ink">
-                      {formatMoney(Number(bill.amount), bill.currency)}
-                    </p>
+                    <DisplayMoney
+                      amount={Number(bill.amount)}
+                      currency={bill.currency}
+                      className="font-display text-lg font-bold text-ink"
+                    />
                     <span
                       className={
                         bill.status === "paid"

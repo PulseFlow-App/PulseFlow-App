@@ -1,10 +1,14 @@
 "use client";
 
-import { addDays, format, isSameDay, parseISO, startOfDay } from "date-fns";
+import { addDays, isSameDay, parseISO, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { Villa } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { useI18n } from "@/lib/i18n/provider";
+import {
+  formatMonthYear,
+  formatWeekdayShort,
+} from "@/lib/i18n/date-format";
 
 export function DateStrip({
   villas,
@@ -15,7 +19,7 @@ export function DateStrip({
   selected: Date;
   onSelect: (d: Date) => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const today = startOfDay(new Date());
   const days = Array.from({ length: 7 }, (_, i) => addDays(today, i));
 
@@ -32,7 +36,9 @@ export function DateStrip({
         <h2 className="font-display text-base font-bold text-ink">
           {t("home.checkInsOuts")}
         </h2>
-        <span className="text-xs text-muted">{format(selected, "MMM yyyy")}</span>
+        <span className="text-xs text-muted">
+          {formatMonthYear(selected, locale)}
+        </span>
       </div>
       <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
         {days.map((day) => {
@@ -51,10 +57,10 @@ export function DateStrip({
               )}
             >
               <span className="text-[11px] font-semibold opacity-80">
-                {format(day, "EEE")}
+                {formatWeekdayShort(day, locale)}
               </span>
               <span className="font-display text-lg font-bold">
-                {format(day, "d")}
+                {day.getDate()}
               </span>
               {count > 0 ? (
                 <span

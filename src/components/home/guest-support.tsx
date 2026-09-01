@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
+import { LocalizedText } from "@/components/i18n/localized-text";
 import { isGuestApp } from "@/lib/roles";
 import { isConfirmedStay } from "@/lib/guest/confirmed-stay";
 
@@ -86,7 +87,11 @@ export function GuestSupportChat() {
                         {m.sender?.full_name ?? t("guest.host")}
                       </p>
                     ) : null}
-                    <p className="whitespace-pre-wrap">{m.body}</p>
+                    <LocalizedText
+                      text={m.body}
+                      as="p"
+                      className="whitespace-pre-wrap"
+                    />
                   </div>
                 </div>
               );
@@ -188,7 +193,7 @@ export function HostSupportInbox() {
             <span className="font-bold">
               {m.sender?.full_name ?? t("guest.host")}:
             </span>{" "}
-            {m.body}
+            <LocalizedText text={m.body} />
           </p>
         ))}
       </div>

@@ -11,6 +11,8 @@ export const BILL_CURRENCIES = [
   "PHP",
   "VND",
   "AED",
+  "SAR",
+  "MAD",
   "ILS",
   "JPY",
   "CNY",
@@ -46,10 +48,13 @@ export function readPreferredBillCurrency(): BillCurrency {
   }
 }
 
+export const DISPLAY_CURRENCY_EVENT = "pulseflow:display-currency-changed";
+
 export function rememberPreferredBillCurrency(currency: BillCurrency) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(STORAGE_KEY, currency);
+    window.dispatchEvent(new Event(DISPLAY_CURRENCY_EVENT));
   } catch {
     /* ignore */
   }

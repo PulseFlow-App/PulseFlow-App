@@ -16,7 +16,7 @@ import { isValidLocationUrl, normalizeLocationUrl } from "@/lib/utils";
 import { formatWorkWindow } from "@/lib/notifications";
 import { formatOrderWhen } from "@/lib/service-orders";
 import { useI18n } from "@/lib/i18n/provider";
-import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import { LocalizedText } from "@/components/i18n/localized-text";
 import {
   labelCleaningStatus,
   labelRole,
@@ -33,7 +33,6 @@ export default function VillaDetailPage({
   const router = useRouter();
   const data = useData();
   const { t } = useI18n();
-  const label = useLocalizedDemoText();
   const villaItem = data.villaList.find((v) => v.id === id);
   const villa =
     villaItem ??
@@ -244,7 +243,9 @@ export default function VillaDetailPage({
             </h1>
             <p className="text-sm text-muted">{villa.area}</p>
             {villa.description ? (
-              <p className="mt-2 text-sm text-muted">{label(villa.description)}</p>
+              <p className="mt-2 text-sm text-muted">
+                <LocalizedText text={villa.description} />
+              </p>
             ) : null}
             {villa.location_url ? (
               <a
@@ -386,7 +387,7 @@ export default function VillaDetailPage({
             ) : null}
             {villaJobs.map((o) => (
               <p key={o.id} className="text-sm font-semibold text-ink">
-                {label(o.service_type)} · {formatOrderWhen(o)}
+                <LocalizedText text={o.service_type} /> · {formatOrderWhen(o)}
               </p>
             ))}
             {villaTasks.map((t) => (

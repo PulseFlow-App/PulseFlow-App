@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import {
   Nunito,
   Noto_Sans,
+  Noto_Sans_Arabic,
   Noto_Sans_Thai,
   Noto_Sans_Hebrew,
   Noto_Sans_Myanmar,
@@ -43,6 +44,13 @@ const myanmar = Noto_Sans_Myanmar({
   subsets: ["myanmar"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-myanmar",
+  display: "swap",
+});
+
+const arabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-arabic",
   display: "swap",
 });
 
@@ -109,13 +117,13 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${nunito.variable} ${noto.variable} ${thai.variable} ${hebrew.variable} ${myanmar.variable} h-full`}
+      className={`${nunito.variable} ${noto.variable} ${thai.variable} ${hebrew.variable} ${myanmar.variable} ${arabic.variable} h-full`}
     >
       <body
         className={`${nunito.className} min-h-full antialiased`}
         style={{
           fontFamily:
-            "var(--font-pulse), var(--font-noto), var(--font-thai), var(--font-hebrew), var(--font-myanmar), system-ui, sans-serif",
+            "var(--font-pulse), var(--font-noto), var(--font-thai), var(--font-hebrew), var(--font-myanmar), var(--font-arabic), system-ui, sans-serif",
         }}
       >
         <Providers>{children}</Providers>

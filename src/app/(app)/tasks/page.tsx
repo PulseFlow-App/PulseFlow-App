@@ -13,7 +13,7 @@ import { isStaffApp } from "@/lib/roles";
 import { formatShortDate, cn } from "@/lib/utils";
 import type { TaskPriority } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
-import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
 
 type Filter = "all" | "mine" | "urgent";
@@ -21,7 +21,6 @@ type Filter = "all" | "mine" | "urgent";
 export default function TasksPage() {
   const data = useData();
   const { t } = useI18n();
-  const label = useLocalizedDemoText();
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("all");
   const [showForm, setShowForm] = useState(false);
@@ -203,7 +202,7 @@ export default function TasksPage() {
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold text-ink">
-                  {label(task.title)}
+                  <LocalizedText text={task.title} />
                 </p>
                 <p className="truncate text-xs text-muted">
                   {task.villa?.name ?? t("common.general")}
@@ -251,7 +250,7 @@ export default function TasksPage() {
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold line-through text-ink">
-                  {label(task.title)}
+                  <LocalizedText text={task.title} />
                 </p>
               </div>
             </Card>

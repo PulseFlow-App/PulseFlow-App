@@ -29,6 +29,8 @@ import {
   saveHandoffSnapshot,
 } from "@/lib/handoff-snapshots";
 import type { HandoffSnapshot } from "@/lib/types";
+import { useDisplayCurrency } from "@/lib/billing/use-display-currency";
+import { DisplayCurrencySelect } from "@/components/billing/display-currency-select";
 import { formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 
@@ -66,6 +68,7 @@ export default function ReportsPage() {
   const data = useData();
   const router = useRouter();
   const { t } = useI18n();
+  const { displayCurrency } = useDisplayCurrency();
   const [period, setPeriod] = useState<PeriodKey>("all");
   const [filterVilla, setFilterVilla] = useState("");
   const [snapshotLabel, setSnapshotLabel] = useState("");
@@ -161,6 +164,7 @@ export default function ReportsPage() {
         const when = new Date(o.scheduled_date);
         return when >= weekStart && when < weekEnd;
       }),
+      displayCurrency,
     });
     const w = window.open("", "_blank", "noopener,noreferrer");
     if (!w) return;
@@ -239,6 +243,11 @@ export default function ReportsPage() {
               ))}
             </Select>
           </div>
+        </div>
+        <div>
+          <Label>{t("bills.currency")}</Label>
+          <DisplayCurrencySelect aria-label={t("bills.currency")} />
+          <p className="mt-1 text-xs text-muted">{t("bills.displayCurrencyHint")}</p>
         </div>
         <p className="text-xs text-muted">{t("reports.exportHint")}</p>
         <div className="grid grid-cols-2 gap-2">

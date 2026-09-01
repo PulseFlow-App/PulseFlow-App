@@ -23,14 +23,13 @@ import {
 } from "@/lib/roles";
 import { GuestVillasBrowse } from "@/components/home/guest-villas";
 import { useI18n } from "@/lib/i18n/provider";
-import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
 import type { VillaListItem } from "@/lib/types";
 
 export default function VillasPage() {
   const data = useData();
   const { t } = useI18n();
-  const label = useLocalizedDemoText();
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState("");
   const [area, setArea] = useState("");
@@ -362,7 +361,6 @@ function VillaSection({
   hideBucketBadge?: boolean;
   t: (key: MessageKey, params?: Record<string, string | number>) => string;
 }) {
-  const label = useLocalizedDemoText();
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-2 px-1">
@@ -424,7 +422,7 @@ function VillaSection({
                   ) : null}
                   {villa.description ? (
                     <p className="mt-2 line-clamp-2 text-sm text-muted">
-                      {label(villa.description)}
+                      <LocalizedText text={villa.description} />
                     </p>
                   ) : null}
                   {villa.location_url ? (

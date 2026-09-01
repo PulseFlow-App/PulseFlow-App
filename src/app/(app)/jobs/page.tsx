@@ -13,7 +13,7 @@ import { canCancelServiceOrder, formatOrderWhen } from "@/lib/service-orders";
 import { isStaffApp, canBookServices } from "@/lib/roles";
 import { cn, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
-import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
 
 function CancelOrderButton({ orderId }: { orderId: string }) {
@@ -49,7 +49,6 @@ function CancelOrderButton({ orderId }: { orderId: string }) {
 export default function JobsPage() {
   const data = useData();
   const { t } = useI18n();
-  const label = useLocalizedDemoText();
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
   const booker = data.profile
     ? canBookServices(data.profile.role, data.orgKind)
@@ -146,7 +145,7 @@ export default function JobsPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="font-semibold text-ink">
-                        {label(order.service_type)}
+                        <LocalizedText text={order.service_type} />
                       </p>
                       <p className="text-sm text-muted">
                         {order.location_label ?? t("tasks.villa")}
@@ -232,7 +231,7 @@ export default function JobsPage() {
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold text-ink">
-                    {label(task.title)}
+                    <LocalizedText text={task.title} />
                   </p>
                   <p className="truncate text-xs text-muted">
                     {task.villa?.name ?? t("common.general")}

@@ -12,10 +12,12 @@ import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
 import { useI18n } from "@/lib/i18n/provider";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { DisplayCurrencySelect } from "@/components/billing/display-currency-select";
 import { BillingSettingsCard } from "@/components/billing/billing-card";
 import { PasskeySettingsCard } from "@/components/auth/passkey-settings-card";
 import { JobSearchSettingsCard } from "@/components/settings/job-search-settings-card";
 import { PushSettingsCard } from "@/components/settings/push-settings-card";
+import { TranslateContentSettingsCard } from "@/components/settings/translate-content-settings-card";
 import type { MessageKey } from "@/lib/i18n";
 import { resolvePlanTier } from "@/lib/billing/plans";
 import { cn } from "@/lib/utils";
@@ -96,6 +98,14 @@ export default function SettingsPage() {
 
       <Card id="language" className="scroll-mt-4 space-y-3 p-5">
         <LanguageSwitcher />
+        <div className="space-y-2 border-t border-[#EDE8E0] pt-3">
+          <div>
+            <p className="text-sm font-bold text-ink">{t("bills.currency")}</p>
+            <p className="text-xs text-muted">{t("bills.displayCurrencyHint")}</p>
+          </div>
+          <DisplayCurrencySelect aria-label={t("bills.currency")} />
+        </div>
+        <TranslateContentSettingsCard />
       </Card>
 
       <Card className="space-y-3 p-5">

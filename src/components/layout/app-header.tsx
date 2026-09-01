@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Bell, MessageCircle, Settings } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
-import { brand } from "@/lib/design-tokens";
+import { useBrandName } from "@/lib/i18n/use-brand-name";
 import { useI18n } from "@/lib/i18n/provider";
 import { useData } from "@/lib/data/use-app-data";
 import { canUseTeamChat } from "@/lib/roles";
@@ -17,6 +17,7 @@ export function AppHeader({
   unreadNotifications?: number;
 }) {
   const { t } = useI18n();
+  const brandName = useBrandName();
   const data = useData();
   const showChat = canUseTeamChat(data.orgKind, data.profile?.role);
 
@@ -25,7 +26,7 @@ export function AppHeader({
       <Link href="/home" className="flex min-w-0 flex-1 items-center gap-2">
         <PulseMark className="size-9 shrink-0 rounded-[0.8rem]" />
         <p className="truncate font-display text-[15px] font-bold leading-tight text-ink sm:text-base">
-          {brand.name}
+          {brandName}
         </p>
       </Link>
       <div className="flex shrink-0 items-center gap-1">

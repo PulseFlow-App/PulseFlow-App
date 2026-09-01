@@ -7,6 +7,7 @@ export const LOCALES = [
   "es",
   "it",
   "he",
+  "ar",
   "ru",
 ] as const;
 
@@ -24,6 +25,7 @@ export const LOCALE_META: Record<
   es: { label: "Spanish", native: "Español", dir: "ltr" },
   it: { label: "Italian", native: "Italiano", dir: "ltr" },
   he: { label: "Hebrew", native: "עברית", dir: "rtl" },
+  ar: { label: "Arabic", native: "العربية", dir: "rtl" },
   ru: { label: "Russian", native: "Русский", dir: "ltr" },
 };
 

@@ -4,9 +4,10 @@ import { Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { TaskWithRelations } from "@/lib/types";
-import { formatShortDate } from "@/lib/utils";
+import { formatShortDateLocalized } from "@/lib/i18n/date-format";
 import { useI18n } from "@/lib/i18n/provider";
-import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import { localizeDemoText } from "@/lib/demo/localize";
+import { LocalizedText } from "@/components/i18n/localized-text";
 
 export function UrgentTasks({
   tasks,
@@ -15,8 +16,7 @@ export function UrgentTasks({
   tasks: TaskWithRelations[];
   onClose: (id: string) => Promise<void>;
 }) {
-  const { t } = useI18n();
-  const label = useLocalizedDemoText();
+  const { t, locale } = useI18n();
   if (tasks.length === 0) {
     return (
       <EmptyState
@@ -43,18 +43,18 @@ export function UrgentTasks({
               type="button"
               onClick={() => void onClose(task.id)}
               className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/10 text-secondary"
-              aria-label={`${t("common.done")} ${label(task.title)}`}
+              aria-label={`${t("common.done")} ${localizeDemoText(task.title, t)}`}
             >
               <Check className="size-4" />
             </button>
             <div className="min-w-0 flex-1">
               <p className="truncate font-sans text-[15px] font-semibold text-ink">
-                {label(task.title)}
+                <LocalizedText text={task.title} />
               </p>
               <p className="truncate font-sans text-xs font-medium text-muted">
                 {task.villa?.name ?? t("common.general")}
                 {task.due_date
-                  ? ` · ${t("home.due", { date: formatShortDate(task.due_date) })}`
+                  ? ` · ${t("home.due", { date: formatShortDateLocalized(task.due_date, locale) })}`
                   : ""}
               </p>
             </div>

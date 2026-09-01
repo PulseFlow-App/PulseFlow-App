@@ -60,6 +60,10 @@ import {
 } from "@/lib/notifications";
 import { formatMoney } from "@/lib/utils";
 import { normalizeBillCurrency } from "@/lib/billing/currencies";
+import {
+  DEFAULT_IN_PERSON_PAYMENT_NOTE,
+  formatStayQuoteLine,
+} from "@/lib/guest/stay-pricing";
 import { formatOrderWhen, canCancelServiceOrder } from "@/lib/service-orders";
 import {
   loadLocallyReadIds,
@@ -399,7 +403,14 @@ export function useSupabaseData(enabled: boolean): AppData {
     setStayDateRequests(
       dateRequestsRes.error
         ? []
-        : ((dateRequestsRes.data as StayDateRequest[]) ?? []),
+        : ((dateRequestsRes.data as StayDateRequest[]) ?? []).map((r) => ({
+            ...r,
+            guest_price_amount: r.guest_price_amount ?? null,
+            guest_price_currency: r.guest_price_currency ?? null,
+            quoted_price_amount: r.quoted_price_amount ?? null,
+            quoted_price_currency: r.quoted_price_currency ?? null,
+            payment_note: r.payment_note ?? null,
+          })),
     );
     const missingGuestTable = (err: { code?: string; message?: string } | null) =>
       Boolean(
@@ -1855,6 +1866,15 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       const supabase = createClient();
       const villa = villas.find((v) => v.id === input.villa_id);
+      const guestPrice =
+        input.guest_price_amount != null &&
+        Number.isFinite(Number(input.guest_price_amount)) &&
+        Number(input.guest_price_amount) > 0
+          ? Number(input.guest_price_amount)
+          : null;
+      const guestCurrency = guestPrice
+        ? normalizeBillCurrency(input.guest_price_currency ?? "THB")
+        : null;
       const { data: inserted, error } = await supabase
         .from("stay_date_requests")
         .insert({
@@ -1865,6 +1885,8 @@ export function useSupabaseData(enabled: boolean): AppData {
           check_out: input.check_out,
           note: input.note?.trim() || null,
           status: "pending",
+          guest_price_amount: guestPrice,
+          guest_price_currency: guestCurrency,
         })
         .select("id")
         .single();
@@ -1878,6 +1900,10 @@ export function useSupabaseData(enabled: boolean): AppData {
         }
         throw error;
       }
+      const priceHint =
+        guestPrice && guestCurrency
+          ? ` · ${formatMoney(guestPrice, guestCurrency)} offered`
+          : "";
       const managers = ownerManagerIds(profiles, profile.org_id);
       if (managers.length && inserted?.id) {
         await insertNotifications(
@@ -1887,7 +1913,7 @@ export function useSupabaseData(enabled: boolean): AppData {
               org_id: profile.org_id,
               kind: "appointment",
               title: "Date request",
-              body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}`,
+              body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}${priceHint}`,
               href: "/date-requests",
               entity_id: inserted.id,
               audience_profile_ids: managers,
@@ -1897,7 +1923,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       await refresh();
     },
-    respondStayDateRequest: async (requestId, decision) => {
+    respondStayDateRequest: async (requestId, decision, pricing) => {
       if (!profile) throw new Error("Not signed in.");
       if (profile.role !== "owner" && profile.role !== "manager") {
         throw new Error("Only owners or managers can respond.");
@@ -1907,6 +1933,23 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (request.status !== "pending") {
         throw new Error("This request was already handled.");
       }
+      if (decision === "accepted") {
+        const amount = Number(pricing?.quoted_price_amount);
+        if (!Number.isFinite(amount) || amount <= 0) {
+          throw new Error("Enter the total price for these dates before accepting.");
+        }
+      }
+
+      const quotedAmount =
+        decision === "accepted" ? Number(pricing!.quoted_price_amount) : null;
+      const quotedCurrency =
+        decision === "accepted"
+          ? normalizeBillCurrency(pricing!.quoted_price_currency)
+          : null;
+      const paymentNote =
+        decision === "accepted"
+          ? (pricing?.payment_note?.trim() || DEFAULT_IN_PERSON_PAYMENT_NOTE)
+          : null;
       const {
         todayIsoDate,
         statusFromStayDates,
@@ -1924,7 +1967,16 @@ export function useSupabaseData(enabled: boolean): AppData {
       const supabase = createClient();
       const { error: reqError } = await supabase
         .from("stay_date_requests")
-        .update({ status: decision })
+        .update({
+          status: decision,
+          ...(decision === "accepted"
+            ? {
+                quoted_price_amount: quotedAmount,
+                quoted_price_currency: quotedCurrency,
+                payment_note: paymentNote,
+              }
+            : {}),
+        })
         .eq("id", requestId);
       if (reqError) throw reqError;
 
@@ -1982,16 +2034,25 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
 
       const villa = villas.find((v) => v.id === request.villa_id);
+      const acceptBody =
+        decision === "accepted" && quotedAmount && quotedCurrency
+          ? `${formatStayQuoteLine({
+              amount: quotedAmount,
+              currency: quotedCurrency,
+              checkIn: request.check_in,
+              checkOut: request.check_out,
+            })}. ${paymentNote}`
+          : `${villa?.name ?? "Villa"} · your date request was declined`;
       await insertNotifications(
         supabase,
         [
           makeNotification({
             org_id: profile.org_id,
             kind: "appointment",
-            title: decision === "accepted" ? "Dates accepted" : "Dates declined",
+            title: decision === "accepted" ? "Dates accepted — price confirmed" : "Dates declined",
             body:
               decision === "accepted"
-                ? `${villa?.name ?? "Villa"} · ${request.check_in} → ${request.check_out}`
+                ? acceptBody
                 : `${villa?.name ?? "Villa"} · your date request was declined`,
             href: decision === "accepted" ? "/home" : "/villas",
             entity_id: requestId,

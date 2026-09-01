@@ -9,9 +9,18 @@ import { DateField } from "@/components/ui/date-field";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
+import { StayQuoteCard } from "@/components/guest/stay-quote-card";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
-import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import { LocalizedText } from "@/components/i18n/localized-text";
+import {
+  BILL_CURRENCIES,
+  billCurrencyLabel,
+  DEFAULT_BILL_CURRENCY,
+  normalizeBillCurrency,
+  type BillCurrency,
+} from "@/lib/billing/currencies";
+import { formatMoney } from "@/lib/utils";
 import { todayIsoDate } from "@/lib/villas/status-from-dates";
 
 function nextDayIso(iso: string) {
@@ -26,13 +35,16 @@ function nextDayIso(iso: string) {
 export function GuestVillasBrowse() {
   const data = useData();
   const { t } = useI18n();
-  const label = useLocalizedDemoText();
   const villas = data.villaList.filter((v) => v.bucket === "company");
   const minDate = todayIsoDate();
   const [requestFor, setRequestFor] = useState<string | null>(null);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [note, setNote] = useState("");
+  const [priceAmount, setPriceAmount] = useState("");
+  const [priceCurrency, setPriceCurrency] = useState<BillCurrency>(
+    DEFAULT_BILL_CURRENCY,
+  );
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
 
@@ -81,12 +93,15 @@ export function GuestVillasBrowse() {
         check_in: checkIn,
         check_out: checkOut,
         note,
+        guest_price_amount: priceAmount ? Number(priceAmount) : null,
+        guest_price_currency: priceAmount ? priceCurrency : null,
       });
       setOk(t("guest.requestSent"));
       setRequestFor(null);
       setCheckIn("");
       setCheckOut("");
       setNote("");
+      setPriceAmount("");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("common.error"));
     }
@@ -123,6 +138,12 @@ export function GuestVillasBrowse() {
           const pending = data.stayDateRequests.find(
             (r) => r.villa_id === v.id && r.status === "pending",
           );
+          const accepted = data.stayDateRequests.find(
+            (r) =>
+              r.villa_id === v.id &&
+              r.status === "accepted" &&
+              r.quoted_price_amount != null,
+          );
           return (
             <Card key={v.id} className="space-y-3 overflow-hidden p-0">
               <VillaPhotoThumb
@@ -133,27 +154,43 @@ export function GuestVillasBrowse() {
               <div className="space-y-3 px-4 pb-4">
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-display text-lg font-bold text-ink">
-                    {label(v.name)}
+                    {v.name}
                   </p>
                   <StatusPill status={v.status} />
                 </div>
                 {v.area ? (
                   <p className="flex items-center gap-1 text-sm text-muted">
                     <MapPin className="size-3.5" />
-                    {label(v.area)}
+                    {v.area}
                   </p>
                 ) : null}
                 {v.description ? (
-                  <p className="text-sm text-muted">{label(v.description)}</p>
+                  <p className="text-sm text-muted">
+                    <LocalizedText text={v.description} />
+                  </p>
                 ) : null}
 
                 {pending ? (
-                  <p className="text-sm text-muted">
-                    {t("guest.requestPending", {
-                      from: pending.check_in,
-                      to: pending.check_out,
-                    })}
-                  </p>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted">
+                      {t("guest.requestPending", {
+                        from: pending.check_in,
+                        to: pending.check_out,
+                      })}
+                    </p>
+                    {pending.guest_price_amount && pending.guest_price_currency ? (
+                      <p className="text-sm font-semibold text-ink">
+                        {t("guest.requestPendingPrice", {
+                          amount: formatMoney(
+                            Number(pending.guest_price_amount),
+                            pending.guest_price_currency,
+                          ),
+                        })}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : accepted ? (
+                  <StayQuoteCard request={accepted} />
                 ) : requestFor === v.id ? (
                   <div className="space-y-2 rounded-2xl bg-white/60 p-3 ring-1 ring-black/5">
                     <div className="grid grid-cols-2 gap-2">
@@ -195,6 +232,41 @@ export function GuestVillasBrowse() {
                         placeholder={t("guest.requestNotePh")}
                       />
                     </div>
+                    <div>
+                      <Label htmlFor={`price-${v.id}`}>
+                        {t("guest.requestPrice")}
+                      </Label>
+                      <p className="mb-1 text-xs text-muted">
+                        {t("guest.requestPriceHint")}
+                      </p>
+                      <div className="grid grid-cols-[1fr_auto] gap-2">
+                        <Input
+                          id={`price-${v.id}`}
+                          type="number"
+                          inputMode="decimal"
+                          min={0}
+                          value={priceAmount}
+                          onChange={(e) => setPriceAmount(e.target.value)}
+                          placeholder={t("guest.requestPricePh")}
+                        />
+                        <select
+                          value={priceCurrency}
+                          onChange={(e) =>
+                            setPriceCurrency(
+                              normalizeBillCurrency(e.target.value),
+                            )
+                          }
+                          className="rounded-2xl border-0 bg-[#F7F5F1] px-3 py-3 text-sm font-semibold text-ink"
+                          aria-label={t("bills.currency")}
+                        >
+                          {BILL_CURRENCIES.map((code) => (
+                            <option key={code} value={code}>
+                              {billCurrencyLabel(code)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
                     <div className="flex gap-2">
                       <Button type="button" onClick={() => void submit(v.id)}>
                         {t("guest.sendRequest")}
@@ -218,6 +290,7 @@ export function GuestVillasBrowse() {
                       setCheckIn("");
                       setCheckOut("");
                       setNote("");
+                      setPriceAmount("");
                       setError(null);
                     }}
                   >

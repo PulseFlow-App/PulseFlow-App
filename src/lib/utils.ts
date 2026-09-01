@@ -1,26 +1,37 @@
 import { format, parseISO, isToday, isSameDay, startOfDay, subDays } from "date-fns";
+import type { Locale } from "./i18n/types";
+import { formatWeekdayShort } from "./i18n/date-format";
 import type { Task } from "./types";
 
 export function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-export function formatMoney(amount: number, currency = "THB") {
-  return new Intl.NumberFormat("en-TH", {
+const MONEY_LOCALE = "en-US";
+
+const ZERO_DECIMAL_CURRENCIES = new Set(["JPY", "VND", "IDR"]);
+
+function formatMoneyWithDisplay(
+  amount: number,
+  currency: string,
+  currencyDisplay: "symbol" | "narrowSymbol",
+) {
+  const code = currency.toUpperCase();
+  return new Intl.NumberFormat(MONEY_LOCALE, {
     style: "currency",
-    currency,
-    maximumFractionDigits: 0,
+    currency: code,
+    currencyDisplay,
+    maximumFractionDigits: ZERO_DECIMAL_CURRENCIES.has(code) ? 0 : 0,
   }).format(amount);
+}
+
+export function formatMoney(amount: number, currency = "THB") {
+  return formatMoneyWithDisplay(amount, currency, "symbol");
 }
 
 /** Tighter currency for stat tiles (narrow symbol, no extra space). */
 export function formatMoneyCompact(amount: number, currency = "THB") {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    currencyDisplay: "narrowSymbol",
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatMoneyWithDisplay(amount, currency, "narrowSymbol");
 }
 
 export function formatShortDate(date: string | null) {
@@ -47,7 +58,7 @@ export function weekDayRange(days = 5) {
   return Array.from({ length: days }, (_, i) => subDays(today, days - 1 - i));
 }
 
-export function weeklyTaskOps(tasks: Task[], days = 5) {
+export function weeklyTaskOps(tasks: Task[], days = 5, locale: Locale = "en") {
   const range = weekDayRange(days);
   return range.map((day) => {
     const opened = tasks.filter((t) =>
@@ -57,7 +68,7 @@ export function weeklyTaskOps(tasks: Task[], days = 5) {
       (t) => t.completed_at && isSameDay(parseISO(t.completed_at), day),
     ).length;
     return {
-      day: format(day, "EEE"),
+      day: formatWeekdayShort(day, locale),
       date: day,
       opened,
       closed,

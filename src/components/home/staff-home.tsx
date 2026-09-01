@@ -13,11 +13,10 @@ import { formatOrderWhen } from "@/lib/service-orders";
 import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
-import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import { LocalizedText } from "@/components/i18n/localized-text";
 
 export function StaffHome({ data }: { data: AppData }) {
   const { t } = useI18n();
-  const label = useLocalizedDemoText();
   const today = new Date().toISOString().slice(0, 10);
 
   const villaPhotoById = useMemo(() => {
@@ -91,7 +90,7 @@ export function StaffHome({ data }: { data: AppData }) {
                 ) : null}
                 <div className="p-3">
                   <p className="font-semibold text-ink">
-                    {label(order.service_type)}
+                    <LocalizedText text={order.service_type} />
                   </p>
                   <p className="text-sm text-muted">
                     {order.location_label} · {formatOrderWhen(order)}
@@ -121,7 +120,7 @@ export function StaffHome({ data }: { data: AppData }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="font-semibold text-ink">
-                  {label(order.service_type)}
+                  <LocalizedText text={order.service_type} />
                 </p>
                 <p className="text-xs text-muted">
                   {order.location_label} · {formatOrderWhen(order)}
@@ -152,7 +151,7 @@ export function StaffHome({ data }: { data: AppData }) {
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold text-ink">
-                  {label(task.title)}
+                  <LocalizedText text={task.title} />
                 </p>
                 <p className="text-xs text-muted">
                   {task.villa?.name ?? t("common.general")}

@@ -6,6 +6,7 @@ import de from "./dictionaries/de";
 import es from "./dictionaries/es";
 import it from "./dictionaries/it";
 import he from "./dictionaries/he";
+import ar from "./dictionaries/ar";
 import ru from "./dictionaries/ru";
 import {
   LOCALES,
@@ -13,6 +14,7 @@ import {
   LOCALE_STORAGE_KEY,
   type Locale,
 } from "./types";
+import { localePatches } from "./locale-patches";
 
 export type { Locale, MessageKey, Dictionary };
 export { LOCALES, LOCALE_META, LOCALE_STORAGE_KEY };
@@ -26,6 +28,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
   es,
   it,
   he,
+  ar,
   ru,
 };
 
@@ -39,7 +42,7 @@ export function translate(
   params?: Record<string, string | number>,
 ): string {
   const dict = dictionaries[locale] ?? en;
-  let text = dict[key] ?? en[key] ?? key;
+  let text = localePatches[locale]?.[key] ?? dict[key] ?? en[key] ?? key;
 
   // Plural forms: "one|other" or "one|few|many" - pick by count when present
   if (params && "count" in params && text.includes("|")) {

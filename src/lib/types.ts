@@ -392,5 +392,13 @@ export type StayDateRequest = {
   check_out: string;
   note: string | null;
   status: StayDateRequestStatus;
+  /** Guest's proposed total for the stay (optional). */
+  guest_price_amount: number | null;
+  guest_price_currency: string | null;
+  /** Owner/manager confirmed total sent on accept. */
+  quoted_price_amount: number | null;
+  quoted_price_currency: string | null;
+  /** How to pay (e.g. in person at check-in). */
+  payment_note: string | null;
   created_at: string;
 };

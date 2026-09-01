@@ -5,6 +5,9 @@ import type {
   Villa,
 } from "@/lib/types";
 import { formatOrderWhen } from "@/lib/service-orders";
+import { formatAmountInDisplayCurrency } from "@/lib/billing/use-display-currency";
+import type { BillCurrency } from "@/lib/billing/currencies";
+import { normalizeBillCurrency } from "@/lib/billing/currencies";
 import { formatMoney, formatShortDate } from "@/lib/utils";
 import { rowsToCsv } from "@/lib/export/csv";
 
@@ -173,6 +176,7 @@ export type WeeklySummaryData = {
   urgentTasks: TaskWithRelations[];
   pendingBills: BillWithRelations[];
   upcomingOrders: ServiceOrder[];
+  displayCurrency?: BillCurrency;
 };
 
 export function buildWeeklySummaryHtml(data: WeeklySummaryData): string {
@@ -186,14 +190,21 @@ export function buildWeeklySummaryHtml(data: WeeklySummaryData): string {
           )
           .join("");
 
+  const displayCurrency = data.displayCurrency;
   const billLines =
     data.pendingBills.length === 0
       ? "<li>None</li>"
       : data.pendingBills
-          .map(
-            (b) =>
-              `<li>${escapeHtml(b.description)} - ${formatMoney(Number(b.amount))} · ${escapeHtml(b.villa?.name ?? "General")}</li>`,
-          )
+          .map((b) => {
+            const money = displayCurrency
+              ? formatAmountInDisplayCurrency(
+                  Number(b.amount),
+                  b.currency,
+                  displayCurrency,
+                )
+              : formatMoney(Number(b.amount), normalizeBillCurrency(b.currency));
+            return `<li>${escapeHtml(b.description)} - ${money} · ${escapeHtml(b.villa?.name ?? "General")}</li>`;
+          })
           .join("");
 
   const turnoverLines = data.villas

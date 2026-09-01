@@ -18,7 +18,7 @@ import { useData } from "@/lib/data/use-app-data";
 import { cn } from "@/lib/utils";
 import type { MessageWithSender, Profile } from "@/lib/types";
 import { useI18n } from "@/lib/i18n/provider";
-import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import { LocalizedText } from "@/components/i18n/localized-text";
 import { canUseTeamChat, isGuestApp } from "@/lib/roles";
 import {
   GuestSupportChat,
@@ -36,7 +36,6 @@ import {
 export default function MessagesPage() {
   const data = useData();
   const { t } = useI18n();
-  const label = useLocalizedDemoText();
   const [body, setBody] = useState("");
   const [cursor, setCursor] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -194,7 +193,7 @@ export default function MessagesPage() {
                       </p>
                     ) : null}
                     <MessageBody
-                      body={label(msg.body)}
+                      body={msg.body}
                       profiles={teammates}
                       mine={mine}
                     />
@@ -341,7 +340,7 @@ function MessageBody({
             {seg.value}
           </span>
         ) : (
-          <span key={`t-${i}`}>{seg.value}</span>
+          <LocalizedText key={`t-${i}`} text={seg.value} />
         ),
       )}
     </p>

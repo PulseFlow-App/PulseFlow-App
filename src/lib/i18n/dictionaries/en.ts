@@ -32,6 +32,9 @@ const en = {
   "common.markAll": "Mark all",
   "common.you": "you",
   "common.error": "Something went wrong. Try again.",
+  "common.on": "On",
+  "common.off": "Off",
+  "common.translated": "translated",
 
   "nav.home": "Home",
   "nav.villas": "Properties",
@@ -54,6 +57,7 @@ const en = {
   "nav.company": "Company",
   "nav.dateRequests": "Date requests",
 
+  "brand.name": "Pulse Flow",
   "brand.tagline": "The pulse of your rental operations",
   "brand.opsPulse": "Ops pulse",
 
@@ -115,6 +119,11 @@ const en = {
   "home.checkInsOuts": "Check-ins & outs",
   "home.noMoves": "No moves on this day.",
   "home.due": "due {date}",
+  "home.weekVolumeClosed": "of this week's task volume closed",
+  "home.closedLabel": "closed",
+  "home.openedLabel": "opened",
+  "home.chartOpened": "Opened",
+  "home.chartClosed": "Closed",
   "common.saved": "Saved.",
   "villas.photo": "Property photo",
   "villas.photoHint": "Upload from your gallery or take a photo. Staff see this when accepting a job so they can recognize the place.",
@@ -281,7 +290,8 @@ const en = {
   "bills.currency": "Currency",
   "bills.allCurrencies": "All currencies",
   "bills.mixedCurrencyHint":
-    "Totals show one currency at a time. Pick a currency above to sum spend.",
+    "Bills stay in their original currency. Totals use approximate exchange rates for the currency you pick.",
+  "bills.displayCurrencyHint": "Show amounts converted to this currency.",
   "bills.villa": "Property",
   "bills.dueDate": "Due date (optional)",
   "bills.receipt": "Receipt photo",
@@ -399,6 +409,9 @@ const en = {
     "On iPhone: Share → Add to Home Screen, open Pulse Flow from the icon, then enable alerts here.",
   "settings.inviteError": "Could not create invite.",
   "settings.saveError": "Could not save.",
+  "settings.translateContent": "Translate team content",
+  "settings.translateContentHint":
+    "Tasks, chat, briefings, and messages from teammates appear in your app language.",
 
   "billing.title": "Billing",
   "billing.subtitle":
@@ -569,6 +582,27 @@ const en = {
   "demo.orderChat.staffHint":
     "Staff: open this and tap “Read and agreed” to confirm you got the job.",
 
+  "demo.guest.ownerNotices":
+    "Welcome! Pool heater is on from 16:00. Checkout is 11:00 - leave keys on the kitchen counter.",
+  "demo.guest.briefing.keysTitle": "Gate & keys",
+  "demo.guest.briefing.keysBody":
+    "Side gate code is 4821#. Leave keys on the kitchen counter at checkout.",
+  "demo.guest.briefing.helpTitle": "How to reach us",
+  "demo.guest.briefing.helpBody":
+    "Use Support in this app for anything urgent. We reply as the host team only.",
+  "demo.guest.support.poolQuestion":
+    "Hi - is the pool heater already on this evening?",
+  "demo.guest.support.poolReply":
+    "Yes, it turns on at 16:00 every day. Enjoy the sunset!",
+  "demo.guest.guide.bins":
+    "Blue bin outside the side gate. Pickup Tue / Fri mornings.",
+  "demo.guest.guide.checkout":
+    "Close all windows\nTurn off AC and lights\nLeave keys on kitchen counter\nLock the side gate",
+  "demo.guest.guide.extra":
+    "Beach towels in the left cupboard. Extra water under the sink.",
+  "demo.guest.depositNote": "Security deposit held at check-in.",
+  "demo.guest.chargeGlass": "Broken wine glass (replacement)",
+
   "contacts.subtitlePersonal": "Save numbers in one place - call from here",
   "contacts.subtitleCompany":
     "Link a PulseFlow user to Order in-app; call others",
@@ -696,6 +730,14 @@ const en = {
   "guest.requestCheckoutAfter": "Check-out must be after check-in.",
   "guest.requestSent": "Request sent to your host.",
   "guest.requestPending": "Pending request: {from} → {to}",
+  "guest.requestPrice": "Your price offer",
+  "guest.requestPriceHint": "Total for the whole stay (optional). Your host confirms the final price.",
+  "guest.requestPricePh": "e.g. 15000",
+  "guest.requestPendingPrice": "Your offer: {amount}",
+  "guest.quoteTitle": "Confirmed price",
+  "guest.quotePayment": "How to pay",
+  "guest.depositManualHint":
+    "After you pay a deposit in person, your host records it under Guests — you will see it here under Bills.",
   "guest.guideEditTitle": "House guide (guest-facing)",
   "guest.guideSave": "Save house guide",
   "guest.joinTitle": "You're invited as a guest",
@@ -721,6 +763,16 @@ const en = {
   "dateRequests.pendingOne": "1 guest is waiting for a yes or no.",
   "dateRequests.pendingMany":
     "{count} guests are waiting for a yes or no.",
+  "dateRequests.guestOffer": "Guest offered {amount}",
+  "dateRequests.confirmPrice": "Confirm price & book",
+  "dateRequests.totalPrice": "Total price for these dates",
+  "dateRequests.paymentNote": "Payment instructions",
+  "dateRequests.paymentNoteHint":
+    "How the guest should pay. In-app card payments are not live yet — use in person for now.",
+  "dateRequests.depositHint":
+    "To collect a deposit manually: after the guest pays in person, open Guests, pick their stay, and record the deposit amount. They will see it under Bills.",
+  "dateRequests.acceptConfirm": "Accept with this price",
+  "dateRequests.priceRequired": "Enter the total stay price before accepting.",
 
   "guests.title": "Guests",
   "guests.subtitle":

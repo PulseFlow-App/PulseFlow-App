@@ -62,6 +62,26 @@ export const DEMO_ENGLISH_TO_KEY: Record<string, MessageKey> = {
   "today": "demo.day.today",
   "tomorrow": "demo.day.tomorrow",
   "yesterday": "demo.day.yesterday",
+  "Welcome! Pool heater is on from 16:00. Checkout is 11:00 - leave keys on the kitchen counter.":
+    "demo.guest.ownerNotices",
+  "Gate & keys": "demo.guest.briefing.keysTitle",
+  "Side gate code is 4821#. Leave keys on the kitchen counter at checkout.":
+    "demo.guest.briefing.keysBody",
+  "How to reach us": "demo.guest.briefing.helpTitle",
+  "Use Support in this app for anything urgent. We reply as the host team only.":
+    "demo.guest.briefing.helpBody",
+  "Hi - is the pool heater already on this evening?":
+    "demo.guest.support.poolQuestion",
+  "Yes, it turns on at 16:00 every day. Enjoy the sunset!":
+    "demo.guest.support.poolReply",
+  "Blue bin outside the side gate. Pickup Tue / Fri mornings.":
+    "demo.guest.guide.bins",
+  "Close all windows\nTurn off AC and lights\nLeave keys on kitchen counter\nLock the side gate":
+    "demo.guest.guide.checkout",
+  "Beach towels in the left cupboard. Extra water under the sink.":
+    "demo.guest.guide.extra",
+  "Security deposit held at check-in.": "demo.guest.depositNote",
+  "Broken wine glass (replacement)": "demo.guest.chargeGlass",
 };
 
 const SORTED_PHRASES = Object.keys(DEMO_ENGLISH_TO_KEY).sort(
@@ -187,6 +207,23 @@ function localizeDoneOrAgreedMsg(
   return kind === "done"
     ? t("demo.sys.doneMsg", params)
     : t("demo.sys.agreedMsg", params);
+}
+
+/** True when stored copy is a known demo seed string (use dictionary, not live translate). */
+export function isKnownDemoPhrase(text: string): boolean {
+  if (!text) return false;
+  if (DEMO_ENGLISH_TO_KEY[text]) return true;
+  if (text.startsWith("📋 Service order for ")) return true;
+  if (text.startsWith("✅ Done - ") || text.startsWith("✅ Read and agreed - ")) {
+    return true;
+  }
+  if (/^(Appointment|Check-in|Check-out) .+$/.test(text)) return true;
+  if (/^Bill .+$/.test(text)) return true;
+  if (/^New job: .+$/.test(text)) return true;
+  if (/^Job confirmed: .+$/.test(text)) return true;
+  if (/^.+ completed a job$/.test(text)) return true;
+  if (/^.+ agreed$/.test(text) && !text.includes("\n")) return true;
+  return false;
 }
 
 /** Map stored English demo / system copy to the active locale. */
