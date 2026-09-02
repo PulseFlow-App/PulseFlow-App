@@ -54,6 +54,7 @@ import {
 } from "@/lib/roles";
 import { isConfirmedStayStatus, pickConfirmedStay } from "@/lib/guest/confirmed-stay";
 import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
+import { closeAcceptedStayDateRequests } from "@/lib/guest/stay-date-request";
 import {
   makeNotification,
   notificationVisibleTo,
@@ -82,6 +83,7 @@ import {
 } from "@/lib/guest/stay-pricing";
 import { buildDueDepositFromRequest } from "@/lib/guest/deposit-from-quote";
 import { resolveSupportDepositAction } from "@/lib/guest/handle-support-deposit";
+import { resolveSupportCancelAction } from "@/lib/guest/handle-support-cancel";
 import { capitalizeLabel } from "@/lib/format-label";
 
 export type { AppData } from "@/lib/data/types";
@@ -954,6 +956,34 @@ function useDemoData(): AppData {
         return;
       }
 
+      const villaForStay = store.villas.find((v) => v.id === stay.villa_id);
+      const cancelAction = resolveSupportCancelAction({
+        body: text,
+        profile,
+        stay,
+        villaName: villaForStay?.name ?? "Villa",
+        ownerManagerIds: ownerManagerIds(store.profiles, stay.org_id),
+      });
+
+      if (cancelAction?.kind === "guest_request") {
+        updateDemoStore((s) => ({
+          ...s,
+          supportMessages: [
+            ...s.supportMessages,
+            {
+              id: uid("support"),
+              org_id: stay.org_id,
+              stay_id: stay.id,
+              sender_id: profile.id,
+              body: cancelAction.displayBody,
+              created_at: new Date().toISOString(),
+            },
+          ],
+        }));
+        demoPushNotifications(cancelAction.notifications);
+        return;
+      }
+
       updateDemoStore((s) => ({
         ...s,
         supportMessages: [
@@ -1140,7 +1170,7 @@ function useDemoData(): AppData {
       }
       if (isGuest && !canGuestSelfCancelStay(stay)) {
         throw new Error(
-          "Self-service cancellation is only available at least 3 days before check-in. Message your host in Support.",
+          "Self-service cancellation is only available at least 3 days before check-in. Open Support and send /cancel.",
         );
       }
       if (!isGuest && (stay.org_id !== profile.org_id)) {
@@ -1155,6 +1185,10 @@ function useDemoData(): AppData {
         ...s,
         guestStays: (s.guestStays ?? []).map((g) =>
           g.id === stayId ? { ...g, status: "cancelled" as const } : g,
+        ),
+        stayDateRequests: closeAcceptedStayDateRequests(
+          s.stayDateRequests ?? [],
+          stay,
         ),
         villas:
           villa &&

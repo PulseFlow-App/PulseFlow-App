@@ -607,13 +607,17 @@ const he: Dictionary = {
     "Cancel your stay at {villa} ({from} → {to})?",
   "guest.cancelBookingDone": "Booking cancelled.",
   "guest.cancelBookingTooLate":
-    "Within 3 days of check-in, cancellations need your host's help — especially if a deposit was paid. Open Support chat to request a cancellation.",
+    "Within 3 days of check-in, cancellations need your host's help — especially if a deposit was paid. Open Support chat and send /cancel to request a cancellation.",
   "guest.cancelBookingContactSupport":
-    "To change or cancel this stay, message your host in Support chat.",
+    "To change or cancel this stay, open Support chat and send /cancel.",
   "guest.supportDepositHint":
     "After you pay your deposit, send /deposit here so your host can confirm it.",
+  "guest.supportCancelHint":
+    "Within 3 days of check-in? Send /cancel here to request a cancellation from your host.",
   "guest.supportDepositHostHint":
     "When the guest has paid, reply with /deposit to record it (or /deposit 5000 THB).",
+  "guest.supportCancelHostHint":
+    "When a guest sends /cancel, open Guests and cancel the booking there.",
   "guest.supportHostPlaceholder": "Reply to guest… /deposit to record deposit",
   "guest.deductions": "Deductions",
   "guest.remaining": "Still held",

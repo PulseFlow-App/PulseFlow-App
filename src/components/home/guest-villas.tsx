@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { StayQuoteCard } from "@/components/guest/stay-quote-card";
+import { activeAcceptedRequestForVilla } from "@/lib/guest/stay-date-request";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
@@ -185,11 +186,11 @@ export function GuestVillasBrowse() {
           const quoted = data.stayDateRequests.find(
             (r) => r.villa_id === v.id && r.status === "quoted",
           );
-          const accepted = data.stayDateRequests.find(
-            (r) =>
-              r.villa_id === v.id &&
-              r.status === "accepted" &&
-              r.quoted_price_amount != null,
+          const accepted = activeAcceptedRequestForVilla(
+            data.stayDateRequests,
+            data.guestStays,
+            v.id,
+            data.profile?.id,
           );
           return (
             <Card key={v.id} className="space-y-3 overflow-hidden p-0">

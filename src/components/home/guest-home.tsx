@@ -19,6 +19,7 @@ import {
   canGuestSelfCancelStay,
   guestCancelBlockedReason,
 } from "@/lib/guest/cancel-booking";
+import { activeAcceptedRequestForVilla } from "@/lib/guest/stay-date-request";
 
 export function GuestHome({ name }: { name: string }) {
   const data = useData();
@@ -33,13 +34,15 @@ export function GuestHome({ name }: { name: string }) {
     ? data.houseGuides.find((g) => g.villa_id === stay.villa_id)
     : null;
   const photos = data.stayPhotos.filter((p) => p.stay_id === stay?.id);
-  const acceptedQuote = data.stayDateRequests.find(
-    (r) =>
-      r.villa_id === stay?.villa_id &&
-      r.guest_profile_id === stay?.guest_profile_id &&
-      r.status === "accepted" &&
-      r.quoted_price_amount != null,
-  );
+  const acceptedQuote =
+    stay && villa
+      ? activeAcceptedRequestForVilla(
+          data.stayDateRequests,
+          data.guestStays,
+          villa.id,
+          stay.guest_profile_id,
+        )
+      : undefined;
   const stayDeposit = stay
     ? data.guestDeposits.find((d) => d.stay_id === stay.id)
     : null;

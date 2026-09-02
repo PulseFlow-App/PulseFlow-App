@@ -13,6 +13,7 @@ import { LocalizedText } from "@/components/i18n/localized-text";
 import { isGuestApp } from "@/lib/roles";
 import { isConfirmedStay } from "@/lib/guest/confirmed-stay";
 import { isSupportSystemMessage } from "@/lib/guest/support-deposit-command";
+import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
 
 export function GuestSupportChat() {
   const data = useData();
@@ -22,6 +23,7 @@ export function GuestSupportChat() {
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const stay = isConfirmedStay(data.activeStay) ? data.activeStay : null;
+  const needsSupportCancel = stay ? !canGuestSelfCancelStay(stay) : false;
   const messages = data.supportMessages.filter((m) => m.stay_id === stay?.id);
   const me = data.profile?.id;
 
@@ -60,7 +62,12 @@ export function GuestSupportChat() {
         </h1>
         <p className="text-sm text-muted">{t("guest.supportHint")}</p>
         {data.profile?.role === "guest" ? (
-          <p className="mt-1 text-xs text-muted">{t("guest.supportDepositHint")}</p>
+          <>
+            <p className="mt-1 text-xs text-muted">{t("guest.supportDepositHint")}</p>
+            {needsSupportCancel ? (
+              <p className="mt-1 text-xs text-muted">{t("guest.supportCancelHint")}</p>
+            ) : null}
+          </>
         ) : null}
       </div>
 
@@ -172,6 +179,7 @@ export function HostSupportInbox() {
         <p className="text-sm font-bold text-ink">{t("guest.hostInboxTitle")}</p>
         <p className="text-xs text-muted">{t("guest.supportHint")}</p>
         <p className="text-xs text-muted">{t("guest.supportDepositHostHint")}</p>
+        <p className="text-xs text-muted">{t("guest.supportCancelHostHint")}</p>
       </div>
       <div className="flex flex-wrap gap-2">
         {stays.map((s) => {

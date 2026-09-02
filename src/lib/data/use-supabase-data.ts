@@ -29,6 +29,7 @@ import type {
 } from "@/lib/types";
 import { isConfirmedStayStatus, pickConfirmedStay } from "@/lib/guest/confirmed-stay";
 import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
+import { closeAcceptedStayDateRequests } from "@/lib/guest/stay-date-request";
 import {
   canBookServices,
   canCreateVillas,
@@ -70,6 +71,7 @@ import {
 } from "@/lib/guest/stay-pricing";
 import { buildDueDepositFromRequest } from "@/lib/guest/deposit-from-quote";
 import { resolveSupportDepositAction } from "@/lib/guest/handle-support-deposit";
+import { resolveSupportCancelAction } from "@/lib/guest/handle-support-cancel";
 import { formatOrderWhen, canCancelServiceOrder } from "@/lib/service-orders";
 import {
   loadLocallyReadIds,
@@ -1703,6 +1705,44 @@ export function useSupabaseData(enabled: boolean): AppData {
         return;
       }
 
+      const villaForStay =
+        villas.find((v) => v.id === stay.villa_id) ??
+        allOrgVillas.find((v) => v.id === stay.villa_id);
+      const cancelAction = resolveSupportCancelAction({
+        body: text,
+        profile,
+        stay,
+        villaName: villaForStay?.name ?? "Villa",
+        ownerManagerIds: ownerManagerIds(profiles, stay.org_id),
+      });
+
+      if (cancelAction?.kind === "guest_request") {
+        const { data: inserted, error } = await supabase
+          .from("support_messages")
+          .insert({
+            org_id: stay.org_id,
+            stay_id: stay.id,
+            sender_id: profile.id,
+            body: cancelAction.displayBody,
+          })
+          .select(
+            "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
+          )
+          .single();
+        if (error) throw error;
+        if (inserted) {
+          setSupportMessages((prev) => [
+            ...prev,
+            inserted as SupportMessageWithSender,
+          ]);
+        }
+        await insertNotifications(
+          supabase,
+          cancelAction.notifications.map((n) => toInsertRow(n)),
+        );
+        return;
+      }
+
       const { data: inserted, error } = await supabase
         .from("support_messages")
         .insert({
@@ -1922,7 +1962,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       if (isGuest && !canGuestSelfCancelStay(stay)) {
         throw new Error(
-          "Self-service cancellation is only available at least 3 days before check-in. Message your host in Support.",
+          "Self-service cancellation is only available at least 3 days before check-in. Open Support and send /cancel.",
         );
       }
       if (stay.status === "completed" || stay.status === "cancelled") {
@@ -1945,6 +1985,15 @@ export function useSupabaseData(enabled: boolean): AppData {
         }
         throw stayError;
       }
+
+      await supabase
+        .from("stay_date_requests")
+        .update({ status: "declined" })
+        .eq("villa_id", stay.villa_id)
+        .eq("guest_profile_id", stay.guest_profile_id)
+        .eq("check_in", stay.check_in)
+        .eq("check_out", stay.check_out)
+        .eq("status", "accepted");
 
       const villa = villas.find((v) => v.id === stay.villa_id);
       if (
