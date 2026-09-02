@@ -80,7 +80,7 @@ import {
   formatStayQuoteLine,
   parseQuotedDeposit,
 } from "@/lib/guest/stay-pricing";
-import { buildDueDepositFromRequest } from "@/lib/guest/deposit-from-quote";
+import { buildDueDepositFromRequest, isUnpaidBeforeArrivalDeposit } from "@/lib/guest/deposit-from-quote";
 import { resolveSupportDepositAction } from "@/lib/guest/handle-support-deposit";
 import { resolveSupportCancelAction } from "@/lib/guest/handle-support-cancel";
 import { capitalizeLabel } from "@/lib/format-label";
@@ -829,6 +829,11 @@ function useDemoData(): AppData {
       assertDemoWritable();
       return URL.createObjectURL(file);
     },
+    uploadSupportAttachment: async (file) => {
+      assertDemoWritable();
+      const { fileToDataUrl } = await import("@/lib/file-to-data-url");
+      return fileToDataUrl(file);
+    },
     uploadVillaPhoto: async (file) => {
       assertDemoWritable();
       const { fileToDataUrl } = await import("@/lib/file-to-data-url");
@@ -854,7 +859,7 @@ function useDemoData(): AppData {
       if (!profile) throw new Error("Not signed in.");
       demoCastEndorsement(profile, toProfileId, stars, note);
     },
-    sendSupportMessage: async (body, stayId) => {
+    sendSupportMessage: async (body, stayId, options) => {
       assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       const stay =
@@ -876,7 +881,8 @@ function useDemoData(): AppData {
         profile.role === "manager";
       if (!canReply) throw new Error("Only guest or host can use support chat.");
       const text = body.trim();
-      if (!text) return;
+      const attachmentUrl = options?.attachmentUrl?.trim() || null;
+      if (!text && !attachmentUrl) return;
 
       const deposit = (store.guestDeposits ?? []).find((d) => d.stay_id === stay.id);
       const depositAction = resolveSupportDepositAction({
@@ -885,6 +891,20 @@ function useDemoData(): AppData {
         stay,
         deposit,
         ownerManagerIds: ownerManagerIds(store.profiles, stay.org_id),
+        hasAttachment: Boolean(attachmentUrl),
+      });
+
+      const supportRow = (
+        messageBody: string,
+        attachment: string | null = attachmentUrl,
+      ) => ({
+        id: uid("support"),
+        org_id: stay.org_id,
+        stay_id: stay.id,
+        sender_id: profile.id,
+        body: messageBody,
+        attachment_url: attachment,
+        created_at: new Date().toISOString(),
       });
 
       if (depositAction?.kind === "guest_signal") {
@@ -892,14 +912,7 @@ function useDemoData(): AppData {
           ...s,
           supportMessages: [
             ...s.supportMessages,
-            {
-              id: uid("support"),
-              org_id: stay.org_id,
-              stay_id: stay.id,
-              sender_id: profile.id,
-              body: depositAction.displayBody,
-              created_at: new Date().toISOString(),
-            },
+            supportRow(depositAction.displayBody),
           ],
         }));
         demoPushNotifications(depositAction.notifications);
@@ -940,14 +953,7 @@ function useDemoData(): AppData {
               : [...deposits, nextDeposit],
             supportMessages: [
               ...s.supportMessages,
-              {
-                id: uid("support"),
-                org_id: stay.org_id,
-                stay_id: stay.id,
-                sender_id: profile.id,
-                body: depositAction.displayBody,
-                created_at: new Date().toISOString(),
-              },
+              supportRow(depositAction.displayBody),
             ],
           };
         });
@@ -969,14 +975,7 @@ function useDemoData(): AppData {
           ...s,
           supportMessages: [
             ...s.supportMessages,
-            {
-              id: uid("support"),
-              org_id: stay.org_id,
-              stay_id: stay.id,
-              sender_id: profile.id,
-              body: cancelAction.displayBody,
-              created_at: new Date().toISOString(),
-            },
+            supportRow(cancelAction.displayBody),
           ],
         }));
         demoPushNotifications(cancelAction.notifications);
@@ -985,17 +984,7 @@ function useDemoData(): AppData {
 
       updateDemoStore((s) => ({
         ...s,
-        supportMessages: [
-          ...s.supportMessages,
-          {
-            id: uid("support"),
-            org_id: stay.org_id,
-            stay_id: stay.id,
-            sender_id: profile.id,
-            body: text,
-            created_at: new Date().toISOString(),
-          },
-        ],
+        supportMessages: [...s.supportMessages, supportRow(text)],
       }));
       const recipients =
         profile.id === stay.guest_profile_id
@@ -1006,7 +995,7 @@ function useDemoData(): AppData {
           org_id: stay.org_id,
           kind: "guest_update",
           title: "Support message",
-          body: text.slice(0, 120),
+          body: (text || "Receipt attached").slice(0, 120),
           href: "/messages",
           entity_id: stay.id,
           audience_profile_ids: recipients,
@@ -1209,6 +1198,11 @@ function useDemoData(): AppData {
 
       const villaName = villa?.name ?? "Villa";
       const dateLine = `${stay.check_in} → ${stay.check_out}`;
+      const stayDeposit = (store.guestDeposits ?? []).find(
+        (d) => d.stay_id === stayId,
+      );
+      const hostCancelledUnpaidDeposit =
+        !isGuest && isUnpaidBeforeArrivalDeposit(stayDeposit);
       if (isGuest) {
         demoPushNotifications([
           makeNotification({
@@ -1227,7 +1221,9 @@ function useDemoData(): AppData {
             org_id: stay.org_id,
             kind: "guest_update",
             title: "Booking cancelled",
-            body: `${villaName} · ${dateLine} was cancelled by your host.`,
+            body: hostCancelledUnpaidDeposit
+              ? `${villaName} · ${dateLine} was cancelled by your host because the deposit due before arrival was not paid or confirmed.`
+              : `${villaName} · ${dateLine} was cancelled by your host.`,
             href: "/villas",
             entity_id: stayId,
             audience_profile_ids: [stay.guest_profile_id],

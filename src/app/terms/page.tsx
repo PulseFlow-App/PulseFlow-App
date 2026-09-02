@@ -21,7 +21,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p className="mt-1 text-muted">
-            {brand.name} · Last updated: 28 August 2026
+            {brand.name} · Last updated: 2 September 2026
           </p>
         </div>
 
@@ -35,9 +35,9 @@ export default function TermsPage() {
           <h2 className="font-display text-lg font-bold">1. Who we are</h2>
           <p className="text-muted">
             {brand.name} is an operations tool for property and short-term rental
-            teams: property status, tasks, contacts, team chat, bills, and
-            related workflows. The Service is provided by the Pulse Flow
-            product team (“we”, “us”).
+            teams: property status, tasks, contacts, team chat, bills, guest
+            stays (date requests, quotes, deposits), and related workflows. The
+            Service is provided by the Pulse Flow product team (“we”, “us”).
           </p>
         </section>
 
@@ -154,7 +154,71 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">6. Your content & data</h2>
+          <h2 className="font-display text-lg font-bold">
+            6. Guest stays, quotes & deposits
+          </h2>
+          <p className="text-muted">
+            {brand.name} includes tools for guests invited by a property team
+            to request dates, receive quotes, confirm stays, coordinate
+            security deposits (off-platform), chat with their host, and view
+            briefings. Property teams are solely responsible for rental
+            agreements, pricing, deposit handling, refunds, and compliance with
+            local short-term rental rules. {brand.name} is coordination software,
+            not a travel agency, payment processor, or escrow provider.
+          </p>
+          <ul className="list-disc space-y-1 pl-5 text-muted">
+            <li>
+              <strong className="text-ink">Date requests:</strong> guests submit
+              preferred check-in/out dates and an optional note. Hosts respond
+              with a quote (total price, optional deposit, when the deposit is
+              due, and payment instructions such as bank transfer details).
+            </li>
+            <li>
+              <strong className="text-ink">Accepting a quote</strong> creates a
+              confirmed stay and blocks the villa dates. If a deposit was
+              quoted, it appears as due until the host records payment.
+            </li>
+            <li>
+              <strong className="text-ink">Deposits:</strong> guest-to-host
+              payments happen outside {brand.name}. Guests pay hosts directly
+              using instructions on the quote or in Bills. Guests should open
+              Support, send <strong className="text-ink">/deposit</strong>, and
+              may attach a receipt; hosts confirm with{" "}
+              <strong className="text-ink">/deposit</strong> in Support or from
+              the Guests panel.
+            </li>
+            <li>
+              <strong className="text-ink">Deposit timing:</strong> a deposit
+              may be marked due before arrival or on arrival on the quote.
+              Guests are responsible for paying on time per the quote.
+            </li>
+            <li>
+              <strong className="text-ink">Guest cancellation:</strong> at least
+              3 days before check-in, guests may cancel from Stay home without
+              host approval. Within 3 days of check-in, guests must open
+              Support and send <strong className="text-ink">/cancel</strong> to
+              request cancellation (subject to host discretion, especially if a
+              deposit was already paid).
+            </li>
+            <li>
+              <strong className="text-ink">Host cancellation:</strong> owners and
+              managers may cancel a confirmed stay from Guests at any time; villa
+              dates are freed and the guest is notified. If a before-arrival
+              deposit remains unpaid or unconfirmed by the host, the property
+              team may cancel the booking to protect the reservation.
+            </li>
+            <li>
+              <strong className="text-ink">Support chat:</strong> messages,
+              slash commands (<strong className="text-ink">/deposit</strong>,{" "}
+              <strong className="text-ink">/cancel</strong>), and uploaded
+              receipt images are visible to the guest and the property team for
+              that stay.
+            </li>
+          </ul>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="font-display text-lg font-bold">7. Your content & data</h2>
           <p className="text-muted">
             You retain ownership of properties, tasks, contacts, messages, bills,
             photos, and other data you submit (“Customer Content”). You grant us
@@ -169,7 +233,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">7. Service availability</h2>
+          <h2 className="font-display text-lg font-bold">8. Service availability</h2>
           <p className="text-muted">
             We aim for reliable uptime but do not guarantee uninterrupted access.
             Features may change as we improve the product. We may perform
@@ -178,7 +242,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">8. Disclaimers</h2>
+          <h2 className="font-display text-lg font-bold">9. Disclaimers</h2>
           <p className="text-muted">
             The Service is provided “as is”. To the fullest extent permitted by
             law, we disclaim warranties of merchantability, fitness for a
@@ -189,7 +253,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">9. Limitation of liability</h2>
+          <h2 className="font-display text-lg font-bold">10. Limitation of liability</h2>
           <p className="text-muted">
             To the fullest extent permitted by law, we are not liable for
             indirect, incidental, special, consequential, or lost-profit
@@ -201,7 +265,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">10. Termination</h2>
+          <h2 className="font-display text-lg font-bold">11. Termination</h2>
           <p className="text-muted">
             You may stop using the Service at any time. We may suspend or end
             access for breach of these Terms, non-payment, or if we discontinue
@@ -212,7 +276,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">11. Changes</h2>
+          <h2 className="font-display text-lg font-bold">12. Changes</h2>
           <p className="text-muted">
             We may update these Terms. Material changes will be posted on this
             page with a new “Last updated” date. Continued use after changes
@@ -221,7 +285,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">12. Contact</h2>
+          <h2 className="font-display text-lg font-bold">13. Contact</h2>
           <p className="text-muted">
             Questions about these Terms:{" "}
             <a

@@ -573,11 +573,22 @@ const it: Dictionary = {
   "guest.nav.support": "Support",
   "guest.nav.bills": "Bills",
   "guest.supportTitle": "Support",
-  "guest.supportHint": "Message the owner or manager only - not cleaners or field staff.",
+  "guest.supportHint":
+    "Message the owner or manager. Useful commands: /deposit — when you paid your deposit in advance, share this command here along with the receipt; /cancel — when you wish to cancel your booking within 3 days of check-in.",
+  "guest.supportCmdDeposit":
+    "When you paid your deposit in advance, share this command along with your receipt.",
+  "guest.supportCmdCancel":
+    "When you wish to cancel your booking within 3 days of check-in.",
+  "guest.supportCommandsList": "Support commands",
   "guest.supportNoStay": "Support chat opens once you have a confirmed stay.",
   "guest.supportNeedStay": "Support chat is only available after your host confirms your stay.",
   "guest.supportEmpty": "Say hello - your host will see it here.",
   "guest.supportPlaceholder": "Write a message…",
+  "guest.supportAttachReceipt": "Attach receipt",
+  "guest.supportRemoveReceipt": "Remove receipt",
+  "guest.supportReceipt": "Receipt",
+  "guest.supportUploading": "Uploading…",
+  "guest.supportReceiptImageOnly": "Please choose an image file for your receipt.",
   "guest.send": "Send",
   "guest.host": "Host",
   "guest.hostInboxTitle": "Guest support stays",
@@ -598,9 +609,11 @@ const it: Dictionary = {
   "guest.depositTiming.on_arrival": "To be paid on arrival",
   "guest.depositHowToPay": "How to pay",
   "guest.depositHowToPayHint":
-    "Open Support chat and send /deposit when you have paid. Your host will confirm receipt.",
+    "Open Support chat and send /deposit along with your receipt and wait for confirmation.",
   "guest.openSupportChat": "Open Support chat",
   "guest.cancelBookingTitle": "Cancel booking",
+  "guest.cancelBookingDescription":
+    "If you wish to cancel your booking within 3 days of check-in, open Support chat and send /cancel to request it. Early cancellations are acceptable without host approval.",
   "guest.cancelBookingHint":
     "You can cancel free of charge at least 3 days before check-in.",
   "guest.cancelBookingButton": "Cancel booking",
@@ -743,6 +756,8 @@ const it: Dictionary = {
   "guests.depositInvalid": "Enter a valid deposit amount (0 or more).",
   "guests.cancelTitle": "Cancel booking",
   "guests.cancelHint": "Cancels this guest stay and frees the villa dates. The guest is notified in the app and by push if enabled.",
+  "guests.cancelUnpaidDepositHint":
+    "This deposit is still due before arrival. You may cancel the booking if it has not been paid or confirmed.",
   "guests.cancelConfirm": "Cancel {guest}'s stay at {villa} ({from} → {to})?",
   "guests.cancelButton": "Cancel booking",
   "guests.cancelSaved": "Booking cancelled — guest notified.",

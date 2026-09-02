@@ -1,48 +1,133 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { Paperclip, Send, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
+import { SupportMessageBubble } from "@/components/guest/support-message-bubble";
 import { useData } from "@/lib/data/use-app-data";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
-import { LocalizedText } from "@/components/i18n/localized-text";
 import { isGuestApp } from "@/lib/roles";
 import { isConfirmedStay, pickGuestSupportStay } from "@/lib/guest/confirmed-stay";
-import { isSupportSystemMessage } from "@/lib/guest/support-deposit-command";
-import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
+import { guestSupportCommandSuggestions } from "@/lib/guest/support-command-suggestions";
 
 export function GuestSupportChat() {
   const data = useData();
   const { t } = useI18n();
   const [body, setBody] = useState("");
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [activeSuggestion, setActiveSuggestion] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const stay = pickGuestSupportStay(data.guestStays);
   const canSend = isConfirmedStay(stay);
-  const needsSupportCancel = stay ? !canGuestSelfCancelStay(stay) : false;
   const messages = data.supportMessages.filter((m) => m.stay_id === stay?.id);
   const me = data.profile?.id;
+  const isGuest = data.profile?.role === "guest";
+  const commandSuggestions =
+    isGuest && canSend ? guestSupportCommandSuggestions(body) : [];
+  const canSubmit = Boolean(body.trim() || pendingFile);
+  const stayDeposit = stay
+    ? data.guestDeposits.find((d) => d.stay_id === stay.id)
+    : null;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
+  useEffect(() => {
+    setActiveSuggestion(0);
+  }, [body]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const clearAttachment = () => {
+    if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
+    setPendingFile(null);
+    setPreviewUrl(null);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const onPickFile = (file: File | null) => {
+    clearAttachment();
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError(t("guest.supportReceiptImageOnly"));
+      return;
+    }
+    setError(null);
+    setPendingFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const applySuggestion = (command: string) => {
+    setBody(`${command} `);
+    inputRef.current?.focus();
+  };
+
   const send = async () => {
-    if (!canSend || !body.trim() || sending) return;
+    if (!canSend || !canSubmit || sending) return;
     setSending(true);
     setError(null);
     try {
-      await data.sendSupportMessage(body);
+      let attachmentUrl: string | null = null;
+      if (pendingFile) {
+        attachmentUrl = await data.uploadSupportAttachment(pendingFile);
+        if (!attachmentUrl) throw new Error(t("common.error"));
+      }
+      let messageText = body.trim();
+      if (!messageText && pendingFile && stayDeposit?.status === "due") {
+        messageText = "/deposit";
+      }
+      await data.sendSupportMessage(messageText, undefined, { attachmentUrl });
       setBody("");
+      clearAttachment();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("common.error"));
     } finally {
       setSending(false);
+    }
+  };
+
+  const onInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (commandSuggestions.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setActiveSuggestion((i) => (i + 1) % commandSuggestions.length);
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setActiveSuggestion(
+          (i) => (i - 1 + commandSuggestions.length) % commandSuggestions.length,
+        );
+        return;
+      }
+      if (e.key === "Tab" || (e.key === "Enter" && commandSuggestions.length)) {
+        e.preventDefault();
+        applySuggestion(commandSuggestions[activeSuggestion]?.command ?? "");
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setBody("");
+        return;
+      }
+    }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      void send();
     }
   };
 
@@ -61,15 +146,9 @@ export function GuestSupportChat() {
         <h1 className="font-display text-2xl font-bold text-ink">
           {t("guest.supportTitle")}
         </h1>
-        <p className="text-sm text-muted">{t("guest.supportHint")}</p>
-        {data.profile?.role === "guest" ? (
-          <>
-            <p className="mt-1 text-xs text-muted">{t("guest.supportDepositHint")}</p>
-            {needsSupportCancel ? (
-              <p className="mt-1 text-xs text-muted">{t("guest.supportCancelHint")}</p>
-            ) : null}
-          </>
-        ) : null}
+        <p className="text-sm leading-relaxed text-muted">
+          {t("guest.supportHint")}
+        </p>
       </div>
 
       <Card className="flex flex-1 flex-col gap-3 p-3">
@@ -79,38 +158,15 @@ export function GuestSupportChat() {
               {t("guest.supportEmpty")}
             </p>
           ) : (
-            messages.map((m) => {
-              const mine = m.sender_id === me;
-              const system = isSupportSystemMessage(m.body);
-              return (
-                <div
-                  key={m.id}
-                  className={cn("flex", system ? "justify-center" : mine ? "justify-end" : "justify-start")}
-                >
-                  <div
-                    className={cn(
-                      "max-w-[85%] rounded-2xl px-3 py-2 text-sm",
-                      system
-                        ? "bg-secondary/10 text-secondary"
-                        : mine
-                          ? "bg-primary text-white"
-                          : "bg-[#F7F5F1] text-ink",
-                    )}
-                  >
-                    {!mine && !system ? (
-                      <p className="mb-0.5 text-[11px] font-bold opacity-70">
-                        {m.sender?.full_name ?? t("guest.host")}
-                      </p>
-                    ) : null}
-                    <LocalizedText
-                      text={m.body}
-                      as="p"
-                      className="whitespace-pre-wrap"
-                    />
-                  </div>
-                </div>
-              );
-            })
+            messages.map((m) => (
+              <SupportMessageBubble
+                key={m.id}
+                message={m}
+                mine={m.sender_id === me}
+                hostLabel={t("guest.host")}
+                receiptLabel={t("guest.supportReceipt")}
+              />
+            ))
           )}
           <div ref={bottomRef} />
         </div>
@@ -118,27 +174,97 @@ export function GuestSupportChat() {
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {canSend ? (
-        <div className="flex gap-2">
-          <Input
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder={t("guest.supportPlaceholder")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void send();
-              }
-            }}
-          />
-          <Button
-            type="button"
-            disabled={sending || !body.trim()}
-            onClick={() => void send()}
-            aria-label={t("guest.send")}
-          >
-            <Send className="size-4" />
-          </Button>
-        </div>
+          <div className="space-y-2">
+            {previewUrl ? (
+              <div className="relative inline-block max-w-[8rem]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={previewUrl}
+                  alt={t("guest.supportReceipt")}
+                  className="h-20 w-20 rounded-xl object-cover ring-1 ring-black/10"
+                />
+                <button
+                  type="button"
+                  onClick={clearAttachment}
+                  className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-ink text-white shadow"
+                  aria-label={t("guest.supportRemoveReceipt")}
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            ) : null}
+            <div className="relative flex gap-2">
+              {commandSuggestions.length > 0 ? (
+                <ul
+                  className="absolute inset-x-0 bottom-full z-10 mb-2 max-h-44 overflow-y-auto rounded-2xl bg-white py-1 shadow-[0_12px_32px_rgba(28,28,30,0.16)] ring-1 ring-black/5 animate-rise"
+                  role="listbox"
+                  aria-label={t("guest.supportCommandsList")}
+                >
+                  {commandSuggestions.map((item, index) => (
+                    <li
+                      key={item.command}
+                      role="option"
+                      aria-selected={index === activeSuggestion}
+                    >
+                      <button
+                        type="button"
+                        className={cn(
+                          "flex w-full flex-col gap-0.5 px-3 py-2.5 text-left transition",
+                          index === activeSuggestion
+                            ? "bg-[#F7F5F1]"
+                            : "hover:bg-[#F7F5F1]/80",
+                        )}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => applySuggestion(item.command)}
+                      >
+                        <span className="font-mono text-sm font-bold text-primary">
+                          {item.command}
+                        </span>
+                        <span className="text-xs leading-snug text-muted">
+                          {t(item.descriptionKey)}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                className="shrink-0 px-3"
+                disabled={sending}
+                onClick={() => fileRef.current?.click()}
+                aria-label={t("guest.supportAttachReceipt")}
+              >
+                <Paperclip className="size-4" />
+              </Button>
+              <Input
+                ref={inputRef}
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                placeholder={t("guest.supportPlaceholder")}
+                onKeyDown={onInputKeyDown}
+                aria-autocomplete="list"
+                aria-expanded={commandSuggestions.length > 0}
+                disabled={sending}
+              />
+              <Button
+                type="button"
+                disabled={sending || !canSubmit}
+                onClick={() => void send()}
+                aria-label={t("guest.send")}
+              >
+                <Send className="size-4" />
+              </Button>
+            </div>
+          </div>
         ) : null}
       </Card>
     </div>
@@ -164,6 +290,7 @@ export function HostSupportInbox() {
 
   const activeId = stayId ?? stays[0]?.id ?? null;
   const messages = data.supportMessages.filter((m) => m.stay_id === activeId);
+  const me = data.profile?.id;
 
   const send = async () => {
     if (!activeId || !body.trim()) return;
@@ -180,7 +307,6 @@ export function HostSupportInbox() {
     <Card className="mb-4 space-y-3 p-4">
       <div>
         <p className="text-sm font-bold text-ink">{t("guest.hostInboxTitle")}</p>
-        <p className="text-xs text-muted">{t("guest.supportHint")}</p>
         <p className="text-xs text-muted">{t("guest.supportDepositHostHint")}</p>
         <p className="text-xs text-muted">{t("guest.supportCancelHostHint")}</p>
       </div>
@@ -208,12 +334,13 @@ export function HostSupportInbox() {
       </div>
       <div className="max-h-48 space-y-2 overflow-y-auto">
         {messages.map((m) => (
-          <p key={m.id} className="text-sm text-ink">
-            <span className="font-bold">
-              {m.sender?.full_name ?? t("guest.host")}:
-            </span>{" "}
-            <LocalizedText text={m.body} />
-          </p>
+          <SupportMessageBubble
+            key={m.id}
+            message={m}
+            mine={m.sender_id === me}
+            hostLabel={t("guest.host")}
+            receiptLabel={t("guest.supportReceipt")}
+          />
         ))}
       </div>
       {error ? <p className="text-sm text-danger">{error}</p> : null}

@@ -141,6 +141,8 @@ export type AppData = {
   setBillStatus: (id: string, status: BillStatus) => Promise<void>;
   sendMessage: (body: string) => Promise<void>;
   uploadReceipt: (file: File) => Promise<string | null>;
+  /** Guest/host receipt or image for support chat (no write entitlement check). */
+  uploadSupportAttachment: (file: File) => Promise<string | null>;
   uploadVillaPhoto: (file: File) => Promise<string | null>;
   createInvite: (input: {
     role: Exclude<UserRole, "owner">;
@@ -153,7 +155,11 @@ export type AppData = {
     stars: 1 | 2 | 3 | 4 | 5,
     note?: string,
   ) => Promise<void>;
-  sendSupportMessage: (body: string, stayId?: string) => Promise<void>;
+  sendSupportMessage: (
+    body: string,
+    stayId?: string,
+    options?: { attachmentUrl?: string | null },
+  ) => Promise<void>;
   createGuestBriefing: (input: {
     stay_id: string;
     title: string;

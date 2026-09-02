@@ -21,7 +21,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="mt-1 text-muted">
-            {brand.name} · Last updated: 28 August 2026
+            {brand.name} · Last updated: 2 September 2026
           </p>
         </div>
 
@@ -44,8 +44,17 @@ export default function PrivacyPage() {
               notifications, and related metadata you or your team enter.
             </li>
             <li>
-              <strong className="text-ink">Files:</strong> property photos and
-              receipt images you upload (stored in our cloud storage).
+              <strong className="text-ink">Guest stay data:</strong> if you use
+              guest booking features, we store date requests, quotes, confirmed
+              stays, deposit amounts and status, briefing messages, and
+              host–guest Support chat for those stays (including slash-command
+              metadata such as <strong className="text-ink">/deposit</strong> and{" "}
+              <strong className="text-ink">/cancel</strong>).
+            </li>
+            <li>
+              <strong className="text-ink">Files:</strong> property photos,
+              bill receipt images, and deposit receipt attachments you upload in
+              Support chat (stored in our cloud storage).
             </li>
             <li>
               <strong className="text-ink">Billing data:</strong> when company
@@ -77,8 +86,15 @@ export default function PrivacyPage() {
           <h2 className="font-display text-lg font-bold">2. How we use information</h2>
           <ul className="list-disc space-y-1 pl-5 text-muted">
             <li>Provide and improve rental operations features</li>
+            <li>
+              Coordinate guest stays, date requests, quotes, deposits, briefings,
+              and host–guest Support chat
+            </li>
             <li>Authenticate users and enforce roles within an organization</li>
-            <li>Send in-app notifications (jobs, chat mentions, bills)</li>
+            <li>
+              Send in-app and push notifications (jobs, chat mentions, bills,
+              booking and deposit updates)
+            </li>
             <li>Operate the optional talent directory and public reputation pages</li>
             <li>Process company subscriptions and referral rewards when billing is active</li>
             <li>Respond to support requests and legal obligations</li>
@@ -104,7 +120,9 @@ export default function PrivacyPage() {
             <li>
               <strong className="text-ink">Other Pulse Flow users:</strong> when
               you opt into the talent directory, owners and managers can see your
-              listing; teammates you invite can see org data according to role
+              listing; teammates you invite can see org data according to role;
+              guests and property teams for the same stay can see that stay’s
+              Support messages and related booking data
             </li>
             <li>
               Authorities when required by law or to protect the Service and

@@ -29,6 +29,7 @@ import type {
 } from "@/lib/types";
 import { isConfirmedStayStatus, pickConfirmedStay } from "@/lib/guest/confirmed-stay";
 import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
+import { isUnpaidBeforeArrivalDeposit } from "@/lib/guest/deposit-from-quote";
 import { closeAcceptedStayDateRequests } from "@/lib/guest/stay-date-request";
 import {
   canBookServices,
@@ -214,6 +215,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     setBillStatus: async () => undefined,
     sendMessage: async () => undefined,
     uploadReceipt: async () => null,
+    uploadSupportAttachment: async () => null,
     uploadVillaPhoto: async () => null,
     createInvite: async () => {
       throw new Error("Connect Supabase to create invites.");
@@ -445,7 +447,12 @@ export function useSupabaseData(enabled: boolean): AppData {
     setSupportMessages(
       supportMessagesRes.error
         ? []
-        : ((supportMessagesRes.data as SupportMessageWithSender[]) ?? []),
+        : ((supportMessagesRes.data as SupportMessageWithSender[]) ?? []).map(
+            (m) => ({
+              ...m,
+              attachment_url: m.attachment_url ?? null,
+            }),
+          ),
     );
     setGuestBriefings(
       guestBriefingsRes.error
@@ -1463,6 +1470,16 @@ export function useSupabaseData(enabled: boolean): AppData {
       const { data } = supabase.storage.from("receipts").getPublicUrl(path);
       return data.publicUrl;
     },
+    uploadSupportAttachment: async (file) => {
+      if (!profile) return null;
+      const supabase = createClient();
+      const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+      const path = `${profile.org_id}/${profile.id}/support/${Date.now()}-${safeName}`;
+      const { error } = await supabase.storage.from("receipts").upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("receipts").getPublicUrl(path);
+      return data.publicUrl;
+    },
     uploadVillaPhoto: async (file) => {
       if (!profile) return null;
       requireCurrentOrgWrite();
@@ -1585,10 +1602,11 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       await refresh();
     },
-    sendSupportMessage: async (body, stayId) => {
+    sendSupportMessage: async (body, stayId, options) => {
       if (!profile) throw new Error("Not signed in.");
       const text = body.trim();
-      if (!text) return;
+      const attachmentUrl = options?.attachmentUrl?.trim() || null;
+      if (!text && !attachmentUrl) return;
 
       const stay =
         (stayId
@@ -1619,6 +1637,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         stay,
         deposit,
         ownerManagerIds: ownerManagerIds(profiles, stay.org_id),
+        hasAttachment: Boolean(attachmentUrl),
       });
 
       if (depositAction?.kind === "guest_signal") {
@@ -1629,6 +1648,7 @@ export function useSupabaseData(enabled: boolean): AppData {
             stay_id: stay.id,
             sender_id: profile.id,
             body: depositAction.displayBody,
+            attachment_url: attachmentUrl,
           })
           .select(
             "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
@@ -1682,6 +1702,7 @@ export function useSupabaseData(enabled: boolean): AppData {
             stay_id: stay.id,
             sender_id: profile.id,
             body: depositAction.displayBody,
+            attachment_url: attachmentUrl,
           })
           .select(
             "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
@@ -1721,6 +1742,7 @@ export function useSupabaseData(enabled: boolean): AppData {
             stay_id: stay.id,
             sender_id: profile.id,
             body: cancelAction.displayBody,
+            attachment_url: attachmentUrl,
           })
           .select(
             "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
@@ -1747,6 +1769,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           stay_id: stay.id,
           sender_id: profile.id,
           body: text,
+          attachment_url: attachmentUrl,
         })
         .select(
           "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
@@ -2012,6 +2035,9 @@ export function useSupabaseData(enabled: boolean): AppData {
 
       const villaName = villa?.name ?? "Villa";
       const dateLine = `${stay.check_in} → ${stay.check_out}`;
+      const stayDeposit = scopedGuestDeposits.find((d) => d.stay_id === stayId);
+      const hostCancelledUnpaidDeposit =
+        !isGuest && isUnpaidBeforeArrivalDeposit(stayDeposit);
       await insertNotifications(
         supabase,
         [
@@ -2030,7 +2056,9 @@ export function useSupabaseData(enabled: boolean): AppData {
                   org_id: stay.org_id,
                   kind: "guest_update",
                   title: "Booking cancelled",
-                  body: `${villaName} · ${dateLine} was cancelled by your host.`,
+                  body: hostCancelledUnpaidDeposit
+                    ? `${villaName} · ${dateLine} was cancelled by your host because the deposit due before arrival was not paid or confirmed.`
+                    : `${villaName} · ${dateLine} was cancelled by your host.`,
                   href: "/villas",
                   entity_id: stayId,
                   audience_profile_ids: [stay.guest_profile_id],

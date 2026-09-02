@@ -216,9 +216,11 @@ export function GuestHome({ name }: { name: string }) {
           <p className="font-display text-base font-bold text-ink">
             {t("guest.cancelBookingTitle")}
           </p>
+          <p className="text-sm text-muted">
+            {t("guest.cancelBookingDescription")}
+          </p>
           {canSelfCancel ? (
             <>
-              <p className="text-sm text-muted">{t("guest.cancelBookingHint")}</p>
               {cancelMsg ? (
                 <p className="text-sm font-semibold text-secondary">{cancelMsg}</p>
               ) : null}
@@ -257,13 +259,6 @@ export function GuestHome({ name }: { name: string }) {
             </>
           ) : cancelBlocked ? (
             <div className="space-y-2 text-sm">
-              <p className="text-muted">
-                {t(
-                  cancelBlocked === "too_late"
-                    ? "guest.cancelBookingTooLate"
-                    : "guest.cancelBookingContactSupport",
-                )}
-              </p>
               <Link
                 href="/messages"
                 className="inline-block font-bold text-primary"

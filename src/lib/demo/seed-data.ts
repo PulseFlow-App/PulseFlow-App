@@ -1003,6 +1003,7 @@ export const demoSupportMessages: SupportMessage[] = [
     stay_id: DEMO_STAY_ID,
     sender_id: DEMO_GUEST_ID,
     body: "Hi - is the pool heater already on this evening?",
+    attachment_url: null,
     created_at: daysAgo(1) + "T15:20:00.000Z",
   },
   {
@@ -1011,6 +1012,7 @@ export const demoSupportMessages: SupportMessage[] = [
     stay_id: DEMO_STAY_ID,
     sender_id: DEMO_OWNER_ID,
     body: "Yes, it turns on at 16:00 every day. Enjoy the sunset!",
+    attachment_url: null,
     created_at: daysAgo(1) + "T15:35:00.000Z",
   },
 ];

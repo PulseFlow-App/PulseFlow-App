@@ -32,6 +32,7 @@ export function resolveSupportDepositAction(input: {
   stay: { id: string; org_id: string; guest_profile_id: string };
   deposit: GuestDeposit | undefined;
   ownerManagerIds: string[];
+  hasAttachment?: boolean;
 }): SupportDepositAction | null {
   const cmd = parseDepositCommand(input.body, input.profile.role);
   if (!cmd) return null;
@@ -52,8 +53,8 @@ export function resolveSupportDepositAction(input: {
           kind: "guest_update",
           title: "Guest sent /deposit",
           body: amountLine
-            ? `${input.profile.full_name} is ready to pay ${amountLine}. Open Support and reply with /deposit when received.`
-            : `${input.profile.full_name} sent /deposit in Support chat.`,
+            ? `${input.profile.full_name} is ready to pay ${amountLine}.${input.hasAttachment ? " Receipt attached in Support." : ""} Open Support and reply with /deposit when received.`
+            : `${input.profile.full_name} sent /deposit in Support chat.${input.hasAttachment ? " Receipt attached." : ""}`,
           href: "/messages",
           entity_id: input.stay.id,
           audience_profile_ids: input.ownerManagerIds,

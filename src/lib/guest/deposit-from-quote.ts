@@ -37,3 +37,13 @@ export function buildDueDepositFromRequest(
 export function isDepositPaid(deposit: GuestDeposit | null | undefined): boolean {
   return !!deposit && deposit.status !== "due";
 }
+
+export function isUnpaidBeforeArrivalDeposit(
+  deposit: GuestDeposit | null | undefined,
+): boolean {
+  return (
+    !!deposit &&
+    deposit.status === "due" &&
+    deposit.deposit_timing === "before_arrival"
+  );
+}

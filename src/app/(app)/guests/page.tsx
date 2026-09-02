@@ -22,6 +22,7 @@ import { LocalizedText } from "@/components/i18n/localized-text";
 import type { GuestBriefingCategory } from "@/lib/types";
 import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { isUnpaidBeforeArrivalDeposit } from "@/lib/guest/deposit-from-quote";
 
 const CATEGORIES: GuestBriefingCategory[] = [
   "check_in",
@@ -366,6 +367,11 @@ export default function GuestsPage() {
                   {t("guests.cancelTitle")}
                 </p>
                 <p className="text-xs text-muted">{t("guests.cancelHint")}</p>
+                {isUnpaidBeforeArrivalDeposit(deposit) ? (
+                  <p className="text-xs font-medium text-amber-800">
+                    {t("guests.cancelUnpaidDepositHint")}
+                  </p>
+                ) : null}
               </div>
               {cancelMsg ? (
                 <p
