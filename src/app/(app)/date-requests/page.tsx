@@ -63,6 +63,17 @@ export default function DateRequestsPage() {
     [data.stayDateRequests],
   );
 
+  const awaitingGuest = useMemo(
+    () =>
+      data.stayDateRequests
+        .filter((r) => r.status === "quoted")
+        .sort(
+          (a, b) =>
+            +new Date(b.created_at) - +new Date(a.created_at),
+        ),
+    [data.stayDateRequests],
+  );
+
   useEffect(() => {
     if (!data.ready || !data.profile) return;
     if (!canRespond) router.replace("/home");
@@ -72,16 +83,10 @@ export default function DateRequestsPage() {
   if (!canRespond) return <LoadingState />;
 
   const openAccept = (requestId: string) => {
-    const req = pending.find((r) => r.id === requestId);
     setAcceptFor(requestId);
     setError(null);
-    if (req?.guest_price_amount && req.guest_price_currency) {
-      setQuotedPrice(String(req.guest_price_amount));
-      setQuotedCurrency(normalizeBillCurrency(req.guest_price_currency));
-    } else {
-      setQuotedPrice("");
-      setQuotedCurrency(DEFAULT_BILL_CURRENCY);
-    }
+    setQuotedPrice("");
+    setQuotedCurrency(DEFAULT_BILL_CURRENCY);
     setDepositAmount("");
     setDepositTiming("before_arrival");
     setPaymentNote(DEFAULT_IN_PERSON_PAYMENT_NOTE);
@@ -123,17 +128,6 @@ export default function DateRequestsPage() {
     }
   };
 
-  const awaitingGuest = useMemo(
-    () =>
-      data.stayDateRequests
-        .filter((r) => r.status === "quoted")
-        .sort(
-          (a, b) =>
-            +new Date(b.created_at) - +new Date(a.created_at),
-        ),
-    [data.stayDateRequests],
-  );
-
   return (
     <div className="space-y-4 animate-rise">
       <div>
@@ -174,16 +168,6 @@ export default function DateRequestsPage() {
                       {formatShortDate(r.check_in)} →{" "}
                       {formatShortDate(r.check_out)}
                     </p>
-                    {r.guest_price_amount && r.guest_price_currency ? (
-                      <p className="mt-1 text-sm font-semibold text-ink">
-                        {t("dateRequests.guestOffer", {
-                          amount: formatMoney(
-                            Number(r.guest_price_amount),
-                            r.guest_price_currency,
-                          ),
-                        })}
-                      </p>
-                    ) : null}
                     {r.note ? (
                       <p className="mt-2 text-sm text-ink">
                         <LocalizedText text={r.note} />

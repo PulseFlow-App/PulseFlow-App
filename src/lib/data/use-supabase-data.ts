@@ -2114,15 +2114,6 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       const supabase = createClient();
       const villa = villas.find((v) => v.id === input.villa_id);
-      const guestPrice =
-        input.guest_price_amount != null &&
-        Number.isFinite(Number(input.guest_price_amount)) &&
-        Number(input.guest_price_amount) > 0
-          ? Number(input.guest_price_amount)
-          : null;
-      const guestCurrency = guestPrice
-        ? normalizeBillCurrency(input.guest_price_currency ?? "THB")
-        : null;
       const { data: inserted, error } = await supabase
         .from("stay_date_requests")
         .insert({
@@ -2133,8 +2124,8 @@ export function useSupabaseData(enabled: boolean): AppData {
           check_out: input.check_out,
           note: input.note?.trim() || null,
           status: "pending",
-          guest_price_amount: guestPrice,
-          guest_price_currency: guestCurrency,
+          guest_price_amount: null,
+          guest_price_currency: null,
         })
         .select("id")
         .single();
@@ -2148,10 +2139,6 @@ export function useSupabaseData(enabled: boolean): AppData {
         }
         throw error;
       }
-      const priceHint =
-        guestPrice && guestCurrency
-          ? ` · ${formatMoney(guestPrice, guestCurrency)} offered`
-          : "";
       const managers = ownerManagerIds(profiles, profile.org_id);
       if (managers.length && inserted?.id) {
         await insertNotifications(
@@ -2161,7 +2148,7 @@ export function useSupabaseData(enabled: boolean): AppData {
               org_id: profile.org_id,
               kind: "appointment",
               title: "Date request",
-              body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}${priceHint}`,
+              body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}`,
               href: "/date-requests",
               entity_id: inserted.id,
               audience_profile_ids: managers,

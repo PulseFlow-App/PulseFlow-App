@@ -1,6 +1,7 @@
 const en = {
   "common.save": "Save",
   "common.cancel": "Cancel",
+  "common.confirm": "Confirm",
   "common.add": "Add",
   "common.edit": "Edit",
   "common.delete": "Delete",
@@ -770,7 +771,7 @@ const en = {
     "Browse properties from this host and request dates for your stay.",
   "guest.villasHost": "Hosted by {name}",
   "guest.villasEmpty": "No company villas to show.",
-  "guest.requestDates": "Request dates & price",
+  "guest.requestDates": "Request dates",
   "guest.checkIn": "Check-in",
   "guest.checkOut": "Check-out",
   "guest.requestNote": "Note",
@@ -791,11 +792,14 @@ const en = {
     "Review the total, deposit, and payment note. Accept to confirm your stay, or decline to cancel this request.",
   "guest.quoteConfirm": "Accept price & confirm stay",
   "guest.quoteDecline": "Decline quote",
+  "guest.quoteDeclineTitle": "Decline quote?",
   "guest.quoteDeclineConfirm":
-    "Decline this price and cancel the date request?",
+    "This will cancel the date request. Your host will need a new request if you change your mind.",
   "guest.quoteConfirmed": "Stay confirmed — see you soon!",
   "guest.requestCancel": "Cancel request",
-  "guest.requestCancelConfirm": "Cancel this date request?",
+  "guest.requestCancelTitle": "Cancel request?",
+  "guest.requestCancelConfirm":
+    "Your host will no longer see this date request for these dates.",
   "guest.requestCancelled": "Date request cancelled.",
   "guest.quotePayment": "How to pay",
   "guest.quoteDeposit": "Deposit: {amount}",

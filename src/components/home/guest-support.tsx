@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { isGuestApp } from "@/lib/roles";
-import { isConfirmedStay } from "@/lib/guest/confirmed-stay";
+import { isConfirmedStay, pickGuestSupportStay } from "@/lib/guest/confirmed-stay";
 import { isSupportSystemMessage } from "@/lib/guest/support-deposit-command";
 import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
 
@@ -22,7 +22,8 @@ export function GuestSupportChat() {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const stay = isConfirmedStay(data.activeStay) ? data.activeStay : null;
+  const stay = pickGuestSupportStay(data.guestStays);
+  const canSend = isConfirmedStay(stay);
   const needsSupportCancel = stay ? !canGuestSelfCancelStay(stay) : false;
   const messages = data.supportMessages.filter((m) => m.stay_id === stay?.id);
   const me = data.profile?.id;
@@ -32,7 +33,7 @@ export function GuestSupportChat() {
   }, [messages.length]);
 
   const send = async () => {
-    if (!body.trim() || sending) return;
+    if (!canSend || !body.trim() || sending) return;
     setSending(true);
     setError(null);
     try {
@@ -116,6 +117,7 @@ export function GuestSupportChat() {
 
         {error ? <p className="text-sm text-danger">{error}</p> : null}
 
+        {canSend ? (
         <div className="flex gap-2">
           <Input
             value={body}
@@ -137,6 +139,7 @@ export function GuestSupportChat() {
             <Send className="size-4" />
           </Button>
         </div>
+        ) : null}
       </Card>
     </div>
   );

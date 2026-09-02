@@ -14,15 +14,12 @@ import { activeAcceptedRequestForVilla } from "@/lib/guest/stay-date-request";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
-import {
-  BILL_CURRENCIES,
-  billCurrencyLabel,
-  DEFAULT_BILL_CURRENCY,
-  normalizeBillCurrency,
-  type BillCurrency,
-} from "@/lib/billing/currencies";
-import { formatMoney } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { todayIsoDate } from "@/lib/villas/status-from-dates";
+
+type GuestConfirm =
+  | { kind: "cancel-request"; requestId: string }
+  | { kind: "decline-quote"; requestId: string };
 
 function nextDayIso(iso: string) {
   const [y, m, d] = iso.split("-").map(Number);
@@ -42,13 +39,10 @@ export function GuestVillasBrowse() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [note, setNote] = useState("");
-  const [priceAmount, setPriceAmount] = useState("");
-  const [priceCurrency, setPriceCurrency] = useState<BillCurrency>(
-    DEFAULT_BILL_CURRENCY,
-  );
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [quoteBusy, setQuoteBusy] = useState(false);
+  const [confirm, setConfirm] = useState<GuestConfirm | null>(null);
 
   const checkOutMin =
     checkIn && checkIn >= minDate ? nextDayIso(checkIn) : nextDayIso(minDate);
@@ -95,15 +89,12 @@ export function GuestVillasBrowse() {
         check_in: checkIn,
         check_out: checkOut,
         note,
-        guest_price_amount: priceAmount ? Number(priceAmount) : null,
-        guest_price_currency: priceAmount ? priceCurrency : null,
       });
       setOk(t("guest.requestSent"));
       setRequestFor(null);
       setCheckIn("");
       setCheckOut("");
       setNote("");
-      setPriceAmount("");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("common.error"));
     }
@@ -123,28 +114,23 @@ export function GuestVillasBrowse() {
     }
   };
 
-  const declineQuote = async (requestId: string) => {
-    if (!window.confirm(t("guest.quoteDeclineConfirm"))) return;
+  const declineQuote = (requestId: string) => {
+    setConfirm({ kind: "decline-quote", requestId });
+  };
+
+  const cancelPending = (requestId: string) => {
+    setConfirm({ kind: "cancel-request", requestId });
+  };
+
+  const runConfirmedAction = async () => {
+    if (!confirm) return;
     setQuoteBusy(true);
     setError(null);
     setOk(null);
     try {
-      await data.cancelStayDateRequest(requestId);
+      await data.cancelStayDateRequest(confirm.requestId);
       setOk(t("guest.requestCancelled"));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("common.error"));
-    } finally {
-      setQuoteBusy(false);
-    }
-  };
-
-  const cancelPending = async (requestId: string) => {
-    if (!window.confirm(t("guest.requestCancelConfirm"))) return;
-    setQuoteBusy(true);
-    setError(null);
-    try {
-      await data.cancelStayDateRequest(requestId);
-      setOk(t("guest.requestCancelled"));
+      setConfirm(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("common.error"));
     } finally {
@@ -163,6 +149,28 @@ export function GuestVillasBrowse() {
 
   return (
     <div className="space-y-4 animate-rise">
+      <ConfirmDialog
+        open={confirm?.kind === "cancel-request"}
+        title={t("guest.requestCancelTitle")}
+        description={t("guest.requestCancelConfirm")}
+        confirmLabel={t("guest.requestCancel")}
+        busy={quoteBusy}
+        onConfirm={() => void runConfirmedAction()}
+        onClose={() => {
+          if (!quoteBusy) setConfirm(null);
+        }}
+      />
+      <ConfirmDialog
+        open={confirm?.kind === "decline-quote"}
+        title={t("guest.quoteDeclineTitle")}
+        description={t("guest.quoteDeclineConfirm")}
+        confirmLabel={t("guest.quoteDecline")}
+        busy={quoteBusy}
+        onConfirm={() => void runConfirmedAction()}
+        onClose={() => {
+          if (!quoteBusy) setConfirm(null);
+        }}
+      />
       <div>
         <h1 className="font-display text-2xl font-bold text-ink">
           {t("guest.villasTitle")}
@@ -223,7 +231,7 @@ export function GuestVillasBrowse() {
                     request={quoted}
                     busy={quoteBusy}
                     onConfirm={() => void confirmQuote(quoted.id)}
-                    onDecline={() => void declineQuote(quoted.id)}
+                    onDecline={() => declineQuote(quoted.id)}
                   />
                 ) : pending ? (
                   <div className="space-y-2">
@@ -233,22 +241,12 @@ export function GuestVillasBrowse() {
                         to: pending.check_out,
                       })}
                     </p>
-                    {pending.guest_price_amount && pending.guest_price_currency ? (
-                      <p className="text-sm font-semibold text-ink">
-                        {t("guest.requestPendingPrice", {
-                          amount: formatMoney(
-                            Number(pending.guest_price_amount),
-                            pending.guest_price_currency,
-                          ),
-                        })}
-                      </p>
-                    ) : null}
                     <Button
                       type="button"
                       variant="ghost"
                       className="rounded-full"
                       disabled={quoteBusy}
-                      onClick={() => void cancelPending(pending.id)}
+                      onClick={() => cancelPending(pending.id)}
                     >
                       {t("guest.requestCancel")}
                     </Button>
@@ -307,41 +305,6 @@ export function GuestVillasBrowse() {
                         placeholder={t("guest.requestNotePh")}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor={`price-${v.id}`}>
-                        {t("guest.requestPrice")}
-                      </Label>
-                      <p className="mb-1 text-xs text-muted">
-                        {t("guest.requestPriceHint")}
-                      </p>
-                      <div className="grid grid-cols-[1fr_auto] gap-2">
-                        <Input
-                          id={`price-${v.id}`}
-                          type="number"
-                          inputMode="decimal"
-                          min={0}
-                          value={priceAmount}
-                          onChange={(e) => setPriceAmount(e.target.value)}
-                          placeholder={t("guest.requestPricePh")}
-                        />
-                        <select
-                          value={priceCurrency}
-                          onChange={(e) =>
-                            setPriceCurrency(
-                              normalizeBillCurrency(e.target.value),
-                            )
-                          }
-                          className="rounded-2xl border-0 bg-[#F7F5F1] px-3 py-3 text-sm font-semibold text-ink"
-                          aria-label={t("bills.currency")}
-                        >
-                          {BILL_CURRENCIES.map((code) => (
-                            <option key={code} value={code}>
-                              {billCurrencyLabel(code)}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
                     <div className="flex gap-2">
                       <Button type="button" onClick={() => void submit(v.id)}>
                         {t("guest.sendRequest")}
@@ -365,7 +328,6 @@ export function GuestVillasBrowse() {
                       setCheckIn("");
                       setCheckOut("");
                       setNote("");
-                      setPriceAmount("");
                       setError(null);
                     }}
                   >

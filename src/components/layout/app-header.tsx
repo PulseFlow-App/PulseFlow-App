@@ -19,7 +19,10 @@ export function AppHeader({
   const { t } = useI18n();
   const brandName = useBrandName();
   const data = useData();
-  const showChat = canUseTeamChat(data.orgKind, data.profile?.role);
+  const showChat =
+    data.ready &&
+    Boolean(data.profile?.role) &&
+    canUseTeamChat(data.orgKind, data.profile?.role);
 
   return (
     <header className="flex w-full max-w-full items-center justify-between gap-2 overflow-hidden pb-3 pt-[max(0.65rem,env(safe-area-inset-top))]">

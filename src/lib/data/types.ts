@@ -181,8 +181,6 @@ export type AppData = {
     check_in: string;
     check_out: string;
     note?: string | null;
-    guest_price_amount?: number | null;
-    guest_price_currency?: string | null;
   }) => Promise<void>;
   respondStayDateRequest: (
     requestId: string,

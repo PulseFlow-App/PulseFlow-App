@@ -56,48 +56,47 @@ const staffTabs: {
   { href: "/bills", labelKey: "nav.bills", icon: Receipt },
 ];
 
-/** Lean guest stay app - stay home, company villas, support (after confirmed stay), deposit bills. */
-const guestTabsBase: {
-  href: string;
-  labelKey: MessageKey;
-  icon: typeof Home;
-}[] = [
-  { href: "/home", labelKey: "guest.nav.stay", icon: Home },
-  { href: "/villas", labelKey: "guest.nav.villas", icon: Building2 },
-  { href: "/bills", labelKey: "guest.nav.bills", icon: Receipt },
+/** Lean guest stay app — stay home, company villas, support, deposit bills. */
+const guestTabs = [
+  { href: "/home", labelKey: "guest.nav.stay" as MessageKey, icon: Home },
+  { href: "/villas", labelKey: "guest.nav.villas" as MessageKey, icon: Building2 },
+  { href: "/messages", labelKey: "guest.nav.support" as MessageKey, icon: MessageCircle },
+  { href: "/bills", labelKey: "guest.nav.bills" as MessageKey, icon: Receipt },
 ];
-
-const guestSupportTab = {
-  href: "/messages",
-  labelKey: "guest.nav.support" as MessageKey,
-  icon: MessageCircle,
-};
 
 export function BottomNav() {
   const pathname = usePathname();
   const data = useData();
   const { t } = useI18n();
   const role = data.profile?.role;
-  const guestHasConfirmedStay = Boolean(data.activeStay);
   const isCompanyHost =
     data.orgKind === "company" &&
     (role === "owner" || role === "manager");
-  const tabs = role
-    ? isGuestApp(role)
-      ? guestHasConfirmedStay
-        ? [
-            guestTabsBase[0],
-            guestTabsBase[1],
-            guestSupportTab,
-            guestTabsBase[2],
-          ]
-        : guestTabsBase
-      : isStaffApp(role)
-        ? staffTabs
-        : isCompanyHost
-          ? companyHostTabs
-          : mainTabs
-    : mainTabs;
+
+  if (!data.ready || !role) {
+    return (
+      <nav
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))]"
+        aria-hidden
+      >
+        <ul className="flex w-full max-w-md items-center justify-between gap-1 rounded-full bg-nav px-2 py-2 shadow-[0_16px_40px_rgba(28,28,30,0.28)]">
+          {[0, 1, 2, 3].map((i) => (
+            <li key={i} className="flex-1">
+              <div className="mx-auto size-11 rounded-full bg-white/15" />
+            </li>
+          ))}
+        </ul>
+      </nav>
+    );
+  }
+
+  const tabs = isGuestApp(role)
+    ? guestTabs
+    : isStaffApp(role)
+      ? staffTabs
+      : isCompanyHost
+        ? companyHostTabs
+        : mainTabs;
 
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))]">

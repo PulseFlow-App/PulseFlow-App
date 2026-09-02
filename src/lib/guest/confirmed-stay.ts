@@ -20,3 +20,13 @@ export function pickConfirmedStay(stays: GuestStay[]): GuestStay | null {
     null
   );
 }
+
+/** Prefer active/upcoming stay; fall back to latest stay for support thread access. */
+export function pickGuestSupportStay(stays: GuestStay[]): GuestStay | null {
+  const confirmed = pickConfirmedStay(stays);
+  if (confirmed) return confirmed;
+  if (!stays.length) return null;
+  return [...stays].sort(
+    (a, b) => +new Date(b.created_at) - +new Date(a.created_at),
+  )[0] ?? null;
+}

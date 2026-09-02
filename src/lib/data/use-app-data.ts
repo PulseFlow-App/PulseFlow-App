@@ -1289,15 +1289,6 @@ function useDemoData(): AppData {
         throw new Error("Check-out must be after check-in.");
       }
       const requestId = uid("dates");
-      const guestPrice =
-        input.guest_price_amount != null &&
-        Number.isFinite(Number(input.guest_price_amount)) &&
-        Number(input.guest_price_amount) > 0
-          ? Number(input.guest_price_amount)
-          : null;
-      const guestCurrency = guestPrice
-        ? normalizeBillCurrency(input.guest_price_currency ?? "THB")
-        : null;
       updateDemoStore((s) => ({
         ...s,
         stayDateRequests: [
@@ -1311,8 +1302,8 @@ function useDemoData(): AppData {
             check_out: input.check_out,
             note: input.note?.trim() || null,
             status: "pending",
-            guest_price_amount: guestPrice,
-            guest_price_currency: guestCurrency,
+            guest_price_amount: null,
+            guest_price_currency: null,
             quoted_price_amount: null,
             quoted_price_currency: null,
             quoted_deposit_amount: null,
@@ -1324,16 +1315,12 @@ function useDemoData(): AppData {
         ],
       }));
       const villa = store.villas.find((v) => v.id === input.villa_id);
-      const priceHint =
-        guestPrice && guestCurrency
-          ? ` · ${formatMoney(guestPrice, guestCurrency)} offered`
-          : "";
       demoPushNotifications([
         makeNotification({
           org_id: profile.org_id,
           kind: "appointment",
           title: "Date request",
-          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}${priceHint}`,
+          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}`,
           href: "/date-requests",
           entity_id: requestId,
           audience_profile_ids: ownerManagerIds(store.profiles, profile.org_id),

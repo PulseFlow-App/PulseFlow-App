@@ -15,6 +15,7 @@ import { formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { StayQuoteCard } from "@/components/guest/stay-quote-card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   canGuestSelfCancelStay,
   guestCancelBlockedReason,
@@ -53,6 +54,7 @@ export function GuestHome({ name }: { name: string }) {
   const [photoKind, setPhotoKind] = useState<"arrival" | "departure">("arrival");
   const [cancelBusy, setCancelBusy] = useState(false);
   const [cancelMsg, setCancelMsg] = useState<string | null>(null);
+  const [declineQuoteId, setDeclineQuoteId] = useState<string | null>(null);
 
   const canSelfCancel = stay ? canGuestSelfCancelStay(stay) : false;
   const cancelBlocked = stay ? guestCancelBlockedReason(stay) : null;
@@ -85,6 +87,32 @@ export function GuestHome({ name }: { name: string }) {
 
     return (
       <div className="space-y-4 animate-rise">
+        <ConfirmDialog
+          open={declineQuoteId != null}
+          title={t("guest.quoteDeclineTitle")}
+          description={t("guest.quoteDeclineConfirm")}
+          confirmLabel={t("guest.quoteDecline")}
+          busy={quoteBusy}
+          onConfirm={() => {
+            if (!declineQuoteId) return;
+            setQuoteBusy(true);
+            void data
+              .cancelStayDateRequest(declineQuoteId)
+              .then(() => {
+                setQuoteMsg(t("guest.requestCancelled"));
+                setDeclineQuoteId(null);
+              })
+              .catch((e) =>
+                setQuoteMsg(
+                  e instanceof Error ? e.message : t("common.error"),
+                ),
+              )
+              .finally(() => setQuoteBusy(false));
+          }}
+          onClose={() => {
+            if (!quoteBusy) setDeclineQuoteId(null);
+          }}
+        />
         <div>
           <p className="text-sm text-muted">{t("guest.homeSubtitle")}</p>
           <h1 className="font-display text-2xl font-bold text-ink">
@@ -114,19 +142,7 @@ export function GuestHome({ name }: { name: string }) {
                   )
                   .finally(() => setQuoteBusy(false));
               }}
-              onDecline={() => {
-                if (!window.confirm(t("guest.quoteDeclineConfirm"))) return;
-                setQuoteBusy(true);
-                void data
-                  .cancelStayDateRequest(quotedRequest.id)
-                  .then(() => setQuoteMsg(t("guest.requestCancelled")))
-                  .catch((e) =>
-                    setQuoteMsg(
-                      e instanceof Error ? e.message : t("common.error"),
-                    ),
-                  )
-                  .finally(() => setQuoteBusy(false));
-              }}
+              onDecline={() => setDeclineQuoteId(quotedRequest.id)}
             />
           </>
         ) : (
