@@ -609,6 +609,22 @@ export function demoPushNotifications(items: AppNotification[]) {
     ...s,
     notifications: [...items, ...(s.notifications ?? [])],
   }));
+  if (typeof window !== "undefined") {
+    void import("@/lib/push/client").then(({ dispatchPushForNotifications }) => {
+      dispatchPushForNotifications(
+        items.map((n) => ({
+          org_id: n.org_id,
+          kind: n.kind,
+          title: n.title,
+          body: n.body,
+          href: n.href,
+          entity_id: n.entity_id,
+          audience_profile_ids: n.audience_profile_ids,
+          dedupe_key: n.dedupe_key,
+        })),
+      );
+    });
+  }
 }
 
 export function demoMarkNotificationRead(profileId: string, id: string) {

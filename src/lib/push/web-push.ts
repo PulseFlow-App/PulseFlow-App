@@ -12,9 +12,10 @@ export type PushPayload = {
   audience_profile_ids?: string[] | null;
 };
 
-/** Kinds that should wake a locked phone. Keep chat/schedule noise in-app. */
+/** Kinds that should wake a locked phone. */
 export const PUSH_KINDS = new Set<NotificationKind>([
   "appointment",
+  "message",
   "urgent_task",
   "task_assigned",
   "task_completed",

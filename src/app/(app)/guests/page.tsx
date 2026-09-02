@@ -5,8 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Circle } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import {
+  BILL_CURRENCIES,
+  billCurrencyLabel,
+  normalizeBillCurrency,
+  type BillCurrency,
+} from "@/lib/billing/currencies";
 import { Button } from "@/components/ui/button";
-import { Input, Label, Textarea } from "@/components/ui/input";
+import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import { formatShortDate } from "@/lib/utils";
@@ -26,6 +32,14 @@ const CATEGORIES: GuestBriefingCategory[] = [
   "custom",
 ];
 
+function parseDepositAmount(raw: string): number | null {
+  const cleaned = raw.replace(/,/g, ".").trim();
+  if (!cleaned) return null;
+  const amount = Number(cleaned);
+  if (!Number.isFinite(amount) || amount < 0) return null;
+  return amount;
+}
+
 export default function GuestsPage() {
   const data = useData();
   const { t } = useI18n();
@@ -36,10 +50,13 @@ export default function GuestsPage() {
   const [body, setBody] = useState("");
   const [category, setCategory] = useState<GuestBriefingCategory>("custom");
   const [depositAmount, setDepositAmount] = useState("");
-  const [depositCurrency, setDepositCurrency] = useState("THB");
+  const [depositCurrency, setDepositCurrency] = useState<BillCurrency>("THB");
   const [depositNotes, setDepositNotes] = useState("");
+  const [depositDirty, setDepositDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [depositBusy, setDepositBusy] = useState(false);
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const [cancelMsg, setCancelMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [depositMsg, setDepositMsg] = useState<string | null>(null);
@@ -73,11 +90,11 @@ export default function GuestsPage() {
     : null;
 
   useEffect(() => {
-    if (!activeId) return;
+    if (!activeId || depositDirty) return;
     const row = data.guestDeposits.find((d) => d.stay_id === activeId);
     if (row) {
       setDepositAmount(String(row.amount));
-      setDepositCurrency(row.currency || "THB");
+      setDepositCurrency(normalizeBillCurrency(row.currency));
       setDepositNotes(row.notes ?? "");
     } else {
       setDepositAmount("");
@@ -85,7 +102,7 @@ export default function GuestsPage() {
       setDepositNotes("");
     }
     setDepositMsg(null);
-  }, [activeId, data.guestDeposits]);
+  }, [activeId, data.guestDeposits, depositDirty]);
 
   if (!data.ready || !data.profile) return <LoadingState />;
   if (!canManage) return <LoadingState />;
@@ -120,15 +137,21 @@ export default function GuestsPage() {
 
   const saveDeposit = async () => {
     if (!activeId) return;
+    const amount = parseDepositAmount(depositAmount);
+    if (amount == null) {
+      setDepositMsg(t("guests.depositInvalid"));
+      return;
+    }
     setDepositBusy(true);
     setDepositMsg(null);
     try {
       await data.upsertGuestDeposit({
         stay_id: activeId,
-        amount: Number(depositAmount),
+        amount,
         currency: depositCurrency,
         notes: depositNotes,
       });
+      setDepositDirty(false);
       setDepositMsg(t("guests.depositSaved"));
     } catch (e) {
       setDepositMsg(e instanceof Error ? e.message : t("common.error"));
@@ -136,6 +159,36 @@ export default function GuestsPage() {
       setDepositBusy(false);
     }
   };
+
+  const cancelBooking = async () => {
+    if (!activeStay || !activeId) return;
+    const guest = data.profiles.find((p) => p.id === activeStay.guest_profile_id);
+    const villa =
+      data.villas.find((v) => v.id === activeStay.villa_id) ??
+      data.allOrgVillas.find((v) => v.id === activeStay.villa_id);
+    const ok = window.confirm(
+      t("guests.cancelConfirm", {
+        guest: guest?.full_name ?? t("guests.guest"),
+        villa: villa?.name ?? t("dateRequests.unknownVilla"),
+        from: formatShortDate(activeStay.check_in),
+        to: formatShortDate(activeStay.check_out),
+      }),
+    );
+    if (!ok) return;
+    setCancelBusy(true);
+    setCancelMsg(null);
+    try {
+      await data.cancelGuestStay(activeId);
+      setCancelMsg(t("guests.cancelSaved"));
+      setDepositDirty(false);
+    } catch (e) {
+      setCancelMsg(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setCancelBusy(false);
+    }
+  };
+
+  const parsedDeposit = parseDepositAmount(depositAmount);
 
   return (
     <div className="space-y-4 animate-rise">
@@ -176,8 +229,10 @@ export default function GuestsPage() {
                   type="button"
                   onClick={() => {
                     setStayId(s.id);
+                    setDepositDirty(false);
                     setOk(null);
                     setError(null);
+                    setCancelMsg(null);
                   }}
                   className={cn(
                     "rounded-full px-3 py-1.5 text-xs font-bold",
@@ -235,27 +290,38 @@ export default function GuestsPage() {
                 </Label>
                 <Input
                   id="deposit-amount"
-                  type="number"
+                  type="text"
                   inputMode="decimal"
-                  min={0}
-                  step="0.01"
+                  autoComplete="off"
                   value={depositAmount}
-                  onChange={(e) => setDepositAmount(e.target.value)}
+                  onChange={(e) => {
+                    setDepositDirty(true);
+                    setDepositAmount(e.target.value);
+                  }}
+                  placeholder="0"
                 />
               </div>
               <div>
                 <Label htmlFor="deposit-currency">
                   {t("guests.depositCurrency")}
                 </Label>
-                <Input
+                <Select
                   id="deposit-currency"
                   value={depositCurrency}
-                  onChange={(e) =>
-                    setDepositCurrency(e.target.value.toUpperCase())
-                  }
-                  className="w-24"
-                  maxLength={3}
-                />
+                  onChange={(e) => {
+                    setDepositDirty(true);
+                    setDepositCurrency(
+                      normalizeBillCurrency(e.target.value) as BillCurrency,
+                    );
+                  }}
+                  className="w-28"
+                >
+                  {BILL_CURRENCIES.map((code) => (
+                    <option key={code} value={code}>
+                      {billCurrencyLabel(code)}
+                    </option>
+                  ))}
+                </Select>
               </div>
             </div>
             <div>
@@ -263,7 +329,10 @@ export default function GuestsPage() {
               <Input
                 id="deposit-notes"
                 value={depositNotes}
-                onChange={(e) => setDepositNotes(e.target.value)}
+                onChange={(e) => {
+                  setDepositDirty(true);
+                  setDepositNotes(e.target.value);
+                }}
                 placeholder={t("guests.depositNotesPh")}
               />
             </div>
@@ -282,13 +351,44 @@ export default function GuestsPage() {
             <Button
               type="button"
               disabled={
-                depositBusy || !depositAmount.trim() || !activeId
+                depositBusy || parsedDeposit == null || !activeId
               }
               onClick={() => void saveDeposit()}
             >
               {depositBusy ? t("common.saving") : t("guests.depositSave")}
             </Button>
           </Card>
+
+          {activeStay ? (
+            <Card className="space-y-3 border border-danger/20 p-4">
+              <div>
+                <p className="font-display text-lg font-bold text-ink">
+                  {t("guests.cancelTitle")}
+                </p>
+                <p className="text-xs text-muted">{t("guests.cancelHint")}</p>
+              </div>
+              {cancelMsg ? (
+                <p
+                  className={cn(
+                    "text-sm font-semibold",
+                    cancelMsg === t("guests.cancelSaved")
+                      ? "text-secondary"
+                      : "text-danger",
+                  )}
+                >
+                  {cancelMsg}
+                </p>
+              ) : null}
+              <Button
+                type="button"
+                variant="danger"
+                disabled={cancelBusy}
+                onClick={() => void cancelBooking()}
+              >
+                {cancelBusy ? t("common.saving") : t("guests.cancelButton")}
+              </Button>
+            </Card>
+          ) : null}
 
           <Card className="space-y-3 p-4">
             <div>

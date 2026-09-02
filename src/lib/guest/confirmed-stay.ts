@@ -2,7 +2,10 @@ import type { GuestStay, GuestStayStatus } from "@/lib/types";
 
 /** Confirmed stay = host accepted dates (upcoming or currently active). */
 export function isConfirmedStayStatus(status: GuestStayStatus) {
-  return status === "active" || status === "upcoming";
+  return (
+    status === "active" ||
+    status === "upcoming"
+  );
 }
 
 export function isConfirmedStay(stay: GuestStay | null | undefined) {

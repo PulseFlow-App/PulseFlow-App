@@ -27,7 +27,7 @@ import type {
   Villa,
   VillaAssignment,
 } from "@/lib/types";
-import { pickConfirmedStay } from "@/lib/guest/confirmed-stay";
+import { isConfirmedStayStatus, pickConfirmedStay } from "@/lib/guest/confirmed-stay";
 import {
   canBookServices,
   canCreateVillas,
@@ -220,6 +220,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     createGuestBriefing: async () => undefined,
     confirmGuestBriefing: async () => undefined,
     upsertGuestDeposit: async () => undefined,
+    cancelGuestStay: async () => undefined,
     upsertHouseGuide: async () => undefined,
     requestStayDates: async () => undefined,
     respondStayDateRequest: async () => undefined,
@@ -1584,7 +1585,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         (profile.role === "owner" || profile.role === "manager"
           ? pickConfirmedStay(scopedGuestStays)
           : null);
-      if (!stay || (stay.status !== "active" && stay.status !== "upcoming")) {
+      if (!stay || !isConfirmedStayStatus(stay.status)) {
         throw new Error(
           "Support chat opens once you have a confirmed stay.",
         );
@@ -1739,7 +1740,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!Number.isFinite(amount) || amount < 0) {
         throw new Error("Enter a valid deposit amount.");
       }
-      const currency = (input.currency?.trim() || "THB").toUpperCase();
+      const currency = normalizeBillCurrency(input.currency);
       const notes = input.notes?.trim() || null;
       const supabase = createClient();
       const existing = scopedGuestDeposits.find((d) => d.stay_id === stay.id);
@@ -1789,6 +1790,68 @@ export function useSupabaseData(enabled: boolean): AppData {
             body: `${amount.toLocaleString()} ${currency} held for your stay`,
             href: "/bills",
             entity_id: stay.id,
+            audience_profile_ids: [stay.guest_profile_id],
+          }),
+        ].map((n) => toInsertRow(n)),
+      );
+      await refresh();
+    },
+    cancelGuestStay: async (stayId) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can cancel guest stays.");
+      }
+      const stay = scopedGuestStays.find((s) => s.id === stayId);
+      if (!stay) throw new Error("Stay not found.");
+      if (stay.status === "completed" || stay.status === "cancelled") {
+        throw new Error("This stay cannot be cancelled.");
+      }
+
+      const supabase = createClient();
+      const { error: stayError } = await supabase
+        .from("guest_stays")
+        .update({ status: "cancelled" })
+        .eq("id", stayId);
+      if (stayError) {
+        if (
+          stayError.message.includes("guest_stays_status_check") ||
+          stayError.message.includes("violates check constraint")
+        ) {
+          throw new Error(
+            "Cancel booking needs migration 026 on Supabase.",
+          );
+        }
+        throw stayError;
+      }
+
+      const villa = villas.find((v) => v.id === stay.villa_id);
+      if (
+        villa &&
+        villa.check_in === stay.check_in &&
+        villa.check_out === stay.check_out
+      ) {
+        await supabase
+          .from("villas")
+          .update({
+            check_in: null,
+            check_out: null,
+            status: "available",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", stay.villa_id);
+      }
+
+      const villaName = villa?.name ?? "Villa";
+      await insertNotifications(
+        supabase,
+        [
+          makeNotification({
+            org_id: stay.org_id,
+            kind: "guest_update",
+            title: "Booking cancelled",
+            body: `${villaName} · ${stay.check_in} → ${stay.check_out} was cancelled by your host.`,
+            href: "/villas",
+            entity_id: stayId,
             audience_profile_ids: [stay.guest_profile_id],
           }),
         ].map((n) => toInsertRow(n)),
@@ -2048,7 +2111,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         [
           makeNotification({
             org_id: profile.org_id,
-            kind: "appointment",
+            kind: "guest_update",
             title: decision === "accepted" ? "Dates accepted — price confirmed" : "Dates declined",
             body:
               decision === "accepted"

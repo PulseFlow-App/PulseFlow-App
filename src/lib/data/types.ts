@@ -168,6 +168,8 @@ export type AppData = {
     currency?: string;
     notes?: string | null;
   }) => Promise<void>;
+  /** Owner/manager cancels an upcoming or active guest stay. */
+  cancelGuestStay: (stayId: string) => Promise<void>;
   upsertHouseGuide: (
     villaId: string,
     patch: Partial<

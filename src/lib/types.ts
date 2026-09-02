@@ -277,7 +277,11 @@ export type HandoffSnapshot = {
 };
 
 /** Guest stay record (one booking / visit). */
-export type GuestStayStatus = "upcoming" | "active" | "completed";
+export type GuestStayStatus =
+  | "upcoming"
+  | "active"
+  | "completed"
+  | "cancelled";
 
 export type GuestStay = {
   id: string;

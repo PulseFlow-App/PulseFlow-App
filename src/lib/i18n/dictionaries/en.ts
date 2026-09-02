@@ -812,8 +812,16 @@ const en = {
   "guests.depositNotesPh": "e.g. Cash at check-in",
   "guests.depositSave": "Save deposit",
   "guests.depositSaved": "Deposit saved - guest will be notified.",
+  "guests.depositInvalid": "Enter a valid deposit amount (0 or more).",
   "guests.depositCurrent": "On file: {amount}",
   "guests.depositNone": "No deposit recorded yet.",
+  "guests.cancelTitle": "Cancel booking",
+  "guests.cancelHint":
+    "Cancels this guest stay and frees the villa dates. The guest is notified in the app and by push if enabled.",
+  "guests.cancelConfirm":
+    "Cancel {guest}'s stay at {villa} ({from} → {to})?",
+  "guests.cancelButton": "Cancel booking",
+  "guests.cancelSaved": "Booking cancelled — guest notified.",
 
   "language.title": "Language",
   "language.choose": "App language",

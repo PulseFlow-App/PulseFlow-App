@@ -10,7 +10,6 @@ import {
 } from "react";
 import { useI18n } from "@/lib/i18n/provider";
 import { localizeDemoText, isKnownDemoPhrase } from "@/lib/demo/localize";
-import { capitalizeLabel } from "@/lib/format-label";
 import { fetchTranslation } from "@/lib/translate/client";
 import { likelySameLanguage } from "@/lib/translate/locale-script";
 import {
@@ -83,7 +82,7 @@ function syncLocalizedText(
   if (demo !== text) return demo;
 
   if (locale === "en" || !translateEnabled) {
-    return capitalizeLabel(text);
+    return text;
   }
 
   if (likelySameLanguage(text, locale as Parameters<typeof likelySameLanguage>[1])) {

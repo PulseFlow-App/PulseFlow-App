@@ -681,6 +681,12 @@ const he: Dictionary = {
     "guests.depositSaved": "Deposit saved - guest will be notified.",
     "guests.depositCurrent": "On file: {amount}",
     "guests.depositNone": "No deposit recorded yet.",
+  "guests.depositInvalid": "Enter a valid deposit amount (0 or more).",
+  "guests.cancelTitle": "Cancel booking",
+  "guests.cancelHint": "Cancels this guest stay and frees the villa dates. The guest is notified in the app and by push if enabled.",
+  "guests.cancelConfirm": "Cancel {guest}'s stay at {villa} ({from} → {to})?",
+  "guests.cancelButton": "Cancel booking",
+  "guests.cancelSaved": "Booking cancelled — guest notified.",
   "language.title": "שפה",
   "language.choose": "שפת האפליקציה",
 

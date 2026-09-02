@@ -52,7 +52,7 @@ import {
   canViewAllBills,
   personalVillasOnly,
 } from "@/lib/roles";
-import { pickConfirmedStay } from "@/lib/guest/confirmed-stay";
+import { isConfirmedStayStatus, pickConfirmedStay } from "@/lib/guest/confirmed-stay";
 import {
   makeNotification,
   notificationVisibleTo,
@@ -852,7 +852,7 @@ function useDemoData(): AppData {
         (profile.role === "owner" || profile.role === "manager"
           ? pickConfirmedStay(guestStays)
           : null);
-      if (!stay || (stay.status !== "active" && stay.status !== "upcoming")) {
+      if (!stay || !isConfirmedStayStatus(stay.status)) {
         throw new Error(
           "Support chat opens once you have a confirmed stay.",
         );
@@ -980,7 +980,7 @@ function useDemoData(): AppData {
       if (!Number.isFinite(amount) || amount < 0) {
         throw new Error("Enter a valid deposit amount.");
       }
-      const currency = (input.currency?.trim() || "THB").toUpperCase();
+      const currency = normalizeBillCurrency(input.currency);
       const notes = input.notes?.trim() || null;
       const existing = (store.guestDeposits ?? []).find(
         (d) => d.stay_id === stay.id,
@@ -1023,6 +1023,57 @@ function useDemoData(): AppData {
           body: `${amount.toLocaleString()} ${currency} held for your stay`,
           href: "/bills",
           entity_id: stay.id,
+          audience_profile_ids: [stay.guest_profile_id],
+        }),
+      ]);
+    },
+    cancelGuestStay: async (stayId) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can cancel guest stays.");
+      }
+      const stay = guestStays.find((s) => s.id === stayId);
+      if (!stay || stay.org_id !== profile.org_id) {
+        throw new Error("Stay not found.");
+      }
+      if (stay.status === "completed" || stay.status === "cancelled") {
+        throw new Error("This stay cannot be cancelled.");
+      }
+
+      const villa = store.villas.find((v) => v.id === stay.villa_id);
+      updateDemoStore((s) => ({
+        ...s,
+        guestStays: (s.guestStays ?? []).map((g) =>
+          g.id === stayId ? { ...g, status: "cancelled" as const } : g,
+        ),
+        villas:
+          villa &&
+          villa.check_in === stay.check_in &&
+          villa.check_out === stay.check_out
+            ? s.villas.map((v) =>
+                v.id === stay.villa_id
+                  ? {
+                      ...v,
+                      check_in: null,
+                      check_out: null,
+                      status: "available" as const,
+                      updated_at: new Date().toISOString(),
+                    }
+                  : v,
+              )
+            : s.villas,
+      }));
+
+      const villaName = villa?.name ?? "Villa";
+      demoPushNotifications([
+        makeNotification({
+          org_id: stay.org_id,
+          kind: "guest_update",
+          title: "Booking cancelled",
+          body: `${villaName} · ${stay.check_in} → ${stay.check_out} was cancelled by your host.`,
+          href: "/villas",
+          entity_id: stayId,
           audience_profile_ids: [stay.guest_profile_id],
         }),
       ]);
@@ -1253,7 +1304,7 @@ function useDemoData(): AppData {
       demoPushNotifications([
         makeNotification({
           org_id: profile.org_id,
-          kind: "appointment",
+          kind: "guest_update",
           title:
             decision === "accepted"
               ? "Dates accepted — price confirmed"
