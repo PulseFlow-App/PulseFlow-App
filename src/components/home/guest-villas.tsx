@@ -47,6 +47,7 @@ export function GuestVillasBrowse() {
   );
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
+  const [quoteBusy, setQuoteBusy] = useState(false);
 
   const checkOutMin =
     checkIn && checkIn >= minDate ? nextDayIso(checkIn) : nextDayIso(minDate);
@@ -107,6 +108,49 @@ export function GuestVillasBrowse() {
     }
   };
 
+  const confirmQuote = async (requestId: string) => {
+    setQuoteBusy(true);
+    setError(null);
+    setOk(null);
+    try {
+      await data.confirmStayDateRequest(requestId);
+      setOk(t("guest.quoteConfirmed"));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setQuoteBusy(false);
+    }
+  };
+
+  const declineQuote = async (requestId: string) => {
+    if (!window.confirm(t("guest.quoteDeclineConfirm"))) return;
+    setQuoteBusy(true);
+    setError(null);
+    setOk(null);
+    try {
+      await data.cancelStayDateRequest(requestId);
+      setOk(t("guest.requestCancelled"));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setQuoteBusy(false);
+    }
+  };
+
+  const cancelPending = async (requestId: string) => {
+    if (!window.confirm(t("guest.requestCancelConfirm"))) return;
+    setQuoteBusy(true);
+    setError(null);
+    try {
+      await data.cancelStayDateRequest(requestId);
+      setOk(t("guest.requestCancelled"));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setQuoteBusy(false);
+    }
+  };
+
   if (!villas.length) {
     return (
       <EmptyState
@@ -137,6 +181,9 @@ export function GuestVillasBrowse() {
         {villas.map((v) => {
           const pending = data.stayDateRequests.find(
             (r) => r.villa_id === v.id && r.status === "pending",
+          );
+          const quoted = data.stayDateRequests.find(
+            (r) => r.villa_id === v.id && r.status === "quoted",
           );
           const accepted = data.stayDateRequests.find(
             (r) =>
@@ -170,8 +217,15 @@ export function GuestVillasBrowse() {
                   </p>
                 ) : null}
 
-                {pending ? (
-                  <div className="space-y-1">
+                {quoted ? (
+                  <StayQuoteCard
+                    request={quoted}
+                    busy={quoteBusy}
+                    onConfirm={() => void confirmQuote(quoted.id)}
+                    onDecline={() => void declineQuote(quoted.id)}
+                  />
+                ) : pending ? (
+                  <div className="space-y-2">
                     <p className="text-sm text-muted">
                       {t("guest.requestPending", {
                         from: pending.check_in,
@@ -188,9 +242,29 @@ export function GuestVillasBrowse() {
                         })}
                       </p>
                     ) : null}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="rounded-full"
+                      disabled={quoteBusy}
+                      onClick={() => void cancelPending(pending.id)}
+                    >
+                      {t("guest.requestCancel")}
+                    </Button>
                   </div>
                 ) : accepted ? (
-                  <StayQuoteCard request={accepted} />
+                  <StayQuoteCard
+                    request={accepted}
+                    deposit={data.guestDeposits.find((d) => {
+                      const stay = data.guestStays.find(
+                        (s) =>
+                          s.id === d.stay_id &&
+                          s.villa_id === v.id &&
+                          s.guest_profile_id === data.profile?.id,
+                      );
+                      return !!stay;
+                    })}
+                  />
                 ) : requestFor === v.id ? (
                   <div className="space-y-2 rounded-2xl bg-white/60 p-3 ring-1 ring-black/5">
                     <div className="grid grid-cols-2 gap-2">

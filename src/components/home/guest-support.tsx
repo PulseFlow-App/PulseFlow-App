@@ -12,6 +12,7 @@ import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { isGuestApp } from "@/lib/roles";
 import { isConfirmedStay } from "@/lib/guest/confirmed-stay";
+import { isSupportSystemMessage } from "@/lib/guest/support-deposit-command";
 
 export function GuestSupportChat() {
   const data = useData();
@@ -58,6 +59,9 @@ export function GuestSupportChat() {
           {t("guest.supportTitle")}
         </h1>
         <p className="text-sm text-muted">{t("guest.supportHint")}</p>
+        {data.profile?.role === "guest" ? (
+          <p className="mt-1 text-xs text-muted">{t("guest.supportDepositHint")}</p>
+        ) : null}
       </div>
 
       <Card className="flex flex-1 flex-col gap-3 p-3">
@@ -69,20 +73,23 @@ export function GuestSupportChat() {
           ) : (
             messages.map((m) => {
               const mine = m.sender_id === me;
+              const system = isSupportSystemMessage(m.body);
               return (
                 <div
                   key={m.id}
-                  className={cn("flex", mine ? "justify-end" : "justify-start")}
+                  className={cn("flex", system ? "justify-center" : mine ? "justify-end" : "justify-start")}
                 >
                   <div
                     className={cn(
                       "max-w-[85%] rounded-2xl px-3 py-2 text-sm",
-                      mine
-                        ? "bg-primary text-white"
-                        : "bg-[#F7F5F1] text-ink",
+                      system
+                        ? "bg-secondary/10 text-secondary"
+                        : mine
+                          ? "bg-primary text-white"
+                          : "bg-[#F7F5F1] text-ink",
                     )}
                   >
-                    {!mine ? (
+                    {!mine && !system ? (
                       <p className="mb-0.5 text-[11px] font-bold opacity-70">
                         {m.sender?.full_name ?? t("guest.host")}
                       </p>
@@ -164,6 +171,7 @@ export function HostSupportInbox() {
       <div>
         <p className="text-sm font-bold text-ink">{t("guest.hostInboxTitle")}</p>
         <p className="text-xs text-muted">{t("guest.supportHint")}</p>
+        <p className="text-xs text-muted">{t("guest.supportDepositHostHint")}</p>
       </div>
       <div className="flex flex-wrap gap-2">
         {stays.map((s) => {
@@ -202,7 +210,7 @@ export function HostSupportInbox() {
         <Input
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder={t("guest.supportPlaceholder")}
+          placeholder={t("guest.supportHostPlaceholder")}
         />
         <Button type="button" onClick={() => void send()} disabled={!body.trim()}>
           <Send className="size-4" />

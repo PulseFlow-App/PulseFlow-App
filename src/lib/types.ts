@@ -346,7 +346,9 @@ export type GuestBriefing = {
   confirmed_by: string | null;
 };
 
-export type GuestDepositStatus = "held" | "partial" | "refunded";
+export type GuestDepositStatus = "due" | "held" | "partial" | "refunded";
+
+export type DepositTiming = "before_arrival" | "on_arrival";
 
 export type GuestDeposit = {
   id: string;
@@ -357,6 +359,8 @@ export type GuestDeposit = {
   status: GuestDepositStatus;
   refunded_amount: number;
   notes: string | null;
+  /** When the host expects payment relative to check-in. */
+  deposit_timing: DepositTiming | null;
   created_at: string;
 };
 
@@ -385,7 +389,11 @@ export type StayPhoto = {
   created_at: string;
 };
 
-export type StayDateRequestStatus = "pending" | "accepted" | "declined";
+export type StayDateRequestStatus =
+  | "pending"
+  | "quoted"
+  | "accepted"
+  | "declined";
 
 export type StayDateRequest = {
   id: string;
@@ -402,6 +410,11 @@ export type StayDateRequest = {
   /** Owner/manager confirmed total sent on accept. */
   quoted_price_amount: number | null;
   quoted_price_currency: string | null;
+  /** Deposit the host requests with the quote (optional). */
+  quoted_deposit_amount: number | null;
+  quoted_deposit_currency: string | null;
+  /** When the host expects the deposit (if amount set). */
+  quoted_deposit_timing: DepositTiming | null;
   /** How to pay (e.g. in person at check-in). */
   payment_note: string | null;
   created_at: string;

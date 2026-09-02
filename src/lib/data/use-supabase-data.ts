@@ -28,6 +28,7 @@ import type {
   VillaAssignment,
 } from "@/lib/types";
 import { isConfirmedStayStatus, pickConfirmedStay } from "@/lib/guest/confirmed-stay";
+import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
 import {
   canBookServices,
   canCreateVillas,
@@ -60,10 +61,15 @@ import {
 } from "@/lib/notifications";
 import { formatMoney } from "@/lib/utils";
 import { normalizeBillCurrency } from "@/lib/billing/currencies";
+import { buildStayBookingFromRequest } from "@/lib/guest/book-stay-from-request";
 import {
   DEFAULT_IN_PERSON_PAYMENT_NOTE,
+  formatDepositQuoteLine,
   formatStayQuoteLine,
+  parseQuotedDeposit,
 } from "@/lib/guest/stay-pricing";
+import { buildDueDepositFromRequest } from "@/lib/guest/deposit-from-quote";
+import { resolveSupportDepositAction } from "@/lib/guest/handle-support-deposit";
 import { formatOrderWhen, canCancelServiceOrder } from "@/lib/service-orders";
 import {
   loadLocallyReadIds,
@@ -224,6 +230,8 @@ export function useSupabaseData(enabled: boolean): AppData {
     upsertHouseGuide: async () => undefined,
     requestStayDates: async () => undefined,
     respondStayDateRequest: async () => undefined,
+    confirmStayDateRequest: async () => undefined,
+    cancelStayDateRequest: async () => undefined,
     addStayPhoto: async () => undefined,
   };
 
@@ -410,6 +418,9 @@ export function useSupabaseData(enabled: boolean): AppData {
             guest_price_currency: r.guest_price_currency ?? null,
             quoted_price_amount: r.quoted_price_amount ?? null,
             quoted_price_currency: r.quoted_price_currency ?? null,
+            quoted_deposit_amount: r.quoted_deposit_amount ?? null,
+            quoted_deposit_currency: r.quoted_deposit_currency ?? null,
+            quoted_deposit_timing: r.quoted_deposit_timing ?? null,
             payment_note: r.payment_note ?? null,
           })),
     );
@@ -445,7 +456,10 @@ export function useSupabaseData(enabled: boolean): AppData {
     setGuestDeposits(
       guestDepositsRes.error
         ? []
-        : ((guestDepositsRes.data as GuestDeposit[]) ?? []),
+        : ((guestDepositsRes.data as GuestDeposit[]) ?? []).map((d) => ({
+            ...d,
+            deposit_timing: d.deposit_timing ?? null,
+          })),
     );
     setGuestCharges(
       guestChargesRes.error
@@ -1599,6 +1613,96 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
 
       const supabase = createClient();
+      const deposit = scopedGuestDeposits.find((d) => d.stay_id === stay.id);
+      const depositAction = resolveSupportDepositAction({
+        body: text,
+        profile,
+        stay,
+        deposit,
+        ownerManagerIds: ownerManagerIds(profiles, stay.org_id),
+      });
+
+      if (depositAction?.kind === "guest_signal") {
+        const { data: inserted, error } = await supabase
+          .from("support_messages")
+          .insert({
+            org_id: stay.org_id,
+            stay_id: stay.id,
+            sender_id: profile.id,
+            body: depositAction.displayBody,
+          })
+          .select(
+            "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
+          )
+          .single();
+        if (error) throw error;
+        if (inserted) {
+          setSupportMessages((prev) => [
+            ...prev,
+            inserted as SupportMessageWithSender,
+          ]);
+        }
+        await insertNotifications(
+          supabase,
+          depositAction.notifications.map((n) => toInsertRow(n)),
+        );
+        return;
+      }
+
+      if (depositAction?.kind === "host_confirm") {
+        if (deposit) {
+          const { error: depError } = await supabase
+            .from("guest_deposits")
+            .update({
+              amount: depositAction.deposit.amount,
+              currency: depositAction.deposit.currency,
+              notes: depositAction.deposit.notes,
+              deposit_timing: depositAction.deposit.deposit_timing,
+              status: "held",
+            })
+            .eq("id", deposit.id);
+          if (depError) throw depError;
+        } else {
+          const { error: depError } = await supabase.from("guest_deposits").insert({
+            org_id: stay.org_id,
+            stay_id: stay.id,
+            amount: depositAction.deposit.amount,
+            currency: depositAction.deposit.currency,
+            status: "held",
+            refunded_amount: 0,
+            notes: depositAction.deposit.notes,
+            deposit_timing: depositAction.deposit.deposit_timing,
+          });
+          if (depError) throw depError;
+        }
+
+        const { data: inserted, error } = await supabase
+          .from("support_messages")
+          .insert({
+            org_id: stay.org_id,
+            stay_id: stay.id,
+            sender_id: profile.id,
+            body: depositAction.displayBody,
+          })
+          .select(
+            "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
+          )
+          .single();
+        if (error) throw error;
+        if (inserted) {
+          setSupportMessages((prev) => [
+            ...prev,
+            inserted as SupportMessageWithSender,
+          ]);
+        }
+        await insertNotifications(
+          supabase,
+          depositAction.notifications.map((n) => toInsertRow(n)),
+        );
+        await refresh();
+        return;
+      }
+
       const { data: inserted, error } = await supabase
         .from("support_messages")
         .insert({
@@ -1747,7 +1851,13 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (existing) {
         const { error } = await supabase
           .from("guest_deposits")
-          .update({ amount, currency, notes, status: "held" })
+          .update({
+            amount,
+            currency,
+            notes,
+            status: "held",
+            deposit_timing: existing.deposit_timing,
+          })
           .eq("id", existing.id);
         if (error) {
           if (
@@ -1768,6 +1878,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           status: "held",
           refunded_amount: 0,
           notes,
+          deposit_timing: null,
         });
         if (error) {
           if (
@@ -1798,11 +1909,22 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     cancelGuestStay: async (stayId) => {
       if (!profile) throw new Error("Not signed in.");
-      if (profile.role !== "owner" && profile.role !== "manager") {
-        throw new Error("Only owners or managers can cancel guest stays.");
-      }
       const stay = scopedGuestStays.find((s) => s.id === stayId);
       if (!stay) throw new Error("Stay not found.");
+
+      const isGuest =
+        profile.role === "guest" && stay.guest_profile_id === profile.id;
+      const isHost =
+        profile.role === "owner" || profile.role === "manager";
+
+      if (!isGuest && !isHost) {
+        throw new Error("You cannot cancel this stay.");
+      }
+      if (isGuest && !canGuestSelfCancelStay(stay)) {
+        throw new Error(
+          "Self-service cancellation is only available at least 3 days before check-in. Message your host in Support.",
+        );
+      }
       if (stay.status === "completed" || stay.status === "cancelled") {
         throw new Error("This stay cannot be cancelled.");
       }
@@ -1826,6 +1948,7 @@ export function useSupabaseData(enabled: boolean): AppData {
 
       const villa = villas.find((v) => v.id === stay.villa_id);
       if (
+        isHost &&
         villa &&
         villa.check_in === stay.check_in &&
         villa.check_out === stay.check_out
@@ -1842,18 +1965,31 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
 
       const villaName = villa?.name ?? "Villa";
+      const dateLine = `${stay.check_in} → ${stay.check_out}`;
       await insertNotifications(
         supabase,
         [
-          makeNotification({
-            org_id: stay.org_id,
-            kind: "guest_update",
-            title: "Booking cancelled",
-            body: `${villaName} · ${stay.check_in} → ${stay.check_out} was cancelled by your host.`,
-            href: "/villas",
-            entity_id: stayId,
-            audience_profile_ids: [stay.guest_profile_id],
-          }),
+          makeNotification(
+            isGuest
+              ? {
+                  org_id: stay.org_id,
+                  kind: "guest_update",
+                  title: "Guest cancelled their booking",
+                  body: `${profile.full_name} · ${villaName} · ${dateLine}`,
+                  href: "/guests",
+                  entity_id: stayId,
+                  audience_profile_ids: ownerManagerIds(profiles, stay.org_id),
+                }
+              : {
+                  org_id: stay.org_id,
+                  kind: "guest_update",
+                  title: "Booking cancelled",
+                  body: `${villaName} · ${dateLine} was cancelled by your host.`,
+                  href: "/villas",
+                  entity_id: stayId,
+                  audience_profile_ids: [stay.guest_profile_id],
+                },
+          ),
         ].map((n) => toInsertRow(n)),
       );
       await refresh();
@@ -1996,83 +2132,163 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (request.status !== "pending") {
         throw new Error("This request was already handled.");
       }
-      if (decision === "accepted") {
+      if (decision === "quoted") {
         const amount = Number(pricing?.quoted_price_amount);
         if (!Number.isFinite(amount) || amount <= 0) {
-          throw new Error("Enter the total price for these dates before accepting.");
+          throw new Error("Enter the total price for these dates before sending.");
         }
       }
 
       const quotedAmount =
-        decision === "accepted" ? Number(pricing!.quoted_price_amount) : null;
+        decision === "quoted" ? Number(pricing!.quoted_price_amount) : null;
       const quotedCurrency =
-        decision === "accepted"
+        decision === "quoted"
           ? normalizeBillCurrency(pricing!.quoted_price_currency)
           : null;
+      const deposit =
+        decision === "quoted"
+          ? parseQuotedDeposit(pricing, quotedCurrency ?? "THB")
+          : { amount: null, currency: null };
       const paymentNote =
-        decision === "accepted"
+        decision === "quoted"
           ? (pricing?.payment_note?.trim() || DEFAULT_IN_PERSON_PAYMENT_NOTE)
           : null;
-      const {
-        todayIsoDate,
-        statusFromStayDates,
-        guestStayStatusFromDates,
-      } = await import("@/lib/villas/status-from-dates");
-      const today = todayIsoDate();
-      const derived =
-        statusFromStayDates(request.check_in, request.check_out, today) ??
-        "available";
-      const stayStatus = guestStayStatusFromDates(
-        request.check_in,
-        request.check_out,
-        today,
-      );
+      const depositTiming =
+        decision === "quoted" && deposit.amount
+          ? pricing?.quoted_deposit_timing === "on_arrival"
+            ? "on_arrival"
+            : "before_arrival"
+          : null;
+
       const supabase = createClient();
       const { error: reqError } = await supabase
         .from("stay_date_requests")
         .update({
           status: decision,
-          ...(decision === "accepted"
+          ...(decision === "quoted"
             ? {
                 quoted_price_amount: quotedAmount,
                 quoted_price_currency: quotedCurrency,
+                quoted_deposit_amount: deposit.amount,
+                quoted_deposit_currency: deposit.currency,
+                quoted_deposit_timing: depositTiming,
                 payment_note: paymentNote,
               }
             : {}),
         })
         .eq("id", requestId);
+      if (reqError) {
+        if (
+          reqError.message.includes("stay_date_requests_status_check") ||
+          reqError.message.includes("violates check constraint")
+        ) {
+          throw new Error("Quoted prices need migration 027 on Supabase.");
+        }
+        throw reqError;
+      }
+
+      const villa = villas.find((v) => v.id === request.villa_id);
+      if (decision === "quoted" && quotedAmount && quotedCurrency) {
+        const depositLine =
+          deposit.amount && deposit.currency
+            ? ` · ${formatDepositQuoteLine(deposit.amount, deposit.currency)}`
+            : "";
+        const quoteBody = `${formatStayQuoteLine({
+          amount: quotedAmount,
+          currency: quotedCurrency,
+          checkIn: request.check_in,
+          checkOut: request.check_out,
+        })}${depositLine}. ${paymentNote}`;
+        await insertNotifications(
+          supabase,
+          [
+            makeNotification({
+              org_id: profile.org_id,
+              kind: "guest_update",
+              title: "Price quote for your stay",
+              body: `${villa?.name ?? "Villa"} · ${quoteBody} · Tap to accept or decline.`,
+              href: "/villas",
+              entity_id: requestId,
+              audience_profile_ids: [request.guest_profile_id],
+            }),
+          ].map((n) => toInsertRow(n)),
+        );
+      } else {
+        await insertNotifications(
+          supabase,
+          [
+            makeNotification({
+              org_id: profile.org_id,
+              kind: "guest_update",
+              title: "Dates declined",
+              body: `${villa?.name ?? "Villa"} · your date request was declined`,
+              href: "/villas",
+              entity_id: requestId,
+              audience_profile_ids: [request.guest_profile_id],
+            }),
+          ].map((n) => toInsertRow(n)),
+        );
+      }
+      await refresh();
+    },
+    confirmStayDateRequest: async (requestId) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "guest") {
+        throw new Error("Only the guest can confirm a price quote.");
+      }
+      const request = stayDateRequests.find(
+        (r) =>
+          r.id === requestId &&
+          r.guest_profile_id === profile.id &&
+          r.status === "quoted",
+      );
+      if (!request) throw new Error("Quote not found or already handled.");
+      if (request.quoted_price_amount == null || !request.quoted_price_currency) {
+        throw new Error("This quote is missing a price.");
+      }
+
+      const { villaStatus, stayStatus } = buildStayBookingFromRequest(request);
+      const supabase = createClient();
+      const { error: reqError } = await supabase
+        .from("stay_date_requests")
+        .update({ status: "accepted" })
+        .eq("id", requestId);
       if (reqError) throw reqError;
 
-      if (decision === "accepted") {
-        const { error: villaError } = await supabase
-          .from("villas")
+      const { error: villaError } = await supabase
+        .from("villas")
+        .update({
+          check_in: request.check_in,
+          check_out: request.check_out,
+          status: villaStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", request.villa_id);
+      if (villaError) throw villaError;
+
+      const { data: existingStay } = await supabase
+        .from("guest_stays")
+        .select("id")
+        .eq("guest_profile_id", request.guest_profile_id)
+        .eq("villa_id", request.villa_id)
+        .in("status", ["upcoming", "active"])
+        .maybeSingle();
+
+      let stayId = existingStay?.id ?? null;
+      if (stayId) {
+        const { error: stayError } = await supabase
+          .from("guest_stays")
           .update({
             check_in: request.check_in,
             check_out: request.check_out,
-            status: derived,
-            updated_at: new Date().toISOString(),
+            status: stayStatus,
           })
-          .eq("id", request.villa_id);
-        if (villaError) throw villaError;
-
-        const { data: existingStay } = await supabase
+          .eq("id", stayId);
+        if (stayError) throw stayError;
+      } else {
+        const { data: insertedStay, error: stayError } = await supabase
           .from("guest_stays")
-          .select("id")
-          .eq("guest_profile_id", request.guest_profile_id)
-          .eq("villa_id", request.villa_id)
-          .neq("status", "completed")
-          .maybeSingle();
-        if (existingStay?.id) {
-          await supabase
-            .from("guest_stays")
-            .update({
-              check_in: request.check_in,
-              check_out: request.check_out,
-              status: stayStatus,
-            })
-            .eq("id", existingStay.id);
-        } else {
-          const { error: stayError } = await supabase.from("guest_stays").insert({
+          .insert({
             org_id: request.org_id,
             villa_id: request.villa_id,
             guest_profile_id: request.guest_profile_id,
@@ -2080,46 +2296,146 @@ export function useSupabaseData(enabled: boolean): AppData {
             check_out: request.check_out,
             status: stayStatus,
             owner_notices: null,
-          });
-          if (stayError) {
-            if (
-              stayError.message.includes("does not exist") ||
-              stayError.code === "42P01" ||
-              stayError.code === "PGRST205"
-            ) {
-              throw new Error(
-                "Guest stays need migration 023 on Supabase.",
-              );
-            }
-            throw stayError;
+          })
+          .select("id")
+          .single();
+        if (stayError) throw stayError;
+        stayId = insertedStay?.id ?? null;
+      }
+
+      if (stayId) {
+        const dueDeposit = buildDueDepositFromRequest(request, stayId, () =>
+          crypto.randomUUID(),
+        );
+        if (dueDeposit) {
+          const { data: existingDeposit } = await supabase
+            .from("guest_deposits")
+            .select("id")
+            .eq("stay_id", stayId)
+            .maybeSingle();
+          if (existingDeposit?.id) {
+            await supabase
+              .from("guest_deposits")
+              .update({
+                amount: dueDeposit.amount,
+                currency: dueDeposit.currency,
+                status: "due",
+                notes: dueDeposit.notes,
+                deposit_timing: dueDeposit.deposit_timing,
+              })
+              .eq("id", existingDeposit.id);
+          } else {
+            await supabase.from("guest_deposits").insert({
+              org_id: dueDeposit.org_id,
+              stay_id: dueDeposit.stay_id,
+              amount: dueDeposit.amount,
+              currency: dueDeposit.currency,
+              status: "due",
+              refunded_amount: 0,
+              notes: dueDeposit.notes,
+              deposit_timing: dueDeposit.deposit_timing,
+            });
           }
         }
       }
 
       const villa = villas.find((v) => v.id === request.villa_id);
-      const acceptBody =
-        decision === "accepted" && quotedAmount && quotedCurrency
-          ? `${formatStayQuoteLine({
-              amount: quotedAmount,
-              currency: quotedCurrency,
-              checkIn: request.check_in,
-              checkOut: request.check_out,
-            })}. ${paymentNote}`
-          : `${villa?.name ?? "Villa"} · your date request was declined`;
+      const depositLine =
+        request.quoted_deposit_amount && request.quoted_deposit_currency
+          ? ` · Deposit ${formatMoney(
+              Number(request.quoted_deposit_amount),
+              request.quoted_deposit_currency,
+            )} due`
+          : "";
+      const notifications = [
+        makeNotification({
+          org_id: request.org_id,
+          kind: "guest_update",
+          title: "Guest confirmed the stay",
+          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${formatStayQuoteLine({
+            amount: Number(request.quoted_price_amount),
+            currency: request.quoted_price_currency,
+            checkIn: request.check_in,
+            checkOut: request.check_out,
+          })}${depositLine}`,
+          href: "/guests",
+          entity_id: requestId,
+          audience_profile_ids: ownerManagerIds(profiles, request.org_id),
+        }),
+      ];
+      if (
+        request.quoted_deposit_amount &&
+        request.quoted_deposit_currency &&
+        stayId
+      ) {
+        notifications.push(
+          makeNotification({
+            org_id: request.org_id,
+            kind: "guest_update",
+            title: "Deposit due from guest",
+            body: `${formatMoney(
+              Number(request.quoted_deposit_amount),
+              request.quoted_deposit_currency,
+            )} · guest will send /deposit in Support when paid`,
+            href: "/messages",
+            entity_id: stayId,
+            audience_profile_ids: ownerManagerIds(profiles, request.org_id),
+          }),
+          makeNotification({
+            org_id: request.org_id,
+            kind: "guest_update",
+            title: "Deposit due for your stay",
+            body: `${formatMoney(
+              Number(request.quoted_deposit_amount),
+              request.quoted_deposit_currency,
+            )} · open Support and send /deposit when you have paid`,
+            href: "/home",
+            entity_id: stayId,
+            audience_profile_ids: [profile.id],
+          }),
+        );
+      }
+      await insertNotifications(
+        supabase,
+        notifications.map((n) => toInsertRow(n)),
+      );
+      await refresh();
+    },
+    cancelStayDateRequest: async (requestId) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "guest") {
+        throw new Error("Only the guest can cancel a date request.");
+      }
+      const request = stayDateRequests.find(
+        (r) =>
+          r.id === requestId &&
+          r.guest_profile_id === profile.id &&
+          (r.status === "pending" || r.status === "quoted"),
+      );
+      if (!request) throw new Error("Request not found or already handled.");
+
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("stay_date_requests")
+        .update({ status: "declined" })
+        .eq("id", requestId);
+      if (error) throw error;
+
+      const villa = villas.find((v) => v.id === request.villa_id);
       await insertNotifications(
         supabase,
         [
           makeNotification({
-            org_id: profile.org_id,
+            org_id: request.org_id,
             kind: "guest_update",
-            title: decision === "accepted" ? "Dates accepted — price confirmed" : "Dates declined",
-            body:
-              decision === "accepted"
-                ? acceptBody
-                : `${villa?.name ?? "Villa"} · your date request was declined`,
-            href: decision === "accepted" ? "/home" : "/villas",
+            title:
+              request.status === "quoted"
+                ? "Guest declined the price quote"
+                : "Guest cancelled date request",
+            body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${request.check_in} → ${request.check_out}`,
+            href: "/date-requests",
             entity_id: requestId,
-            audience_profile_ids: [request.guest_profile_id],
+            audience_profile_ids: ownerManagerIds(profiles, request.org_id),
           }),
         ].map((n) => toInsertRow(n)),
       );

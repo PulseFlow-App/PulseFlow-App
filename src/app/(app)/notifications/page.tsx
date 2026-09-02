@@ -24,6 +24,7 @@ import { cn, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
+import { notificationsSubtitleKey } from "@/lib/settings/audience-copy";
 
 function kindIcon(kind: NotificationKind) {
   switch (kind) {
@@ -76,7 +77,9 @@ export default function NotificationsPage() {
           <h1 className="text-2xl font-bold text-ink">
             {t("notifications.title")}
           </h1>
-          <p className="text-sm text-muted">{t("notifications.subtitle")}</p>
+          <p className="text-sm text-muted">
+            {t(notificationsSubtitleKey(data.profile.role))}
+          </p>
         </div>
         {data.unreadNotificationCount > 0 ? (
           <Button

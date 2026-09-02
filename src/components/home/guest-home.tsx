@@ -15,6 +15,10 @@ import { formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { StayQuoteCard } from "@/components/guest/stay-quote-card";
+import {
+  canGuestSelfCancelStay,
+  guestCancelBlockedReason,
+} from "@/lib/guest/cancel-booking";
 
 export function GuestHome({ name }: { name: string }) {
   const data = useData();
@@ -36,9 +40,19 @@ export function GuestHome({ name }: { name: string }) {
       r.status === "accepted" &&
       r.quoted_price_amount != null,
   );
+  const stayDeposit = stay
+    ? data.guestDeposits.find((d) => d.stay_id === stay.id)
+    : null;
+  const [quoteBusy, setQuoteBusy] = useState(false);
+  const [quoteMsg, setQuoteMsg] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [photoKind, setPhotoKind] = useState<"arrival" | "departure">("arrival");
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const [cancelMsg, setCancelMsg] = useState<string | null>(null);
+
+  const canSelfCancel = stay ? canGuestSelfCancelStay(stay) : false;
+  const cancelBlocked = stay ? guestCancelBlockedReason(stay) : null;
 
   const checklist = useMemo(
     () =>
@@ -62,6 +76,10 @@ export function GuestHome({ name }: { name: string }) {
   };
 
   if (!stay || !villa) {
+    const quotedRequest = data.stayDateRequests.find(
+      (r) => r.status === "quoted" && r.quoted_price_amount != null,
+    );
+
     return (
       <div className="space-y-4 animate-rise">
         <div>
@@ -73,15 +91,52 @@ export function GuestHome({ name }: { name: string }) {
             {t("guest.hi", { name: first })}
           </p>
         </div>
-        <Card className="p-5">
-          <p className="text-sm text-muted">{t("guest.noStay")}</p>
-          <Link
-            href="/villas"
-            className="mt-3 inline-block text-sm font-bold text-primary"
-          >
-            {t("guest.browseVillas")}
-          </Link>
-        </Card>
+        {quotedRequest ? (
+          <>
+            {quoteMsg ? (
+              <p className="text-sm font-semibold text-secondary">{quoteMsg}</p>
+            ) : null}
+            <StayQuoteCard
+              request={quotedRequest}
+              busy={quoteBusy}
+              onConfirm={() => {
+                setQuoteBusy(true);
+                void data
+                  .confirmStayDateRequest(quotedRequest.id)
+                  .then(() => setQuoteMsg(t("guest.quoteConfirmed")))
+                  .catch((e) =>
+                    setQuoteMsg(
+                      e instanceof Error ? e.message : t("common.error"),
+                    ),
+                  )
+                  .finally(() => setQuoteBusy(false));
+              }}
+              onDecline={() => {
+                if (!window.confirm(t("guest.quoteDeclineConfirm"))) return;
+                setQuoteBusy(true);
+                void data
+                  .cancelStayDateRequest(quotedRequest.id)
+                  .then(() => setQuoteMsg(t("guest.requestCancelled")))
+                  .catch((e) =>
+                    setQuoteMsg(
+                      e instanceof Error ? e.message : t("common.error"),
+                    ),
+                  )
+                  .finally(() => setQuoteBusy(false));
+              }}
+            />
+          </>
+        ) : (
+          <Card className="p-5">
+            <p className="text-sm text-muted">{t("guest.noStay")}</p>
+            <Link
+              href="/villas"
+              className="mt-3 inline-block text-sm font-bold text-primary"
+            >
+              {t("guest.browseVillas")}
+            </Link>
+          </Card>
+        )}
       </div>
     );
   }
@@ -98,7 +153,9 @@ export function GuestHome({ name }: { name: string }) {
         </p>
       </div>
 
-      {acceptedQuote ? <StayQuoteCard request={acceptedQuote} /> : null}
+      {acceptedQuote ? (
+        <StayQuoteCard request={acceptedQuote} deposit={stayDeposit} />
+      ) : null}
 
       <Card className="space-y-3 overflow-hidden p-0">
         {villa.photo_url ? (
@@ -134,6 +191,70 @@ export function GuestHome({ name }: { name: string }) {
           ) : null}
         </div>
       </Card>
+
+      {stay.status === "upcoming" || stay.status === "active" ? (
+        <Card className="space-y-2 p-4">
+          <p className="font-display text-base font-bold text-ink">
+            {t("guest.cancelBookingTitle")}
+          </p>
+          {canSelfCancel ? (
+            <>
+              <p className="text-sm text-muted">{t("guest.cancelBookingHint")}</p>
+              {cancelMsg ? (
+                <p className="text-sm font-semibold text-secondary">{cancelMsg}</p>
+              ) : null}
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-danger"
+                disabled={cancelBusy}
+                onClick={() => {
+                  if (
+                    !window.confirm(
+                      t("guest.cancelBookingConfirm", {
+                        villa: villa.name,
+                        from: formatShortDate(stay.check_in),
+                        to: formatShortDate(stay.check_out),
+                      }),
+                    )
+                  ) {
+                    return;
+                  }
+                  setCancelBusy(true);
+                  setCancelMsg(null);
+                  void data
+                    .cancelGuestStay(stay.id)
+                    .then(() => setCancelMsg(t("guest.cancelBookingDone")))
+                    .catch((e) =>
+                      setCancelMsg(
+                        e instanceof Error ? e.message : t("common.error"),
+                      ),
+                    )
+                    .finally(() => setCancelBusy(false));
+                }}
+              >
+                {t("guest.cancelBookingButton")}
+              </Button>
+            </>
+          ) : cancelBlocked ? (
+            <div className="space-y-2 text-sm">
+              <p className="text-muted">
+                {t(
+                  cancelBlocked === "too_late"
+                    ? "guest.cancelBookingTooLate"
+                    : "guest.cancelBookingContactSupport",
+                )}
+              </p>
+              <Link
+                href="/messages"
+                className="inline-block font-bold text-primary"
+              >
+                {t("guest.openSupportChat")} →
+              </Link>
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
 
       {data.guestBriefings.filter((b) => b.stay_id === stay.id).length ? (
         <Card className="space-y-3 p-4">

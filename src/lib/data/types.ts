@@ -168,7 +168,7 @@ export type AppData = {
     currency?: string;
     notes?: string | null;
   }) => Promise<void>;
-  /** Owner/manager cancels an upcoming or active guest stay. */
+  /** Owner/manager cancels any time; guest may cancel 3+ days before check-in. */
   cancelGuestStay: (stayId: string) => Promise<void>;
   upsertHouseGuide: (
     villaId: string,
@@ -186,9 +186,13 @@ export type AppData = {
   }) => Promise<void>;
   respondStayDateRequest: (
     requestId: string,
-    decision: "accepted" | "declined",
+    decision: "quoted" | "declined",
     pricing?: import("@/lib/guest/stay-pricing").StayDateRequestPricing,
   ) => Promise<void>;
+  /** Guest accepts the host's quoted price and books the stay. */
+  confirmStayDateRequest: (requestId: string) => Promise<void>;
+  /** Guest cancels a pending request or declines a quoted price. */
+  cancelStayDateRequest: (requestId: string) => Promise<void>;
   addStayPhoto: (input: {
     kind: StayPhoto["kind"];
     photo_url: string;

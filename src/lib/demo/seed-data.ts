@@ -1052,6 +1052,7 @@ export const demoGuestDeposits: GuestDeposit[] = [
     status: "held",
     refunded_amount: 0,
     notes: "Security deposit held at check-in.",
+    deposit_timing: null,
     created_at: daysAgo(5) + "T12:00:00.000Z",
   },
 ];

@@ -20,6 +20,14 @@ export function resolvePlanTier(input: {
 } {
   const { role, orgKind, organization } = input;
 
+  if (role === "guest") {
+    return {
+      tier: "free",
+      labelKey: "plan.guest",
+      noteKey: "plan.note.guest",
+    };
+  }
+
   if (orgKind !== "company") {
     return {
       tier: "free",

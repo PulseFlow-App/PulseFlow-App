@@ -1,3 +1,5 @@
+import { normalizeBillCurrency } from "@/lib/billing/currencies";
+
 /** Default payment instructions when owner confirms a date request. */
 export const DEFAULT_IN_PERSON_PAYMENT_NOTE =
   "Payment in person at check-in (cash or bank transfer). Message your host in Support if you need payment details.";
@@ -5,8 +7,35 @@ export const DEFAULT_IN_PERSON_PAYMENT_NOTE =
 export type StayDateRequestPricing = {
   quoted_price_amount: number;
   quoted_price_currency: string;
+  quoted_deposit_amount?: number | null;
+  quoted_deposit_currency?: string | null;
+  quoted_deposit_timing?: import("@/lib/types").DepositTiming | null;
   payment_note?: string | null;
 };
+
+export function parseQuotedDeposit(
+  pricing: StayDateRequestPricing | undefined,
+  priceCurrency: string,
+): { amount: number | null; currency: string | null } {
+  if (!pricing) return { amount: null, currency: null };
+  const raw = pricing.quoted_deposit_amount;
+  if (raw == null || !Number.isFinite(Number(raw)) || Number(raw) <= 0) {
+    return { amount: null, currency: null };
+  }
+  return {
+    amount: Number(raw),
+    currency: normalizeBillCurrency(pricing.quoted_deposit_currency ?? priceCurrency),
+  };
+}
+
+export function formatDepositQuoteLine(amount: number, currency: string): string {
+  const money = new Intl.NumberFormat("en", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: currency === "JPY" ? 0 : 2,
+  }).format(amount);
+  return `${money} deposit requested`;
+}
 
 export function formatStayQuoteLine(input: {
   amount: number;

@@ -53,6 +53,7 @@ import {
   personalVillasOnly,
 } from "@/lib/roles";
 import { isConfirmedStayStatus, pickConfirmedStay } from "@/lib/guest/confirmed-stay";
+import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
 import {
   makeNotification,
   notificationVisibleTo,
@@ -68,8 +69,19 @@ import {
   rememberLocallyRead,
 } from "@/lib/notifications-read";
 import { formatMoney, formatShortDate } from "@/lib/utils";
-import { normalizeBillCurrency } from "@/lib/billing/currencies";
-import { DEFAULT_IN_PERSON_PAYMENT_NOTE, formatStayQuoteLine } from "@/lib/guest/stay-pricing";
+import { normalizeBillCurrency, DEFAULT_BILL_CURRENCY } from "@/lib/billing/currencies";
+import {
+  buildStayBookingFromRequest,
+  mergeGuestStayFromRequest,
+} from "@/lib/guest/book-stay-from-request";
+import {
+  DEFAULT_IN_PERSON_PAYMENT_NOTE,
+  formatDepositQuoteLine,
+  formatStayQuoteLine,
+  parseQuotedDeposit,
+} from "@/lib/guest/stay-pricing";
+import { buildDueDepositFromRequest } from "@/lib/guest/deposit-from-quote";
+import { resolveSupportDepositAction } from "@/lib/guest/handle-support-deposit";
 import { capitalizeLabel } from "@/lib/format-label";
 
 export type { AppData } from "@/lib/data/types";
@@ -864,6 +876,84 @@ function useDemoData(): AppData {
       if (!canReply) throw new Error("Only guest or host can use support chat.");
       const text = body.trim();
       if (!text) return;
+
+      const deposit = (store.guestDeposits ?? []).find((d) => d.stay_id === stay.id);
+      const depositAction = resolveSupportDepositAction({
+        body: text,
+        profile,
+        stay,
+        deposit,
+        ownerManagerIds: ownerManagerIds(store.profiles, stay.org_id),
+      });
+
+      if (depositAction?.kind === "guest_signal") {
+        updateDemoStore((s) => ({
+          ...s,
+          supportMessages: [
+            ...s.supportMessages,
+            {
+              id: uid("support"),
+              org_id: stay.org_id,
+              stay_id: stay.id,
+              sender_id: profile.id,
+              body: depositAction.displayBody,
+              created_at: new Date().toISOString(),
+            },
+          ],
+        }));
+        demoPushNotifications(depositAction.notifications);
+        return;
+      }
+
+      if (depositAction?.kind === "host_confirm") {
+        const existing = (store.guestDeposits ?? []).find(
+          (d) => d.stay_id === stay.id,
+        );
+        updateDemoStore((s) => {
+          const deposits = s.guestDeposits ?? [];
+          const nextDeposit = existing
+            ? {
+                ...existing,
+                amount: depositAction.deposit.amount,
+                currency: depositAction.deposit.currency,
+                notes: depositAction.deposit.notes,
+                deposit_timing: depositAction.deposit.deposit_timing,
+                status: "held" as const,
+              }
+            : {
+                id: uid("deposit"),
+                org_id: stay.org_id,
+                stay_id: stay.id,
+                amount: depositAction.deposit.amount,
+                currency: depositAction.deposit.currency,
+                status: "held" as const,
+                refunded_amount: 0,
+                notes: depositAction.deposit.notes,
+                deposit_timing: depositAction.deposit.deposit_timing,
+                created_at: new Date().toISOString(),
+              };
+          return {
+            ...s,
+            guestDeposits: existing
+              ? deposits.map((d) => (d.stay_id === stay.id ? nextDeposit : d))
+              : [...deposits, nextDeposit],
+            supportMessages: [
+              ...s.supportMessages,
+              {
+                id: uid("support"),
+                org_id: stay.org_id,
+                stay_id: stay.id,
+                sender_id: profile.id,
+                body: depositAction.displayBody,
+                created_at: new Date().toISOString(),
+              },
+            ],
+          };
+        });
+        demoPushNotifications(depositAction.notifications);
+        return;
+      }
+
       updateDemoStore((s) => ({
         ...s,
         supportMessages: [
@@ -992,7 +1082,13 @@ function useDemoData(): AppData {
             ...s,
             guestDeposits: deposits.map((d) =>
               d.stay_id === stay.id
-                ? { ...d, amount, currency, notes, status: "held" as const }
+                ? {
+                    ...d,
+                    amount,
+                    currency,
+                    notes,
+                    status: "held" as const,
+                  }
                 : d,
             ),
           };
@@ -1010,6 +1106,7 @@ function useDemoData(): AppData {
               status: "held",
               refunded_amount: 0,
               notes,
+              deposit_timing: null,
               created_at: new Date().toISOString(),
             },
           ],
@@ -1030,11 +1127,23 @@ function useDemoData(): AppData {
     cancelGuestStay: async (stayId) => {
       assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
-      if (profile.role !== "owner" && profile.role !== "manager") {
-        throw new Error("Only owners or managers can cancel guest stays.");
-      }
       const stay = guestStays.find((s) => s.id === stayId);
-      if (!stay || stay.org_id !== profile.org_id) {
+      if (!stay) throw new Error("Stay not found.");
+
+      const isGuest =
+        profile.role === "guest" && stay.guest_profile_id === profile.id;
+      const isHost =
+        profile.role === "owner" || profile.role === "manager";
+
+      if (!isGuest && !isHost) {
+        throw new Error("You cannot cancel this stay.");
+      }
+      if (isGuest && !canGuestSelfCancelStay(stay)) {
+        throw new Error(
+          "Self-service cancellation is only available at least 3 days before check-in. Message your host in Support.",
+        );
+      }
+      if (!isGuest && (stay.org_id !== profile.org_id)) {
         throw new Error("Stay not found.");
       }
       if (stay.status === "completed" || stay.status === "cancelled") {
@@ -1066,17 +1175,32 @@ function useDemoData(): AppData {
       }));
 
       const villaName = villa?.name ?? "Villa";
-      demoPushNotifications([
-        makeNotification({
-          org_id: stay.org_id,
-          kind: "guest_update",
-          title: "Booking cancelled",
-          body: `${villaName} · ${stay.check_in} → ${stay.check_out} was cancelled by your host.`,
-          href: "/villas",
-          entity_id: stayId,
-          audience_profile_ids: [stay.guest_profile_id],
-        }),
-      ]);
+      const dateLine = `${stay.check_in} → ${stay.check_out}`;
+      if (isGuest) {
+        demoPushNotifications([
+          makeNotification({
+            org_id: stay.org_id,
+            kind: "guest_update",
+            title: "Guest cancelled their booking",
+            body: `${profile.full_name} · ${villaName} · ${dateLine}`,
+            href: "/guests",
+            entity_id: stayId,
+            audience_profile_ids: ownerManagerIds(store.profiles, stay.org_id),
+          }),
+        ]);
+      } else {
+        demoPushNotifications([
+          makeNotification({
+            org_id: stay.org_id,
+            kind: "guest_update",
+            title: "Booking cancelled",
+            body: `${villaName} · ${dateLine} was cancelled by your host.`,
+            href: "/villas",
+            entity_id: stayId,
+            audience_profile_ids: [stay.guest_profile_id],
+          }),
+        ]);
+      }
     },
     upsertHouseGuide: async (villaId, patch) => {
       assertDemoWritable();
@@ -1157,6 +1281,9 @@ function useDemoData(): AppData {
             guest_price_currency: guestCurrency,
             quoted_price_amount: null,
             quoted_price_currency: null,
+            quoted_deposit_amount: null,
+            quoted_deposit_currency: null,
+            quoted_deposit_timing: null,
             payment_note: null,
             created_at: new Date().toISOString(),
           },
@@ -1191,131 +1318,252 @@ function useDemoData(): AppData {
       if (request.status !== "pending") {
         throw new Error("This request was already handled.");
       }
-      if (decision === "accepted") {
+      if (decision === "quoted") {
         const amount = Number(pricing?.quoted_price_amount);
         if (!Number.isFinite(amount) || amount <= 0) {
-          throw new Error("Enter the total price for these dates before accepting.");
+          throw new Error("Enter the total price for these dates before sending.");
         }
       }
 
       const quotedAmount =
-        decision === "accepted" ? Number(pricing!.quoted_price_amount) : null;
+        decision === "quoted" ? Number(pricing!.quoted_price_amount) : null;
       const quotedCurrency =
-        decision === "accepted"
+        decision === "quoted"
           ? normalizeBillCurrency(pricing!.quoted_price_currency)
           : null;
+      const deposit =
+        decision === "quoted"
+          ? parseQuotedDeposit(pricing, quotedCurrency ?? DEFAULT_BILL_CURRENCY)
+          : { amount: null, currency: null };
       const paymentNote =
-        decision === "accepted"
+        decision === "quoted"
           ? (pricing?.payment_note?.trim() || DEFAULT_IN_PERSON_PAYMENT_NOTE)
           : null;
+      const depositTiming =
+        decision === "quoted" && deposit.amount
+          ? pricing?.quoted_deposit_timing === "on_arrival"
+            ? "on_arrival"
+            : "before_arrival"
+          : null;
 
-      const {
-        todayIsoDate,
-        statusFromStayDates,
-        guestStayStatusFromDates,
-      } = await import("@/lib/villas/status-from-dates");
-      const today = todayIsoDate();
-      const derived =
-        statusFromStayDates(request.check_in, request.check_out, today) ??
-        "available";
-      const stayStatus = guestStayStatusFromDates(
-        request.check_in,
-        request.check_out,
-        today,
+      updateDemoStore((s) => ({
+        ...s,
+        stayDateRequests: (s.stayDateRequests ?? []).map((r) =>
+          r.id === requestId
+            ? {
+                ...r,
+                status: decision,
+                quoted_price_amount: quotedAmount,
+                quoted_price_currency: quotedCurrency,
+                quoted_deposit_amount: deposit.amount,
+                quoted_deposit_currency: deposit.currency,
+                quoted_deposit_timing: depositTiming,
+                payment_note: paymentNote,
+              }
+            : r,
+        ),
+      }));
+
+      const villa = store.villas.find((v) => v.id === request.villa_id);
+      if (decision === "quoted" && quotedAmount && quotedCurrency) {
+        const depositLine =
+          deposit.amount && deposit.currency
+            ? ` · ${formatDepositQuoteLine(deposit.amount, deposit.currency)}`
+            : "";
+        const quoteBody = `${formatStayQuoteLine({
+          amount: quotedAmount,
+          currency: quotedCurrency,
+          checkIn: request.check_in,
+          checkOut: request.check_out,
+        })}${depositLine}. ${paymentNote}`;
+        demoPushNotifications([
+          makeNotification({
+            org_id: profile.org_id,
+            kind: "guest_update",
+            title: "Price quote for your stay",
+            body: `${villa?.name ?? "Villa"} · ${quoteBody} · Tap to accept or decline.`,
+            href: "/villas",
+            entity_id: requestId,
+            audience_profile_ids: [request.guest_profile_id],
+          }),
+        ]);
+      } else {
+        demoPushNotifications([
+          makeNotification({
+            org_id: profile.org_id,
+            kind: "guest_update",
+            title: "Dates declined",
+            body: `${villa?.name ?? "Villa"} · your date request was declined`,
+            href: "/villas",
+            entity_id: requestId,
+            audience_profile_ids: [request.guest_profile_id],
+          }),
+        ]);
+      }
+    },
+    confirmStayDateRequest: async (requestId) => {
+      assertDemoWritable();
+      if (!profile || profile.role !== "guest") {
+        throw new Error("Only the guest can confirm a price quote.");
+      }
+      const request = (store.stayDateRequests ?? []).find(
+        (r) =>
+          r.id === requestId &&
+          r.guest_profile_id === profile.id &&
+          r.status === "quoted",
       );
+      if (!request) throw new Error("Quote not found or already handled.");
+      if (request.quoted_price_amount == null || !request.quoted_price_currency) {
+        throw new Error("This quote is missing a price.");
+      }
 
+      const { villaStatus, stayStatus } = buildStayBookingFromRequest(request);
+      let createdStayId: string | null = null;
       updateDemoStore((s) => {
-        let villas = s.villas;
-        let guestStays = s.guestStays ?? [];
-        if (decision === "accepted") {
-          villas = s.villas.map((v) =>
+        const guestStays = s.guestStays ?? [];
+        const existing = guestStays.find(
+          (g) =>
+            g.guest_profile_id === request.guest_profile_id &&
+            g.villa_id === request.villa_id &&
+            g.status !== "completed" &&
+            g.status !== "cancelled",
+        );
+        const nextStay = mergeGuestStayFromRequest(
+          existing,
+          request,
+          stayStatus,
+          () => uid("stay"),
+        );
+        createdStayId = nextStay.id;
+        const guestStaysNext = existing
+          ? guestStays.map((g) => (g.id === existing.id ? nextStay : g))
+          : [...guestStays, nextStay];
+
+        const dueDeposit = buildDueDepositFromRequest(request, nextStay.id, () =>
+          uid("deposit"),
+        );
+        const deposits = s.guestDeposits ?? [];
+        const guestDepositsNext = dueDeposit
+          ? [
+              ...deposits.filter((d) => d.stay_id !== nextStay.id),
+              dueDeposit,
+            ]
+          : deposits;
+
+        return {
+          ...s,
+          villas: s.villas.map((v) =>
             v.id === request.villa_id
               ? {
                   ...v,
                   check_in: request.check_in,
                   check_out: request.check_out,
-                  status: derived,
+                  status: villaStatus,
                   updated_at: new Date().toISOString(),
                 }
               : v,
-          );
-          const existing = guestStays.find(
-            (g) =>
-              g.guest_profile_id === request.guest_profile_id &&
-              g.villa_id === request.villa_id &&
-              g.status !== "completed",
-          );
-          if (existing) {
-            guestStays = guestStays.map((g) =>
-              g.id === existing.id
-                ? {
-                    ...g,
-                    check_in: request.check_in,
-                    check_out: request.check_out,
-                    status: stayStatus,
-                  }
-                : g,
-            );
-          } else {
-            guestStays = [
-              ...guestStays,
-              {
-                id: uid("stay"),
-                org_id: request.org_id,
-                villa_id: request.villa_id,
-                guest_profile_id: request.guest_profile_id,
-                check_in: request.check_in,
-                check_out: request.check_out,
-                status: stayStatus,
-                owner_notices: null,
-                created_at: new Date().toISOString(),
-              },
-            ];
-          }
-        }
-        return {
-          ...s,
-          villas,
-          guestStays,
+          ),
+          guestStays: guestStaysNext,
+          guestDeposits: guestDepositsNext,
           stayDateRequests: (s.stayDateRequests ?? []).map((r) =>
-            r.id === requestId
-              ? {
-                  ...r,
-                  status: decision,
-                  quoted_price_amount: quotedAmount,
-                  quoted_price_currency: quotedCurrency,
-                  payment_note: paymentNote,
-                }
-              : r,
+            r.id === requestId ? { ...r, status: "accepted" as const } : r,
           ),
         };
       });
 
       const villa = store.villas.find((v) => v.id === request.villa_id);
-      const acceptBody =
-        decision === "accepted" && quotedAmount && quotedCurrency
-          ? `${formatStayQuoteLine({
-              amount: quotedAmount,
-              currency: quotedCurrency,
-              checkIn: request.check_in,
-              checkOut: request.check_out,
-            })}. ${paymentNote}`
-          : `${villa?.name ?? "Villa"} · your date request was declined`;
+      const depositLine =
+        request.quoted_deposit_amount && request.quoted_deposit_currency
+          ? ` · Deposit ${formatMoney(
+              Number(request.quoted_deposit_amount),
+              request.quoted_deposit_currency,
+            )} due`
+          : "";
+      const hostNotifications = [
+        makeNotification({
+          org_id: request.org_id,
+          kind: "guest_update",
+          title: "Guest confirmed the stay",
+          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${formatStayQuoteLine({
+            amount: Number(request.quoted_price_amount),
+            currency: request.quoted_price_currency,
+            checkIn: request.check_in,
+            checkOut: request.check_out,
+          })}${depositLine}`,
+          href: "/guests",
+          entity_id: requestId,
+          audience_profile_ids: ownerManagerIds(store.profiles, request.org_id),
+        }),
+      ];
+      if (
+        request.quoted_deposit_amount &&
+        request.quoted_deposit_currency &&
+        createdStayId
+      ) {
+        hostNotifications.push(
+          makeNotification({
+            org_id: request.org_id,
+            kind: "guest_update",
+            title: "Deposit due from guest",
+            body: `${formatMoney(
+              Number(request.quoted_deposit_amount),
+              request.quoted_deposit_currency,
+            )} · guest will send /deposit in Support when paid`,
+            href: "/messages",
+            entity_id: createdStayId,
+            audience_profile_ids: ownerManagerIds(store.profiles, request.org_id),
+          }),
+        );
+        demoPushNotifications([
+          makeNotification({
+            org_id: request.org_id,
+            kind: "guest_update",
+            title: "Deposit due for your stay",
+            body: `${formatMoney(
+              Number(request.quoted_deposit_amount),
+              request.quoted_deposit_currency,
+            )} · open Support and send /deposit when you have paid`,
+            href: "/home",
+            entity_id: createdStayId,
+            audience_profile_ids: [profile.id],
+          }),
+        ]);
+      }
+      demoPushNotifications(hostNotifications);
+    },
+    cancelStayDateRequest: async (requestId) => {
+      assertDemoWritable();
+      if (!profile || profile.role !== "guest") {
+        throw new Error("Only the guest can cancel a date request.");
+      }
+      const request = (store.stayDateRequests ?? []).find(
+        (r) =>
+          r.id === requestId &&
+          r.guest_profile_id === profile.id &&
+          (r.status === "pending" || r.status === "quoted"),
+      );
+      if (!request) throw new Error("Request not found or already handled.");
+
+      updateDemoStore((s) => ({
+        ...s,
+        stayDateRequests: (s.stayDateRequests ?? []).map((r) =>
+          r.id === requestId ? { ...r, status: "declined" as const } : r,
+        ),
+      }));
+
+      const villa = store.villas.find((v) => v.id === request.villa_id);
       demoPushNotifications([
         makeNotification({
-          org_id: profile.org_id,
+          org_id: request.org_id,
           kind: "guest_update",
           title:
-            decision === "accepted"
-              ? "Dates accepted — price confirmed"
-              : "Dates declined",
-          body:
-            decision === "accepted"
-              ? acceptBody
-              : `${villa?.name ?? "Villa"} · your date request was declined`,
-          href: decision === "accepted" ? "/home" : "/villas",
+            request.status === "quoted"
+              ? "Guest declined the price quote"
+              : "Guest cancelled date request",
+          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${request.check_in} → ${request.check_out}`,
+          href: "/date-requests",
           entity_id: requestId,
-          audience_profile_ids: [request.guest_profile_id],
+          audience_profile_ids: ownerManagerIds(store.profiles, request.org_id),
         }),
       ]);
     },

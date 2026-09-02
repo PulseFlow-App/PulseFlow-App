@@ -318,6 +318,12 @@ const en = {
 
   "notifications.title": "Notifications",
   "notifications.subtitle": "Check-ins, tasks, chat, and bills",
+  "notifications.subtitle.guest":
+    "Stay updates, host messages, confirmed prices, and deposit alerts.",
+  "notifications.subtitle.host":
+    "Date requests, guest messages, tasks, chat, and bills.",
+  "notifications.subtitle.staff":
+    "Check-ins, assigned tasks, team chat, and bills.",
   "notifications.empty": "You're all caught up",
   "notifications.emptyHint":
     "Upcoming check-ins, urgent tasks, chat, and bill dues show up here.",
@@ -395,7 +401,13 @@ const en = {
   "settings.passkeyListFailed": "Could not load passkeys.",
   "settings.pushTitle": "Phone alerts",
   "settings.pushHint":
-    "Get jobs, bills, and urgent tasks on your lock screen when the app is closed. Install the PWA first on iPhone.",
+    "Get jobs, bills, and urgent tasks on your lock screen when the app is closed.",
+  "settings.pushHint.guest":
+    "Get stay updates, confirmed prices, host messages, and deposit alerts on your lock screen when the app is closed.",
+  "settings.pushHint.host":
+    "Get date requests, guest messages, team chat, bills, and check-in alerts on your lock screen when the app is closed.",
+  "settings.pushHint.staff":
+    "Get assigned tasks, urgent jobs, team chat, and check-in alerts on your lock screen when the app is closed.",
   "settings.pushEnable": "Enable alerts on this device",
   "settings.pushDisable": "Turn off alerts on this device",
   "settings.pushWorking": "Updating…",
@@ -412,6 +424,12 @@ const en = {
   "settings.translateContent": "Translate team content",
   "settings.translateContentHint":
     "Tasks, chat, briefings, and messages from teammates appear in your app language.",
+  "settings.translateContentHint.guest":
+    "Host briefings, support messages, and stay notes appear in your app language.",
+  "settings.translateContentHint.host":
+    "Tasks, chat, guest updates, and team messages appear in your app language.",
+  "settings.translateContentHint.staff":
+    "Tasks, chat, and messages from your team appear in your app language.",
 
   "billing.title": "Billing",
   "billing.subtitle":
@@ -443,6 +461,7 @@ const en = {
   "billing.askOwner": "Ask your owner to renew.",
 
   "plan.free": "Free",
+  "plan.guest": "Guest",
   "plan.basic": "Basic",
   "plan.full": "Full",
   "plan.trial": "Full trial",
@@ -451,6 +470,8 @@ const en = {
   "plan.seePlans": "See Free and Full plans",
   "plan.note.personal":
     "Free forever for your own properties, tasks, and bills.",
+  "plan.note.guest":
+    "Guest access for your stay — villa details, support chat, and bills.",
   "plan.note.staff":
     "Free seat on this company - assigned properties, jobs, bills, and chat.",
   "plan.note.managerLimited":
@@ -706,9 +727,35 @@ const en = {
   "guest.billsHint": "Guest-facing deposit and deductions for this stay.",
   "guest.billsNoStay": "No stay linked yet.",
   "guest.deposit": "Security deposit",
+  "guest.depositStatus.due": "Due",
   "guest.depositStatus.held": "Held",
   "guest.depositStatus.partial": "Partially refunded",
   "guest.depositStatus.refunded": "Refunded",
+  "guest.yourDeposit": "Your deposit",
+  "guest.depositDue": "Due",
+  "guest.depositPaid": "Paid",
+  "guest.depositTiming.before_arrival": "To be paid before arrival",
+  "guest.depositTiming.on_arrival": "To be paid on arrival",
+  "guest.depositHowToPay": "How to pay",
+  "guest.depositHowToPayHint":
+    "Open Support chat and send /deposit when you have paid. Your host will confirm receipt.",
+  "guest.openSupportChat": "Open Support chat",
+  "guest.cancelBookingTitle": "Cancel booking",
+  "guest.cancelBookingHint":
+    "You can cancel free of charge at least 3 days before check-in.",
+  "guest.cancelBookingButton": "Cancel booking",
+  "guest.cancelBookingConfirm":
+    "Cancel your stay at {villa} ({from} → {to})?",
+  "guest.cancelBookingDone": "Booking cancelled.",
+  "guest.cancelBookingTooLate":
+    "Within 3 days of check-in, cancellations need your host's help — especially if a deposit was paid. Open Support chat to request a cancellation.",
+  "guest.cancelBookingContactSupport":
+    "To change or cancel this stay, message your host in Support chat.",
+  "guest.supportDepositHint":
+    "After you pay your deposit, send /deposit here so your host can confirm it.",
+  "guest.supportDepositHostHint":
+    "When the guest has paid, reply with /deposit to record it (or /deposit 5000 THB).",
+  "guest.supportHostPlaceholder": "Reply to guest… /deposit to record deposit",
   "guest.deductions": "Deductions",
   "guest.remaining": "Still held",
   "guest.noDeposit": "No deposit on file for this stay.",
@@ -719,7 +766,7 @@ const en = {
     "Browse properties from this host and request dates for your stay.",
   "guest.villasHost": "Hosted by {name}",
   "guest.villasEmpty": "No company villas to show.",
-  "guest.requestDates": "Request dates",
+  "guest.requestDates": "Request dates & price",
   "guest.checkIn": "Check-in",
   "guest.checkOut": "Check-out",
   "guest.requestNote": "Note",
@@ -731,11 +778,23 @@ const en = {
   "guest.requestSent": "Request sent to your host.",
   "guest.requestPending": "Pending request: {from} → {to}",
   "guest.requestPrice": "Your price offer",
-  "guest.requestPriceHint": "Total for the whole stay (optional). Your host confirms the final price.",
+  "guest.requestPriceHint": "Optional — your host sets the final total and deposit.",
   "guest.requestPricePh": "e.g. 15000",
   "guest.requestPendingPrice": "Your offer: {amount}",
   "guest.quoteTitle": "Confirmed price",
+  "guest.quoteAwaitingTitle": "Price from your host",
+  "guest.quoteAwaitingHint":
+    "Review the total, deposit, and payment note. Accept to confirm your stay, or decline to cancel this request.",
+  "guest.quoteConfirm": "Accept price & confirm stay",
+  "guest.quoteDecline": "Decline quote",
+  "guest.quoteDeclineConfirm":
+    "Decline this price and cancel the date request?",
+  "guest.quoteConfirmed": "Stay confirmed — see you soon!",
+  "guest.requestCancel": "Cancel request",
+  "guest.requestCancelConfirm": "Cancel this date request?",
+  "guest.requestCancelled": "Date request cancelled.",
   "guest.quotePayment": "How to pay",
+  "guest.quoteDeposit": "Deposit: {amount}",
   "guest.depositManualHint":
     "After you pay a deposit in person, your host records it under Guests — you will see it here under Bills.",
   "guest.guideEditTitle": "House guide (guest-facing)",
@@ -752,27 +811,35 @@ const en = {
 
   "dateRequests.title": "Date requests",
   "dateRequests.subtitle":
-    "Accept to book the villa dates on your calendar, or decline the request.",
+    "Set the stay total and optional deposit, then send a quote. The guest accepts before dates are booked.",
   "dateRequests.empty": "No pending requests",
   "dateRequests.emptyHint":
     "When a guest asks for stay dates, it shows up here for accept or decline.",
-  "dateRequests.accept": "Accept & book",
+  "dateRequests.accept": "Send price quote",
   "dateRequests.decline": "Decline",
   "dateRequests.recent": "Recently handled",
+  "dateRequests.awaitingGuest": "Waiting for guest to confirm price",
   "dateRequests.unknownVilla": "Villa",
   "dateRequests.pendingOne": "1 guest is waiting for a yes or no.",
   "dateRequests.pendingMany":
     "{count} guests are waiting for a yes or no.",
   "dateRequests.guestOffer": "Guest offered {amount}",
-  "dateRequests.confirmPrice": "Confirm price & book",
+  "dateRequests.confirmPrice": "Set price for guest",
   "dateRequests.totalPrice": "Total price for these dates",
   "dateRequests.paymentNote": "Payment instructions",
   "dateRequests.paymentNoteHint":
     "How the guest should pay. In-app card payments are not live yet — use in person for now.",
   "dateRequests.depositHint":
-    "To collect a deposit manually: after the guest pays in person, open Guests, pick their stay, and record the deposit amount. They will see it under Bills.",
-  "dateRequests.acceptConfirm": "Accept with this price",
-  "dateRequests.priceRequired": "Enter the total stay price before accepting.",
+    "Deposits on the quote are informational. After the guest pays in person, record it under Guests — they will see it under Bills.",
+  "dateRequests.depositAmount": "Deposit amount",
+  "dateRequests.depositAmountHint":
+    "Optional. Uses the same currency as the total above.",
+  "dateRequests.depositAmountPh": "e.g. 5000",
+  "dateRequests.depositQuoted": "Deposit {amount}",
+  "dateRequests.depositWhen": "When should the guest pay?",
+  "dateRequests.sendQuote": "Send quote to guest",
+  "dateRequests.acceptConfirm": "Send quote to guest",
+  "dateRequests.priceRequired": "Enter the total stay price before sending the quote.",
 
   "guests.title": "Guests",
   "guests.subtitle":

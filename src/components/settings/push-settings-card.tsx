@@ -13,6 +13,8 @@ import {
   pushPublicKey,
 } from "@/lib/push/client";
 import { useI18n } from "@/lib/i18n/provider";
+import { useData } from "@/lib/data/use-app-data";
+import { pushHintKey } from "@/lib/settings/audience-copy";
 
 function isIosSafari() {
   if (typeof navigator === "undefined") return false;
@@ -33,6 +35,8 @@ function isStandalonePwa() {
 
 export function PushSettingsCard() {
   const { t } = useI18n();
+  const data = useData();
+  const pushHint = pushHintKey(data.profile?.role ?? "staff");
   const [supported, setSupported] = useState<boolean | null>(null);
   const [subscribed, setSubscribed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -113,7 +117,7 @@ export function PushSettingsCard() {
         <h2 className="font-display text-lg font-bold text-ink">
           {t("settings.pushTitle")}
         </h2>
-        <p className="mt-1 text-sm text-muted">{t("settings.pushHint")}</p>
+        <p className="mt-1 text-sm text-muted">{t(pushHint)}</p>
       </div>
 
       {iosNeedsInstall ? (

@@ -1,4 +1,4 @@
--- Allow hosts to cancel a guest booking without deleting history.
+-- Allow hosts (and later guests) to cancel a booking without deleting history.
 
 alter table public.guest_stays
   drop constraint if exists guest_stays_status_check;

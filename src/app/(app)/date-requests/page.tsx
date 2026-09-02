@@ -19,6 +19,7 @@ import {
   type BillCurrency,
 } from "@/lib/billing/currencies";
 import { DEFAULT_IN_PERSON_PAYMENT_NOTE } from "@/lib/guest/stay-pricing";
+import type { DepositTiming } from "@/lib/types";
 
 export default function DateRequestsPage() {
   const data = useData();
@@ -31,6 +32,9 @@ export default function DateRequestsPage() {
   const [quotedCurrency, setQuotedCurrency] = useState<BillCurrency>(
     DEFAULT_BILL_CURRENCY,
   );
+  const [depositAmount, setDepositAmount] = useState("");
+  const [depositTiming, setDepositTiming] =
+    useState<DepositTiming>("before_arrival");
   const [paymentNote, setPaymentNote] = useState(DEFAULT_IN_PERSON_PAYMENT_NOTE);
 
   const canRespond =
@@ -50,7 +54,7 @@ export default function DateRequestsPage() {
   const handled = useMemo(
     () =>
       data.stayDateRequests
-        .filter((r) => r.status !== "pending")
+        .filter((r) => r.status === "accepted" || r.status === "declined")
         .sort(
           (a, b) =>
             +new Date(b.created_at) - +new Date(a.created_at),
@@ -78,17 +82,19 @@ export default function DateRequestsPage() {
       setQuotedPrice("");
       setQuotedCurrency(DEFAULT_BILL_CURRENCY);
     }
+    setDepositAmount("");
+    setDepositTiming("before_arrival");
     setPaymentNote(DEFAULT_IN_PERSON_PAYMENT_NOTE);
   };
 
   const respond = async (
     requestId: string,
-    decision: "accepted" | "declined",
+    decision: "quoted" | "declined",
   ) => {
     setBusyId(requestId);
     setError(null);
     try {
-      if (decision === "accepted") {
+      if (decision === "quoted") {
         const amount = Number(quotedPrice);
         if (!Number.isFinite(amount) || amount <= 0) {
           setError(t("dateRequests.priceRequired"));
@@ -97,6 +103,13 @@ export default function DateRequestsPage() {
         await data.respondStayDateRequest(requestId, decision, {
           quoted_price_amount: amount,
           quoted_price_currency: quotedCurrency,
+          quoted_deposit_amount: depositAmount.trim()
+            ? Number(depositAmount)
+            : null,
+          quoted_deposit_currency: depositAmount.trim()
+            ? quotedCurrency
+            : null,
+          quoted_deposit_timing: depositAmount.trim() ? depositTiming : null,
           payment_note: paymentNote,
         });
         setAcceptFor(null);
@@ -109,6 +122,17 @@ export default function DateRequestsPage() {
       setBusyId(null);
     }
   };
+
+  const awaitingGuest = useMemo(
+    () =>
+      data.stayDateRequests
+        .filter((r) => r.status === "quoted")
+        .sort(
+          (a, b) =>
+            +new Date(b.created_at) - +new Date(a.created_at),
+        ),
+    [data.stayDateRequests],
+  );
 
   return (
     <div className="space-y-4 animate-rise">
@@ -201,6 +225,53 @@ export default function DateRequestsPage() {
                             ))}
                           </Select>
                         </div>
+                        <div>
+                          <Label>{t("dateRequests.depositAmount")}</Label>
+                          <p className="mb-1 text-xs text-muted">
+                            {t("dateRequests.depositAmountHint")}
+                          </p>
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            value={depositAmount}
+                            onChange={(e) => setDepositAmount(e.target.value)}
+                            placeholder={t("dateRequests.depositAmountPh")}
+                          />
+                        </div>
+                        <div className="flex flex-col justify-end">
+                          <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">
+                            {t("bills.currency")}
+                          </p>
+                          <p className="rounded-2xl bg-white px-3 py-3 text-sm font-semibold text-ink">
+                            {billCurrencyLabel(quotedCurrency)}
+                          </p>
+                        </div>
+                        {depositAmount.trim() ? (
+                          <div className="col-span-2 space-y-2">
+                            <Label>{t("dateRequests.depositWhen")}</Label>
+                            <div className="flex flex-wrap gap-2">
+                              {(
+                                [
+                                  "before_arrival",
+                                  "on_arrival",
+                                ] as DepositTiming[]
+                              ).map((value) => (
+                                <button
+                                  key={value}
+                                  type="button"
+                                  onClick={() => setDepositTiming(value)}
+                                  className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                                    depositTiming === value
+                                      ? "bg-primary text-white"
+                                      : "bg-white text-ink"
+                                  }`}
+                                >
+                                  {t(`guest.depositTiming.${value}`)}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
                       </div>
                       <div>
                         <Label>{t("dateRequests.paymentNote")}</Label>
@@ -217,9 +288,9 @@ export default function DateRequestsPage() {
                         <Button
                           type="button"
                           disabled={busyId === r.id}
-                          onClick={() => void respond(r.id, "accepted")}
+                          onClick={() => void respond(r.id, "quoted")}
                         >
-                          {t("dateRequests.acceptConfirm")}
+                          {t("dateRequests.sendQuote")}
                         </Button>
                         <Button
                           type="button"
@@ -237,7 +308,7 @@ export default function DateRequestsPage() {
                         disabled={busyId === r.id}
                         onClick={() => openAccept(r.id)}
                       >
-                        {t("dateRequests.accept")}
+                        {t("dateRequests.sendQuote")}
                       </Button>
                       <Button
                         type="button"
@@ -255,6 +326,58 @@ export default function DateRequestsPage() {
           })}
         </ul>
       )}
+
+      {awaitingGuest.length ? (
+        <div className="space-y-2">
+          <h2 className="font-display text-base font-bold text-ink">
+            {t("dateRequests.awaitingGuest")}
+          </h2>
+          <ul className="space-y-2">
+            {awaitingGuest.map((r) => {
+              const guest = data.profiles.find(
+                (p) => p.id === r.guest_profile_id,
+              );
+              const villa =
+                data.allOrgVillas.find((v) => v.id === r.villa_id) ??
+                data.villas.find((v) => v.id === r.villa_id);
+              return (
+                <li key={r.id}>
+                  <Card className="px-4 py-3 text-sm">
+                    <p className="font-semibold text-ink">
+                      {villa?.name ?? t("dateRequests.unknownVilla")}
+                    </p>
+                    <p className="text-muted">
+                      {guest?.full_name ?? t("roles.guest")}
+                      {" · "}
+                      {formatShortDate(r.check_in)} →{" "}
+                      {formatShortDate(r.check_out)}
+                    </p>
+                    {r.quoted_price_amount && r.quoted_price_currency ? (
+                      <p className="mt-1 font-semibold text-ink">
+                        {formatMoney(
+                          Number(r.quoted_price_amount),
+                          r.quoted_price_currency,
+                        )}
+                        {r.quoted_deposit_amount && r.quoted_deposit_currency ? (
+                          <>
+                            {" · "}
+                            {t("dateRequests.depositQuoted", {
+                              amount: formatMoney(
+                                Number(r.quoted_deposit_amount),
+                                r.quoted_deposit_currency,
+                              ),
+                            })}
+                          </>
+                        ) : null}
+                      </p>
+                    ) : null}
+                  </Card>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
 
       {handled.length ? (
         <div className="space-y-2">
@@ -291,6 +414,17 @@ export default function DateRequestsPage() {
                           Number(r.quoted_price_amount),
                           r.quoted_price_currency,
                         )}
+                        {r.quoted_deposit_amount && r.quoted_deposit_currency ? (
+                          <>
+                            {" · "}
+                            {t("dateRequests.depositQuoted", {
+                              amount: formatMoney(
+                                Number(r.quoted_deposit_amount),
+                                r.quoted_deposit_currency,
+                              ),
+                            })}
+                          </>
+                        ) : null}
                       </p>
                     ) : null}
                   </Card>
