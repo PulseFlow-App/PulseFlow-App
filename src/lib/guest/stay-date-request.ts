@@ -29,6 +29,31 @@ export function activeAcceptedRequestForVilla(
   );
 }
 
+/** Accepted quote when a live stay exists, or the accepted request alone (repair path). */
+export function confirmedQuoteForVilla(
+  requests: StayDateRequest[],
+  stays: GuestStay[],
+  villaId: string,
+  guestProfileId: string | undefined,
+): StayDateRequest | undefined {
+  const withStay = activeAcceptedRequestForVilla(
+    requests,
+    stays,
+    villaId,
+    guestProfileId,
+  );
+  if (withStay) return withStay;
+  if (!guestProfileId) return undefined;
+  return requests.find(
+    (r) =>
+      r.villa_id === villaId &&
+      r.guest_profile_id === guestProfileId &&
+      r.status === "accepted" &&
+      r.quoted_price_amount != null &&
+      r.quoted_price_currency != null,
+  );
+}
+
 export function matchingAcceptedStayDateRequest(
   requests: StayDateRequest[],
   stay: Pick<GuestStay, "villa_id" | "guest_profile_id" | "check_in" | "check_out">,

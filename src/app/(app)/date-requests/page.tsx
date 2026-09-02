@@ -18,7 +18,6 @@ import {
   normalizeBillCurrency,
   type BillCurrency,
 } from "@/lib/billing/currencies";
-import { DEFAULT_IN_PERSON_PAYMENT_NOTE } from "@/lib/guest/stay-pricing";
 import type { DepositTiming } from "@/lib/types";
 
 export default function DateRequestsPage() {
@@ -35,7 +34,7 @@ export default function DateRequestsPage() {
   const [depositAmount, setDepositAmount] = useState("");
   const [depositTiming, setDepositTiming] =
     useState<DepositTiming>("before_arrival");
-  const [paymentNote, setPaymentNote] = useState(DEFAULT_IN_PERSON_PAYMENT_NOTE);
+  const [paymentNote, setPaymentNote] = useState("");
 
   const canRespond =
     data.profile?.role === "owner" || data.profile?.role === "manager";
@@ -89,7 +88,7 @@ export default function DateRequestsPage() {
     setQuotedCurrency(DEFAULT_BILL_CURRENCY);
     setDepositAmount("");
     setDepositTiming("before_arrival");
-    setPaymentNote(DEFAULT_IN_PERSON_PAYMENT_NOTE);
+    setPaymentNote("");
   };
 
   const respond = async (
@@ -259,12 +258,10 @@ export default function DateRequestsPage() {
                       </div>
                       <div>
                         <Label>{t("dateRequests.paymentNote")}</Label>
-                        <p className="mb-1 text-xs text-muted">
-                          {t("dateRequests.paymentNoteHint")}
-                        </p>
                         <Textarea
                           value={paymentNote}
                           onChange={(e) => setPaymentNote(e.target.value)}
+                          placeholder={t("dateRequests.paymentNotePh")}
                           rows={3}
                         />
                       </div>

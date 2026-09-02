@@ -76,7 +76,6 @@ import {
   mergeGuestStayFromRequest,
 } from "@/lib/guest/book-stay-from-request";
 import {
-  DEFAULT_IN_PERSON_PAYMENT_NOTE,
   formatDepositQuoteLine,
   formatStayQuoteLine,
   parseQuotedDeposit,
@@ -1358,7 +1357,7 @@ function useDemoData(): AppData {
           : { amount: null, currency: null };
       const paymentNote =
         decision === "quoted"
-          ? (pricing?.payment_note?.trim() || DEFAULT_IN_PERSON_PAYMENT_NOTE)
+          ? pricing?.payment_note?.trim() || null
           : null;
       const depositTiming =
         decision === "quoted" && deposit.amount

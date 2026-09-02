@@ -629,7 +629,7 @@ const th: Dictionary = {
   "guest.villasHint": "Browse properties from this host and request dates for your stay.",
   "guest.villasHost": "Hosted by {name}",
   "guest.villasEmpty": "No company villas to show.",
-  "guest.requestDates": "Request dates",
+  "guest.requestDates": "Request dates & price",
   "guest.checkIn": "Check-in",
   "guest.checkOut": "Check-out",
   "guest.requestNote": "Note",
@@ -687,8 +687,8 @@ const th: Dictionary = {
   "dateRequests.confirmPrice": "Confirm price & book",
   "dateRequests.totalPrice": "Total price for these dates",
   "dateRequests.paymentNote": "Payment instructions",
-  "dateRequests.paymentNoteHint":
-    "How the guest should pay. In-app card payments are not live yet — use in person for now.",
+  "dateRequests.paymentNotePh":
+    "Explain to the guest how to transfer money to your bank account.",
   "dateRequests.depositHint":
     "To collect a deposit manually: after the guest pays in person, open Guests, pick their stay, and record the deposit amount. They will see it under Bills.",
   "dateRequests.depositAmount": "Deposit amount",

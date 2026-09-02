@@ -1,9 +1,5 @@
 import { normalizeBillCurrency } from "@/lib/billing/currencies";
 
-/** Default payment instructions when owner confirms a date request. */
-export const DEFAULT_IN_PERSON_PAYMENT_NOTE =
-  "Payment in person at check-in (cash or bank transfer). Message your host in Support if you need payment details.";
-
 export type StayDateRequestPricing = {
   quoted_price_amount: number;
   quoted_price_currency: string;

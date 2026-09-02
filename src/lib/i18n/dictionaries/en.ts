@@ -768,10 +768,10 @@ const en = {
   "guest.noCharges": "No deductions yet.",
   "guest.villasTitle": "Properties",
   "guest.villasHint":
-    "Browse properties from this host and request dates for your stay.",
+    "Browse properties from this host and request dates — your host will send a price quote.",
   "guest.villasHost": "Hosted by {name}",
   "guest.villasEmpty": "No company villas to show.",
-  "guest.requestDates": "Request dates",
+  "guest.requestDates": "Request dates & price",
   "guest.checkIn": "Check-in",
   "guest.checkOut": "Check-out",
   "guest.requestNote": "Note",
@@ -835,8 +835,8 @@ const en = {
   "dateRequests.confirmPrice": "Set price for guest",
   "dateRequests.totalPrice": "Total price for these dates",
   "dateRequests.paymentNote": "Payment instructions",
-  "dateRequests.paymentNoteHint":
-    "How the guest should pay. In-app card payments are not live yet — use in person for now.",
+  "dateRequests.paymentNotePh":
+    "Explain to the guest how to transfer money to your bank account.",
   "dateRequests.depositHint":
     "Deposits on the quote are informational. After the guest pays in person, record it under Guests — they will see it under Bills.",
   "dateRequests.depositAmount": "Deposit amount",

@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { StayQuoteCard } from "@/components/guest/stay-quote-card";
-import { activeAcceptedRequestForVilla } from "@/lib/guest/stay-date-request";
+import { activeAcceptedRequestForVilla, confirmedQuoteForVilla } from "@/lib/guest/stay-date-request";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
@@ -194,7 +194,7 @@ export function GuestVillasBrowse() {
           const quoted = data.stayDateRequests.find(
             (r) => r.villa_id === v.id && r.status === "quoted",
           );
-          const accepted = activeAcceptedRequestForVilla(
+          const accepted = confirmedQuoteForVilla(
             data.stayDateRequests,
             data.guestStays,
             v.id,
@@ -252,18 +252,34 @@ export function GuestVillasBrowse() {
                     </Button>
                   </div>
                 ) : accepted ? (
-                  <StayQuoteCard
-                    request={accepted}
-                    deposit={data.guestDeposits.find((d) => {
-                      const stay = data.guestStays.find(
-                        (s) =>
-                          s.id === d.stay_id &&
-                          s.villa_id === v.id &&
-                          s.guest_profile_id === data.profile?.id,
-                      );
-                      return !!stay;
-                    })}
-                  />
+                  <div className="space-y-2">
+                    <StayQuoteCard
+                      request={accepted}
+                      deposit={data.guestDeposits.find((d) => {
+                        const stay = data.guestStays.find(
+                          (s) =>
+                            s.id === d.stay_id &&
+                            s.villa_id === v.id &&
+                            s.guest_profile_id === data.profile?.id,
+                        );
+                        return !!stay;
+                      })}
+                    />
+                    {!data.guestStays.some(
+                      (s) =>
+                        s.villa_id === v.id &&
+                        s.guest_profile_id === data.profile?.id &&
+                        (s.status === "upcoming" || s.status === "active"),
+                    ) ? (
+                      <Button
+                        type="button"
+                        disabled={quoteBusy}
+                        onClick={() => void confirmQuote(accepted.id)}
+                      >
+                        {t("guest.quoteConfirm")}
+                      </Button>
+                    ) : null}
+                  </div>
                 ) : requestFor === v.id ? (
                   <div className="space-y-2 rounded-2xl bg-white/60 p-3 ring-1 ring-black/5">
                     <div className="grid grid-cols-2 gap-2">
