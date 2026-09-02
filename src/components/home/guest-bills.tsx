@@ -95,19 +95,14 @@ export function GuestBillsView() {
         ) : (
           <Card className="space-y-2 bg-gradient-to-br from-primary to-primary-dark p-5 text-white">
             <p className="text-xs font-bold uppercase tracking-wide text-white/80">
-              {t("guest.deposit")}
+              {t("guest.yourDeposit")}
             </p>
             <p className="font-display text-3xl font-bold">
               {formatMoney(held, displayCurrency)}
             </p>
-            <p className="text-sm text-white/90">
-              {isDepositPaid(deposit)
-                ? t("guest.depositPaid")
-                : t(`guest.depositStatus.${deposit.status}`)}
-            </p>
-            {deposit.deposit_timing ? (
-              <p className="text-xs text-white/80">
-                {t(`guest.depositTiming.${deposit.deposit_timing}`)}
+            {deposit.status === "partial" || deposit.status === "refunded" ? (
+              <p className="text-sm text-white/90">
+                {t(`guest.depositStatus.${deposit.status}`)}
               </p>
             ) : null}
             <div className="grid grid-cols-2 gap-2 pt-2 text-sm">
@@ -143,20 +138,32 @@ export function GuestBillsView() {
           <Card className="p-4 text-sm text-muted">{t("guest.noCharges")}</Card>
         ) : (
           charges.map((c) => (
-            <Card key={c.id} className="flex items-start justify-between gap-3 p-4">
-              <div>
-                <p className="font-semibold text-ink">
-                  <LocalizedText text={c.description} />
-                </p>
-                <p className="text-xs text-muted">
-                  {new Date(c.created_at).toLocaleDateString()}
-                </p>
+            <Card key={c.id} className="space-y-2 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-ink">
+                    <LocalizedText text={c.description} />
+                  </p>
+                  <p className="text-xs text-muted">
+                    {new Date(c.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <DisplayMoney
+                  amount={Number(c.amount)}
+                  currency={c.currency}
+                  className="shrink-0 font-bold text-ink"
+                />
               </div>
-              <DisplayMoney
-                amount={Number(c.amount)}
-                currency={c.currency}
-                className="shrink-0 font-bold text-ink"
-              />
+              {c.proof_photo_url ? (
+                <a
+                  href={c.proof_photo_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-block text-sm font-bold text-primary"
+                >
+                  {t("guest.viewProof")} →
+                </a>
+              ) : null}
             </Card>
           ))
         )}

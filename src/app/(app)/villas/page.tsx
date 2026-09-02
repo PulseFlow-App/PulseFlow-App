@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { Building2, ExternalLink, MapPin, Plus, UserRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -21,7 +21,7 @@ import {
   isStaffApp,
   personalVillasOnly,
 } from "@/lib/roles";
-import { GuestVillasBrowse } from "@/components/home/guest-villas";
+import { GuestBookingGuide } from "@/components/home/guest-booking-guide";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
@@ -59,7 +59,11 @@ export default function VillasPage() {
 
   if (!data.ready) return <LoadingState />;
   if (data.profile && isGuestApp(data.profile.role)) {
-    return <GuestVillasBrowse />;
+    return (
+      <Suspense fallback={<LoadingState />}>
+        <GuestBookingGuide />
+      </Suspense>
+    );
   }
 
   const assigneesFor = (villaId: string) =>

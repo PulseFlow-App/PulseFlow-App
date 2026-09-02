@@ -12,6 +12,21 @@ export function isConfirmedStay(stay: GuestStay | null | undefined) {
   return Boolean(stay && isConfirmedStayStatus(stay.status));
 }
 
+/** Support chat for live stays, or cancelled stays (refund follow-up). */
+export function canUseSupportStay(
+  stay: GuestStay | null | undefined,
+  role?: string,
+) {
+  if (!stay) return false;
+  if (isConfirmedStayStatus(stay.status)) return true;
+  if (stay.status === "cancelled") {
+    return (
+      role === "guest" || role === "owner" || role === "manager"
+    );
+  }
+  return false;
+}
+
 /** Prefer active, then upcoming. Ignores completed stays. */
 export function pickConfirmedStay(stays: GuestStay[]): GuestStay | null {
   return (

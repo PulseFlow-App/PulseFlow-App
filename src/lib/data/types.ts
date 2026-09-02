@@ -174,6 +174,14 @@ export type AppData = {
     currency?: string;
     notes?: string | null;
   }) => Promise<void>;
+  /** Owner/manager deducts from the guest deposit (damage, missing items, etc.). */
+  addGuestCharge: (input: {
+    stay_id: string;
+    description: string;
+    amount: number;
+    currency?: string;
+    proof_photo_url?: string | null;
+  }) => Promise<void>;
   /** Owner/manager cancels any time; guest may cancel 3+ days before check-in. */
   cancelGuestStay: (stayId: string) => Promise<void>;
   upsertHouseGuide: (
@@ -201,5 +209,6 @@ export type AppData = {
     kind: StayPhoto["kind"];
     photo_url: string;
     note?: string | null;
+    stay_id?: string;
   }) => Promise<void>;
 };

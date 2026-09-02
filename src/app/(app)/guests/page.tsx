@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle, Paperclip } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
   BILL_CURRENCIES,
@@ -61,6 +61,19 @@ export default function GuestsPage() {
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [depositMsg, setDepositMsg] = useState<string | null>(null);
+  const [deductionDesc, setDeductionDesc] = useState("");
+  const [deductionAmount, setDeductionAmount] = useState("");
+  const [deductionCurrency, setDeductionCurrency] =
+    useState<BillCurrency>("THB");
+  const [deductionPhotoUrl, setDeductionPhotoUrl] = useState<string | null>(
+    null,
+  );
+  const [deductionPhotoName, setDeductionPhotoName] = useState<string | null>(
+    null,
+  );
+  const [deductionBusy, setDeductionBusy] = useState(false);
+  const [deductionMsg, setDeductionMsg] = useState<string | null>(null);
+  const deductionFileRef = useRef<HTMLInputElement>(null);
 
   const canManage =
     data.profile?.role === "owner" || data.profile?.role === "manager";
@@ -89,6 +102,11 @@ export default function GuestsPage() {
   const deposit = activeId
     ? data.guestDeposits.find((d) => d.stay_id === activeId) ?? null
     : null;
+  const stayCharges = activeId
+    ? data.guestCharges.filter((c) => c.stay_id === activeId)
+    : [];
+  const canAddDeduction =
+    !!deposit && deposit.status !== "due" && !!activeStay;
 
   useEffect(() => {
     if (!activeId || depositDirty) return;
@@ -104,6 +122,18 @@ export default function GuestsPage() {
     }
     setDepositMsg(null);
   }, [activeId, data.guestDeposits, depositDirty]);
+
+  useEffect(() => {
+    if (!activeId) return;
+    setDeductionDesc("");
+    setDeductionAmount("");
+    setDeductionCurrency(
+      deposit ? normalizeBillCurrency(deposit.currency) : "THB",
+    );
+    setDeductionPhotoUrl(null);
+    setDeductionPhotoName(null);
+    setDeductionMsg(null);
+  }, [activeId, deposit?.currency]);
 
   if (!data.ready || !data.profile) return <LoadingState />;
   if (!canManage) return <LoadingState />;
@@ -158,6 +188,56 @@ export default function GuestsPage() {
       setDepositMsg(e instanceof Error ? e.message : t("common.error"));
     } finally {
       setDepositBusy(false);
+    }
+  };
+
+  const attachDeductionPhoto = async (file: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setDeductionMsg(t("guest.supportReceiptImageOnly"));
+      return;
+    }
+    setDeductionBusy(true);
+    setDeductionMsg(null);
+    try {
+      const url = await data.uploadVillaPhoto(file);
+      if (!url) throw new Error(t("common.error"));
+      setDeductionPhotoUrl(url);
+      setDeductionPhotoName(file.name);
+    } catch (e) {
+      setDeductionMsg(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setDeductionBusy(false);
+    }
+  };
+
+  const saveDeduction = async () => {
+    if (!activeId) return;
+    const amount = parseDepositAmount(deductionAmount);
+    const description = deductionDesc.trim();
+    if (!description || amount == null || amount <= 0) {
+      setDeductionMsg(t("guests.deductionInvalid"));
+      return;
+    }
+    setDeductionBusy(true);
+    setDeductionMsg(null);
+    try {
+      await data.addGuestCharge({
+        stay_id: activeId,
+        description,
+        amount,
+        currency: deductionCurrency,
+        proof_photo_url: deductionPhotoUrl,
+      });
+      setDeductionDesc("");
+      setDeductionAmount("");
+      setDeductionPhotoUrl(null);
+      setDeductionPhotoName(null);
+      setDeductionMsg(t("guests.deductionSaved"));
+    } catch (e) {
+      setDeductionMsg(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setDeductionBusy(false);
     }
   };
 
@@ -270,9 +350,6 @@ export default function GuestsPage() {
                 {t("guests.depositTitle")}
               </p>
               <p className="text-xs text-muted">{t("guests.depositHint")}</p>
-              <p className="mt-1 text-xs text-muted">
-                {t("dateRequests.depositHint")}
-              </p>
               <p className="mt-1 text-sm font-semibold text-ink">
                 {deposit
                   ? t("guests.depositCurrent", {
@@ -358,6 +435,165 @@ export default function GuestsPage() {
             >
               {depositBusy ? t("common.saving") : t("guests.depositSave")}
             </Button>
+          </Card>
+
+          <Card className="space-y-3 p-4">
+            <div>
+              <p className="font-display text-lg font-bold text-ink">
+                {t("guests.deductionsTitle")}
+              </p>
+              <p className="text-xs text-muted">{t("guests.deductionsHint")}</p>
+            </div>
+            {!canAddDeduction ? (
+              <p className="text-sm text-muted">
+                {t("guests.deductionNeedDeposit")}
+              </p>
+            ) : (
+              <>
+                <div>
+                  <Label htmlFor="deduction-desc">
+                    {t("guests.deductionDescription")}
+                  </Label>
+                  <Input
+                    id="deduction-desc"
+                    value={deductionDesc}
+                    onChange={(e) => setDeductionDesc(e.target.value)}
+                    placeholder={t("guests.deductionDescriptionPh")}
+                  />
+                </div>
+                <div className="grid grid-cols-[1fr_auto] gap-2">
+                  <div>
+                    <Label htmlFor="deduction-amount">
+                      {t("guests.deductionAmount")}
+                    </Label>
+                    <Input
+                      id="deduction-amount"
+                      type="text"
+                      inputMode="decimal"
+                      autoComplete="off"
+                      value={deductionAmount}
+                      onChange={(e) => setDeductionAmount(e.target.value)}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="deduction-currency">
+                      {t("guests.depositCurrency")}
+                    </Label>
+                    <Select
+                      id="deduction-currency"
+                      value={deductionCurrency}
+                      onChange={(e) =>
+                        setDeductionCurrency(
+                          normalizeBillCurrency(e.target.value) as BillCurrency,
+                        )
+                      }
+                      className="w-28"
+                    >
+                      {BILL_CURRENCIES.map((code) => (
+                        <option key={code} value={code}>
+                          {billCurrencyLabel(code)}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label>{t("guests.deductionPhoto")}</Label>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="rounded-full"
+                      disabled={deductionBusy}
+                      onClick={() => deductionFileRef.current?.click()}
+                    >
+                      <Paperclip className="size-4" />
+                      {t("guests.deductionAttachPhoto")}
+                    </Button>
+                    {deductionPhotoName ? (
+                      <>
+                        <span className="text-xs text-muted">
+                          {deductionPhotoName}
+                        </span>
+                        <button
+                          type="button"
+                          className="text-xs font-bold text-danger"
+                          onClick={() => {
+                            setDeductionPhotoUrl(null);
+                            setDeductionPhotoName(null);
+                          }}
+                        >
+                          {t("guests.deductionRemovePhoto")}
+                        </button>
+                      </>
+                    ) : null}
+                    <input
+                      ref={deductionFileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) =>
+                        void attachDeductionPhoto(e.target.files?.[0] ?? null)
+                      }
+                    />
+                  </div>
+                </div>
+                {deductionMsg ? (
+                  <p
+                    className={cn(
+                      "text-sm font-semibold",
+                      deductionMsg === t("guests.deductionSaved")
+                        ? "text-secondary"
+                        : "text-danger",
+                    )}
+                  >
+                    {deductionMsg}
+                  </p>
+                ) : null}
+                <Button
+                  type="button"
+                  disabled={
+                    deductionBusy ||
+                    !deductionDesc.trim() ||
+                    parseDepositAmount(deductionAmount) == null ||
+                    (parseDepositAmount(deductionAmount) ?? 0) <= 0
+                  }
+                  onClick={() => void saveDeduction()}
+                >
+                  {deductionBusy ? t("common.saving") : t("guests.deductionSave")}
+                </Button>
+              </>
+            )}
+            {stayCharges.length ? (
+              <div className="space-y-2 border-t border-black/5 pt-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-muted">
+                  {t("guests.deductionsList")}
+                </p>
+                <ul className="space-y-2">
+                  {stayCharges.map((c) => (
+                    <li
+                      key={c.id}
+                      className="flex items-start justify-between gap-2 rounded-xl bg-[#F7F5F1] p-3 text-sm"
+                    >
+                      <div>
+                        <p className="font-semibold text-ink">
+                          <LocalizedText text={c.description} />
+                        </p>
+                        <p className="text-xs text-muted">
+                          {new Date(c.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <p className="shrink-0 font-bold text-ink">
+                        {formatDisplay(Number(c.amount), c.currency)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : canAddDeduction ? (
+              <p className="text-sm text-muted">{t("guests.noDeductions")}</p>
+            ) : null}
           </Card>
 
           {activeStay ? (

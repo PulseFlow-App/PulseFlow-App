@@ -90,14 +90,13 @@ export function StayQuoteCard({
             </p>
             <p className="font-display text-xl font-bold text-ink">
               {formatMoney(depositDisplay, displayCurrency)}
-              <span className="ml-2 text-sm font-semibold text-muted">
-                ·{" "}
-                {depositPaid
-                  ? t("guest.depositPaid")
-                  : t("guest.depositDue")}
-              </span>
+              {!depositPaid ? (
+                <span className="ml-2 text-sm font-semibold text-muted">
+                  · {t("guest.depositDue")}
+                </span>
+              ) : null}
             </p>
-            {depositTiming ? (
+            {!depositPaid && depositTiming ? (
               <p className="text-sm text-muted">
                 {t(`guest.depositTiming.${depositTiming}`)}
               </p>
@@ -115,11 +114,7 @@ export function StayQuoteCard({
                   {t("guest.openSupportChat")} →
                 </Link>
               </div>
-            ) : (
-              <p className="text-xs lowercase text-muted">
-                {t("guest.deposit")} · {t("guest.depositPaid")}
-              </p>
-            )}
+            ) : null}
           </div>
         ) : null}
       </Card>

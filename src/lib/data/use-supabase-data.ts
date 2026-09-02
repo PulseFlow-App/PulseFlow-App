@@ -27,7 +27,7 @@ import type {
   Villa,
   VillaAssignment,
 } from "@/lib/types";
-import { isConfirmedStayStatus, pickConfirmedStay } from "@/lib/guest/confirmed-stay";
+import { isConfirmedStayStatus, pickConfirmedStay, canUseSupportStay } from "@/lib/guest/confirmed-stay";
 import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
 import { isUnpaidBeforeArrivalDeposit } from "@/lib/guest/deposit-from-quote";
 import { closeAcceptedStayDateRequests } from "@/lib/guest/stay-date-request";
@@ -70,6 +70,7 @@ import {
 } from "@/lib/guest/stay-pricing";
 import { resolveSupportDepositAction } from "@/lib/guest/handle-support-deposit";
 import { resolveSupportCancelAction } from "@/lib/guest/handle-support-cancel";
+import { resolveSupportRefundAction } from "@/lib/guest/handle-support-refund";
 import { formatOrderWhen, canCancelServiceOrder } from "@/lib/service-orders";
 import {
   loadLocallyReadIds,
@@ -227,6 +228,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     createGuestBriefing: async () => undefined,
     confirmGuestBriefing: async () => undefined,
     upsertGuestDeposit: async () => undefined,
+    addGuestCharge: async () => undefined,
     cancelGuestStay: async () => undefined,
     upsertHouseGuide: async () => undefined,
     requestStayDates: async () => undefined,
@@ -1616,7 +1618,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         (profile.role === "owner" || profile.role === "manager"
           ? pickConfirmedStay(scopedGuestStays)
           : null);
-      if (!stay || !isConfirmedStayStatus(stay.status)) {
+      if (!stay || !canUseSupportStay(stay, profile.role)) {
         throw new Error(
           "Support chat opens once you have a confirmed stay.",
         );
@@ -1718,6 +1720,53 @@ export function useSupabaseData(enabled: boolean): AppData {
         await insertNotifications(
           supabase,
           depositAction.notifications.map((n) => toInsertRow(n)),
+        );
+        await refresh();
+        return;
+      }
+
+      const refundAction = resolveSupportRefundAction({
+        body: text,
+        profile,
+        stay,
+        deposit,
+        hasAttachment: Boolean(attachmentUrl),
+      });
+
+      if (refundAction?.kind === "host_refund") {
+        if (!deposit) throw new Error("No deposit found for this stay.");
+        const { error: depError } = await supabase
+          .from("guest_deposits")
+          .update({
+            refunded_amount: refundAction.deposit.refunded_amount,
+            status: refundAction.deposit.status,
+          })
+          .eq("id", deposit.id);
+        if (depError) throw depError;
+
+        const { data: inserted, error } = await supabase
+          .from("support_messages")
+          .insert({
+            org_id: stay.org_id,
+            stay_id: stay.id,
+            sender_id: profile.id,
+            body: refundAction.displayBody,
+            attachment_url: attachmentUrl,
+          })
+          .select(
+            "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
+          )
+          .single();
+        if (error) throw error;
+        if (inserted) {
+          setSupportMessages((prev) => [
+            ...prev,
+            inserted as SupportMessageWithSender,
+          ]);
+        }
+        await insertNotifications(
+          supabase,
+          refundAction.notifications.map((n) => toInsertRow(n)),
         );
         await refresh();
         return;
@@ -1959,6 +2008,67 @@ export function useSupabaseData(enabled: boolean): AppData {
             kind: "guest_update",
             title: "Security deposit recorded",
             body: `${amount.toLocaleString()} ${currency} held for your stay`,
+            href: "/bills",
+            entity_id: stay.id,
+            audience_profile_ids: [stay.guest_profile_id],
+          }),
+        ].map((n) => toInsertRow(n)),
+      );
+      await refresh();
+    },
+    addGuestCharge: async (input) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can add deposit deductions.");
+      }
+      const stay = scopedGuestStays.find((s) => s.id === input.stay_id);
+      if (!stay) throw new Error("Stay not found.");
+      if (stay.status === "cancelled" || stay.status === "completed") {
+        throw new Error("This stay cannot be updated.");
+      }
+      const deposit = scopedGuestDeposits.find((d) => d.stay_id === stay.id);
+      if (!deposit || deposit.status === "due") {
+        throw new Error(
+          "Record the security deposit before adding deductions.",
+        );
+      }
+      const description = input.description.trim();
+      if (!description) throw new Error("Enter what the deduction is for.");
+      const amount = Number(input.amount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error("Enter a valid deduction amount.");
+      }
+      const currency = normalizeBillCurrency(
+        input.currency ?? deposit.currency,
+      );
+      const supabase = createClient();
+      const { error } = await supabase.from("guest_charges").insert({
+        org_id: stay.org_id,
+        stay_id: stay.id,
+        deposit_id: deposit.id,
+        description,
+        amount,
+        currency,
+        proof_photo_url: input.proof_photo_url?.trim() || null,
+      });
+      if (error) {
+        if (
+          error.code === "42P01" ||
+          error.code === "PGRST205" ||
+          error.message.includes("does not exist")
+        ) {
+          throw new Error("Guest deductions need migration 023 on Supabase.");
+        }
+        throw error;
+      }
+      await insertNotifications(
+        supabase,
+        [
+          makeNotification({
+            org_id: stay.org_id,
+            kind: "guest_update",
+            title: "Deposit deduction added",
+            body: `${description} · ${amount.toLocaleString()} ${currency}`,
             href: "/bills",
             entity_id: stay.id,
             audience_profile_ids: [stay.guest_profile_id],
@@ -2431,14 +2541,18 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     addStayPhoto: async (input) => {
       if (!profile) throw new Error("Not signed in.");
-      if (!activeStay) throw new Error("No active stay.");
-      if (profile.role === "guest" && activeStay.guest_profile_id !== profile.id) {
+      const stay =
+        (input.stay_id
+          ? scopedGuestStays.find((s) => s.id === input.stay_id)
+          : null) ?? activeStay;
+      if (!stay) throw new Error("No active stay.");
+      if (profile.role === "guest" && stay.guest_profile_id !== profile.id) {
         throw new Error("No active stay.");
       }
       const supabase = createClient();
       const { error } = await supabase.from("stay_photos").insert({
-        org_id: activeStay.org_id,
-        stay_id: activeStay.id,
+        org_id: stay.org_id,
+        stay_id: stay.id,
         kind: input.kind,
         photo_url: input.photo_url,
         note: input.note?.trim() || null,

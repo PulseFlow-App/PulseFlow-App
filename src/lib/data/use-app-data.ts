@@ -52,7 +52,7 @@ import {
   canViewAllBills,
   personalVillasOnly,
 } from "@/lib/roles";
-import { isConfirmedStayStatus, pickConfirmedStay } from "@/lib/guest/confirmed-stay";
+import { isConfirmedStayStatus, pickConfirmedStay, canUseSupportStay } from "@/lib/guest/confirmed-stay";
 import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
 import { closeAcceptedStayDateRequests } from "@/lib/guest/stay-date-request";
 import {
@@ -83,6 +83,7 @@ import {
 import { buildDueDepositFromRequest, isUnpaidBeforeArrivalDeposit } from "@/lib/guest/deposit-from-quote";
 import { resolveSupportDepositAction } from "@/lib/guest/handle-support-deposit";
 import { resolveSupportCancelAction } from "@/lib/guest/handle-support-cancel";
+import { resolveSupportRefundAction } from "@/lib/guest/handle-support-refund";
 import { capitalizeLabel } from "@/lib/format-label";
 
 export type { AppData } from "@/lib/data/types";
@@ -870,7 +871,7 @@ function useDemoData(): AppData {
         (profile.role === "owner" || profile.role === "manager"
           ? pickConfirmedStay(guestStays)
           : null);
-      if (!stay || !isConfirmedStayStatus(stay.status)) {
+      if (!stay || !canUseSupportStay(stay, profile.role)) {
         throw new Error(
           "Support chat opens once you have a confirmed stay.",
         );
@@ -958,6 +959,36 @@ function useDemoData(): AppData {
           };
         });
         demoPushNotifications(depositAction.notifications);
+        return;
+      }
+
+      const refundAction = resolveSupportRefundAction({
+        body: text,
+        profile,
+        stay,
+        deposit,
+        hasAttachment: Boolean(attachmentUrl),
+      });
+
+      if (refundAction?.kind === "host_refund") {
+        if (!deposit) throw new Error("No deposit found for this stay.");
+        updateDemoStore((s) => ({
+          ...s,
+          guestDeposits: (s.guestDeposits ?? []).map((d) =>
+            d.stay_id === stay.id
+              ? {
+                  ...d,
+                  refunded_amount: refundAction.deposit.refunded_amount,
+                  status: refundAction.deposit.status,
+                }
+              : d,
+          ),
+          supportMessages: [
+            ...s.supportMessages,
+            supportRow(refundAction.displayBody),
+          ],
+        }));
+        demoPushNotifications(refundAction.notifications);
         return;
       }
 
@@ -1136,6 +1167,65 @@ function useDemoData(): AppData {
           kind: "guest_update",
           title: "Security deposit recorded",
           body: `${amount.toLocaleString()} ${currency} held for your stay`,
+          href: "/bills",
+          entity_id: stay.id,
+          audience_profile_ids: [stay.guest_profile_id],
+        }),
+      ]);
+    },
+    addGuestCharge: async (input) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can add deposit deductions.");
+      }
+      const stay = guestStays.find((s) => s.id === input.stay_id);
+      if (!stay || stay.org_id !== profile.org_id) {
+        throw new Error("Stay not found.");
+      }
+      if (stay.status === "cancelled" || stay.status === "completed") {
+        throw new Error("This stay cannot be updated.");
+      }
+      const deposit = (store.guestDeposits ?? []).find(
+        (d) => d.stay_id === stay.id,
+      );
+      if (!deposit || deposit.status === "due") {
+        throw new Error(
+          "Record the security deposit before adding deductions.",
+        );
+      }
+      const description = input.description.trim();
+      if (!description) throw new Error("Enter what the deduction is for.");
+      const amount = Number(input.amount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error("Enter a valid deduction amount.");
+      }
+      const currency = normalizeBillCurrency(
+        input.currency ?? deposit.currency,
+      );
+      updateDemoStore((s) => ({
+        ...s,
+        guestCharges: [
+          ...(s.guestCharges ?? []),
+          {
+            id: uid("charge"),
+            org_id: stay.org_id,
+            stay_id: stay.id,
+            deposit_id: deposit.id,
+            description,
+            amount,
+            currency,
+            proof_photo_url: input.proof_photo_url?.trim() || null,
+            created_at: new Date().toISOString(),
+          },
+        ],
+      }));
+      demoPushNotifications([
+        makeNotification({
+          org_id: stay.org_id,
+          kind: "guest_update",
+          title: "Deposit deduction added",
+          body: `${description} · ${amount.toLocaleString()} ${currency}`,
           href: "/bills",
           entity_id: stay.id,
           audience_profile_ids: [stay.guest_profile_id],
@@ -1586,15 +1676,22 @@ function useDemoData(): AppData {
     addStayPhoto: async (input) => {
       assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
-      if (!activeStay) throw new Error("No active stay.");
+      const stay =
+        (input.stay_id
+          ? guestStays.find((s) => s.id === input.stay_id)
+          : null) ?? activeStay;
+      if (!stay) throw new Error("No active stay.");
+      if (profile.role === "guest" && stay.guest_profile_id !== profile.id) {
+        throw new Error("No active stay.");
+      }
       updateDemoStore((s) => ({
         ...s,
         stayPhotos: [
           ...s.stayPhotos,
           {
             id: uid("photo"),
-            org_id: activeStay.org_id,
-            stay_id: activeStay.id,
+            org_id: stay.org_id,
+            stay_id: stay.id,
             kind: input.kind,
             photo_url: input.photo_url,
             note: input.note?.trim() || null,

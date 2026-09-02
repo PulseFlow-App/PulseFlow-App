@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ClipboardList,
+  FileText,
   Globe,
   LifeBuoy,
   LogOut,
   Menu,
+  Shield,
   Star,
   Trophy,
   UserPlus,
@@ -24,6 +26,7 @@ import {
   canUseTeamReputation,
   isGuestApp,
 } from "@/lib/roles";
+import { legalAudienceFromRole, legalPageHref } from "@/lib/legal/audiences";
 import { canUseManagerReporting } from "@/lib/billing/reporting";
 import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
@@ -132,6 +135,17 @@ export function AppMenuButton() {
     label: t("settings.website"),
     icon: Globe,
     external: true,
+  });
+  const legalAudience = legalAudienceFromRole(profile.role);
+  links.push({
+    href: legalPageHref("/terms", legalAudience),
+    label: t("settings.termsLink"),
+    icon: FileText,
+  });
+  links.push({
+    href: legalPageHref("/privacy", legalAudience),
+    label: t("settings.privacyLink"),
+    icon: Shield,
   });
   links.push({
     href: `mailto:${brand.supportEmail}`,

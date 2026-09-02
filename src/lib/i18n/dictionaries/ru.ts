@@ -571,15 +571,32 @@ const ru: Dictionary = {
   "guest.addPhoto": "Add photo",
   "guest.nav.stay": "Stay",
   "guest.nav.villas": "Villas",
+  "guest.nav.guide": "Booking Guide",
+  "guest.bookingGuideTitle": "Booking Guide",
+  "guest.bookingGuideHint":
+    "House info, briefings, and photos for the booking you opened.",
+  "guest.bookingGuideEmpty":
+    "No confirmed booking yet. Accept a quote on Stay, or browse properties below to request dates.",
+  "guest.bookingActive": "In stay",
+  "guest.bookingUpcoming": "Upcoming",
+  "guest.bookingPrice": "Price {amount}",
+  "guest.bookingDeposit": "Deposit {amount} · {status}",
+  "guest.bookingNoDeposit": "No deposit on this booking",
+  "guest.openBookingGuide": "Open Booking Guide",
+  "guest.hideBrowseVillas": "Hide properties",
   "guest.nav.support": "Support",
   "guest.nav.bills": "Bills",
   "guest.supportTitle": "Support",
   "guest.supportHint":
-    "Message the owner or manager. Useful commands: /deposit — when you paid your deposit in advance, share this command here along with the receipt; /cancel — when you wish to cancel your booking within 3 days of check-in.",
+    "Message the owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
   "guest.supportCmdDeposit":
     "When you paid your deposit in advance, share this command along with your receipt.",
   "guest.supportCmdCancel":
     "When you wish to cancel your booking within 3 days of check-in.",
+  "guest.supportCmdDepositHost":
+    "Record that the guest paid the deposit (optional amount).",
+  "guest.supportCmdRefund":
+    "Record a deposit refund after cancel. Attach transfer proof.",
   "guest.supportCommandsList": "Support commands",
   "guest.supportNoStay": "Support chat opens once you have a confirmed stay.",
   "guest.supportNeedStay": "Support chat is only available after your host confirms your stay.",
@@ -612,6 +629,7 @@ const ru: Dictionary = {
   "guest.depositHowToPayHint":
     "Open Support chat and send /deposit along with your receipt and wait for confirmation.",
   "guest.openSupportChat": "Open Support chat",
+  "guest.openLocation": "Open location in maps",
   "guest.cancelBookingTitle": "Cancel booking",
   "guest.cancelBookingDescription":
     "If you wish to cancel your booking within 3 days of check-in, open Support chat and send /cancel to request it. Early cancellations are acceptable without host approval.",
@@ -631,18 +649,26 @@ const ru: Dictionary = {
     "Within 3 days of check-in? Send /cancel here to request a cancellation from your host.",
   "guest.supportDepositHostHint":
     "When the guest has paid, reply with /deposit to record it (or /deposit 5000 THB).",
+  "guest.supportRefundHostHint":
+    "If the guest cancelled with a paid deposit, attach refund proof and send /refund (or /refund 5000 THB).",
   "guest.supportCancelHostHint":
     "When a guest sends /cancel, open Guests and cancel the booking there.",
-  "guest.supportHostPlaceholder": "Reply to guest… /deposit to record deposit",
+  "guest.supportHostPlaceholder": "Reply… /deposit or /refund + attach proof",
+  "guest.supportAttachRefund": "Attach refund proof",
+  "guest.supportRefundProof": "Refund proof",
+  "guest.supportRefundRemaining": "Refundable on this stay ({dates}): {amount}",
+  "guest.bookingCancelled": "Cancelled",
   "guest.deductions": "Deductions",
   "guest.remaining": "Still held",
   "guest.noDeposit": "No deposit on file for this stay.",
   "guest.charges": "Charges",
   "guest.noCharges": "No deductions yet.",
+  "guest.viewProof": "View photo",
   "guest.villasTitle": "Company villas",
   "guest.villasHint": "Browse properties from this host and request dates for your stay.",
   "guest.villasHost": "Hosted by {name}",
   "guest.villasEmpty": "No company villas to show.",
+  "guest.currentStayDates": "Your stay · {from} → {to}",
   "guest.requestDates": "Request dates & price",
   "guest.checkIn": "Check-in",
   "guest.checkOut": "Check-out",
@@ -704,7 +730,7 @@ const ru: Dictionary = {
   "dateRequests.paymentNotePh":
     "Explain to the guest how to transfer money to your bank account.",
   "dateRequests.depositHint":
-    "To collect a deposit manually: after the guest pays in person, open Guests, pick their stay, and record the deposit amount. They will see it under Bills.",
+    "When you add a deposit on a quote, choose in-advance or in-person. For in-advance, the guest pays via support chat and you confirm under Guests. For in-person, explain your rules in support chat.",
   "dateRequests.depositAmount": "Deposit amount",
   "dateRequests.depositAmountHint":
     "Optional. Uses the same currency as the total above.",
@@ -745,7 +771,7 @@ const ru: Dictionary = {
   "guests.read": "Read",
   "guests.unread": "Waiting",
   "guests.depositTitle": "Security deposit",
-    "guests.depositHint": "Record what the guest paid. They see it under Bills in their app.",
+    "guests.depositHint": "Document what guest paid. For bookings with deposit in-advance, make sure to check the bill information in support chat and then confirm booking. For bookings with deposit in-person, inform guest about the rules you have for this transaction in support chat.",
     "guests.depositAmount": "Amount",
     "guests.depositCurrency": "Currency",
     "guests.depositNotes": "Note (optional)",
@@ -755,6 +781,20 @@ const ru: Dictionary = {
     "guests.depositCurrent": "On file: {amount}",
     "guests.depositNone": "No deposit recorded yet.",
   "guests.depositInvalid": "Enter a valid deposit amount (0 or more).",
+  "guests.deductionsTitle": "Deduct from deposit",
+  "guests.deductionsHint": "Record damage or missing items. The guest sees each deduction under Bills with the remaining balance.",
+  "guests.deductionNeedDeposit": "Save the security deposit first before adding deductions.",
+  "guests.deductionDescription": "What happened",
+  "guests.deductionDescriptionPh": "e.g. Broken lamp",
+  "guests.deductionAmount": "Amount to deduct",
+  "guests.deductionPhoto": "Proof photo (optional)",
+  "guests.deductionAttachPhoto": "Attach photo",
+  "guests.deductionRemovePhoto": "Remove photo",
+  "guests.deductionSave": "Add deduction",
+  "guests.deductionSaved": "Deduction added. Guest notified.",
+  "guests.deductionInvalid": "Enter a description and a valid amount.",
+  "guests.deductionsList": "Deductions on file",
+  "guests.noDeductions": "No deductions yet.",
   "guests.cancelTitle": "Cancel booking",
   "guests.cancelHint": "Cancels this guest stay and frees the villa dates. The guest is notified in the app and by push if enabled.",
   "guests.cancelUnpaidDepositHint":
@@ -812,6 +852,8 @@ const ru: Dictionary = {
   "order.reach.awaiting": "Not contacted (awaiting agreement)",
   "settings.website": "Сайт",
   "settings.websiteHint": "Обзор продукта, тарифы и гайды на публичном сайте.",
+  "settings.termsLink": "Terms of Service",
+  "settings.privacyLink": "Privacy Policy",
   "settings.supportLink": "Связаться с поддержкой",
   "settings.supportHint": "Вопросы, ошибки или помощь с оплатой.",
   "settings.preparingShareLink": "Готовим публичную ссылку…",
