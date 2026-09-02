@@ -36,6 +36,12 @@ export default function JoinPage({
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [mergePending, setMergePending] = useState<{
+    orgName: string;
+    email: string;
+    mergeUrl?: string;
+    mergeEmailSent: boolean;
+  } | null>(null);
 
   useEffect(() => {
     rememberReferralCode(
@@ -116,9 +122,26 @@ export default function JoinPage({
               : null,
         }),
       });
-      const payload = (await res.json()) as { error?: string };
+      const payload = (await res.json()) as {
+        error?: string;
+        needsMergeConfirm?: boolean;
+        mergeEmailSent?: boolean;
+        mergeUrl?: string;
+        orgName?: string;
+        email?: string;
+        alreadyMember?: boolean;
+      };
       if (!res.ok) {
         throw new Error(payload.error ?? "Could not join.");
+      }
+      if (payload.needsMergeConfirm) {
+        setMergePending({
+          orgName: payload.orgName ?? "this company",
+          email: payload.email ?? email.trim().toLowerCase(),
+          mergeUrl: payload.mergeUrl,
+          mergeEmailSent: Boolean(payload.mergeEmailSent),
+        });
+        return;
       }
       const supabase = createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -155,6 +178,39 @@ export default function JoinPage({
             This link is invalid or already used. Ask your owner or manager for
             a new invite.
           </p>
+          <Link href="/login" className="font-semibold text-primary">
+            Back to sign in
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
+  if (mergePending) {
+    return (
+      <div className="flex h-dvh items-center justify-center overflow-y-auto bg-sand px-4">
+        <Card className="w-full max-w-md space-y-3 p-6 text-center">
+          <PulseMark className="mx-auto size-12" />
+          <h1 className="font-display text-xl font-bold text-ink">
+            {t("guest.mergeEmailTitle")}
+          </h1>
+          <p className="text-sm text-muted">
+            {t("guest.mergeEmailHint", {
+              email: mergePending.email,
+              org: mergePending.orgName,
+            })}
+          </p>
+          {!mergePending.mergeEmailSent && mergePending.mergeUrl ? (
+            <p className="text-sm text-muted">
+              {t("guest.mergeEmailFallback")}{" "}
+              <Link
+                href={mergePending.mergeUrl}
+                className="font-semibold text-primary"
+              >
+                {t("guest.mergeOpenLink")}
+              </Link>
+            </p>
+          ) : null}
           <Link href="/login" className="font-semibold text-primary">
             Back to sign in
           </Link>

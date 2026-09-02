@@ -548,13 +548,30 @@ const ru: Dictionary = {
   "invite.anyoneBackHint": "Opens account setup with Personal or Company choice.",
   "invite.staffBackHint": "They join your company, fill their details, and keep a personal space too.",
   "invite.guestBackHint": "They join as a guest of your company for this stay and future visits.",
+  "guest.companyFallback": "Host company",
+  "guest.mergeTitle": "Merge guest profile",
+  "guest.mergeHint":
+    "{org} invited this email ({email}). Enter your password to merge their properties into your existing profile.",
+  "guest.mergePassword": "Your password",
+  "guest.mergeNeedPassword": "Enter your password to confirm.",
+  "guest.mergeConfirm": "Confirm merge",
+  "guest.mergeConfirming": "Merging…",
+  "guest.mergeInvalidTitle": "Merge unavailable",
+  "guest.mergeInvalid": "This merge link is invalid or already used.",
+  "guest.mergeUnavailable": "Profile merge is not available in demo mode.",
+  "guest.mergeEmailTitle": "Check your email",
+  "guest.mergeEmailHint":
+    "A profile already exists for {email}. We sent a note asking whether to merge {org}'s properties into that profile. Open the link in the email and enter your password to confirm. If you ignore it, nothing changes.",
+  "guest.mergeEmailFallback":
+    "Email could not be sent from this environment. Use this link to confirm:",
+  "guest.mergeOpenLink": "Confirm merge",
   "guest.homeTitle": "Your stay",
   "guest.homeSubtitle": "Updates from the property team that hosted you.",
   "guest.comingSoon": "Guest stay tools are coming next",
   "guest.comingSoonHint":
     "House guide, support chat with owners/managers, deposit bills, and more villas from this company.",
   "guest.hi": "Hi {name}",
-  "guest.noStay": "No stay is linked yet. Ask your host for an invite, or browse villas to request dates.",
+  "guest.noStay": "No stay is linked yet. Browse properties below to request dates.",
   "guest.browseVillas": "Browse company villas",
   "guest.notices": "From your host",
   "guest.houseGuide": "House guide",
@@ -575,8 +592,7 @@ const ru: Dictionary = {
   "guest.bookingGuideTitle": "Booking Guide",
   "guest.bookingGuideHint":
     "House info, briefings, and photos for the booking you opened.",
-  "guest.bookingGuideEmpty":
-    "No confirmed booking yet. Accept a quote on Stay, or browse properties below to request dates.",
+  "guest.bookingGuideEmpty": "No confirmed bookings yet.",
   "guest.bookingActive": "In stay",
   "guest.bookingUpcoming": "Upcoming",
   "guest.bookingPrice": "Price {amount}",

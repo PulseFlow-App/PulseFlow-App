@@ -1225,7 +1225,27 @@ export function buildVillaList(
   villas: Villa[],
   assignments: VillaAssignment[],
   orgs: Organization[],
+  memberships: OrgMembership[] = [],
 ): VillaListItem[] {
+  if (profile.role === "guest") {
+    const guestOrgIds = new Set(
+      memberships
+        .filter((m) => m.profile_id === profile.id && m.role === "guest")
+        .map((m) => m.org_id),
+    );
+    const activeOrg = orgs.find((o) => o.id === profile.org_id);
+    if (activeOrg?.kind === "company") guestOrgIds.add(profile.org_id);
+
+    return villas
+      .filter((v) => guestOrgIds.has(v.org_id))
+      .map((v) => ({
+        ...v,
+        bucket: "company" as const,
+        orgLabel: orgs.find((o) => o.id === v.org_id)?.name ?? "Company",
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
   const companyOrg = orgs.find((o) => o.id === profile.org_id);
   const personalOrg = profile.personal_org_id
     ? orgs.find((o) => o.id === profile.personal_org_id)

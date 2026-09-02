@@ -294,7 +294,21 @@ export function useSupabaseData(enabled: boolean): AppData {
     setProfile(p);
     const orgId = p.org_id;
     const personalId = p.personal_org_id;
-    const orgIds = [orgId, personalId].filter(Boolean) as string[];
+
+    const { data: membershipRows } = await supabase
+      .from("org_memberships")
+      .select("*")
+      .eq("profile_id", p.id);
+    const membershipList = (membershipRows as OrgMembership[]) ?? [];
+    setMemberships(membershipList);
+
+    const memberOrgIds = membershipList.map((m) => m.org_id);
+    const orgIds = [
+      ...new Set(
+        [orgId, personalId, ...memberOrgIds].filter(Boolean) as string[],
+      ),
+    ];
+    const isGuest = p.role === "guest";
 
     const [
       orgRes,
@@ -308,7 +322,6 @@ export function useSupabaseData(enabled: boolean): AppData {
       messagesRes,
       invitesRes,
       assignRes,
-      membershipsRes,
       endorsementsRes,
       notificationsRes,
       ordersRes,
@@ -343,53 +356,72 @@ export function useSupabaseData(enabled: boolean): AppData {
         .eq("org_id", orgId)
         .order("created_at", { ascending: true }),
       supabase.from("invites").select("*").eq("org_id", orgId).is("used_at", null),
-      supabase.from("villa_assignments").select("*").eq("org_id", orgId),
-      supabase.from("org_memberships").select("*").eq("profile_id", p.id),
+      supabase.from("villa_assignments").select("*").in("org_id", orgIds),
       supabase.from("endorsements").select("*").eq("org_id", orgId),
       supabase
         .from("notifications")
         .select("*")
-        .eq("org_id", orgId)
+        .in("org_id", isGuest ? orgIds : [orgId])
         .order("created_at", { ascending: false }),
       supabase
         .from("service_orders")
         .select("*")
         .eq("org_id", orgId)
         .order("created_at", { ascending: false }),
-      supabase
-        .from("stay_date_requests")
-        .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("guest_stays")
-        .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false }),
-      supabase.from("house_guides").select("*").eq("org_id", orgId),
-      supabase
-        .from("support_messages")
-        .select(
-          "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
-        )
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: true }),
+      isGuest
+        ? supabase
+            .from("stay_date_requests")
+            .select("*")
+            .eq("guest_profile_id", p.id)
+            .order("created_at", { ascending: false })
+        : supabase
+            .from("stay_date_requests")
+            .select("*")
+            .eq("org_id", orgId)
+            .order("created_at", { ascending: false }),
+      isGuest
+        ? supabase
+            .from("guest_stays")
+            .select("*")
+            .eq("guest_profile_id", p.id)
+            .order("created_at", { ascending: false })
+        : supabase
+            .from("guest_stays")
+            .select("*")
+            .eq("org_id", orgId)
+            .order("created_at", { ascending: false }),
+      supabase.from("house_guides").select("*").in("org_id", orgIds),
+      isGuest
+        ? supabase
+            .from("support_messages")
+            .select(
+              "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
+            )
+            .in("org_id", orgIds)
+            .order("created_at", { ascending: true })
+        : supabase
+            .from("support_messages")
+            .select(
+              "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
+            )
+            .eq("org_id", orgId)
+            .order("created_at", { ascending: true }),
       supabase
         .from("guest_briefings")
         .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false }),
-      supabase.from("guest_deposits").select("*").eq("org_id", orgId),
+        .in("org_id", isGuest ? orgIds : [orgId]),
+      supabase
+        .from("guest_deposits")
+        .select("*")
+        .in("org_id", isGuest ? orgIds : [orgId]),
       supabase
         .from("guest_charges")
         .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false }),
+        .in("org_id", isGuest ? orgIds : [orgId]),
       supabase
         .from("stay_photos")
         .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false }),
+        .in("org_id", isGuest ? orgIds : [orgId]),
     ]);
 
     setOrganization((orgRes.data as Organization) ?? null);
@@ -403,7 +435,6 @@ export function useSupabaseData(enabled: boolean): AppData {
     setMessages((messagesRes.data as MessageWithSender[]) ?? []);
     setInvites((invitesRes.data as Invite[]) ?? []);
     setVillaAssignments((assignRes.data as VillaAssignment[]) ?? []);
-    setMemberships((membershipsRes.data as OrgMembership[]) ?? []);
     setEndorsements((endorsementsRes.data as Endorsement[]) ?? []);
     setNotifications(
       ((notificationsRes.data as AppNotification[]) ?? []).map((n) => ({
@@ -652,12 +683,18 @@ export function useSupabaseData(enabled: boolean): AppData {
   if (!enabled) return empty;
 
   const villaList = profile
-    ? buildVillaList(profile, villas, villaAssignments, orgs)
+    ? buildVillaList(profile, villas, villaAssignments, orgs, memberships)
     : [];
   const visible = villaList.map(
     ({ bucket: _b, orgLabel: _o, ...v }) => v as Villa,
   );
-  const allOrgVillas = villas.filter((v) => v.org_id === profile?.org_id);
+  const allOrgVillas = villas.filter((v) =>
+    profile?.role === "guest"
+      ? memberships.some(
+          (m) => m.org_id === v.org_id && m.role === "guest",
+        ) || v.org_id === profile.org_id
+      : v.org_id === profile?.org_id,
+  );
   const visibleVillaIds = new Set(visible.map((v) => v.id));
   const scopedTasks = tasks.filter((t) => {
     if (t.org_id !== profile?.org_id) return false;
@@ -2249,10 +2286,12 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       const supabase = createClient();
       const villa = villas.find((v) => v.id === input.villa_id);
+      if (!villa) throw new Error("Villa not found.");
+      const requestOrgId = villa.org_id;
       const { data: inserted, error } = await supabase
         .from("stay_date_requests")
         .insert({
-          org_id: profile.org_id,
+          org_id: requestOrgId,
           villa_id: input.villa_id,
           guest_profile_id: profile.id,
           check_in: input.check_in,
@@ -2274,13 +2313,13 @@ export function useSupabaseData(enabled: boolean): AppData {
         }
         throw error;
       }
-      const managers = ownerManagerIds(profiles, profile.org_id);
+      const managers = ownerManagerIds(profiles, requestOrgId);
       if (managers.length && inserted?.id) {
         await insertNotifications(
           supabase,
           [
             makeNotification({
-              org_id: profile.org_id,
+              org_id: requestOrgId,
               kind: "appointment",
               title: "Date request",
               body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}`,

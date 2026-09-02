@@ -4,6 +4,8 @@ import { slugifyName, uniqueShareSlug } from "@/lib/auth/helpers";
 import { ensureProfileShareSlug } from "@/lib/auth/share-slug";
 import { creditReferral } from "@/lib/billing/referrals";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
+import { appOriginFromRequest, sendAppEmail } from "@/lib/email/send";
+import { randomBytes } from "crypto";
 
 type Body = {
   token: string;
@@ -13,6 +15,14 @@ type Body = {
   password: string;
   referredBy?: string | null;
 };
+
+async function findAuthUserByEmail(
+  admin: ReturnType<typeof createAdminClient>,
+  email: string,
+) {
+  const { data: listed } = await admin.auth.admin.listUsers({ perPage: 200 });
+  return listed?.users.find((u) => u.email?.toLowerCase() === email) ?? null;
+}
 
 export async function POST(request: Request) {
   if (isDemoMode() || !isSupabaseConfigured()) {
@@ -35,9 +45,9 @@ export async function POST(request: Request) {
   const password = body.password ?? "";
   const phone = body.phone?.trim() || null;
 
-  if (!token || !fullName || !email || password.length < 6) {
+  if (!token || !fullName || !email) {
     return NextResponse.json(
-      { error: "Token, name, email, and password (6+) are required." },
+      { error: "Token, name, and email are required." },
       { status: 400 },
     );
   }
@@ -57,31 +67,179 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: listed } = await admin.auth.admin.listUsers({ perPage: 200 });
-  const existingAuth = listed?.users.find(
-    (u) => u.email?.toLowerCase() === email,
-  );
+  const existingAuth = await findAuthUserByEmail(admin, email);
+
+  // Guest + existing account: email confirm merge (do not join until link + password).
+  if (existingAuth && invite.role === "guest") {
+    const { data: existingProfile } = await admin
+      .from("profiles")
+      .select("*")
+      .eq("id", existingAuth.id)
+      .maybeSingle();
+
+    if (!existingProfile) {
+      return NextResponse.json(
+        { error: "Account is missing a profile." },
+        { status: 400 },
+      );
+    }
+
+    const { data: membership } = await admin
+      .from("org_memberships")
+      .select("id")
+      .eq("org_id", invite.org_id)
+      .eq("profile_id", existingAuth.id)
+      .maybeSingle();
+
+    if (membership) {
+      // Already linked — mark invite used and let them sign in.
+      await admin
+        .from("invites")
+        .update({
+          full_name: fullName,
+          email,
+          phone,
+          used_at: new Date().toISOString(),
+          used_by: existingAuth.id,
+        })
+        .eq("id", invite.id);
+
+      await admin
+        .from("profiles")
+        .update({
+          org_id: invite.org_id,
+          role: "guest",
+          phone: phone ?? existingProfile.phone,
+        })
+        .eq("id", existingAuth.id);
+
+      return NextResponse.json({
+        ok: true,
+        userId: existingAuth.id,
+        email,
+        alreadyMember: true,
+      });
+    }
+
+    const { data: org } = await admin
+      .from("organizations")
+      .select("name")
+      .eq("id", invite.org_id)
+      .maybeSingle();
+    const orgName = (org?.name as string | undefined) ?? "this company";
+
+    const { data: existingPending } = await admin
+      .from("profile_merge_requests")
+      .select("*")
+      .eq("invite_id", invite.id)
+      .eq("status", "pending")
+      .maybeSingle();
+
+    let mergeToken =
+      (existingPending?.token as string | undefined) ??
+      randomBytes(24).toString("hex");
+
+    if (existingPending) {
+      await admin
+        .from("profile_merge_requests")
+        .update({
+          email,
+          full_name: fullName,
+          phone,
+          job_title: invite.job_title,
+          expires_at: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        })
+        .eq("id", existingPending.id);
+      mergeToken = existingPending.token as string;
+    } else {
+      const { error: mergeErr } = await admin
+        .from("profile_merge_requests")
+        .insert({
+          token: mergeToken,
+          invite_id: invite.id,
+          profile_id: existingAuth.id,
+          org_id: invite.org_id,
+          role: invite.role,
+          email,
+          full_name: fullName,
+          phone,
+          job_title: invite.job_title,
+          status: "pending",
+        });
+      if (mergeErr) {
+        return NextResponse.json(
+          {
+            error:
+              mergeErr.message.includes("does not exist") ||
+              mergeErr.code === "42P01" ||
+              mergeErr.code === "PGRST205"
+                ? "Profile merge needs migration 033 on Supabase."
+                : mergeErr.message,
+          },
+          { status: 500 },
+        );
+      }
+    }
+
+    const origin = appOriginFromRequest(request);
+    const mergeUrl = `${origin}/merge/${mergeToken}`;
+    const subject = `Merge your PulseFlow profile with ${orgName}?`;
+    const text = [
+      `A profile already exists for ${email}.`,
+      ``,
+      `${orgName} invited you as a guest. Confirm to merge their properties into your existing profile.`,
+      ``,
+      `Open this link, then enter your password to confirm:`,
+      mergeUrl,
+      ``,
+      `If you ignore this email, the merge request is cancelled automatically.`,
+    ].join("\n");
+    const html = `
+      <p>A profile already exists for <strong>${email}</strong>.</p>
+      <p><strong>${orgName}</strong> invited you as a guest. Confirm to merge their properties into your existing profile.</p>
+      <p><a href="${mergeUrl}">Confirm merge</a> — you will need your password.</p>
+      <p>If you do not open the link, this request is ignored.</p>
+    `;
+
+    const mail = await sendAppEmail({
+      to: email,
+      subject,
+      html,
+      text,
+    });
+
+    return NextResponse.json({
+      ok: true,
+      needsMergeConfirm: true,
+      mergeEmailSent: mail.sent,
+      // Only expose URL when email could not be sent (dev / missing Resend).
+      mergeUrl: mail.sent ? undefined : mergeUrl,
+      orgName,
+      email,
+    });
+  }
+
+  if (password.length < 6) {
+    return NextResponse.json(
+      { error: "Password must be at least 6 characters." },
+      { status: 400 },
+    );
+  }
 
   let userId: string;
 
   if (existingAuth) {
-    const { error: signCheck } = await admin.auth.signInWithPassword({
-      email,
-      password,
-    });
-    // Admin client may not support password check; verify via generateLink or update
-    void signCheck;
-    // Prefer: attempt password update only if we can verify - use auth.admin
-    // We'll validate by creating a temporary anon sign-in from client instead.
-    // Server-side: use getUserById + require client to have signed in for existing users.
-    // Simpler path: for existing users, require they already authenticated.
-    // Here we verify password with a short-lived anon client:
     const { createClient } = await import("@supabase/supabase-js");
     const anon = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     );
-    const { error: pwErr } = await anon.auth.signInWithPassword({ email, password });
+    const { error: pwErr } = await anon.auth.signInWithPassword({
+      email,
+      password,
+    });
     if (pwErr) {
       return NextResponse.json(
         { error: "Wrong password for this email." },

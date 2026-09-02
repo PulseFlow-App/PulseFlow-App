@@ -547,6 +547,23 @@ const de: Dictionary = {
   "invite.anyoneBackHint": "Öffnet die Kontoeinrichtung mit persönlicher oder Firmenauswahl.",
   "invite.staffBackHint": "Sie treten Ihrem Unternehmen bei, füllen ihre Daten aus und behalten auch einen persönlichen Bereich bei.",
   "invite.guestBackHint": "Sie kommen als Gast Ihres Unternehmens für diesen Aufenthalt und zukünftige Besuche hinzu.",
+  "guest.companyFallback": "Host company",
+  "guest.mergeTitle": "Merge guest profile",
+  "guest.mergeHint":
+    "{org} invited this email ({email}). Enter your password to merge their properties into your existing profile.",
+  "guest.mergePassword": "Your password",
+  "guest.mergeNeedPassword": "Enter your password to confirm.",
+  "guest.mergeConfirm": "Confirm merge",
+  "guest.mergeConfirming": "Merging…",
+  "guest.mergeInvalidTitle": "Merge unavailable",
+  "guest.mergeInvalid": "This merge link is invalid or already used.",
+  "guest.mergeUnavailable": "Profile merge is not available in demo mode.",
+  "guest.mergeEmailTitle": "Check your email",
+  "guest.mergeEmailHint":
+    "A profile already exists for {email}. We sent a note asking whether to merge {org}'s properties into that profile. Open the link in the email and enter your password to confirm. If you ignore it, nothing changes.",
+  "guest.mergeEmailFallback":
+    "Email could not be sent from this environment. Use this link to confirm:",
+  "guest.mergeOpenLink": "Confirm merge",
   "guest.homeTitle": "Ihr Aufenthalt",
   "guest.homeSubtitle": "Neuigkeiten vom Team für Unterkünfte, das dich aufgenommen hat.",
   "guest.comingSoon": "Tools für Aufenthalte von Gästen kommen als Nächstes",
@@ -574,8 +591,7 @@ const de: Dictionary = {
   "guest.bookingGuideTitle": "Booking Guide",
   "guest.bookingGuideHint":
     "House info, briefings, and photos for the booking you opened.",
-  "guest.bookingGuideEmpty":
-    "No confirmed booking yet. Accept a quote on Stay, or browse properties below to request dates.",
+  "guest.bookingGuideEmpty": "No confirmed bookings yet.",
   "guest.bookingActive": "In stay",
   "guest.bookingUpcoming": "Upcoming",
   "guest.bookingPrice": "Price {amount}",

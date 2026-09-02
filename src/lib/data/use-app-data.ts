@@ -165,13 +165,19 @@ function useDemoData(): AppData {
     [store.profiles, profile],
   );
 
-  const allOrgVillas = useMemo(
-    () =>
-      profile
-        ? store.villas.filter((v) => v.org_id === profile.org_id)
-        : [],
-    [store.villas, profile],
-  );
+  const allOrgVillas = useMemo(() => {
+    if (!profile) return [];
+    if (profile.role === "guest") {
+      const orgIds = new Set(
+        (store.memberships ?? [])
+          .filter((m) => m.profile_id === profile.id && m.role === "guest")
+          .map((m) => m.org_id),
+      );
+      orgIds.add(profile.org_id);
+      return store.villas.filter((v) => orgIds.has(v.org_id));
+    }
+    return store.villas.filter((v) => v.org_id === profile.org_id);
+  }, [store.villas, store.memberships, profile]);
 
   const villaList = useMemo(() => {
     if (!profile) return [];
@@ -180,8 +186,9 @@ function useDemoData(): AppData {
       store.villas,
       store.villaAssignments,
       store.orgs,
+      store.memberships ?? [],
     );
-  }, [profile, store.villas, store.villaAssignments, store.orgs]);
+  }, [profile, store.villas, store.villaAssignments, store.orgs, store.memberships]);
 
   const visibleVillas = useMemo(
     () => villaList.map(({ bucket: _b, orgLabel: _o, ...v }) => v as Villa),
@@ -303,8 +310,17 @@ function useDemoData(): AppData {
 
   const houseGuides = useMemo(() => {
     if (!profile) return [];
+    if (profile.role === "guest") {
+      const orgIds = new Set(
+        (store.memberships ?? [])
+          .filter((m) => m.profile_id === profile.id)
+          .map((m) => m.org_id),
+      );
+      orgIds.add(profile.org_id);
+      return (store.houseGuides ?? []).filter((g) => orgIds.has(g.org_id));
+    }
     return (store.houseGuides ?? []).filter((g) => g.org_id === profile.org_id);
-  }, [store.houseGuides, profile]);
+  }, [store.houseGuides, store.memberships, profile]);
 
   const supportMessages = useMemo(() => {
     if (!profile) return [];
@@ -1373,6 +1389,8 @@ function useDemoData(): AppData {
       if (input.check_out <= input.check_in) {
         throw new Error("Check-out must be after check-in.");
       }
+      const villa = store.villas.find((v) => v.id === input.villa_id);
+      if (!villa) throw new Error("Villa not found.");
       const requestId = uid("dates");
       updateDemoStore((s) => ({
         ...s,
@@ -1380,7 +1398,7 @@ function useDemoData(): AppData {
           ...s.stayDateRequests,
           {
             id: requestId,
-            org_id: profile.org_id,
+            org_id: villa.org_id,
             villa_id: input.villa_id,
             guest_profile_id: profile.id,
             check_in: input.check_in,
@@ -1399,16 +1417,15 @@ function useDemoData(): AppData {
           },
         ],
       }));
-      const villa = store.villas.find((v) => v.id === input.villa_id);
       demoPushNotifications([
         makeNotification({
-          org_id: profile.org_id,
+          org_id: villa.org_id,
           kind: "appointment",
           title: "Date request",
-          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}`,
+          body: `${profile.full_name} · ${villa.name} · ${input.check_in} → ${input.check_out}`,
           href: "/date-requests",
           entity_id: requestId,
-          audience_profile_ids: ownerManagerIds(store.profiles, profile.org_id),
+          audience_profile_ids: ownerManagerIds(store.profiles, villa.org_id),
         }),
       ]);
     },
