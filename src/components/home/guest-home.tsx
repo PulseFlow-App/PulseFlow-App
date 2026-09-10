@@ -18,6 +18,7 @@ import {
 } from "@/lib/guest/selected-stay";
 import { useDisplayCurrency } from "@/lib/billing/use-display-currency";
 import type { GuestStay, VillaListItem } from "@/lib/types";
+import { ExpandableVillaPhoto } from "@/components/villas/villa-photo";
 
 type CompanySection = {
   orgId: string;
@@ -30,7 +31,7 @@ export function GuestHome({ name }: { name: string }) {
   const data = useData();
   const { t } = useI18n();
   const { convertToDisplay, displayCurrency } = useDisplayCurrency();
-  const first = name.split(" ")[0] || name;
+  void name;
   const [quoteBusy, setQuoteBusy] = useState(false);
   const [quoteMsg, setQuoteMsg] = useState<string | null>(null);
   const [declineQuoteId, setDeclineQuoteId] = useState<string | null>(null);
@@ -158,48 +159,58 @@ export function GuestHome({ name }: { name: string }) {
 
     return (
       <Link
-        key={stay.id}
         href={guestBookingGuideHref(stay.id)}
         onClick={() => writeSelectedStayId(stay.id)}
         className="block"
       >
         <Card className="space-y-2 p-4 transition hover:bg-white/90">
-          <div className="flex items-start justify-between gap-2">
-            <p className="font-display text-lg font-bold text-ink">
-              {villa?.name ?? t("dateRequests.unknownVilla")}
-            </p>
-            <span className="text-xs font-bold uppercase tracking-wide text-muted">
-              {stay.status === "active"
-                ? t("guest.bookingActive")
-                : t("guest.bookingUpcoming")}
-            </span>
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-display text-lg font-bold text-ink">
+                  {villa?.name ?? t("dateRequests.unknownVilla")}
+                </p>
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">
+                  {stay.status === "active"
+                    ? t("guest.bookingActive")
+                    : t("guest.bookingUpcoming")}
+                </span>
+              </div>
+              <p className="text-sm text-ink">
+                {formatShortDate(stay.check_in)} →{" "}
+                {formatShortDate(stay.check_out)}
+              </p>
+              {price != null ? (
+                <p className="text-sm font-semibold text-ink">
+                  {t("guest.bookingPrice", {
+                    amount: formatMoney(price, displayCurrency),
+                  })}
+                </p>
+              ) : null}
+              {depositAmount != null ? (
+                <p className="text-sm text-muted">
+                  {t("guest.bookingDeposit", {
+                    amount: formatMoney(depositAmount, displayCurrency),
+                    status: paid
+                      ? t("guest.depositPaid")
+                      : t("guest.depositDue"),
+                  })}
+                </p>
+              ) : (
+                <p className="text-sm text-muted">{t("guest.bookingNoDeposit")}</p>
+              )}
+              <p className="text-sm font-bold text-primary">
+                {t("guest.openBookingGuide")} →
+              </p>
+            </div>
+            {villa?.photo_url ? (
+              <ExpandableVillaPhoto
+                src={villa.photo_url}
+                alt={villa.name}
+                className="w-24 shrink-0 sm:w-28"
+              />
+            ) : null}
           </div>
-          <p className="text-sm text-ink">
-            {formatShortDate(stay.check_in)} →{" "}
-            {formatShortDate(stay.check_out)}
-          </p>
-          {price != null ? (
-            <p className="text-sm font-semibold text-ink">
-              {t("guest.bookingPrice", {
-                amount: formatMoney(price, displayCurrency),
-              })}
-            </p>
-          ) : null}
-          {depositAmount != null ? (
-            <p className="text-sm text-muted">
-              {t("guest.bookingDeposit", {
-                amount: formatMoney(depositAmount, displayCurrency),
-                status: paid
-                  ? t("guest.depositPaid")
-                  : t("guest.depositDue"),
-              })}
-            </p>
-          ) : (
-            <p className="text-sm text-muted">{t("guest.bookingNoDeposit")}</p>
-          )}
-          <p className="text-sm font-bold text-primary">
-            {t("guest.openBookingGuide")} →
-          </p>
         </Card>
       </Link>
     );
@@ -234,7 +245,7 @@ export function GuestHome({ name }: { name: string }) {
 
       <div>
         <h1 className="font-display text-2xl font-bold text-ink">
-          {t("guest.hi", { name: first })}
+          {t("guest.homeTitle")}
         </h1>
         <p className="mt-1 text-sm text-muted">{t("guest.homeSubtitle")}</p>
       </div>
@@ -277,7 +288,16 @@ export function GuestHome({ name }: { name: string }) {
 
               {section.bookings.length ? (
                 <div className="space-y-3">
-                  {section.bookings.map(renderBookingCard)}
+                  {section.bookings.map((stay, index) => (
+                    <div key={stay.id} className="space-y-2">
+                      {index > 0 ? (
+                        <p className="text-xs font-bold uppercase tracking-wide text-muted">
+                          {t("guest.otherBookings")}
+                        </p>
+                      ) : null}
+                      {renderBookingCard(stay)}
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <Card className="p-5">

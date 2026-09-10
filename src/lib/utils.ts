@@ -1,6 +1,11 @@
 import { format, parseISO, isToday, isSameDay, startOfDay, subDays } from "date-fns";
 import type { Locale } from "./i18n/types";
-import { formatWeekdayShort } from "./i18n/date-format";
+import { isLocale } from "./i18n";
+import {
+  formatShortDateLocalized,
+  formatWeekdayShort,
+  getDateFnsLocale,
+} from "./i18n/date-format";
 import type { Task } from "./types";
 
 export function cn(...classes: Array<string | false | null | undefined>) {
@@ -34,13 +39,37 @@ export function formatMoneyCompact(amount: number, currency = "THB") {
   return formatMoneyWithDisplay(amount, currency, "narrowSymbol");
 }
 
-export function formatShortDate(date: string | null) {
-  if (!date) return "-";
-  return format(parseISO(date), "d MMM");
+function activeUiLocale(explicit?: Locale): Locale {
+  if (explicit && isLocale(explicit)) return explicit;
+  if (typeof document !== "undefined") {
+    const lang = document.documentElement.lang?.slice(0, 2).toLowerCase();
+    if (isLocale(lang)) return lang;
+  }
+  return "en";
 }
 
-export function formatDayLabel(date: Date) {
-  return format(date, "EEE");
+/** Short display date in the active UI language (e.g. RU → «31 авг.» not «31 Aug»). */
+export function formatShortDate(
+  date: string | null | undefined,
+  locale?: Locale,
+) {
+  return formatShortDateLocalized(date, activeUiLocale(locale));
+}
+
+export function formatDayLabel(date: Date, locale?: Locale) {
+  return formatWeekdayShort(date, activeUiLocale(locale));
+}
+
+export function formatDisplayDate(
+  date: Date | string,
+  locale?: Locale,
+  pattern = "d MMM yyyy",
+) {
+  const loc = activeUiLocale(locale);
+  const d = typeof date === "string" ? parseISO(date) : date;
+  const ruSafe =
+    loc === "ru" || loc === "de" ? pattern.replace("MMM d, yyyy", "d MMM yyyy") : pattern;
+  return format(d, ruSafe, { locale: getDateFnsLocale(loc) });
 }
 
 export function phoneToWaMe(phone: string) {

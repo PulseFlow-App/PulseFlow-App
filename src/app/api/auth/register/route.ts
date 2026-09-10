@@ -84,26 +84,50 @@ export async function POST(request: Request) {
       : fullName);
 
   const isCompany = kind === "company";
-  const orgRow = {
+  const orgRow: Record<string, unknown> = {
     name: workspaceName,
     kind,
     trial_ends_at: isCompany ? companyTrialEndsAt() : null,
     subscription_status: isCompany ? "trialing" : "none",
     billing_email: isCompany ? email : null,
   };
+  const acquisition = body.acquisitionSource?.trim();
+  if (acquisition) orgRow.acquisition_source = acquisition;
 
-  const { data: org, error: orgErr } = await admin
-    .from("organizations")
-    .insert(orgRow)
-    .select("id")
-    .single();
-
-  if (orgErr || !org) {
-    await admin.auth.admin.deleteUser(userId);
-    return NextResponse.json(
-      { error: orgErr?.message ?? "Could not create organization." },
-      { status: 500 },
-    );
+  let org: { id: string } | null = null;
+  {
+    const first = await admin
+      .from("organizations")
+      .insert(orgRow)
+      .select("id")
+      .single();
+    if (
+      first.error?.message?.includes("acquisition_source") &&
+      orgRow.acquisition_source
+    ) {
+      delete orgRow.acquisition_source;
+      const retry = await admin
+        .from("organizations")
+        .insert(orgRow)
+        .select("id")
+        .single();
+      if (retry.error || !retry.data) {
+        await admin.auth.admin.deleteUser(userId);
+        return NextResponse.json(
+          { error: retry.error?.message ?? "Could not create organization." },
+          { status: 500 },
+        );
+      }
+      org = retry.data;
+    } else if (first.error || !first.data) {
+      await admin.auth.admin.deleteUser(userId);
+      return NextResponse.json(
+        { error: first.error?.message ?? "Could not create organization." },
+        { status: 500 },
+      );
+    } else {
+      org = first.data;
+    }
   }
 
   const share_slug = await uniqueShareSlug(slugifyName(fullName), async (slug) => {

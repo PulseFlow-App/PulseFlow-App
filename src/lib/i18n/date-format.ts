@@ -36,10 +36,24 @@ export function formatShortDateLocalized(
   locale: Locale,
 ) {
   if (!date) return "-";
+  // RU/DE: day then month abbreviation in that language («31 авг.» / «31. Aug»).
   const pattern = locale === "de" ? "d. MMM" : "d MMM";
   return format(parseISO(date), pattern, {
     locale: getDateFnsLocale(locale),
   });
+}
+
+/** Calendar / form display — avoid US «MMM d, yyyy» in RU. */
+export function formatLongDateLocalized(date: Date, locale: Locale) {
+  const pattern =
+    locale === "ru" || locale === "de" || locale === "th"
+      ? "d MMMM yyyy"
+      : "MMM d, yyyy";
+  return format(date, pattern, { locale: getDateFnsLocale(locale) });
+}
+
+export function formatMonthYearLocalized(date: Date, locale: Locale) {
+  return format(date, "LLLL yyyy", { locale: getDateFnsLocale(locale) });
 }
 
 export function formatWeekdayShort(date: Date, locale: Locale) {

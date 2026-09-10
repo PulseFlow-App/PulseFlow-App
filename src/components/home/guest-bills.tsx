@@ -7,7 +7,7 @@ import { DisplayCurrencySelect } from "@/components/billing/display-currency-sel
 import { DisplayMoney } from "@/components/billing/display-money";
 import { useData } from "@/lib/data/use-app-data";
 import { useDisplayCurrency } from "@/lib/billing/use-display-currency";
-import { formatMoney } from "@/lib/utils";
+import { formatMoney, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { isDepositPaid } from "@/lib/guest/deposit-from-quote";
@@ -139,15 +139,13 @@ export function GuestBillsView() {
         ) : (
           charges.map((c) => (
             <Card key={c.id} className="space-y-2 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted">
+                {formatShortDate(c.created_at.slice(0, 10))}
+              </p>
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-ink">
-                    <LocalizedText text={c.description} />
-                  </p>
-                  <p className="text-xs text-muted">
-                    {new Date(c.created_at).toLocaleDateString()}
-                  </p>
-                </div>
+                <p className="font-semibold text-ink">
+                  <LocalizedText text={c.description} />
+                </p>
                 <DisplayMoney
                   amount={Number(c.amount)}
                   currency={c.currency}
@@ -159,9 +157,14 @@ export function GuestBillsView() {
                   href={c.proof_photo_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-block text-sm font-bold text-primary"
+                  className="block overflow-hidden rounded-xl"
                 >
-                  {t("guest.viewProof")} →
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={c.proof_photo_url}
+                    alt=""
+                    className="h-28 w-full object-cover"
+                  />
                 </a>
               ) : null}
             </Card>

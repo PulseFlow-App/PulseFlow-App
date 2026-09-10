@@ -371,11 +371,11 @@ const ar: Dictionary = {
   "settings.pushIosHint": "On iPhone: Share → Add to Home Screen, open Pulse Flow from the icon, then enable alerts here.",
   "settings.inviteError": "Could not create invite.",
   "settings.saveError": "Could not save.",
-  "settings.translateContent": "Translate team content",
-  "settings.translateContentHint.guest": "Host briefings, support messages, and stay notes appear in your app language.",
-  "settings.translateContentHint.host": "Tasks, chat, guest updates, and team messages appear in your app language.",
-  "settings.translateContentHint.staff": "Tasks, chat, and messages from your team appear in your app language.",
-  "settings.translateContentHint": "Tasks, chat, briefings, and messages from teammates appear in your app language.",
+  "settings.translateContent": "ترجمة محتوى الفريق",
+  "settings.translateContentHint.guest": "إحاطات المضيف ورسائل الدعم وملاحظات الإقامة تظهر بلغة تطبيقك.",
+  "settings.translateContentHint.host": "المهام والدردشة وتحديثات الضيوف ورسائل الفريق تظهر بلغة تطبيقك.",
+  "settings.translateContentHint.staff": "المهام والدردشة والرسائل من فريقك تظهر بلغة تطبيقك.",
+  "settings.translateContentHint": "المهام والدردشة والإحاطات ورسائل زملاء الفريق تظهر بلغة تطبيقك.",
   "billing.title": "Billing",
   "billing.subtitle": "Billing is not live yet. Every account gets 3 months of full features free. Personal workspaces stay free after that.",
   "billing.status": "Status",
@@ -408,7 +408,7 @@ const ar: Dictionary = {
   "plan.expired": "Full expired",
   "plan.title": "Your plan",
   "plan.seePlans": "See Free and Full plans",
-  "plan.note.guest": "Guest access for your stay — villa details, support chat, and bills.",
+  "plan.note.guest": "",
   "plan.note.personal": "Free forever for your own properties, tasks, and bills.",
   "plan.note.staff": "Free seat on this company - assigned properties, jobs, bills, and chat.",
   "plan.note.managerLimited": "Free seat while company Full is inactive. Exports and company writes stay closed until the owner subscribes.",
@@ -547,7 +547,7 @@ const ar: Dictionary = {
   "leaderboard.public": "Public profile",
   "roles.owner": "Owner",
   "roles.manager": "Management",
-  "roles.cleaner": "Cleaning team",
+  "roles.cleaner": "On-site staff",
   "roles.staff": "Staff",
   "roles.guest": "Guest",
   "invite.card.anyone": "Invite anyone",
@@ -580,16 +580,16 @@ const ar: Dictionary = {
   "guest.mergeEmailFallback":
     "Email could not be sent from this environment. Use this link to confirm:",
   "guest.mergeOpenLink": "Confirm merge",
-  "guest.homeTitle": "Your stay",
-  "guest.homeSubtitle": "Updates from the property team that hosted you.",
+  "guest.homeTitle": "Booking Dashboard",
+  "guest.homeSubtitle": "Browse properties to request dates.",
   "guest.comingSoon": "Guest stay tools are coming next",
   "guest.comingSoonHint": "House guide, support chat with owners/managers, deposit bills, and more villas from this company.",
   "guest.hi": "Hi {name}",
   "guest.noStay": "No stay is linked yet. Browse properties below to request dates.",
   "guest.browseVillas": "Browse company villas",
   "guest.notices": "From your host",
-  "guest.briefingsTitle": "Host briefings",
-  "guest.briefingsHint": "Tick each item once you have read it.",
+  "guest.briefingsTitle": "Briefings",
+  "guest.briefingsHint": "Instructions from property owner",
   "guest.confirmRead": "Mark as read",
   "guest.confirmedRead": "Read",
   "guest.houseGuide": "House guide",
@@ -599,8 +599,8 @@ const ar: Dictionary = {
   "guest.quietHours": "Quiet hours",
   "guest.bins": "Bins",
   "guest.checkout": "Checkout checklist",
-  "guest.photosTitle": "Arrival / departure photos",
-  "guest.photosHint": "Optional photos help if anything is unclear at handover.",
+  "guest.photosTitle": "Arrival and departure photos",
+  "guest.photosHint": "",
   "guest.arrival": "Arrival",
   "guest.departure": "Departure",
   "guest.addPhoto": "Add photo",
@@ -609,7 +609,7 @@ const ar: Dictionary = {
   "guest.nav.guide": "Booking Guide",
   "guest.bookingGuideTitle": "Booking Guide",
   "guest.bookingGuideHint":
-    "House info, briefings, and photos for the booking you opened.",
+    "Information, instructions and cancellation",
   "guest.bookingGuideEmpty": "No confirmed bookings yet.",
   "guest.bookingActive": "In stay",
   "guest.bookingUpcoming": "Upcoming",
@@ -622,11 +622,11 @@ const ar: Dictionary = {
   "guest.nav.bills": "Bills",
   "guest.supportTitle": "Support",
   "guest.supportHint":
-    "Message the owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
+    "Message the property owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
   "guest.supportCmdDeposit":
-    "When you paid your deposit in advance, share this command along with your receipt.",
+    "/deposit — submit your deposit payment (attach receipt).",
   "guest.supportCmdCancel":
-    "When you wish to cancel your booking within 3 days of check-in.",
+    "/cancel — cancel a booking with the property owner (within 3 days of check-in).",
   "guest.supportCmdDepositHost":
     "Record that the guest paid the deposit (optional amount).",
   "guest.supportCmdRefund":
@@ -666,17 +666,17 @@ const ar: Dictionary = {
   "guest.openLocation": "Open location in maps",
   "guest.cancelBookingTitle": "Cancel booking",
   "guest.cancelBookingDescription":
-    "If you wish to cancel your booking within 3 days of check-in, open Support chat and send /cancel to request it. Early cancellations are acceptable without host approval.",
+    "Available if more than 3 days before check-in.",
   "guest.cancelBookingHint":
-    "You can cancel free of charge at least 3 days before check-in.",
+    "Available if more than 3 days before check-in.",
   "guest.cancelBookingButton": "Cancel booking",
   "guest.cancelBookingConfirm":
     "Cancel your stay at {villa} ({from} → {to})?",
   "guest.cancelBookingDone": "Booking cancelled.",
   "guest.cancelBookingTooLate":
-    "Within 3 days of check-in, cancellations need your host's help — especially if a deposit was paid. Open Support chat and send /cancel to request a cancellation.",
+    "If you want to cancel within 3 days of check-in",
   "guest.cancelBookingContactSupport":
-    "To change or cancel this stay, open Support chat and send /cancel.",
+    "If you want to cancel within 3 days of check-in",
   "guest.supportDepositHint":
     "After you pay your deposit, send /deposit here so your host can confirm it.",
   "guest.supportCancelHint":
@@ -702,6 +702,7 @@ const ar: Dictionary = {
   "guest.villasHint": "Browse properties from this host and request dates for your stay.",
   "guest.villasHost": "Hosted by {name}",
   "guest.villasEmpty": "No company villas to show.",
+  "guest.villaUnavailable": "This property is not available for new date requests right now.",
   "guest.currentStayDates": "Your stay · {from} → {to}",
   "guest.requestDates": "Request dates & price",
   "guest.checkIn": "Check-in",
@@ -917,7 +918,16 @@ const ar: Dictionary = {
   "talent.skill.handyman": "Handyman",
   "talent.skill.manager": "On-site manager",
   "talent.reviewsSection": "Reviews & endorsements",
-  "talent.browseLink": "Browse talent directory"
+  "talent.browseLink": "Browse talent directory",
+  "bills.displayCurrencyHint.guest": "",
+  "settings.languageHint.guest": "",
+  "plan.guestFree": "(free)",
+  "guest.otherBookings": "Other bookings",
+  "guest.expandPhoto": "Expand photo",
+  "guest.closePhoto": "Close photo",
+  "guest.photoNote": "Notes (optional)",
+  "guest.photoNotePh": "Explain any issues…",
+  "settings.userGuide": "User guide",
 };
 
 export default ar;

@@ -86,6 +86,7 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
         window.location.origin,
         invite.token,
         referralCode,
+        { src: role === "guest" ? "app_invite_guest" : "app_invite_staff" },
       );
       await copyText(link, invite.token);
       if (role !== "guest") setJobTitle("");
@@ -189,6 +190,7 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                               const url = referralRegisterUrl(
                                 window.location.origin,
                                 referralCode,
+                                { src: "app_invite_anyone" },
                               );
                               void copyText(url, "anyone");
                             }}
@@ -293,6 +295,12 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
               typeof window !== "undefined" ? window.location.origin : "",
               inv.token,
               referralCode,
+              {
+                src:
+                  inv.role === "guest"
+                    ? "app_invite_guest"
+                    : "app_invite_staff",
+              },
             );
             return (
               <div key={inv.id} className="space-y-2">

@@ -27,7 +27,11 @@ function deviceLabel() {
   return "This device";
 }
 
-export function PasskeySettingsCard() {
+export function PasskeySettingsCard({
+  hideHint = false,
+}: {
+  hideHint?: boolean;
+}) {
   const { t } = useI18n();
   const [supported, setSupported] = useState<boolean | null>(null);
   const [passkeys, setPasskeys] = useState<PasskeyListItem[]>([]);
@@ -121,7 +125,9 @@ export function PasskeySettingsCard() {
           <h2 className="font-display text-lg font-bold text-ink">
             {t("settings.passkeyTitle")}
           </h2>
-          <p className="mt-1 text-sm text-muted">{t("settings.passkeyHint")}</p>
+          {!hideHint ? (
+            <p className="mt-1 text-sm text-muted">{t("settings.passkeyHint")}</p>
+          ) : null}
         </div>
       </div>
 

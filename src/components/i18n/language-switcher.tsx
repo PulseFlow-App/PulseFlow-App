@@ -47,9 +47,12 @@ function LocaleSelect({
 
 export function LanguageSwitcher({
   variant = "settings",
+  hideHint = false,
 }: {
   /** `inline` for login/register header; `settings` for the settings card. */
   variant?: "inline" | "settings";
+  /** Hide the helper line under the Language label (guest profile notes). */
+  hideHint?: boolean;
 }) {
   const { t } = useI18n();
 
@@ -66,7 +69,9 @@ export function LanguageSwitcher({
     <div className="space-y-3">
       <div>
         <p className="text-lg font-bold text-ink">{t("settings.language")}</p>
-        <p className="text-sm text-muted">{t("settings.languageHint")}</p>
+        {!hideHint && t("settings.languageHint") ? (
+          <p className="text-sm text-muted">{t("settings.languageHint")}</p>
+        ) : null}
       </div>
       <LocaleSelect />
     </div>

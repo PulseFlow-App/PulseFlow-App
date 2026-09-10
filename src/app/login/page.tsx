@@ -34,11 +34,16 @@ type FormValues = z.infer<typeof schema>;
 const DEMO_PASSWORD = "TestPass123!";
 
 const DEMO_ACCOUNTS: {
-  role: "owner" | "employee" | "guest";
+  role: "owner" | "manager" | "employee" | "guest";
   email: string;
   labelKey: MessageKey;
 }[] = [
   { role: "owner", email: "owner@pulseflow.site", labelKey: "auth.demoOwner" },
+  {
+    role: "manager",
+    email: "manager@pulseflow.site",
+    labelKey: "auth.demoManager",
+  },
   {
     role: "employee",
     email: "employee@pulseflow.site",
@@ -54,7 +59,9 @@ const DEMO_ACCOUNTS: {
 function demoAccountFromParam(demo: string | null) {
   if (!demo) return null;
   const key = demo.trim().toLowerCase();
-  return DEMO_ACCOUNTS.find((a) => a.role === key) ?? null;
+  // Site marketing uses "staff"; app role key is "employee".
+  const normalized = key === "staff" ? "employee" : key;
+  return DEMO_ACCOUNTS.find((a) => a.role === normalized) ?? null;
 }
 
 export default function LoginPage() {
@@ -62,9 +69,9 @@ export default function LoginPage() {
   const { t } = useI18n();
   const brandName = useBrandName();
   const [error, setError] = useState<string | null>(null);
-  const [demoRole, setDemoRole] = useState<"owner" | "employee" | "guest" | null>(
-    null,
-  );
+  const [demoRole, setDemoRole] = useState<
+    "owner" | "manager" | "employee" | "guest" | null
+  >(null);
   const [inviteLink, setInviteLink] = useState("");
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [passkeyReady, setPasskeyReady] = useState(false);
@@ -91,10 +98,16 @@ export default function LoginPage() {
     const fromQuery = params.get("demo")?.trim().toLowerCase();
     if (
       fromQuery === "owner" ||
+      fromQuery === "manager" ||
       fromQuery === "employee" ||
+      fromQuery === "staff" ||
       fromQuery === "guest"
     ) {
-      setDemoRole(fromQuery);
+      setDemoRole(
+        fromQuery === "staff"
+          ? "employee"
+          : (fromQuery as "owner" | "manager" | "employee" | "guest"),
+      );
       return;
     }
     setDemoRole(null);
@@ -175,7 +188,7 @@ export default function LoginPage() {
     }
   };
 
-  const selectDemoRole = (role: "owner" | "employee" | "guest") => {
+  const selectDemoRole = (role: "owner" | "manager" | "employee" | "guest") => {
     setDemoRole(role);
     const url = new URL(window.location.href);
     url.searchParams.set("demo", role);

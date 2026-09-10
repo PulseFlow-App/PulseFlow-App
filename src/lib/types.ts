@@ -30,6 +30,7 @@ export type Organization = {
   billing_email?: string | null;
   referral_bonus_ends_at?: string | null;
   referral_year_claimed?: boolean;
+  acquisition_source?: string | null;
 };
 
 export type Profile = {

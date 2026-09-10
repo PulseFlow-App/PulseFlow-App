@@ -96,6 +96,16 @@ export function resolvePlanTier(input: {
 
 export const REFERRAL_STORAGE_KEY = "pulseflow_referral_code";
 export const REFERRAL_QUERY_PARAM = "from";
+/** Channel mark: telegram_phuket, facebook_phangan, founder, site_demo, … */
+export const SOURCE_QUERY_PARAM = "src";
+export const ATTRIBUTION_STORAGE_KEY = "pulseflow_attribution";
+
+export type LinkAttribution = {
+  src?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+};
 
 /** Read referrer code from URL (?from= preferred, ?ref= legacy). */
 export function readReferralParam(
@@ -107,10 +117,76 @@ export function readReferralParam(
   return searchParams.get("ref")?.trim() || null;
 }
 
+export function readAttribution(
+  searchParams: URLSearchParams | null | undefined,
+): LinkAttribution {
+  if (!searchParams) return {};
+  const pick = (k: string) => searchParams.get(k)?.trim() || null;
+  return {
+    src: pick(SOURCE_QUERY_PARAM),
+    utm_source: pick("utm_source"),
+    utm_medium: pick("utm_medium"),
+    utm_campaign: pick("utm_campaign"),
+  };
+}
+
+export function rememberAttribution(attr: LinkAttribution | null | undefined) {
+  if (typeof window === "undefined" || !attr) return;
+  const cleaned: LinkAttribution = {};
+  for (const key of ["src", "utm_source", "utm_medium", "utm_campaign"] as const) {
+    const v = attr[key]?.trim();
+    if (v) cleaned[key] = v;
+  }
+  if (!Object.keys(cleaned).length) return;
+  try {
+    const prev = readStoredAttribution() ?? {};
+    localStorage.setItem(
+      ATTRIBUTION_STORAGE_KEY,
+      JSON.stringify({ ...prev, ...cleaned }),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+export function readStoredAttribution(): LinkAttribution | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(ATTRIBUTION_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as LinkAttribution;
+  } catch {
+    return null;
+  }
+}
+
+function applyAttribution(
+  url: URL,
+  attribution?: LinkAttribution | null,
+  defaults?: LinkAttribution,
+) {
+  const merged: LinkAttribution = { ...defaults, ...attribution };
+  if (merged.src) url.searchParams.set(SOURCE_QUERY_PARAM, merged.src);
+  if (merged.utm_source) url.searchParams.set("utm_source", merged.utm_source);
+  if (merged.utm_medium) url.searchParams.set("utm_medium", merged.utm_medium);
+  if (merged.utm_campaign) {
+    url.searchParams.set("utm_campaign", merged.utm_campaign);
+  }
+}
+
 /** Generic app invite - recipient picks personal or company on /register. */
-export function referralRegisterUrl(origin: string, refCode: string) {
+export function referralRegisterUrl(
+  origin: string,
+  refCode: string,
+  attribution?: LinkAttribution | null,
+) {
   const url = new URL(`${origin}/register`);
   url.searchParams.set(REFERRAL_QUERY_PARAM, refCode);
+  applyAttribution(url, attribution, {
+    utm_source: "referral",
+    utm_medium: "link",
+    utm_campaign: "invite_anyone",
+  });
   return url.toString();
 }
 
@@ -119,9 +195,15 @@ export function referralJoinUrl(
   origin: string,
   inviteToken: string,
   refCode: string,
+  attribution?: LinkAttribution | null,
 ) {
   const url = new URL(`${origin}/join/${inviteToken}`);
   url.searchParams.set(REFERRAL_QUERY_PARAM, refCode);
+  applyAttribution(url, attribution, {
+    utm_source: "invite",
+    utm_medium: "link",
+    utm_campaign: "team_join",
+  });
   return url.toString();
 }
 

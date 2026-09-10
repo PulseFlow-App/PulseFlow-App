@@ -390,7 +390,7 @@ const ru: Dictionary = {
   "plan.expired": "Полный истёк",
   "plan.title": "Ваш тариф",
   "plan.seePlans": "Смотреть Free и Full",
-  "plan.note.guest": "Guest access for your stay — villa details, support chat, and bills.",
+  "plan.note.guest": "",
   "plan.note.personal":
     "Личное пространство. Бесплатно навсегда для своих объектов, задач и счетов.",
   "plan.note.staff":
@@ -532,7 +532,7 @@ const ru: Dictionary = {
   "leaderboard.public": "Публичный профиль",
   "roles.owner": "Владелец",
   "roles.manager": "Менеджмент",
-  "roles.cleaner": "Команда уборки",
+  "roles.cleaner": "Персонал на объекте",
   "roles.staff": "Персонал",
   "roles.guest": "Guest",
   "invite.card.anyone": "Invite anyone",
@@ -565,8 +565,8 @@ const ru: Dictionary = {
   "guest.mergeEmailFallback":
     "Email could not be sent from this environment. Use this link to confirm:",
   "guest.mergeOpenLink": "Confirm merge",
-  "guest.homeTitle": "Your stay",
-  "guest.homeSubtitle": "Updates from the property team that hosted you.",
+  "guest.homeTitle": "Панель бронирований",
+  "guest.homeSubtitle": "Смотрите объекты и запрашивайте даты.",
   "guest.comingSoon": "Guest stay tools are coming next",
   "guest.comingSoonHint":
     "House guide, support chat with owners/managers, deposit bills, and more villas from this company.",
@@ -581,8 +581,8 @@ const ru: Dictionary = {
   "guest.quietHours": "Quiet hours",
   "guest.bins": "Bins",
   "guest.checkout": "Checkout checklist",
-  "guest.photosTitle": "Arrival / departure photos",
-  "guest.photosHint": "Optional photos help if anything is unclear at handover.",
+  "guest.photosTitle": "Фото заезда и выезда",
+  "guest.photosHint": "",
   "guest.arrival": "Arrival",
   "guest.departure": "Departure",
   "guest.addPhoto": "Add photo",
@@ -591,7 +591,7 @@ const ru: Dictionary = {
   "guest.nav.guide": "Booking Guide",
   "guest.bookingGuideTitle": "Booking Guide",
   "guest.bookingGuideHint":
-    "House info, briefings, and photos for the booking you opened.",
+    "Информация, инструкции и отмена",
   "guest.bookingGuideEmpty": "No confirmed bookings yet.",
   "guest.bookingActive": "In stay",
   "guest.bookingUpcoming": "Upcoming",
@@ -604,11 +604,11 @@ const ru: Dictionary = {
   "guest.nav.bills": "Bills",
   "guest.supportTitle": "Support",
   "guest.supportHint":
-    "Message the owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
+    "Напишите владельцу или управляющему объекта. Введите /deposit, когда оплатили депозит заранее (приложите чек). Введите /cancel, если хотите отменить бронь менее чем за 3 дня до заезда.",
   "guest.supportCmdDeposit":
-    "When you paid your deposit in advance, share this command along with your receipt.",
+    "/deposit — подтвердить оплату депозита (приложите чек).",
   "guest.supportCmdCancel":
-    "When you wish to cancel your booking within 3 days of check-in.",
+    "/cancel — отменить бронь у владельца (менее чем за 3 дня до заезда).",
   "guest.supportCmdDepositHost":
     "Record that the guest paid the deposit (optional amount).",
   "guest.supportCmdRefund":
@@ -648,17 +648,17 @@ const ru: Dictionary = {
   "guest.openLocation": "Open location in maps",
   "guest.cancelBookingTitle": "Cancel booking",
   "guest.cancelBookingDescription":
-    "If you wish to cancel your booking within 3 days of check-in, open Support chat and send /cancel to request it. Early cancellations are acceptable without host approval.",
+    "Доступно, если до заезда больше 3 дней.",
   "guest.cancelBookingHint":
-    "You can cancel free of charge at least 3 days before check-in.",
+    "Доступно, если до заезда больше 3 дней.",
   "guest.cancelBookingButton": "Cancel booking",
   "guest.cancelBookingConfirm":
     "Cancel your stay at {villa} ({from} → {to})?",
   "guest.cancelBookingDone": "Booking cancelled.",
   "guest.cancelBookingTooLate":
-    "Within 3 days of check-in, cancellations need your host's help — especially if a deposit was paid. Open Support chat and send /cancel to request a cancellation.",
+    "Если хотите отменить менее чем за 3 дня до заезда",
   "guest.cancelBookingContactSupport":
-    "To change or cancel this stay, open Support chat and send /cancel.",
+    "Если хотите отменить менее чем за 3 дня до заезда",
   "guest.supportDepositHint":
     "After you pay your deposit, send /deposit here so your host can confirm it.",
   "guest.supportCancelHint":
@@ -684,6 +684,7 @@ const ru: Dictionary = {
   "guest.villasHint": "Browse properties from this host and request dates for your stay.",
   "guest.villasHost": "Hosted by {name}",
   "guest.villasEmpty": "No company villas to show.",
+  "guest.villaUnavailable": "This property is not available for new date requests right now.",
   "guest.currentStayDates": "Your stay · {from} → {to}",
   "guest.requestDates": "Request dates & price",
   "guest.checkIn": "Check-in",
@@ -756,8 +757,8 @@ const ru: Dictionary = {
   "dateRequests.acceptConfirm": "Accept with this price",
   "dateRequests.priceRequired": "Enter the total stay price before accepting.",
   "notifications.kind.guest_update": "Guest update",
-  "guest.briefingsTitle": "Host briefings",
-  "guest.briefingsHint": "Tick each item once you have read it.",
+  "guest.briefingsTitle": "Брифинги",
+  "guest.briefingsHint": "Инструкции от владельца объекта",
   "guest.confirmRead": "Mark as read",
   "guest.confirmedRead": "Read",
   "guests.title": "Guests",
@@ -938,11 +939,15 @@ const ru: Dictionary = {
   "common.off": "Off",
   "common.translated": "translated",
   "brand.name": "Pulse Flow",
-  "settings.translateContent": "Translate team content",
-  "settings.translateContentHint.guest": "Host briefings, support messages, and stay notes appear in your app language.",
-  "settings.translateContentHint.host": "Tasks, chat, guest updates, and team messages appear in your app language.",
-  "settings.translateContentHint.staff": "Tasks, chat, and messages from your team appear in your app language.",
-  "settings.translateContentHint": "Tasks, chat, briefings, and messages from teammates appear in your app language.",
+  "settings.translateContent": "Переводить контент команды",
+  "settings.translateContentHint.guest":
+    "Брифинги хозяина, сообщения поддержки и заметки по проживанию приходят на языке приложения.",
+  "settings.translateContentHint.host":
+    "Задачи, чат, обновления для гостей и сообщения команды приходят на языке приложения.",
+  "settings.translateContentHint.staff":
+    "Задачи, чат и сообщения от команды приходят на языке приложения.",
+  "settings.translateContentHint":
+    "Задачи, чат, брифинги и сообщения от коллег приходят на языке приложения.",
   "demo.guest.ownerNotices": "Welcome! Pool heater is on from 16:00. Checkout is 11:00 - leave keys on the kitchen counter.",
   "demo.guest.briefing.keysTitle": "Gate & keys",
   "demo.guest.briefing.keysBody": "Side gate code is 4821#. Leave keys on the kitchen counter at checkout.",
@@ -960,6 +965,15 @@ const ru: Dictionary = {
   "home.openedLabel": "opened",
   "home.chartOpened": "Opened",
   "home.chartClosed": "Closed",
+  "bills.displayCurrencyHint.guest": "",
+  "settings.languageHint.guest": "",
+  "plan.guestFree": "(бесплатно)",
+  "guest.otherBookings": "Другие бронирования",
+  "guest.expandPhoto": "Открыть фото",
+  "guest.closePhoto": "Закрыть фото",
+  "guest.photoNote": "Заметки (необязательно)",
+  "guest.photoNotePh": "Опишите проблемы…",
+  "settings.userGuide": "User guide",
 };
 
 export default ru;

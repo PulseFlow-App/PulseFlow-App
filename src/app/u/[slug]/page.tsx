@@ -66,7 +66,7 @@ export default function PublicProfilePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [data, setData] = useState<PublicData | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -250,7 +250,7 @@ export default function PublicProfilePage({
                   <div className="flex items-center justify-between gap-2">
                     <StarsDisplay value={e.stars} size="sm" />
                     <span className="text-[11px] text-muted">
-                      {weekLabel(e.week_key)}
+                      {weekLabel(e.week_key, locale)}
                     </span>
                   </div>
                   {e.note ? (

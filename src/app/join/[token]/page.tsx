@@ -10,7 +10,7 @@ import { Input, Label } from "@/components/ui/input";
 import { createClient, isDemoMode } from "@/lib/supabase/client";
 import { getInviteContext } from "@/lib/demo/store";
 import { DEMO_READ_ONLY_MESSAGE } from "@/lib/demo/guard";
-import { rememberReferralCode, readReferralParam, REFERRAL_STORAGE_KEY } from "@/lib/billing/plans";
+import { rememberReferralCode, readReferralParam, REFERRAL_STORAGE_KEY, rememberAttribution, readAttribution } from "@/lib/billing/plans";
 import { useI18n } from "@/lib/i18n/provider";
 import { labelRole } from "@/lib/i18n/labels";
 import type { Invite, Organization, Profile } from "@/lib/types";
@@ -44,9 +44,9 @@ export default function JoinPage({
   } | null>(null);
 
   useEffect(() => {
-    rememberReferralCode(
-      readReferralParam(new URLSearchParams(window.location.search)),
-    );
+    const params = new URLSearchParams(window.location.search);
+    rememberReferralCode(readReferralParam(params));
+    rememberAttribution(readAttribution(params));
   }, []);
 
   useEffect(() => {

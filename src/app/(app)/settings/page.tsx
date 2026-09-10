@@ -19,7 +19,7 @@ import { JobSearchSettingsCard } from "@/components/settings/job-search-settings
 import { PushSettingsCard } from "@/components/settings/push-settings-card";
 import { TranslateContentSettingsCard } from "@/components/settings/translate-content-settings-card";
 import type { MessageKey } from "@/lib/i18n";
-import { resolvePlanTier } from "@/lib/billing/plans";
+import { resolvePlanTier, referralRegisterUrl } from "@/lib/billing/plans";
 import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
@@ -34,6 +34,7 @@ export default function SettingsPage() {
   const [orgEditing, setOrgEditing] = useState(false);
   const [orgBusy, setOrgBusy] = useState(false);
   const [orgMsg, setOrgMsg] = useState<string | null>(null);
+  const [referralCopied, setReferralCopied] = useState(false);
 
   if (!data.ready || !data.profile) return <LoadingState />;
   const profile = data.profile;
@@ -58,6 +59,8 @@ export default function SettingsPage() {
     orgKind: data.orgKind,
     organization: data.organization,
   });
+  const isGuest = profile.role === "guest";
+  const planNote = t(plan.noteKey);
 
   const saveDisplayName = async () => {
     setNameBusy(true);
@@ -97,11 +100,13 @@ export default function SettingsPage() {
       </div>
 
       <Card id="language" className="scroll-mt-4 space-y-3 p-5">
-        <LanguageSwitcher />
+        <LanguageSwitcher hideHint={isGuest} />
         <div className="space-y-2 border-t border-[#EDE8E0] pt-3">
           <div>
             <p className="text-sm font-bold text-ink">{t("bills.currency")}</p>
-            <p className="text-xs text-muted">{t("bills.displayCurrencyHint")}</p>
+            {!isGuest && t("bills.displayCurrencyHint") ? (
+              <p className="text-xs text-muted">{t("bills.displayCurrencyHint")}</p>
+            ) : null}
           </div>
           <DisplayCurrencySelect aria-label={t("bills.currency")} />
         </div>
@@ -165,6 +170,31 @@ export default function SettingsPage() {
         <Info label={t("common.email")} value={profile.email} />
         {isCompany ? (
           <Info label={t("common.role")} value={t(roleKey)} />
+        ) : null}
+
+        {profile.share_slug ? (
+          <div className="space-y-2 border-t border-[#EDE8E0] pt-3">
+            <p className="text-sm font-bold text-ink">{t("plan.referralTitle")}</p>
+            <p className="text-xs text-muted">{t("plan.referralHint")}</p>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="w-full"
+              onClick={() => {
+                const url = referralRegisterUrl(
+                  window.location.origin,
+                  profile.share_slug,
+                  { src: "app_profile_referral" },
+                );
+                void navigator.clipboard.writeText(url).then(() => {
+                  setReferralCopied(true);
+                  window.setTimeout(() => setReferralCopied(false), 2000);
+                });
+              }}
+            >
+              {referralCopied ? t("plan.referralCopied") : t("plan.copyReferral")}
+            </Button>
+          </div>
         ) : null}
 
         {canRenameOrg ? (
@@ -243,26 +273,35 @@ export default function SettingsPage() {
             <h2 className="font-display text-lg font-bold text-ink">
               {t("plan.title")}
             </h2>
-            <p className="mt-1 text-sm text-muted">{t(plan.noteKey)}</p>
+            {planNote ? (
+              <p className="mt-1 text-sm text-muted">{planNote}</p>
+            ) : null}
           </div>
-          <span
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide",
-              plan.tier === "full" || plan.tier === "trial"
-                ? "bg-primary-soft text-primary-dark"
-                : plan.tier === "expired"
-                  ? "bg-danger/10 text-danger"
-                  : "bg-[#F7F5F1] text-ink",
-            )}
-          >
-            <NotebookPen className="size-3.5" />
-            {t(plan.labelKey)}
-          </span>
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide",
+                plan.tier === "full" || plan.tier === "trial"
+                  ? "bg-primary-soft text-primary-dark"
+                  : plan.tier === "expired"
+                    ? "bg-danger/10 text-danger"
+                    : "bg-[#F7F5F1] text-ink",
+              )}
+            >
+              <NotebookPen className="size-3.5" />
+              {t(plan.labelKey)}
+            </span>
+            {isGuest ? (
+              <span className="text-xs font-semibold text-muted">
+                {t("plan.guestFree")}
+              </span>
+            ) : null}
+          </div>
         </div>
         <BillingSettingsCard embedded />
       </Card>
 
-      <PasskeySettingsCard />
+      <PasskeySettingsCard hideHint={isGuest} />
 
       <PushSettingsCard />
 

@@ -8,7 +8,7 @@ import { GuestVillaLocation } from "@/components/guest/guest-villa-location";
 import { GuestBriefingsCard } from "@/components/guest/guest-briefings-card";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Input, Label } from "@/components/ui/input";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
@@ -22,6 +22,7 @@ import {
   readSelectedStayId,
   writeSelectedStayId,
 } from "@/lib/guest/selected-stay";
+import { ExpandableVillaPhoto } from "@/components/villas/villa-photo";
 
 export function GuestBookingGuide() {
   const data = useData();
@@ -79,6 +80,7 @@ export function GuestBookingGuide() {
   );
 
   const [photoKind, setPhotoKind] = useState<"arrival" | "departure">("arrival");
+  const [photoNote, setPhotoNote] = useState("");
   const [photoError, setPhotoError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [cancelBusy, setCancelBusy] = useState(false);
@@ -100,8 +102,10 @@ export function GuestBookingGuide() {
       await data.addStayPhoto({
         kind: photoKind,
         photo_url: url,
+        note: photoNote.trim() || null,
         stay_id: selectedStay.id,
       });
+      setPhotoNote("");
     } catch (e) {
       setPhotoError(e instanceof Error ? e.message : t("common.error"));
     }
@@ -157,15 +161,28 @@ export function GuestBookingGuide() {
       ) : (
         <>
           <Card className="space-y-2 p-4">
-            <p className="font-display text-lg font-bold text-ink">{villa.name}</p>
-            <GuestVillaLocation
-              area={villa.area}
-              locationUrl={villa.location_url}
-            />
-            <p className="text-sm text-ink">
-              {formatShortDate(selectedStay.check_in)} →{" "}
-              {formatShortDate(selectedStay.check_out)}
-            </p>
+            <div className="flex items-start gap-3">
+              <div className="min-w-0 flex-1 space-y-2">
+                <p className="font-display text-lg font-bold text-ink">
+                  {villa.name}
+                </p>
+                <GuestVillaLocation
+                  area={villa.area}
+                  locationUrl={villa.location_url}
+                />
+                <p className="text-sm text-ink">
+                  {formatShortDate(selectedStay.check_in)} →{" "}
+                  {formatShortDate(selectedStay.check_out)}
+                </p>
+              </div>
+              {villa.photo_url ? (
+                <ExpandableVillaPhoto
+                  src={villa.photo_url}
+                  alt={villa.name}
+                  className="w-24 shrink-0 sm:w-28"
+                />
+              ) : null}
+            </div>
             {selectedStay.owner_notices ? (
               <div className="rounded-2xl bg-primary-soft/60 p-3 text-sm text-ink">
                 <p className="mb-1 text-xs font-bold uppercase tracking-wide text-primary">
@@ -249,7 +266,9 @@ export function GuestBookingGuide() {
             <p className="font-display text-base font-bold text-ink">
               {t("guest.photosTitle")}
             </p>
-            <p className="text-sm text-muted">{t("guest.photosHint")}</p>
+            {t("guest.photosHint") ? (
+              <p className="text-sm text-muted">{t("guest.photosHint")}</p>
+            ) : null}
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
@@ -283,6 +302,15 @@ export function GuestBookingGuide() {
                 onChange={(e) => void onAddPhoto(e.target.files?.[0] ?? null)}
               />
             </div>
+            <div>
+              <Label htmlFor="stay-photo-note">{t("guest.photoNote")}</Label>
+              <Input
+                id="stay-photo-note"
+                value={photoNote}
+                onChange={(e) => setPhotoNote(e.target.value)}
+                placeholder={t("guest.photoNotePh")}
+              />
+            </div>
             {photoError ? (
               <p className="text-sm text-danger">{photoError}</p>
             ) : null}
@@ -296,11 +324,18 @@ export function GuestBookingGuide() {
                       alt=""
                       className="h-28 w-full object-cover"
                     />
-                    <p className="px-2 py-1 text-[11px] text-muted">
-                      {p.kind === "arrival"
-                        ? t("guest.arrival")
-                        : t("guest.departure")}
-                    </p>
+                    <div className="space-y-0.5 px-2 py-1">
+                      <p className="text-[11px] text-muted">
+                        {p.kind === "arrival"
+                          ? t("guest.arrival")
+                          : t("guest.departure")}
+                      </p>
+                      {p.note ? (
+                        <p className="text-xs text-ink">
+                          <LocalizedText text={p.note} />
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -313,11 +348,11 @@ export function GuestBookingGuide() {
               <p className="font-display text-base font-bold text-ink">
                 {t("guest.cancelBookingTitle")}
               </p>
-              <p className="text-sm text-muted">
-                {t("guest.cancelBookingDescription")}
-              </p>
               {canSelfCancel ? (
                 <>
+                  <p className="text-sm text-muted">
+                    {t("guest.cancelBookingHint")}
+                  </p>
                   {cancelMsg ? (
                     <p className="text-sm font-semibold text-secondary">
                       {cancelMsg}
@@ -360,14 +395,21 @@ export function GuestBookingGuide() {
                     {t("guest.cancelBookingButton")}
                   </Button>
                 </>
-              ) : cancelBlocked ? (
-                <Link
-                  href="/messages"
-                  className="inline-block text-sm font-bold text-primary"
-                >
-                  {t("guest.openSupportChat")} →
-                </Link>
-              ) : null}
+              ) : (
+                <>
+                  <p className="text-sm text-muted">
+                    {cancelBlocked === "too_late"
+                      ? t("guest.cancelBookingTooLate")
+                      : t("guest.cancelBookingContactSupport")}
+                  </p>
+                  <Link
+                    href="/messages"
+                    className="inline-block text-sm font-bold text-primary"
+                  >
+                    {t("guest.openSupportChat")} →
+                  </Link>
+                </>
+              )}
             </Card>
           ) : null}
         </>

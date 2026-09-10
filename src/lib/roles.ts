@@ -3,7 +3,7 @@ import type { OrgKind, UserRole } from "@/lib/design-tokens";
 export const ROLE_LABELS: Record<UserRole, string> = {
   owner: "Owner",
   manager: "Management",
-  cleaner: "Cleaning team",
+  cleaner: "On-site staff",
   staff: "Staff",
   guest: "Guest",
 };

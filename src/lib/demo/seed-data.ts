@@ -24,6 +24,7 @@ import type {
 } from "@/lib/types";
 import { weekKey } from "@/lib/endorsements";
 import { makeNotification } from "@/lib/notifications";
+import { companyTrialEndsAt } from "@/lib/auth/helpers";
 
 export const DEMO_ORG_ID = "11111111-1111-4111-8111-111111111111";
 export const DEMO_ORG_2_ID = "11111111-1111-4111-8111-111111111133";
@@ -45,6 +46,9 @@ export const demoOrg: Organization = {
   name: "Phangan Villas Co.",
   kind: "company",
   created_at: "2026-01-01T00:00:00.000Z",
+  trial_ends_at: companyTrialEndsAt(),
+  subscription_status: "trialing",
+  billing_email: "owner@pulseflow.site",
 };
 
 export const demoOrg2: Organization = {
@@ -52,6 +56,9 @@ export const demoOrg2: Organization = {
   name: "Beachside Stays",
   kind: "company",
   created_at: "2026-02-01T00:00:00.000Z",
+  trial_ends_at: companyTrialEndsAt(),
+  subscription_status: "trialing",
+  billing_email: "bee@pulseflow.site",
 };
 
 export const demoPersonalOrg: Organization = {
@@ -266,8 +273,8 @@ export const demoVillas: Villa[] = [
     name: "Coral Bungalow",
     area: "Thong Sala",
     location_url: "https://maps.google.com/?q=Thong+Sala+Koh+Phangan",
-    description: null,
-    photo_url: null,
+    description: "Two-bedroom bungalow near the pier with a shaded garden.",
+    photo_url: villaPhoto("Coral Bungalow", "#E07A5F"),
     status: "available",
     check_in: null,
     check_out: null,
@@ -314,8 +321,8 @@ export const demoVillas: Villa[] = [
     name: "Bamboo Nest",
     area: "Srithanu",
     location_url: "https://maps.google.com/?q=Srithanu+Koh+Phangan",
-    description: null,
-    photo_url: null,
+    description: "Bamboo loft for yoga guests — quiet lane behind Srithanu.",
+    photo_url: villaPhoto("Bamboo Nest", "#81B29A"),
     status: "available",
     check_in: daysFromNow(4),
     check_out: daysFromNow(10),
@@ -621,7 +628,7 @@ export const demoServiceOrders: ServiceOrder[] = [
     location_label: "Lotus House",
     service_type: "Turnover cleaning",
     details: "Full turnover after checkout. Extra towels in laundry room.",
-    scheduled_date: daysFromNow(1),
+    scheduled_date: daysFromNow(0),
     time_start: "11:00",
     time_end: "14:00",
     status: "pending_ack",
@@ -678,7 +685,7 @@ export const demoBills: Bill[] = [
     description: "Cleaning supplies for turnover",
     amount: 1250,
     currency: "THB",
-    status: "pending",
+    status: "paid",
     category: "supplies",
     due_date: daysFromNow(0),
     submitted_by: DEMO_EMPLOYEE_ID,

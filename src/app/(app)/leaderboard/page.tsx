@@ -37,7 +37,12 @@ export default function LeaderboardPage() {
   const memberIds = useMemo(() => {
     return new Set(
       data.memberships
-        .filter((m) => m.org_id === activeOrgId && m.role !== "owner")
+        .filter(
+          (m) =>
+            m.org_id === activeOrgId &&
+            m.role !== "owner" &&
+            m.role !== "guest",
+        )
         .map((m) => m.profile_id),
     );
   }, [data.memberships, activeOrgId]);

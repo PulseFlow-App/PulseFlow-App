@@ -1,5 +1,11 @@
-import { endOfWeek, format, getISOWeek, getISOWeekYear, startOfWeek } from "date-fns";
+import { endOfWeek, getISOWeek, getISOWeekYear, startOfWeek } from "date-fns";
 import type { Endorsement, Organization, Profile } from "@/lib/types";
+import type { Locale } from "@/lib/i18n/types";
+import {
+  formatShortDateLocalized,
+  getDateFnsLocale,
+} from "@/lib/i18n/date-format";
+import { format } from "date-fns";
 
 export function weekKey(date = new Date()) {
   const year = getISOWeekYear(date);
@@ -7,7 +13,7 @@ export function weekKey(date = new Date()) {
   return `${year}-W${String(week).padStart(2, "0")}`;
 }
 
-export function weekLabel(key: string) {
+export function weekLabel(key: string, locale: Locale = "en") {
   // key: 2026-W32
   const match = /^(\d{4})-W(\d{2})$/.exec(key);
   if (!match) return key;
@@ -20,7 +26,10 @@ export function weekLabel(key: string) {
     { weekStartsOn: 1 },
   );
   const end = endOfWeek(start, { weekStartsOn: 1 });
-  return `${format(start, "d MMM")} - ${format(end, "d MMM yyyy")}`;
+  const df = getDateFnsLocale(locale);
+  const startIso = format(start, "yyyy-MM-dd");
+  const endIso = format(end, "yyyy-MM-dd");
+  return `${formatShortDateLocalized(startIso, locale)} - ${format(end, "d MMM yyyy", { locale: df })}`;
 }
 
 export type RatingSummary = {

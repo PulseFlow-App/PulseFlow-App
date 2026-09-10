@@ -18,6 +18,13 @@ import {
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { todayIsoDate } from "@/lib/villas/status-from-dates";
+import { useI18n } from "@/lib/i18n/provider";
+import {
+  formatLongDateLocalized,
+  formatMonthYearLocalized,
+  formatWeekdayShort,
+  getDateFnsLocale,
+} from "@/lib/i18n/date-format";
 
 type DateFieldProps = {
   id?: string;
@@ -46,6 +53,8 @@ export function DateField({
   placeholder = "Pick a date",
   "aria-label": ariaLabel,
 }: DateFieldProps) {
+  const { locale } = useI18n();
+  const dfLocale = getDateFnsLocale(locale);
   const autoId = useId();
   const fieldId = id ?? autoId;
   const minIso = min && min.length >= 10 ? min : todayIsoDate();
@@ -80,17 +89,17 @@ export function DateField({
   }, [open]);
 
   const days = useMemo(() => {
-    const start = startOfWeek(startOfMonth(cursor));
-    const end = endOfWeek(endOfMonth(cursor));
+    const start = startOfWeek(startOfMonth(cursor), { locale: dfLocale });
+    const end = endOfWeek(endOfMonth(cursor), { locale: dfLocale });
     return eachDayOfInterval({ start, end });
-  }, [cursor]);
+  }, [cursor, dfLocale]);
 
-  const monthLabel = format(cursor, "MMMM yyyy");
+  const monthLabel = formatMonthYearLocalized(cursor, locale);
   const canGoPrev =
     startOfMonth(cursor).getTime() > startOfMonth(minDay).getTime();
   const display =
     value && value >= minIso
-      ? format(toDay(value), "MMM d, yyyy")
+      ? formatLongDateLocalized(toDay(value), locale)
       : placeholder;
 
   return (
@@ -139,8 +148,8 @@ export function DateField({
           </div>
 
           <div className="mb-1 grid grid-cols-7 gap-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-muted">
-            {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
-              <span key={d}>{d}</span>
+            {days.slice(0, 7).map((day) => (
+              <span key={toIso(day)}>{formatWeekdayShort(day, locale)}</span>
             ))}
           </div>
 

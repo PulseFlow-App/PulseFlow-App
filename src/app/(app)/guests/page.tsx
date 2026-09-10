@@ -581,7 +581,7 @@ export default function GuestsPage() {
                           <LocalizedText text={c.description} />
                         </p>
                         <p className="text-xs text-muted">
-                          {new Date(c.created_at).toLocaleDateString()}
+                          {formatShortDate(c.created_at.slice(0, 10))}
                         </p>
                       </div>
                       <p className="shrink-0 font-bold text-ink">

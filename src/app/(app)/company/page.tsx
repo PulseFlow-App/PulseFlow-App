@@ -144,7 +144,9 @@ export default function CompanyPage() {
         <h2 className="font-display text-lg font-bold text-ink">
           {t("settings.team")}
         </h2>
-        {data.profiles.map((p) => (
+        {data.profiles
+          .filter((p) => p.role !== "guest")
+          .map((p) => (
           <div
             key={p.id}
             className="flex items-center justify-between rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm"

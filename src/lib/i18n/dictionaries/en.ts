@@ -293,6 +293,7 @@ const en = {
   "bills.mixedCurrencyHint":
     "Bills stay in their original currency. Totals use approximate exchange rates for the currency you pick.",
   "bills.displayCurrencyHint": "Show amounts converted to this currency.",
+  "bills.displayCurrencyHint.guest": "",
   "bills.villa": "Property",
   "bills.dueDate": "Due date (optional)",
   "bills.receipt": "Receipt photo",
@@ -358,6 +359,7 @@ const en = {
   "settings.copyShare": "Copy share link",
   "settings.language": "Language",
   "settings.languageHint": "Choose the language for your PulseFlow apps.",
+  "settings.languageHint.guest": "",
   "settings.invite": "Invite teammate",
   "settings.inviteHint": "Share a link. They fill in their own details.",
   "settings.inviteCountsTowardReferral":
@@ -463,6 +465,7 @@ const en = {
 
   "plan.free": "Free",
   "plan.guest": "Guest",
+  "plan.guestFree": "(free)",
   "plan.basic": "Basic",
   "plan.full": "Full",
   "plan.trial": "Full trial",
@@ -471,8 +474,7 @@ const en = {
   "plan.seePlans": "See Free and Full plans",
   "plan.note.personal":
     "Free forever for your own properties, tasks, and bills.",
-  "plan.note.guest":
-    "Guest access for your stay — villa details, support chat, and bills.",
+  "plan.note.guest": "",
   "plan.note.staff":
     "Free seat on this company - assigned properties, jobs, bills, and chat.",
   "plan.note.managerLimited":
@@ -658,7 +660,7 @@ const en = {
 
   "roles.owner": "Owner",
   "roles.manager": "Management",
-  "roles.cleaner": "Cleaning team",
+  "roles.cleaner": "On-site staff",
   "roles.staff": "Staff",
   "roles.guest": "Guest",
 
@@ -700,15 +702,18 @@ const en = {
   "guest.mergeEmailFallback":
     "Email could not be sent from this environment. Use this link to confirm:",
   "guest.mergeOpenLink": "Confirm merge",
-  "guest.homeTitle": "Your bookings",
-  "guest.homeSubtitle": "Open a booking for the guide, or browse properties to request dates.",
+  "guest.homeTitle": "Booking Dashboard",
+  "guest.homeSubtitle": "Browse properties to request dates.",
   "guest.comingSoon": "Guest stay tools are coming next",
   "guest.comingSoonHint":
     "House guide, support chat with owners/managers, deposit bills, and more villas from this company.",
   "guest.hi": "Hi {name}",
+  "guest.otherBookings": "Other bookings",
+  "guest.expandPhoto": "Expand photo",
+  "guest.closePhoto": "Close photo",
   "guest.notices": "From your host",
-  "guest.briefingsTitle": "Host briefings",
-  "guest.briefingsHint": "Tick each item once you have read it.",
+  "guest.briefingsTitle": "Briefings",
+  "guest.briefingsHint": "Instructions from property owner",
   "guest.confirmRead": "Mark as read",
   "guest.confirmedRead": "Read",
   "guest.houseGuide": "House guide",
@@ -718,8 +723,10 @@ const en = {
   "guest.quietHours": "Quiet hours",
   "guest.bins": "Bins",
   "guest.checkout": "Checkout checklist",
-  "guest.photosTitle": "Arrival / departure photos",
-  "guest.photosHint": "Optional photos help if anything is unclear at handover.",
+  "guest.photosTitle": "Arrival and departure photos",
+  "guest.photosHint": "",
+  "guest.photoNote": "Notes (optional)",
+  "guest.photoNotePh": "Explain any issues…",
   "guest.arrival": "Arrival",
   "guest.departure": "Departure",
   "guest.addPhoto": "Add photo",
@@ -729,8 +736,7 @@ const en = {
   "guest.nav.support": "Support",
   "guest.nav.bills": "Bills",
   "guest.bookingGuideTitle": "Booking Guide",
-  "guest.bookingGuideHint":
-    "House info, briefings, and photos for the booking you opened.",
+  "guest.bookingGuideHint": "Information, instructions and cancellation",
   "guest.bookingGuideEmpty": "No confirmed bookings yet.",
   "guest.bookingActive": "In stay",
   "guest.bookingUpcoming": "Upcoming",
@@ -742,11 +748,11 @@ const en = {
   "guest.browseVillas": "Browse properties",
   "guest.supportTitle": "Support",
   "guest.supportHint":
-    "Message the owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
+    "Message the property owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
   "guest.supportCmdDeposit":
-    "When you paid your deposit in advance, share this command along with your receipt.",
+    "/deposit — submit your deposit payment (attach receipt).",
   "guest.supportCmdCancel":
-    "When you wish to cancel your booking within 3 days of check-in.",
+    "/cancel — cancel a booking with the property owner (within 3 days of check-in).",
   "guest.supportCmdDepositHost":
     "Record that the guest paid the deposit (optional amount).",
   "guest.supportCmdRefund":
@@ -788,17 +794,17 @@ const en = {
   "guest.openLocation": "Open location in maps",
   "guest.cancelBookingTitle": "Cancel booking",
   "guest.cancelBookingDescription":
-    "If you wish to cancel your booking within 3 days of check-in, open Support chat and send /cancel to request it. Early cancellations are acceptable without host approval.",
+    "Available if more than 3 days before check-in.",
   "guest.cancelBookingHint":
-    "You can cancel free of charge at least 3 days before check-in.",
+    "Available if more than 3 days before check-in.",
   "guest.cancelBookingButton": "Cancel booking",
   "guest.cancelBookingConfirm":
     "Cancel your stay at {villa} ({from} → {to})?",
   "guest.cancelBookingDone": "Booking cancelled.",
   "guest.cancelBookingTooLate":
-    "Within 3 days of check-in, cancellations need your host's help — especially if a deposit was paid. Open Support chat and send /cancel to request a cancellation.",
+    "If you want to cancel within 3 days of check-in",
   "guest.cancelBookingContactSupport":
-    "To change or cancel this stay, open Support chat and send /cancel.",
+    "If you want to cancel within 3 days of check-in",
   "guest.supportDepositHint":
     "After you pay your deposit, send /deposit here so your host can confirm it.",
   "guest.supportCancelHint":
@@ -826,6 +832,7 @@ const en = {
     "Browse properties from this host and request dates — your host will send a price quote.",
   "guest.villasHost": "Hosted by {name}",
   "guest.villasEmpty": "No company villas to show.",
+  "guest.villaUnavailable": "This property is not available for new date requests right now.",
   "guest.currentStayDates": "Your stay · {from} → {to}",
   "guest.requestDates": "Request dates & price",
   "guest.checkIn": "Check-in",
@@ -1010,6 +1017,7 @@ const en = {
   "settings.reportsHint": "CSV downloads, printable weekly summary, handoff snapshots.",
   "settings.website": "Website",
   "settings.websiteHint": "Product overview, plans, and guides on the public site.",
+  "settings.userGuide": "User guide",
   "settings.termsLink": "Terms of Service",
   "settings.privacyLink": "Privacy Policy",
   "settings.supportLink": "Contact support",

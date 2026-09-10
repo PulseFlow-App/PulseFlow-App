@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, format, parseISO, startOfDay } from "date-fns";
+import { differenceInCalendarDays, parseISO, startOfDay } from "date-fns";
 import type {
   AppNotification,
   Bill,
@@ -303,7 +303,7 @@ function dayLabel(date: string, today: Date) {
   if (diff === 1) return "tomorrow";
   if (diff === -1) return "yesterday";
   if (diff < 0) return `${Math.abs(diff)} days ago`;
-  return format(d, "d MMM");
+  return formatShortDate(date);
 }
 
 /**

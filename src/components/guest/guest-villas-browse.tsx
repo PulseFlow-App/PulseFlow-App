@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { DateField } from "@/components/ui/date-field";
-import { StatusPill } from "@/components/ui/status-pill";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StayQuoteCard } from "@/components/guest/stay-quote-card";
 import { useData } from "@/lib/data/use-app-data";
@@ -203,7 +202,6 @@ export function GuestVillasBrowse({
               <p className="font-display text-base font-bold text-ink">
                 {v.name}
               </p>
-              <StatusPill status={v.status} />
             </div>
             {v.area ? <p className="text-sm text-muted">{v.area}</p> : null}
             {quoted ? (
@@ -245,6 +243,8 @@ export function GuestVillasBrowse({
                   to: formatShortDate(activeStayForVilla.check_out),
                 })}
               </p>
+            ) : v.status === "maintenance" ? (
+              <p className="text-sm text-muted">{t("guest.villaUnavailable")}</p>
             ) : accepted ? (
               <Button
                 type="button"

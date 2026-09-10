@@ -390,7 +390,7 @@ const my: Dictionary = {
   "plan.expired": "Full expired",
   "plan.title": "Your plan",
   "plan.seePlans": "See Free and Full",
-  "plan.note.guest": "Guest access for your stay — villa details, support chat, and bills.",
+  "plan.note.guest": "",
   "plan.note.personal":
     "Personal workspace. Free forever for solo properties, tasks, and bills.",
   "plan.note.staff":
@@ -564,8 +564,8 @@ const my: Dictionary = {
   "guest.mergeEmailFallback":
     "Email could not be sent from this environment. Use this link to confirm:",
   "guest.mergeOpenLink": "Confirm merge",
-  "guest.homeTitle": "Your stay",
-  "guest.homeSubtitle": "Updates from the property team that hosted you.",
+  "guest.homeTitle": "Booking Dashboard",
+  "guest.homeSubtitle": "Browse properties to request dates.",
   "guest.comingSoon": "Guest stay tools are coming next",
   "guest.comingSoonHint":
     "House guide, support chat with owners/managers, deposit bills, and more villas from this company.",
@@ -580,8 +580,8 @@ const my: Dictionary = {
   "guest.quietHours": "Quiet hours",
   "guest.bins": "Bins",
   "guest.checkout": "Checkout checklist",
-  "guest.photosTitle": "Arrival / departure photos",
-  "guest.photosHint": "Optional photos help if anything is unclear at handover.",
+  "guest.photosTitle": "Arrival and departure photos",
+  "guest.photosHint": "",
   "guest.arrival": "Arrival",
   "guest.departure": "Departure",
   "guest.addPhoto": "Add photo",
@@ -590,7 +590,7 @@ const my: Dictionary = {
   "guest.nav.guide": "Booking Guide",
   "guest.bookingGuideTitle": "Booking Guide",
   "guest.bookingGuideHint":
-    "House info, briefings, and photos for the booking you opened.",
+    "Information, instructions and cancellation",
   "guest.bookingGuideEmpty": "No confirmed bookings yet.",
   "guest.bookingActive": "In stay",
   "guest.bookingUpcoming": "Upcoming",
@@ -603,11 +603,11 @@ const my: Dictionary = {
   "guest.nav.bills": "Bills",
   "guest.supportTitle": "Support",
   "guest.supportHint":
-    "Message the owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
+    "Message the property owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
   "guest.supportCmdDeposit":
-    "When you paid your deposit in advance, share this command along with your receipt.",
+    "/deposit — submit your deposit payment (attach receipt).",
   "guest.supportCmdCancel":
-    "When you wish to cancel your booking within 3 days of check-in.",
+    "/cancel — cancel a booking with the property owner (within 3 days of check-in).",
   "guest.supportCmdDepositHost":
     "Record that the guest paid the deposit (optional amount).",
   "guest.supportCmdRefund":
@@ -647,17 +647,17 @@ const my: Dictionary = {
   "guest.openLocation": "Open location in maps",
   "guest.cancelBookingTitle": "Cancel booking",
   "guest.cancelBookingDescription":
-    "If you wish to cancel your booking within 3 days of check-in, open Support chat and send /cancel to request it. Early cancellations are acceptable without host approval.",
+    "Available if more than 3 days before check-in.",
   "guest.cancelBookingHint":
-    "You can cancel free of charge at least 3 days before check-in.",
+    "Available if more than 3 days before check-in.",
   "guest.cancelBookingButton": "Cancel booking",
   "guest.cancelBookingConfirm":
     "Cancel your stay at {villa} ({from} → {to})?",
   "guest.cancelBookingDone": "Booking cancelled.",
   "guest.cancelBookingTooLate":
-    "Within 3 days of check-in, cancellations need your host's help — especially if a deposit was paid. Open Support chat and send /cancel to request a cancellation.",
+    "If you want to cancel within 3 days of check-in",
   "guest.cancelBookingContactSupport":
-    "To change or cancel this stay, open Support chat and send /cancel.",
+    "If you want to cancel within 3 days of check-in",
   "guest.supportDepositHint":
     "After you pay your deposit, send /deposit here so your host can confirm it.",
   "guest.supportCancelHint":
@@ -683,6 +683,7 @@ const my: Dictionary = {
   "guest.villasHint": "Browse properties from this host and request dates for your stay.",
   "guest.villasHost": "Hosted by {name}",
   "guest.villasEmpty": "No company villas to show.",
+  "guest.villaUnavailable": "This property is not available for new date requests right now.",
   "guest.currentStayDates": "Your stay · {from} → {to}",
   "guest.requestDates": "Request dates & price",
   "guest.checkIn": "Check-in",
@@ -755,8 +756,8 @@ const my: Dictionary = {
   "dateRequests.acceptConfirm": "Accept with this price",
   "dateRequests.priceRequired": "Enter the total stay price before accepting.",
   "notifications.kind.guest_update": "Guest update",
-  "guest.briefingsTitle": "Host briefings",
-  "guest.briefingsHint": "Tick each item once you have read it.",
+  "guest.briefingsTitle": "Briefings",
+  "guest.briefingsHint": "Instructions from property owner",
   "guest.confirmRead": "Mark as read",
   "guest.confirmedRead": "Read",
   "guests.title": "Guests",
@@ -937,11 +938,11 @@ const my: Dictionary = {
   "common.off": "Off",
   "common.translated": "translated",
   "brand.name": "Pulse Flow",
-  "settings.translateContent": "Translate team content",
-  "settings.translateContentHint.guest": "Host briefings, support messages, and stay notes appear in your app language.",
-  "settings.translateContentHint.host": "Tasks, chat, guest updates, and team messages appear in your app language.",
-  "settings.translateContentHint.staff": "Tasks, chat, and messages from your team appear in your app language.",
-  "settings.translateContentHint": "Tasks, chat, briefings, and messages from teammates appear in your app language.",
+  "settings.translateContent": "အဖွဲ့အကြောင်းအရာ ဘာသာပြန်ရန်",
+  "settings.translateContentHint.guest": "အိမ်ရှင် ဘရီဖင်းများ၊ အကူအညီ မက်ဆေ့များနှင့် နေထိုင်မှတ်စုများသည် သင့်အက်ပ်ဘာသာဖြင့် ပေါ်သည်။",
+  "settings.translateContentHint.host": "အလုပ်များ၊ ချက်၊ ဧည့်သည် အပ်ဒိတ်များနှင့် အဖွဲ့ မက်ဆေ့များသည် သင့်အက်ပ်ဘာသာဖြင့် ပေါ်သည်။",
+  "settings.translateContentHint.staff": "အလုပ်များ၊ ချက်နှင့် အဖွဲ့ထံမှ မက်ဆေ့များသည် သင့်အက်ပ်ဘာသာဖြင့် ပေါ်သည်။",
+  "settings.translateContentHint": "အလုပ်များ၊ ချက်နှင့် အဖွဲ့သားများ၏ မက်ဆေ့များသည် သင့်အက်ပ်ဘာသာဖြင့် ပေါ်သည်။",
   "demo.guest.ownerNotices": "Welcome! Pool heater is on from 16:00. Checkout is 11:00 - leave keys on the kitchen counter.",
   "demo.guest.briefing.keysTitle": "Gate & keys",
   "demo.guest.briefing.keysBody": "Side gate code is 4821#. Leave keys on the kitchen counter at checkout.",
@@ -959,6 +960,15 @@ const my: Dictionary = {
   "home.openedLabel": "opened",
   "home.chartOpened": "Opened",
   "home.chartClosed": "Closed",
+  "bills.displayCurrencyHint.guest": "",
+  "settings.languageHint.guest": "",
+  "plan.guestFree": "(free)",
+  "guest.otherBookings": "Other bookings",
+  "guest.expandPhoto": "Expand photo",
+  "guest.closePhoto": "Close photo",
+  "guest.photoNote": "Notes (optional)",
+  "guest.photoNotePh": "Explain any issues…",
+  "settings.userGuide": "User guide",
 };
 
 export default my;

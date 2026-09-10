@@ -17,6 +17,9 @@ import {
   REFERRAL_STORAGE_KEY,
   readReferralParam,
   rememberReferralCode,
+  readAttribution,
+  rememberAttribution,
+  readStoredAttribution,
 } from "@/lib/billing/plans";
 import { DEMO_READ_ONLY_MESSAGE } from "@/lib/demo/guard";
 
@@ -36,17 +39,31 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [acquisitionSource, setAcquisitionSource] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
-    const fromQuery = readReferralParam(
-      new URLSearchParams(window.location.search),
-    );
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = readReferralParam(params);
     if (fromQuery) {
       rememberReferralCode(fromQuery);
       setReferralCode(fromQuery);
-      return;
+    } else {
+      setReferralCode(localStorage.getItem(REFERRAL_STORAGE_KEY));
     }
-    setReferralCode(localStorage.getItem(REFERRAL_STORAGE_KEY));
+    const attr = readAttribution(params);
+    rememberAttribution(attr);
+    const stored = readStoredAttribution();
+    const src =
+      attr.src ||
+      attr.utm_campaign ||
+      attr.utm_source ||
+      stored?.src ||
+      stored?.utm_campaign ||
+      stored?.utm_source ||
+      null;
+    setAcquisitionSource(src);
   }, []);
 
   const title = useMemo(() => {
@@ -101,6 +118,7 @@ export default function RegisterPage() {
           kind: useKind,
           role,
           referredBy: referralCode,
+          acquisitionSource,
         }),
       });
       const payload = (await res.json()) as { error?: string };

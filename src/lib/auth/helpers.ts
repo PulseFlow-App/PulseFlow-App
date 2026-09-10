@@ -35,6 +35,8 @@ export type RegisterWorkspaceInput = {
   role?: Extract<UserRole, "owner" | "manager">;
   /** Referrer share slug or profile id prefix from ?ref= */
   referredBy?: string | null;
+  /** Channel mark from ?src= / UTM (telegram_phuket, founder, …) */
+  acquisitionSource?: string | null;
 };
 
 export const COMPANY_TRIAL_DAYS = 90;

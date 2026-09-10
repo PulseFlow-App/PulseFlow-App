@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  BookOpen,
   ClipboardList,
   FileText,
   Globe,
@@ -131,9 +132,23 @@ export function AppMenuButton() {
     });
   }
   links.push({
-    href: "https://pulseflow.site",
+    href: "https://www.pulseflow.site",
     label: t("settings.website"),
     icon: Globe,
+    external: true,
+  });
+  const guideHref =
+    profile.role === "guest"
+      ? "https://www.pulseflow.site/guests"
+      : profile.role === "manager"
+        ? "https://www.pulseflow.site/managers"
+        : profile.role === "owner"
+          ? "https://www.pulseflow.site/owners"
+          : "https://www.pulseflow.site/staff";
+  links.push({
+    href: guideHref,
+    label: t("settings.userGuide"),
+    icon: BookOpen,
     external: true,
   });
   const legalAudience = legalAudienceFromRole(profile.role);
@@ -147,12 +162,14 @@ export function AppMenuButton() {
     label: t("settings.privacyLink"),
     icon: Shield,
   });
-  links.push({
-    href: `mailto:${brand.supportEmail}`,
-    label: t("settings.supportLink"),
-    icon: LifeBuoy,
-    external: true,
-  });
+  if (!isGuest) {
+    links.push({
+      href: `mailto:${brand.supportEmail}`,
+      label: t("settings.supportLink"),
+      icon: LifeBuoy,
+      external: true,
+    });
+  }
 
   const signOut = async () => {
     setOpen(false);

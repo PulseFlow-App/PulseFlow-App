@@ -20,7 +20,7 @@ import { labelRole } from "@/lib/i18n/labels";
 
 export default function EndorsementsPage() {
   const data = useData();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const currentWeek = weekKey();
   const canVote = data.profile
     ? canCastEndorsement(data.profile.role, data.orgKind)
@@ -79,7 +79,7 @@ export default function EndorsementsPage() {
         <div>
           <h1 className="text-2xl font-bold text-ink">Endorsements</h1>
           <p className="text-sm text-muted">
-            {weekLabel(currentWeek)} · weekly reputation
+            {weekLabel(currentWeek, locale)} · weekly reputation
           </p>
         </div>
         <Link href="/leaderboard">

@@ -10,7 +10,6 @@ import {
   trialDaysRemaining,
 } from "@/lib/billing/entitlement";
 import { COMPANY_TRIAL_DAYS } from "@/lib/auth/helpers";
-import { isDemoMode } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 
@@ -107,10 +106,7 @@ export function BillingSettingsCard({
         </div>
       </div>
 
-      {isDemoMode() ? (
-        <p className="text-sm text-muted">{t("billing.demoHint")}</p>
-      ) : (
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
           {status === "active" || status === "trialing" ? (
             <Button
               variant="secondary"
@@ -139,7 +135,6 @@ export function BillingSettingsCard({
             </Button>
           ) : null}
         </div>
-      )}
 
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 

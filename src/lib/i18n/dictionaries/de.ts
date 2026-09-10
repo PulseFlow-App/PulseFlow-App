@@ -390,7 +390,7 @@ const de: Dictionary = {
   "plan.expired": "Vollständig abgelaufen",
   "plan.title": "Ihr Plan",
   "plan.seePlans": "See Free and Full",
-  "plan.note.guest": "Guest access for your stay — villa details, support chat, and bills.",
+  "plan.note.guest": "",
   "plan.note.personal":
     "Personal workspace. Free forever for solo properties, tasks, and bills.",
   "plan.note.staff":
@@ -531,7 +531,7 @@ const de: Dictionary = {
   "leaderboard.public": "Öffentliches Profil",
   "roles.owner": "Eigentümer",
   "roles.manager": "Geschäftsführung",
-  "roles.cleaner": "Reinigungsteam",
+  "roles.cleaner": "Vor-Ort-Personal",
   "roles.staff": "Personal",
   "roles.guest": "Gast",
   "invite.card.anyone": "Jeden einladen",
@@ -564,8 +564,8 @@ const de: Dictionary = {
   "guest.mergeEmailFallback":
     "Email could not be sent from this environment. Use this link to confirm:",
   "guest.mergeOpenLink": "Confirm merge",
-  "guest.homeTitle": "Ihr Aufenthalt",
-  "guest.homeSubtitle": "Neuigkeiten vom Team für Unterkünfte, das dich aufgenommen hat.",
+  "guest.homeTitle": "Booking Dashboard",
+  "guest.homeSubtitle": "Browse properties to request dates.",
   "guest.comingSoon": "Tools für Aufenthalte von Gästen kommen als Nächstes",
   "guest.comingSoonHint":
     "Hausführer, Support-Chat mit Eigentümern/Managern, Kautionsrechnungen und weitere Villen dieses Unternehmens.",
@@ -580,8 +580,8 @@ const de: Dictionary = {
   "guest.quietHours": "Nachtruhe",
   "guest.bins": "Ablagen",
   "guest.checkout": "Checkout-Checkliste",
-  "guest.photosTitle": "An- /Abreisefotos",
-  "guest.photosHint": "Optionale Fotos helfen, wenn bei der Übergabe etwas unklar ist.",
+  "guest.photosTitle": "Arrival and departure photos",
+  "guest.photosHint": "",
   "guest.arrival": "Ankunft",
   "guest.departure": "Abreise",
   "guest.addPhoto": "Foto hinzufügen",
@@ -590,7 +590,7 @@ const de: Dictionary = {
   "guest.nav.guide": "Booking Guide",
   "guest.bookingGuideTitle": "Booking Guide",
   "guest.bookingGuideHint":
-    "House info, briefings, and photos for the booking you opened.",
+    "Information, instructions and cancellation",
   "guest.bookingGuideEmpty": "No confirmed bookings yet.",
   "guest.bookingActive": "In stay",
   "guest.bookingUpcoming": "Upcoming",
@@ -603,11 +603,11 @@ const de: Dictionary = {
   "guest.nav.bills": "Rechnungen",
   "guest.supportTitle": "Abstützung",
   "guest.supportHint":
-    "Message the owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
+    "Message the property owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
   "guest.supportCmdDeposit":
-    "When you paid your deposit in advance, share this command along with your receipt.",
+    "/deposit — submit your deposit payment (attach receipt).",
   "guest.supportCmdCancel":
-    "When you wish to cancel your booking within 3 days of check-in.",
+    "/cancel — cancel a booking with the property owner (within 3 days of check-in).",
   "guest.supportCmdDepositHost":
     "Record that the guest paid the deposit (optional amount).",
   "guest.supportCmdRefund":
@@ -647,17 +647,17 @@ const de: Dictionary = {
   "guest.openLocation": "Open location in maps",
   "guest.cancelBookingTitle": "Cancel booking",
   "guest.cancelBookingDescription":
-    "If you wish to cancel your booking within 3 days of check-in, open Support chat and send /cancel to request it. Early cancellations are acceptable without host approval.",
+    "Available if more than 3 days before check-in.",
   "guest.cancelBookingHint":
-    "You can cancel free of charge at least 3 days before check-in.",
+    "Available if more than 3 days before check-in.",
   "guest.cancelBookingButton": "Cancel booking",
   "guest.cancelBookingConfirm":
     "Cancel your stay at {villa} ({from} → {to})?",
   "guest.cancelBookingDone": "Booking cancelled.",
   "guest.cancelBookingTooLate":
-    "Within 3 days of check-in, cancellations need your host's help — especially if a deposit was paid. Open Support chat and send /cancel to request a cancellation.",
+    "If you want to cancel within 3 days of check-in",
   "guest.cancelBookingContactSupport":
-    "To change or cancel this stay, open Support chat and send /cancel.",
+    "If you want to cancel within 3 days of check-in",
   "guest.supportDepositHint":
     "After you pay your deposit, send /deposit here so your host can confirm it.",
   "guest.supportCancelHint":
@@ -683,6 +683,7 @@ const de: Dictionary = {
   "guest.villasHint": "Stöbere in den Unterkünften dieses Gastgebers und fordere Reisedaten für deinen Aufenthalt an.",
   "guest.villasHost": "Gastgeber ist {name}",
   "guest.villasEmpty": "Keine Firmenvillen zu zeigen.",
+  "guest.villaUnavailable": "This property is not available for new date requests right now.",
   "guest.currentStayDates": "Your stay · {from} → {to}",
   "guest.requestDates": "Datum & Preis anfragen",
   "guest.checkIn": "Fortschritt Check-in",
@@ -756,8 +757,8 @@ const de: Dictionary = {
   "dateRequests.acceptConfirm": "Accept with this price",
   "dateRequests.priceRequired": "Enter the total stay price before accepting.",
   "notifications.kind.guest_update": "Gast-Update",
-  "guest.briefingsTitle": "Gastgeber-Briefings",
-  "guest.briefingsHint": "Kreuzen Sie jedes Element an, sobald Sie es gelesen haben.",
+  "guest.briefingsTitle": "Briefings",
+  "guest.briefingsHint": "Instructions from property owner",
   "guest.confirmRead": "Als gelesen kennzeichnen",
   "guest.confirmedRead": "Ablesen",
   "guests.title": "Bands",
@@ -939,9 +940,9 @@ const de: Dictionary = {
   "common.translated": "Übers.",
   "brand.name": "Pulse Flow",
   "settings.translateContent": "Teaminhalte übersetzen",
-  "settings.translateContentHint.guest": "Host briefings, support messages, and stay notes appear in your app language.",
-  "settings.translateContentHint.host": "Tasks, chat, guest updates, and team messages appear in your app language.",
-  "settings.translateContentHint.staff": "Tasks, chat, and messages from your team appear in your app language.",
+  "settings.translateContentHint.guest": "Host-Briefings, Support-Nachrichten und Aufenthaltsnotizen erscheinen in deiner App-Sprache.",
+  "settings.translateContentHint.host": "Aufgaben, Chat, Gäste-Updates und Team-Nachrichten erscheinen in deiner App-Sprache.",
+  "settings.translateContentHint.staff": "Aufgaben, Chat und Nachrichten von deinem Team erscheinen in deiner App-Sprache.",
   "settings.translateContentHint": "Aufgaben, Chats, Briefings und Nachrichten von Teamkollegen werden in deiner App-Sprache angezeigt.",
   "demo.guest.ownerNotices": "Herzlich willkommen! Die Poolheizung ist ab 16:00 Uhr eingeschaltet. Check-out ist um 11:00 Uhr - hinterlasse die Schlüssel an der Küchentheke.",
   "demo.guest.briefing.keysTitle": "Tor & Schlüssel",
@@ -960,6 +961,15 @@ const de: Dictionary = {
   "home.openedLabel": "geöffnet",
   "home.chartOpened": "Geöffnet",
   "home.chartClosed": "Geschlossen",
+  "bills.displayCurrencyHint.guest": "",
+  "settings.languageHint.guest": "",
+  "plan.guestFree": "(free)",
+  "guest.otherBookings": "Other bookings",
+  "guest.expandPhoto": "Expand photo",
+  "guest.closePhoto": "Close photo",
+  "guest.photoNote": "Notes (optional)",
+  "guest.photoNotePh": "Explain any issues…",
+  "settings.userGuide": "User guide",
 };
 
 export default de;
