@@ -112,6 +112,30 @@ export type DemoAccount = {
   profileId: string;
 };
 
+export type VillaSetting = "community" | "standalone";
+export type VillaParking = "none" | "street" | "private";
+export type VillaKitchen = "none" | "basic" | "full";
+export type VillaAircon = "none" | "partial" | "full";
+export type VillaView = "sea" | "jungle" | "pool" | "garden" | "mountain";
+
+/** Optional listing facts shown on property cards. */
+export type VillaDetails = {
+  sq_m: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  max_guests: number | null;
+  floors: number | null;
+  has_pool: boolean | null;
+  has_garden: boolean | null;
+  pet_friendly: boolean | null;
+  has_wifi: boolean | null;
+  setting: VillaSetting | null;
+  parking: VillaParking | null;
+  kitchen: VillaKitchen | null;
+  aircon: VillaAircon | null;
+  view: VillaView | null;
+};
+
 export type Villa = {
   id: string;
   org_id: string;
@@ -130,7 +154,7 @@ export type Villa = {
   notes: string | null;
   created_by: string | null;
   updated_at: string;
-};
+} & VillaDetails;
 
 export type VillaBucket = "company" | "personal";
 

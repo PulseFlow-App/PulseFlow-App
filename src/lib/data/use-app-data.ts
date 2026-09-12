@@ -85,6 +85,7 @@ import { resolveSupportDepositAction } from "@/lib/guest/handle-support-deposit"
 import { resolveSupportCancelAction } from "@/lib/guest/handle-support-cancel";
 import { resolveSupportRefundAction } from "@/lib/guest/handle-support-refund";
 import { capitalizeLabel } from "@/lib/format-label";
+import { pickVillaDetails } from "@/lib/villas/property-details";
 
 export type { AppData } from "@/lib/data/types";
 import type { AppData } from "@/lib/data/types";
@@ -515,6 +516,7 @@ function useDemoData(): AppData {
             notes: null,
             created_by: profile.id,
             updated_at: new Date().toISOString(),
+            ...pickVillaDetails(input),
           },
           ...s.villas,
         ],

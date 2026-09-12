@@ -9,6 +9,8 @@ import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
+import { VillaFacts } from "@/components/villas/villa-facts";
+import { VillaDetailsFields } from "@/components/villas/villa-details-fields";
 import { useData } from "@/lib/data/use-app-data";
 import {
   formatShortDate,
@@ -26,6 +28,10 @@ import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
 import type { VillaListItem } from "@/lib/types";
+import {
+  EMPTY_VILLA_DETAILS_FORM,
+  formToDetails,
+} from "@/lib/villas/property-details";
 
 export default function VillasPage() {
   const data = useData();
@@ -36,6 +42,7 @@ export default function VillasPage() {
   const [locationUrl, setLocationUrl] = useState("");
   const [description, setDescription] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [details, setDetails] = useState(EMPTY_VILLA_DETAILS_FORM);
   const [scope, setScope] = useState<"company" | "personal">("personal");
   const [error, setError] = useState<string | null>(null);
 
@@ -204,6 +211,7 @@ export default function VillasPage() {
               placeholder="Short notes about the property…"
             />
           </div>
+          <VillaDetailsFields value={details} onChange={setDetails} />
           <div>
             <Label>Property photo</Label>
             <Input
@@ -260,6 +268,7 @@ export default function VillasPage() {
                     location_url: normalizeLocationUrl(locationUrl),
                     description: description.trim() || undefined,
                     photo_url: photoUrl,
+                    ...formToDetails(details),
                     scope:
                       inCompany && isOwner
                         ? scope
@@ -271,6 +280,7 @@ export default function VillasPage() {
                     setLocationUrl("");
                     setDescription("");
                     setPhotoUrl(null);
+                    setDetails(EMPTY_VILLA_DETAILS_FORM);
                     setShowAdd(false);
                     setError(null);
                   })
@@ -424,6 +434,7 @@ function VillaSection({
                       {villa.area}
                     </p>
                   ) : null}
+                  <VillaFacts villa={villa} />
                   {villa.description ? (
                     <p className="mt-2 line-clamp-2 text-sm text-muted">
                       <LocalizedText text={villa.description} />

@@ -95,6 +95,20 @@ export type AppData = {
         | "location_url"
         | "description"
         | "photo_url"
+        | "sq_m"
+        | "bedrooms"
+        | "bathrooms"
+        | "max_guests"
+        | "floors"
+        | "has_pool"
+        | "has_garden"
+        | "pet_friendly"
+        | "has_wifi"
+        | "setting"
+        | "parking"
+        | "kitchen"
+        | "aircon"
+        | "view"
       >
     >,
   ) => Promise<void>;
@@ -107,6 +121,20 @@ export type AppData = {
     status?: Villa["status"];
     /** Owners default to company; managers default to personal side work. */
     scope?: "company" | "personal";
+    sq_m?: number | null;
+    bedrooms?: number | null;
+    bathrooms?: number | null;
+    max_guests?: number | null;
+    floors?: number | null;
+    has_pool?: boolean | null;
+    has_garden?: boolean | null;
+    pet_friendly?: boolean | null;
+    has_wifi?: boolean | null;
+    setting?: Villa["setting"];
+    parking?: Villa["parking"];
+    kitchen?: Villa["kitchen"];
+    aircon?: Villa["aircon"];
+    view?: Villa["view"];
   }) => Promise<void>;
   deleteVilla: (id: string) => Promise<void>;
   mergeVillaToCompany: (villaId: string) => Promise<void>;

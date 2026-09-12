@@ -14,6 +14,7 @@ import { isConfirmedStayStatus } from "@/lib/guest/confirmed-stay";
 import { confirmedQuoteForVilla } from "@/lib/guest/stay-date-request";
 import { todayIsoDate } from "@/lib/villas/status-from-dates";
 import type { VillaListItem } from "@/lib/types";
+import { VillaFacts } from "@/components/villas/villa-facts";
 
 type GuestConfirm =
   | { kind: "cancel-request"; requestId: string }
@@ -204,6 +205,7 @@ export function GuestVillasBrowse({
               </p>
             </div>
             {v.area ? <p className="text-sm text-muted">{v.area}</p> : null}
+            <VillaFacts villa={v} className="mt-1" />
             {quoted ? (
               <StayQuoteCard
                 request={quoted}

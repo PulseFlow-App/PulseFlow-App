@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Camera, KeyRound, Wifi } from "lucide-react";
 import { GuestVillaLocation } from "@/components/guest/guest-villa-location";
+import { VillaFacts } from "@/components/villas/villa-facts";
 import { GuestBriefingsCard } from "@/components/guest/guest-briefings-card";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -170,6 +171,7 @@ export function GuestBookingGuide() {
                   area={villa.area}
                   locationUrl={villa.location_url}
                 />
+                <VillaFacts villa={villa} className="mt-1" />
                 <p className="text-sm text-ink">
                   {formatShortDate(selectedStay.check_in)} →{" "}
                   {formatShortDate(selectedStay.check_out)}

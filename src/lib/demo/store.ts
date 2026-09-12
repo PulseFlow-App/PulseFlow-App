@@ -28,6 +28,7 @@ import {
 import { buildOrderChatBody, canCancelServiceOrder, formatOrderWhen } from "@/lib/service-orders";
 import { capitalizeLabel } from "@/lib/format-label";
 import { dateDrivenVillaPatch } from "@/lib/villas/status-from-dates";
+import { normalizeVillaRow } from "@/lib/villas/property-details";
 
 function slugifyName(name: string) {
   return (
@@ -49,7 +50,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v14";
+const STORE_KEY = "pulseflow_demo_store_v15";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -89,12 +90,14 @@ function normalizeStore(store: DemoStore): DemoStore {
       linked_profile_id: c.linked_profile_id ?? null,
       notes: plainDash(c.notes) ?? null,
     })),
-    villas: store.villas.map((v) => ({
-      ...v,
-      photo_url: v.photo_url ?? null,
-      description: plainDash(v.description) ?? null,
-      notes: plainDash(v.notes) ?? null,
-    })),
+    villas: store.villas.map((v) =>
+      normalizeVillaRow({
+        ...v,
+        photo_url: v.photo_url ?? null,
+        description: plainDash(v.description) ?? null,
+        notes: plainDash(v.notes) ?? null,
+      }),
+    ),
     tasks: store.tasks.map((t) => ({
       ...t,
       title: plainDash(t.title) ?? t.title,
@@ -141,6 +144,7 @@ function readStore(): DemoStore {
         "pulseflow_demo_store_v11",
         "pulseflow_demo_store_v12",
         "pulseflow_demo_store_v13",
+        "pulseflow_demo_store_v14",
       ]) {
         localStorage.removeItem(key);
       }

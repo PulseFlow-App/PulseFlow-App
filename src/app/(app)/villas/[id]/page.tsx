@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/empty-state";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
+import { VillaFacts } from "@/components/villas/villa-facts";
+import { VillaDetailsFields } from "@/components/villas/villa-details-fields";
 import { useData } from "@/lib/data/use-app-data";
 import type { CleaningStatus, VillaStatus } from "@/lib/design-tokens";
 import { canEditVillaCore, isStaffApp } from "@/lib/roles";
@@ -23,6 +25,11 @@ import {
   labelVillaStatus,
 } from "@/lib/i18n/labels";
 import { HouseGuideEditor } from "@/components/villas/house-guide-editor";
+import {
+  detailsToForm,
+  EMPTY_VILLA_DETAILS_FORM,
+  formToDetails,
+} from "@/lib/villas/property-details";
 
 export default function VillaDetailPage({
   params,
@@ -76,6 +83,7 @@ export default function VillaDetailPage({
   const [locationUrl, setLocationUrl] = useState("");
   const [description, setDescription] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [details, setDetails] = useState(EMPTY_VILLA_DETAILS_FORM);
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,6 +118,7 @@ export default function VillaDetailPage({
     setLocationUrl(villa.location_url ?? "");
     setDescription(villa.description ?? "");
     setPhotoUrl(villa.photo_url ?? null);
+    setDetails(detailsToForm(villa));
     // Only hydrate when opening a villa - re-syncing on every server refresh
     // would wipe a just-uploaded photo before Save.
   }, [villa?.id]);
@@ -150,6 +159,7 @@ export default function VillaDetailPage({
         location_url: normalizeLocationUrl(locationUrl),
         description: description.trim() || null,
         photo_url: photoUrl,
+        ...formToDetails(details),
         ...(canEditCore ? { name, area: area || null } : {}),
       });
       if (isOwner && !isPersonal) {
@@ -235,6 +245,7 @@ export default function VillaDetailPage({
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
+            <VillaDetailsFields value={details} onChange={setDetails} />
           </>
         ) : (
           <div>
@@ -247,6 +258,7 @@ export default function VillaDetailPage({
                 <LocalizedText text={villa.description} />
               </p>
             ) : null}
+            <VillaFacts villa={villa} className="mt-3" />
             {villa.location_url ? (
               <a
                 href={normalizeLocationUrl(villa.location_url)}

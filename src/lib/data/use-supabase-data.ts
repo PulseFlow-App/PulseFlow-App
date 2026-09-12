@@ -78,6 +78,7 @@ import {
   rememberLocallyRead,
 } from "@/lib/notifications-read";
 import { capitalizeLabel } from "@/lib/format-label";
+import { normalizeVillaRow, pickVillaDetails } from "@/lib/villas/property-details";
 
 const scheduleSyncedOrgs = new Set<string>();
 
@@ -101,6 +102,10 @@ function normalizeProfile(row: Profile): Profile {
         : Number(row.job_search_lng),
     job_search_updated_at: row.job_search_updated_at ?? null,
   };
+}
+
+function asVillas(data: unknown): Villa[] {
+  return ((data as Villa[]) ?? []).map(normalizeVillaRow);
 }
 
 function enrichTasks(
@@ -428,7 +433,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     setOrgs((orgsRes.data as Organization[]) ?? []);
     setProfiles((profilesRes.data as Profile[]) ?? []);
     setAllProfiles((allProfilesRes.data as Profile[]) ?? []);
-    setVillas((villasRes.data as Villa[]) ?? []);
+    setVillas(asVillas(villasRes.data));
     setContacts((contactsRes.data as Contact[]) ?? []);
     setTasks((tasksRes.data as Task[]) ?? []);
     setBills((billsRes.data as Bill[]) ?? []);
@@ -510,7 +515,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     );
     setReady(true);
 
-    const orgVillas = ((villasRes.data as Villa[]) ?? []).filter(
+    const orgVillas = asVillas(villasRes.data).filter(
       (v) => v.org_id === orgId,
     );
     const orgBills = (billsRes.data as Bill[]) ?? [];
@@ -550,8 +555,8 @@ export function useSupabaseData(enabled: boolean): AppData {
           .in("org_id", orgIds)
           .order("name");
         if (refreshed) {
-          setVillas(refreshed as Villa[]);
-          syncedVillas = (refreshed as Villa[]).filter(
+          setVillas(asVillas(refreshed));
+          syncedVillas = asVillas(refreshed).filter(
             (v) => v.org_id === orgId,
           );
         }
@@ -1214,6 +1219,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         photo_url,
         status: input.status ?? "available",
         created_by: profile.id,
+        ...pickVillaDetails(input),
       });
       if (error) throw error;
       await refresh();
