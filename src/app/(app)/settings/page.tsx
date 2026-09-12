@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { NotebookPen } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
-import { isDemoMode, createClient } from "@/lib/supabase/client";
-import { demoLogout } from "@/lib/demo/store";
 import { useI18n } from "@/lib/i18n/provider";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { DisplayCurrencySelect } from "@/components/billing/display-currency-select";
@@ -24,7 +21,6 @@ import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
   const data = useData();
-  const router = useRouter();
   const { t } = useI18n();
   const [displayName, setDisplayName] = useState("");
   const [nameEditing, setNameEditing] = useState(false);
@@ -41,17 +37,6 @@ export default function SettingsPage() {
   const isCompany = data.orgKind === "company";
   const isPersonal = data.orgKind === "personal";
   const canRenameOrg = profile.role === "owner";
-
-  const signOut = async () => {
-    if (isDemoMode()) {
-      demoLogout();
-    } else {
-      const supabase = createClient();
-      await supabase.auth.signOut();
-    }
-    router.replace("/login");
-    router.refresh();
-  };
 
   const roleKey = `roles.${profile.role}` as MessageKey;
   const plan = resolvePlanTier({
@@ -310,10 +295,6 @@ export default function SettingsPage() {
           <JobSearchSettingsCard />
         </div>
       ) : null}
-
-      <Button variant="danger" className="w-full" onClick={() => void signOut()}>
-        {t("settings.signOut")}
-      </Button>
     </div>
   );
 }

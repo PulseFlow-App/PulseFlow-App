@@ -147,6 +147,11 @@ export function canEditVillaCore(role: UserRole) {
   return role === "owner" || role === "manager";
 }
 
+/** Company owner, or anyone managing their own personal list. */
+export function canDeleteVilla(role: UserRole, isPersonal: boolean) {
+  return isPersonal || role === "owner";
+}
+
 export function isOwnerApp(role: UserRole) {
   return role === "owner";
 }

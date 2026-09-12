@@ -55,6 +55,8 @@ const de: Dictionary = {
   "nav.invites": "Einladungen",
   "nav.company": "Unternehmen",
   "nav.dateRequests": "Terminanfragen",
+  "nav.menuManage": "Verwalten",
+  "nav.menuAccount": "Konto",
   "brand.tagline": "Der Puls Ihrer Mietoperationen",
   "brand.opsPulse": "Ops-Puls",
   "auth.login": "Anmelden",
@@ -174,6 +176,13 @@ const de: Dictionary = {
   "villas.view.pool": "Poolblick",
   "villas.view.garden": "Gartenblick",
   "villas.view.mountain": "Bergblick",
+  "villas.delete": "Objekt löschen",
+  "villas.deleteConfirm":
+    "{name} aus dem Unternehmen entfernen? Das kann nicht rückgängig gemacht werden.",
+  "villas.deleteConfirmPersonal":
+    "{name} von deiner Liste entfernen? Das kann nicht rückgängig gemacht werden.",
+  "villas.photoUploading": "Foto wird hochgeladen…",
+  "villas.notFound": "Objekt nicht gefunden.",
   "status.available": "Verfügbar",
   "status.occupied": "Belegt",
   "status.turnover": "Wechsel",
@@ -773,6 +782,13 @@ const de: Dictionary = {
   "join.staffTitle": "Du bist zum Team eingeladen",
   "join.staffHint": "Geben Sie Ihre Daten ein, um sich anzumelden. Du behältst einen persönlichen Arbeitsbereich neben diesem Unternehmen.",
   "join.accountNote": "Nach der Anmeldung können Sie Pulse Flow auch persönlich nutzen - Personal vs Company ist verfügbar, wenn Sie später Ihren eigenen Arbeitsbereich erstellen.",
+  "join.passwordLabel": "Passwort",
+  "join.passwordConfirm": "Passwort bestätigen",
+  "join.signedInHint":
+    "You're signed in as {email}. Add {org} to this account — you'll keep both companies.",
+  "join.addToAccount": "Add this company to my account",
+  "join.addingToAccount": "Adding…",
+  "join.orNewAccount": "Or create / use a different email below.",
   "dateRequests.title": "Terminanfragen",
   "dateRequests.subtitle":
     "Akzeptiere, dass du die Reisedaten für die Villa in deinem Kalender buchst, oder lehne die Anfrage ab.",

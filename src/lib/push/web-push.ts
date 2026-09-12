@@ -71,7 +71,12 @@ export async function sendWebPush(payload: PushPayload) {
     return { sent: 0, skipped: "kind_filtered" as const };
   }
 
-  const admin = createAdminClient();
+  let admin: ReturnType<typeof createAdminClient>;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return { sent: 0, skipped: "admin_missing" as const };
+  }
   const profileIds = await resolveAudienceIds(
     admin,
     payload.org_id,

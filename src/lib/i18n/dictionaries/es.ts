@@ -55,6 +55,8 @@ const es: Dictionary = {
   "nav.invites": "Invites",
   "nav.company": "Company",
   "nav.dateRequests": "Date requests",
+  "nav.menuManage": "Gestionar",
+  "nav.menuAccount": "Cuenta",
   "brand.tagline": "El pulso de tus operaciones de alquiler",
   "brand.opsPulse": "Pulso ops",
   "auth.login": "Iniciar sesión",
@@ -174,6 +176,13 @@ const es: Dictionary = {
   "villas.view.pool": "Vistas a la piscina",
   "villas.view.garden": "Vistas al jardín",
   "villas.view.mountain": "Vistas a la montaña",
+  "villas.delete": "Eliminar propiedad",
+  "villas.deleteConfirm":
+    "¿Quitar {name} de la empresa? Esto no se puede deshacer.",
+  "villas.deleteConfirmPersonal":
+    "¿Quitar {name} de tu lista? Esto no se puede deshacer.",
+  "villas.photoUploading": "Subiendo foto…",
+  "villas.notFound": "Propiedad no encontrada.",
   "status.available": "Disponible",
   "status.occupied": "Ocupada",
   "status.turnover": "Rotación",
@@ -772,6 +781,13 @@ const es: Dictionary = {
   "join.staffTitle": "You're invited to the team",
   "join.staffHint": "Fill in your details to join. You'll keep a personal workspace alongside this company.",
   "join.accountNote": "After signup you can use Pulse Flow personally too - Personal vs Company is available if you later create your own workspace.",
+  "join.passwordLabel": "Password",
+  "join.passwordConfirm": "Confirm password",
+  "join.signedInHint":
+    "You're signed in as {email}. Add {org} to this account — you'll keep both companies.",
+  "join.addToAccount": "Add this company to my account",
+  "join.addingToAccount": "Adding…",
+  "join.orNewAccount": "Or create / use a different email below.",
   "dateRequests.title": "Date requests",
   "dateRequests.subtitle":
     "Accept to book the villa dates on your calendar, or decline the request.",

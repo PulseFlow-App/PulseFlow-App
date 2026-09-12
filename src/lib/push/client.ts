@@ -90,8 +90,8 @@ export async function disablePushOnThisDevice() {
   }).catch(() => undefined);
 }
 
-/** Fire-and-forget: ask the server to send lock-screen pushes. */
-export function dispatchPushForNotifications(
+/** Ask the server to send lock-screen pushes. Await so the request is not dropped. */
+export async function dispatchPushForNotifications(
   notifications: Array<{
     org_id: string;
     kind: string;
@@ -104,9 +104,15 @@ export function dispatchPushForNotifications(
   }>,
 ) {
   if (typeof window === "undefined" || !notifications.length) return;
-  void fetch("/api/push/dispatch", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ notifications }),
-  }).catch(() => undefined);
+  try {
+    await fetch("/api/push/dispatch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ notifications }),
+      keepalive: true,
+    });
+  } catch {
+    // Lock-screen delivery is best-effort.
+  }
 }

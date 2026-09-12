@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureProfileShareSlug } from "@/lib/auth/share-slug";
+import { attachInviteToExistingProfile } from "@/lib/auth/attach-org";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 
 type Body = {
@@ -139,42 +140,26 @@ export async function POST(request: Request) {
     );
   }
 
-  let personalOrgId = existingProfile.personal_org_id as string | null;
-  if (!personalOrgId && existingProfile.org_id !== orgId) {
-    personalOrgId = existingProfile.org_id;
-  }
-
-  const { data: membership } = await admin
-    .from("org_memberships")
-    .select("id")
-    .eq("org_id", orgId)
-    .eq("profile_id", userId)
-    .maybeSingle();
-
-  if (!membership) {
-    await admin.from("org_memberships").insert({
-      org_id: orgId,
-      profile_id: userId,
-      role,
+  try {
+    await attachInviteToExistingProfile(admin, {
+      profile: existingProfile,
+      inviteOrgId: orgId,
+      inviteRole: role,
+      phone: (row.phone as string | null) ?? existingProfile.phone,
+      jobTitle: (row.job_title as string | null) ?? existingProfile.job_title,
     });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Could not merge profile." },
+      { status: 500 },
+    );
   }
-
-  await admin
-    .from("profiles")
-    .update({
-      org_id: orgId,
-      role,
-      personal_org_id: personalOrgId,
-      job_title: row.job_title ?? existingProfile.job_title,
-      phone: row.phone ?? existingProfile.phone,
-    })
-    .eq("id", userId);
 
   await ensureProfileShareSlug(admin, {
     id: userId,
     full_name: existingProfile.full_name,
     share_slug: existingProfile.share_slug as string | null,
-    role,
+    role: existingProfile.role,
   });
 
   await admin
@@ -210,8 +195,8 @@ export async function POST(request: Request) {
     const note = {
       org_id: orgId,
       kind: "team_joined" as const,
-      title: "Guest profile merged",
-      body: `${existingProfile.full_name} joined as guest (merged profile)`,
+      title: "Company added to profile",
+      body: `${existingProfile.full_name} joined as ${role} (same account, both companies kept)`,
       href: "/guests",
       entity_id: userId,
       audience_profile_ids: audience,

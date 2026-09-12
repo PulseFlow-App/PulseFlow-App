@@ -24,14 +24,18 @@ export function notificationVisibleTo(
 export function unreadNotifications(
   notifications: AppNotification[],
   profileId: string,
-  orgId: string,
+  _orgId?: string,
 ) {
   return notifications.filter(
     (n) =>
-      n.org_id === orgId &&
       notificationVisibleTo(n, profileId) &&
       !(n.read_by ?? []).includes(profileId),
   );
+}
+
+/** Team chat plus Support pings that open /messages. */
+export function isChatBadgeNotification(n: Pick<AppNotification, "kind" | "href">) {
+  return n.kind === "message" || (n.kind === "guest_update" && n.href === "/messages");
 }
 
 export function makeNotification(input: {
@@ -115,6 +119,11 @@ export function toInsertRow(n: AppNotification): NotificationInsert {
   };
 }
 
+function isGuestUpdateKindRejected(message: string | undefined) {
+  if (!message) return false;
+  return /guest_update|notifications_kind_check/i.test(message);
+}
+
 /** Inserts rows; ignores duplicate dedupe_key conflicts. */
 export async function insertNotifications(
   supabase: {
@@ -126,15 +135,29 @@ export async function insertNotifications(
   },
   rows: NotificationInsert[],
 ) {
+  const inserted: NotificationInsert[] = [];
   for (const row of rows) {
-    const { error } = await supabase.from("notifications").insert(row);
+    let { error } = await supabase.from("notifications").insert(row);
+    if (
+      error &&
+      row.kind === "guest_update" &&
+      isGuestUpdateKindRejected(error.message)
+    ) {
+      const fallback: NotificationInsert = { ...row, kind: "message" };
+      const retry = await supabase.from("notifications").insert(fallback);
+      error = retry.error;
+      if (!error || error.code === "23505") inserted.push(fallback);
+    } else if (!error || error.code === "23505") {
+      inserted.push(row);
+    }
     if (error && error.code !== "23505") {
       console.warn("insertNotifications", error.message);
     }
   }
-  if (typeof window !== "undefined" && rows.length) {
+  const toPush = inserted.length ? inserted : rows;
+  if (typeof window !== "undefined" && toPush.length) {
     const { dispatchPushForNotifications } = await import("@/lib/push/client");
-    dispatchPushForNotifications(rows);
+    await dispatchPushForNotifications(toPush);
   }
 }
 

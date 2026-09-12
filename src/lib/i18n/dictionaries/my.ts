@@ -55,6 +55,8 @@ const my: Dictionary = {
   "nav.invites": "Invites",
   "nav.company": "Company",
   "nav.dateRequests": "Date requests",
+  "nav.menuManage": "စီမံရန်",
+  "nav.menuAccount": "အကောင့်",
   "brand.tagline": "သင့်အငှားလုပ်ငန်း၏ နှလုံးခုန်သံ",
   "brand.opsPulse": "လုပ်ငန်းပယ်စ်",
   "auth.login": "ဝင်မည်",
@@ -174,6 +176,13 @@ const my: Dictionary = {
   "villas.view.pool": "ရေကူးကန်မြင်ကွင်း",
   "villas.view.garden": "ဥယျာဉ်မြင်ကွင်း",
   "villas.view.mountain": "တောင်မြင်ကွင်း",
+  "villas.delete": "အိမ်ယာဖျက်မည်",
+  "villas.deleteConfirm":
+    "{name} ကိုကုမ္ပဏီမှ ဖယ်ရှားမလား။ ပြန်ပြင်မရပါ။",
+  "villas.deleteConfirmPersonal":
+    "{name} ကိုသင့်စာရင်းမှ ဖယ်ရှားမလား။ ပြန်ပြင်မရပါ။",
+  "villas.photoUploading": "ဓာတ်ပုံတင်နေသည်…",
+  "villas.notFound": "အိမ်ယာမတွေ့ပါ။",
   "status.available": "ရနိုင်",
   "status.occupied": "နေထိုင်နေ",
   "status.turnover": "လဲလှယ်",
@@ -772,6 +781,13 @@ const my: Dictionary = {
   "join.staffTitle": "You're invited to the team",
   "join.staffHint": "Fill in your details to join. You'll keep a personal workspace alongside this company.",
   "join.accountNote": "After signup you can use Pulse Flow personally too - Personal vs Company is available if you later create your own workspace.",
+  "join.passwordLabel": "Password",
+  "join.passwordConfirm": "Confirm password",
+  "join.signedInHint":
+    "You're signed in as {email}. Add {org} to this account — you'll keep both companies.",
+  "join.addToAccount": "Add this company to my account",
+  "join.addingToAccount": "Adding…",
+  "join.orNewAccount": "Or create / use a different email below.",
   "dateRequests.title": "Date requests",
   "dateRequests.subtitle":
     "Accept to book the villa dates on your calendar, or decline the request.",

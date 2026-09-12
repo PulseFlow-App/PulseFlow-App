@@ -161,42 +161,40 @@ export function GuestBookingGuide() {
         </Card>
       ) : (
         <>
-          <Card className="space-y-2 p-4">
-            <div className="flex items-start gap-3">
-              <div className="min-w-0 flex-1 space-y-2">
-                <p className="font-display text-lg font-bold text-ink">
-                  {villa.name}
-                </p>
-                <GuestVillaLocation
-                  area={villa.area}
-                  locationUrl={villa.location_url}
-                />
-                <VillaFacts villa={villa} className="mt-1" />
-                <p className="text-sm text-ink">
-                  {formatShortDate(selectedStay.check_in)} →{" "}
-                  {formatShortDate(selectedStay.check_out)}
-                </p>
-              </div>
-              {villa.photo_url ? (
-                <ExpandableVillaPhoto
-                  src={villa.photo_url}
-                  alt={villa.name}
-                  className="w-24 shrink-0 sm:w-28"
-                />
+          <Card className="space-y-3 overflow-hidden p-0">
+            {villa.photo_url ? (
+              <ExpandableVillaPhoto
+                src={villa.photo_url}
+                alt={villa.name}
+                className="w-full"
+              />
+            ) : null}
+            <div className="space-y-2 p-4 pt-0">
+              <p className="font-display text-lg font-bold leading-snug text-ink">
+                {villa.name}
+              </p>
+              <GuestVillaLocation
+                area={villa.area}
+                locationUrl={villa.location_url}
+              />
+              <VillaFacts villa={villa} className="mt-1" />
+              <p className="text-sm text-ink">
+                {formatShortDate(selectedStay.check_in)} →{" "}
+                {formatShortDate(selectedStay.check_out)}
+              </p>
+              {selectedStay.owner_notices ? (
+                <div className="rounded-2xl bg-primary-soft/60 p-3 text-sm text-ink">
+                  <p className="mb-1 text-xs font-bold uppercase tracking-wide text-primary">
+                    {t("guest.notices")}
+                  </p>
+                  <LocalizedText
+                    text={selectedStay.owner_notices}
+                    as="p"
+                    multiline
+                  />
+                </div>
               ) : null}
             </div>
-            {selectedStay.owner_notices ? (
-              <div className="rounded-2xl bg-primary-soft/60 p-3 text-sm text-ink">
-                <p className="mb-1 text-xs font-bold uppercase tracking-wide text-primary">
-                  {t("guest.notices")}
-                </p>
-                <LocalizedText
-                  text={selectedStay.owner_notices}
-                  as="p"
-                  multiline
-                />
-              </div>
-            ) : null}
           </Card>
 
           <GuestBriefingsCard stayId={selectedStay.id} />

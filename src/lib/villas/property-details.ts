@@ -99,6 +99,38 @@ function formatQty(n: number) {
   return Number.isInteger(n) ? String(n) : String(n);
 }
 
+export const VILLA_DETAIL_KEYS = [
+  "sq_m",
+  "bedrooms",
+  "bathrooms",
+  "max_guests",
+  "floors",
+  "has_pool",
+  "has_garden",
+  "pet_friendly",
+  "has_wifi",
+  "setting",
+  "parking",
+  "kitchen",
+  "aircon",
+  "view",
+] as const satisfies readonly (keyof VillaDetails)[];
+
+export function omitVillaDetails<T extends object>(row: T): T {
+  const next = { ...row } as T & Record<string, unknown>;
+  for (const key of VILLA_DETAIL_KEYS) {
+    delete next[key];
+  }
+  return next;
+}
+
+export function isMissingVillaDetailsColumn(message: string | undefined) {
+  if (!message) return false;
+  return /(sq_m|bedrooms|bathrooms|max_guests|floors|has_pool|has_garden|pet_friendly|has_wifi|setting|parking|kitchen|aircon|view).*(column|schema cache)|(column|schema cache).*(sq_m|bedrooms|bathrooms|max_guests|floors|has_pool|has_garden|pet_friendly|has_wifi|setting|parking|kitchen|aircon|view)/i.test(
+    message,
+  );
+}
+
 export function pickVillaDetails(
   input: Partial<VillaDetails> | null | undefined,
 ): VillaDetails {

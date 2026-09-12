@@ -50,7 +50,7 @@ export function resolveSupportDepositAction(input: {
       notifications: [
         makeNotification({
           org_id: input.stay.org_id,
-          kind: "guest_update",
+          kind: "message",
           title: "Guest sent /deposit",
           body: amountLine
             ? `${input.profile.full_name} is ready to pay ${amountLine}.${input.hasAttachment ? " Receipt attached in Support." : ""} Open Support and reply with /deposit when received.`

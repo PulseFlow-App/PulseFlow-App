@@ -57,6 +57,8 @@ const en = {
   "nav.invites": "Invites",
   "nav.company": "Company",
   "nav.dateRequests": "Date requests",
+  "nav.menuManage": "Manage",
+  "nav.menuAccount": "Account",
 
   "brand.name": "Pulse Flow",
   "brand.tagline": "The pulse of your rental operations",
@@ -206,6 +208,13 @@ const en = {
   "villas.view.pool": "Pool view",
   "villas.view.garden": "Garden view",
   "villas.view.mountain": "Mountain view",
+  "villas.delete": "Delete property",
+  "villas.deleteConfirm":
+    "Remove {name} from the company? This cannot be undone.",
+  "villas.deleteConfirmPersonal":
+    "Remove {name} from your list? This cannot be undone.",
+  "villas.photoUploading": "Uploading photo…",
+  "villas.notFound": "Property not found.",
 
   "status.available": "Available",
   "status.occupied": "Occupied",
@@ -734,22 +743,22 @@ const en = {
 
   "guest.noStay": "No stay is linked yet. Browse properties below to request dates.",
   "guest.companyFallback": "Host company",
-  "guest.mergeTitle": "Merge guest profile",
+  "guest.mergeTitle": "Add this company to your account",
   "guest.mergeHint":
-    "{org} invited this email ({email}). Enter your password to merge their properties into your existing profile.",
+    "{org} invited this email ({email}). Enter your password to add their properties to your existing profile. You keep both companies on one login.",
   "guest.mergePassword": "Your password",
   "guest.mergeNeedPassword": "Enter your password to confirm.",
-  "guest.mergeConfirm": "Confirm merge",
-  "guest.mergeConfirming": "Merging…",
-  "guest.mergeInvalidTitle": "Merge unavailable",
-  "guest.mergeInvalid": "This merge link is invalid or already used.",
-  "guest.mergeUnavailable": "Profile merge is not available in demo mode.",
+  "guest.mergeConfirm": "Add company",
+  "guest.mergeConfirming": "Adding…",
+  "guest.mergeInvalidTitle": "Link unavailable",
+  "guest.mergeInvalid": "This link is invalid or already used.",
+  "guest.mergeUnavailable": "Adding a company this way is not available in demo mode.",
   "guest.mergeEmailTitle": "Check your email",
   "guest.mergeEmailHint":
-    "A profile already exists for {email}. We sent a note asking whether to merge {org}'s properties into that profile. Open the link in the email and enter your password to confirm. If you ignore it, nothing changes.",
+    "A profile already exists for {email}. We sent a link to add {org} to that account. Open it and enter your password. If you ignore it, nothing changes.",
   "guest.mergeEmailFallback":
     "Email could not be sent from this environment. Use this link to confirm:",
-  "guest.mergeOpenLink": "Confirm merge",
+  "guest.mergeOpenLink": "Add this company",
   "guest.homeTitle": "Booking Dashboard",
   "guest.homeSubtitle": "Browse properties to request dates.",
   "guest.comingSoon": "Guest stay tools are coming next",
@@ -920,13 +929,20 @@ const en = {
   "guest.guideSave": "Save house guide",
   "guest.joinTitle": "You're invited as a guest",
   "guest.joinHint":
-    "Create your account to follow this stay and get a personal Pulse Flow space.",
+    "New here? Create an account. Already on Pulse Flow with another company? Use that email — we'll add this host to the same profile.",
   "guest.joinContinue": "Continue",
   "join.staffTitle": "You're invited to the team",
   "join.staffHint":
-    "Fill in your details to join. You'll keep a personal workspace alongside this company.",
+    "New here? Fill in your details. Already on another company? Use that email so both companies stay on one login.",
   "join.accountNote":
-    "After signup you can use Pulse Flow personally too - Personal vs Company is available if you later create your own workspace.",
+    "One profile can belong to several companies. We never replace your first company — we add the new one.",
+  "join.passwordLabel": "Password",
+  "join.passwordConfirm": "Confirm password",
+  "join.signedInHint":
+    "You're signed in as {email}. Add {org} to this account — you'll keep both companies.",
+  "join.addToAccount": "Add this company to my account",
+  "join.addingToAccount": "Adding…",
+  "join.orNewAccount": "Or create / use a different email below.",
 
   "dateRequests.title": "Date requests",
   "dateRequests.subtitle":

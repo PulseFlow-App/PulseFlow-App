@@ -23,12 +23,14 @@ import {
   formatWorkWindow,
   makeNotification,
   notificationVisibleTo,
+  isChatBadgeNotification,
   ownerManagerIds,
 } from "@/lib/notifications";
 import { buildOrderChatBody, canCancelServiceOrder, formatOrderWhen } from "@/lib/service-orders";
 import { capitalizeLabel } from "@/lib/format-label";
 import { dateDrivenVillaPatch } from "@/lib/villas/status-from-dates";
 import { normalizeVillaRow } from "@/lib/villas/property-details";
+import { pickPrimaryRole } from "@/lib/auth/attach-org";
 
 function slugifyName(name: string) {
   return (
@@ -412,6 +414,42 @@ export function demoAcceptInvite(
       const alreadyMember = s.memberships.some(
         (m) => m.profile_id === existing.id && m.org_id === invite.org_id,
       );
+      const keepCurrentCompany = existing.org_id !== invite.org_id;
+      const nextRole = pickPrimaryRole(existing.role, invite.role);
+      const nextOrgId =
+        existing.role === "guest" && invite.role !== "guest"
+          ? invite.org_id
+          : keepCurrentCompany
+            ? existing.org_id
+            : invite.org_id;
+      const memberships = alreadyMember
+        ? s.memberships
+        : [
+            ...s.memberships,
+            {
+              id: crypto.randomUUID(),
+              org_id: invite.org_id,
+              profile_id: existing.id,
+              role: invite.role,
+              joined_at: new Date().toISOString(),
+            },
+          ];
+      const withHomeMembership =
+        keepCurrentCompany &&
+        !memberships.some(
+          (m) => m.profile_id === existing.id && m.org_id === existing.org_id,
+        )
+          ? [
+              ...memberships,
+              {
+                id: crypto.randomUUID(),
+                org_id: existing.org_id,
+                profile_id: existing.id,
+                role: existing.role,
+                joined_at: new Date().toISOString(),
+              },
+            ]
+          : memberships;
       return {
         ...s,
         orgs,
@@ -419,9 +457,9 @@ export function demoAcceptInvite(
           p.id === existing.id
             ? {
                 ...p,
-                org_id: invite.org_id,
+                org_id: nextOrgId,
                 personal_org_id: personalOrgId,
-                role: invite.role,
+                role: nextRole,
                 job_title: invite.job_title ?? p.job_title,
                 share_slug:
                   p.share_slug ||
@@ -429,18 +467,7 @@ export function demoAcceptInvite(
               }
             : p,
         ),
-        memberships: alreadyMember
-          ? s.memberships
-          : [
-              ...s.memberships,
-              {
-                id: crypto.randomUUID(),
-                org_id: invite.org_id,
-                profile_id: existing.id,
-                role: invite.role,
-                joined_at: new Date().toISOString(),
-              },
-            ],
+        memberships: withHomeMembership,
         invites: s.invites.map((i) =>
           i.id === invite.id
             ? {
@@ -654,7 +681,10 @@ export function demoMarkAllNotificationsRead(
       const readBy = n.read_by ?? [];
       const visible =
         n.org_id === orgId && notificationVisibleTo(n, profileId);
-      const kindOk = !kind || n.kind === kind;
+      const kindOk =
+        !kind ||
+        n.kind === kind ||
+        (kind === "message" && isChatBadgeNotification(n));
       return visible && kindOk && !readBy.includes(profileId)
         ? { ...n, read_by: [...readBy, profileId] }
         : { ...n, read_by: readBy };
@@ -1169,15 +1199,13 @@ export function companyVillasFor(
   profile: Profile,
   villas: Villa[],
   assignments: VillaAssignment[],
+  orgId = profile.org_id,
+  role: Profile["role"] = profile.role,
 ): Villa[] {
-  const orgVillas = villas.filter((v) => v.org_id === profile.org_id);
+  const orgVillas = villas.filter((v) => v.org_id === orgId);
   // Owners, managers, and stay guests share the full company inventory
   // (guests browse the catalog; staff stay assignment-scoped).
-  if (
-    profile.role === "owner" ||
-    profile.role === "manager" ||
-    profile.role === "guest"
-  ) {
+  if (role === "owner" || role === "manager" || role === "guest") {
     return orgVillas;
   }
 
@@ -1250,22 +1278,38 @@ export function buildVillaList(
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  const companyOrg = orgs.find((o) => o.id === profile.org_id);
   const personalOrg = profile.personal_org_id
     ? orgs.find((o) => o.id === profile.personal_org_id)
     : null;
+  const companyOrgIds = new Set(
+    memberships
+      .filter((m) => m.profile_id === profile.id)
+      .map((m) => m.org_id),
+  );
+  const activeOrg = orgs.find((o) => o.id === profile.org_id);
+  if (activeOrg?.kind === "company") companyOrgIds.add(profile.org_id);
+  if (profile.personal_org_id) companyOrgIds.delete(profile.personal_org_id);
 
   const isSoloPersonal =
-    companyOrg?.kind === "personal" &&
+    activeOrg?.kind === "personal" &&
     profile.personal_org_id === profile.org_id;
 
   const company = isSoloPersonal
     ? []
-    : companyVillasFor(profile, villas, assignments).map((v) => ({
-        ...v,
-        bucket: "company" as const,
-        orgLabel: companyOrg?.name ?? "Company",
-      }));
+    : [...companyOrgIds].flatMap((orgId) => {
+        const role =
+          memberships.find(
+            (m) => m.profile_id === profile.id && m.org_id === orgId,
+          )?.role ?? (orgId === profile.org_id ? profile.role : "staff");
+        const orgName = orgs.find((o) => o.id === orgId)?.name ?? "Company";
+        return companyVillasFor(profile, villas, assignments, orgId, role).map(
+          (v) => ({
+            ...v,
+            bucket: "company" as const,
+            orgLabel: orgName,
+          }),
+        );
+      });
 
   const personalSource = isSoloPersonal
     ? villas.filter((v) => v.org_id === profile.org_id)

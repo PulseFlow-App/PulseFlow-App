@@ -8,12 +8,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/empty-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { VillaFacts } from "@/components/villas/villa-facts";
 import { VillaDetailsFields } from "@/components/villas/villa-details-fields";
 import { useData } from "@/lib/data/use-app-data";
 import type { CleaningStatus, VillaStatus } from "@/lib/design-tokens";
-import { canEditVillaCore, isStaffApp } from "@/lib/roles";
+import { canDeleteVilla, canEditVillaCore, isStaffApp } from "@/lib/roles";
 import { isValidLocationUrl, normalizeLocationUrl } from "@/lib/utils";
 import { formatWorkWindow } from "@/lib/notifications";
 import { formatOrderWhen } from "@/lib/service-orders";
@@ -25,6 +26,7 @@ import {
   labelVillaStatus,
 } from "@/lib/i18n/labels";
 import { HouseGuideEditor } from "@/components/villas/house-guide-editor";
+import { useVillaPhotoUpload } from "@/components/villas/use-villa-photo-upload";
 import {
   detailsToForm,
   EMPTY_VILLA_DETAILS_FORM,
@@ -72,6 +74,9 @@ export default function VillaDetailPage({
     Boolean(isPersonal) &&
     data.orgKind === "company" &&
     data.profile?.role !== "owner";
+  const canDelete = data.profile
+    ? canDeleteVilla(data.profile.role, Boolean(isPersonal))
+    : false;
 
   const [status, setStatus] = useState<VillaStatus>("available");
   const [cleaning, setCleaning] = useState<CleaningStatus>("not_needed");
@@ -82,12 +87,14 @@ export default function VillaDetailPage({
   const [area, setArea] = useState("");
   const [locationUrl, setLocationUrl] = useState("");
   const [description, setDescription] = useState("");
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [details, setDetails] = useState(EMPTY_VILLA_DETAILS_FORM);
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const photo = useVillaPhotoUpload(data.uploadVillaPhoto);
 
   const team = useMemo(
     () =>
@@ -117,7 +124,7 @@ export default function VillaDetailPage({
     setArea(villa.area ?? "");
     setLocationUrl(villa.location_url ?? "");
     setDescription(villa.description ?? "");
-    setPhotoUrl(villa.photo_url ?? null);
+    photo.setPhotoUrl(villa.photo_url ?? null);
     setDetails(detailsToForm(villa));
     // Only hydrate when opening a villa - re-syncing on every server refresh
     // would wipe a just-uploaded photo before Save.
@@ -133,9 +140,9 @@ export default function VillaDetailPage({
     return (
       <div className="space-y-3">
         <Link href="/villas" className="text-sm font-semibold text-primary">
-          ← Back to villas
+          ← {t("common.back")}
         </Link>
-        <p className="text-muted">Villa not found.</p>
+        <p className="text-muted">{t("villas.notFound")}</p>
       </div>
     );
   }
@@ -146,10 +153,11 @@ export default function VillaDetailPage({
     setSaved(false);
     try {
       if (!isValidLocationUrl(locationUrl)) {
-        setError("Add a valid location / maps link.");
+        setError(t("villas.locationRequired"));
         setSaving(false);
         return;
       }
+      const photoUrl = await photo.waitForPhoto();
       await data.updateVilla(villa.id, {
         status,
         cleaning_status: cleaning,
@@ -172,19 +180,35 @@ export default function VillaDetailPage({
     }
   };
 
+  const remove = async () => {
+    setDeleting(true);
+    setError(null);
+    try {
+      await data.deleteVilla(villa.id);
+      router.push("/villas");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not delete.");
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   return (
     <div className="space-y-4 animate-rise">
       <Link
         href="/villas"
         className="inline-flex items-center gap-1 text-sm font-semibold text-muted"
       >
-        <ArrowLeft className="size-4" /> Villas
+        <ArrowLeft className="size-4" /> {t("common.back")}
       </Link>
 
       <Card className="space-y-4 p-5">
-        {villa.photo_url || canEditCore ? (
+        {photo.displayUrl || villa.photo_url || canEditCore ? (
           <div className="space-y-2">
-            <VillaPhotoThumb src={photoUrl ?? villa.photo_url} alt={villa.name} />
+            <VillaPhotoThumb
+              src={photo.displayUrl ?? villa.photo_url}
+              alt={villa.name}
+            />
             {canEditCore ? (
               <div>
                 <Label>Property photo</Label>
@@ -193,22 +217,24 @@ export default function VillaDetailPage({
                   accept="image/*"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (!file) return;
-                    void data
-                      .uploadVillaPhoto(file)
-                      .then((url) => setPhotoUrl(url))
-                      .catch(() => setError("Could not upload photo."));
+                    e.target.value = "";
+                    photo.pickPhoto(file);
                   }}
                 />
                 <p className="mt-1 text-xs text-muted">
                   Upload from your gallery or take a photo. Employees see this
                   when accepting jobs at this property.
                 </p>
-                {photoUrl ? (
+                {photo.photoBusy ? (
+                  <p className="mt-1 text-xs font-semibold text-muted">
+                    {t("villas.photoUploading")}
+                  </p>
+                ) : null}
+                {photo.displayUrl ? (
                   <button
                     type="button"
                     className="mt-1 text-xs font-semibold text-danger"
-                    onClick={() => setPhotoUrl(null)}
+                    onClick={() => photo.removePhoto()}
                   >
                     Remove photo
                   </button>
@@ -466,17 +492,52 @@ export default function VillaDetailPage({
           />
         </div>
 
-        {error ? <p className="text-sm text-danger">{error}</p> : null}
+        {error || photo.photoError ? (
+          <p className="text-sm text-danger">{error ?? photo.photoError}</p>
+        ) : null}
         {saved ? (
           <p className="text-sm font-semibold text-secondary">{t("common.saved")}</p>
         ) : null}
 
-        <Button onClick={() => void save()} disabled={saving} className="w-full">
-          {saving ? `${t("common.save")}…` : t("common.save")}
+        <Button
+          onClick={() => void save()}
+          disabled={saving || deleting}
+          className="w-full"
+        >
+          {saving || photo.photoBusy
+            ? `${t("common.save")}…`
+            : t("common.save")}
         </Button>
+
+        {canDelete ? (
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full text-danger"
+            disabled={saving || deleting}
+            onClick={() => setConfirmDelete(true)}
+          >
+            {t("villas.delete")}
+          </Button>
+        ) : null}
       </Card>
 
       {canEditCore && !staff ? <HouseGuideEditor villaId={id} /> : null}
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title={t("villas.delete")}
+        description={t(
+          isPersonal ? "villas.deleteConfirmPersonal" : "villas.deleteConfirm",
+          { name: villa.name },
+        )}
+        confirmLabel={t("common.delete")}
+        busy={deleting}
+        onConfirm={() => void remove()}
+        onClose={() => {
+          if (!deleting) setConfirmDelete(false);
+        }}
+      />
     </div>
   );
 }

@@ -29,6 +29,7 @@ export default function JoinPage({
     inviter: Profile | null;
   } | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -52,6 +53,13 @@ export default function JoinPage({
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (!isDemoMode()) {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!cancelled && user?.email) setSessionEmail(user.email);
+      }
       if (isDemoMode()) {
         if (!cancelled) {
           setCtx(getInviteContext(token));
@@ -87,6 +95,26 @@ export default function JoinPage({
       cancelled = true;
     };
   }, [token]);
+
+  const acceptWithSession = async () => {
+    setError(null);
+    setSaving(true);
+    try {
+      const res = await fetch("/api/auth/accept-invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, joinWithSession: true }),
+      });
+      const payload = (await res.json()) as { error?: string };
+      if (!res.ok) throw new Error(payload.error ?? t("common.error"));
+      router.replace("/home");
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const accept = async () => {
     setError(null);
@@ -141,6 +169,11 @@ export default function JoinPage({
           mergeUrl: payload.mergeUrl,
           mergeEmailSent: Boolean(payload.mergeEmailSent),
         });
+        return;
+      }
+      if (payload.alreadyMember) {
+        router.replace("/login");
+        router.refresh();
         return;
       }
       const supabase = createClient();
@@ -228,9 +261,7 @@ export default function JoinPage({
         <div className="mb-6 text-center">
           <PulseMark className="mx-auto mb-3 size-12" />
           <h1 className="font-display text-2xl font-bold text-ink">
-            {isGuestInvite
-              ? t("guest.joinTitle")
-              : t("join.staffTitle")}
+            {isGuestInvite ? t("guest.joinTitle") : t("join.staffTitle")}
           </h1>
           <p className="mt-2 text-sm text-muted">
             {isGuestInvite ? t("guest.joinHint") : t("join.staffHint")}
@@ -246,10 +277,33 @@ export default function JoinPage({
               </>
             ) : null}
           </p>
-          {!isGuestInvite ? (
-            <p className="mt-2 text-xs text-muted">{t("join.accountNote")}</p>
-          ) : null}
+          <p className="mt-2 text-xs text-muted">{t("join.accountNote")}</p>
         </div>
+
+        {sessionEmail ? (
+          <Card className="mb-4 space-y-3 p-5">
+            <p className="text-sm text-ink">
+              {t("join.signedInHint", {
+                email: sessionEmail,
+                org: org?.name ?? "",
+              })}
+            </p>
+            {error ? (
+              <p className="text-sm font-semibold text-danger">{error}</p>
+            ) : null}
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={saving}
+              onClick={() => void acceptWithSession()}
+            >
+              {saving ? t("join.addingToAccount") : t("join.addToAccount")}
+            </Button>
+            <p className="text-center text-xs text-muted">
+              {t("join.orNewAccount")}
+            </p>
+          </Card>
+        ) : null}
 
         <Card className="space-y-4 p-5">
           <div className="rounded-2xl bg-[#F7F5F1] px-4 py-3 text-sm">
@@ -293,7 +347,7 @@ export default function JoinPage({
             />
           </div>
           <div>
-            <Label>Create a password</Label>
+            <Label>{t("join.passwordLabel")}</Label>
             <Input
               type="password"
               value={password}
@@ -302,7 +356,7 @@ export default function JoinPage({
             />
           </div>
           <div>
-            <Label>Confirm password</Label>
+            <Label>{t("join.passwordConfirm")}</Label>
             <Input
               type="password"
               value={confirm}

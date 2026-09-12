@@ -62,6 +62,7 @@ import {
   ownerManagerIds,
   buildVillaDateNotifications,
   villaOpsAudience,
+  isChatBadgeNotification,
   unreadNotifications,
 } from "@/lib/notifications";
 import {
@@ -279,7 +280,7 @@ function useDemoData(): AppData {
       notifications,
       profile.id,
       profile.org_id,
-    ).filter((n) => n.kind === "message").length;
+    ).filter(isChatBadgeNotification).length;
   }, [notifications, profile]);
 
   const villaAssignments = useMemo(() => {
@@ -299,7 +300,13 @@ function useDemoData(): AppData {
       return all.filter((s) => s.guest_profile_id === profile.id);
     }
     if (profile.role === "owner" || profile.role === "manager") {
-      return all.filter((s) => s.org_id === profile.org_id);
+      const memberOrgs = new Set(
+        (store.memberships ?? [])
+          .filter((m) => m.profile_id === profile.id)
+          .map((m) => m.org_id),
+      );
+      memberOrgs.add(profile.org_id);
+      return all.filter((s) => memberOrgs.has(s.org_id));
     }
     return [];
   }, [store.guestStays, profile]);
@@ -420,11 +427,12 @@ function useDemoData(): AppData {
     markAllNotificationsRead: async (kind) => {
       if (!profile) return;
       const ids = notifications
-        .filter(
-          (n) =>
-            !(n.read_by ?? []).includes(profile.id) &&
-            (!kind || n.kind === kind),
-        )
+        .filter((n) => {
+          if ((n.read_by ?? []).includes(profile.id)) return false;
+          if (!kind) return true;
+          if (kind === "message") return isChatBadgeNotification(n);
+          return n.kind === kind;
+        })
         .map((n) => n.id);
       if (ids.length) {
         rememberLocallyRead(profile.id, ids);
@@ -1042,7 +1050,7 @@ function useDemoData(): AppData {
       demoPushNotifications([
         makeNotification({
           org_id: stay.org_id,
-          kind: "guest_update",
+          kind: "message",
           title: "Support message",
           body: (text || "Receipt attached").slice(0, 120),
           href: "/messages",

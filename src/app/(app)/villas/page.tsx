@@ -11,6 +11,7 @@ import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { VillaFacts } from "@/components/villas/villa-facts";
 import { VillaDetailsFields } from "@/components/villas/villa-details-fields";
+import { useVillaPhotoUpload } from "@/components/villas/use-villa-photo-upload";
 import { useData } from "@/lib/data/use-app-data";
 import {
   formatShortDate,
@@ -41,10 +42,11 @@ export default function VillasPage() {
   const [area, setArea] = useState("");
   const [locationUrl, setLocationUrl] = useState("");
   const [description, setDescription] = useState("");
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [details, setDetails] = useState(EMPTY_VILLA_DETAILS_FORM);
   const [scope, setScope] = useState<"company" | "personal">("personal");
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const photo = useVillaPhotoUpload(data.uploadVillaPhoto);
 
   const canAdd = data.profile ? canCreateVillas(data.profile.role) : false;
   const isOwner = data.profile?.role === "owner";
@@ -59,6 +61,22 @@ export default function VillasPage() {
     () => data.villaList.filter((v) => v.bucket === "company"),
     [data.villaList],
   );
+  const companyGroups = useMemo(() => {
+    const groups: { orgId: string; label: string; villas: VillaListItem[] }[] =
+      [];
+    for (const villa of companyVillas) {
+      const existing = groups.find((g) => g.orgId === villa.org_id);
+      if (existing) existing.villas.push(villa);
+      else {
+        groups.push({
+          orgId: villa.org_id,
+          label: villa.orgLabel,
+          villas: [villa],
+        });
+      }
+    }
+    return groups;
+  }, [companyVillas]);
   const personalVillas = useMemo(
     () => data.villaList.filter((v) => v.bucket === "personal"),
     [data.villaList],
@@ -219,39 +237,48 @@ export default function VillasPage() {
               accept="image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
+                e.target.value = "";
                 if (!file) {
-                  setPhotoUrl(null);
+                  photo.removePhoto();
                   return;
                 }
-                void data
-                  .uploadVillaPhoto(file)
-                  .then((url) => setPhotoUrl(url))
-                  .catch(() => setError("Could not upload photo."));
+                photo.pickPhoto(file);
               }}
             />
             <p className="mt-1 text-xs text-muted">
               Upload from your gallery or take a photo. Staff see this when
               accepting a job so they can recognize the place.
             </p>
-            {photoUrl ? (
+            {photo.photoBusy ? (
+              <p className="mt-1 text-xs font-semibold text-muted">
+                {t("villas.photoUploading")}
+              </p>
+            ) : null}
+            {photo.displayUrl ? (
               <VillaPhotoThumb
-                src={photoUrl}
+                src={photo.displayUrl}
                 alt="New property preview"
                 className="mt-2"
               />
             ) : null}
           </div>
-          {error ? <p className="text-sm text-danger">{error}</p> : null}
+          {error || photo.photoError ? (
+            <p className="text-sm text-danger">{error ?? photo.photoError}</p>
+          ) : null}
           <div className="flex gap-2">
             <Button
               variant="ghost"
               className="flex-1"
-              onClick={() => setShowAdd(false)}
+              onClick={() => {
+                photo.resetPhoto();
+                setShowAdd(false);
+              }}
             >
               {t("common.cancel")}
             </Button>
             <Button
               className="flex-1"
+              disabled={saving}
               onClick={() => {
                 if (!name.trim()) {
                   setError("Name is required.");
@@ -261,35 +288,42 @@ export default function VillasPage() {
                   setError("Add a valid location / maps link.");
                   return;
                 }
-                void data
-                  .createVilla({
-                    name: name.trim(),
-                    area: area.trim() || undefined,
-                    location_url: normalizeLocationUrl(locationUrl),
-                    description: description.trim() || undefined,
-                    photo_url: photoUrl,
-                    ...formToDetails(details),
-                    scope:
-                      inCompany && isOwner
-                        ? scope
-                        : "personal",
-                  })
-                  .then(() => {
+                setSaving(true);
+                setError(null);
+                void (async () => {
+                  try {
+                    const photoUrl = await photo.waitForPhoto();
+                    await data.createVilla({
+                      name: name.trim(),
+                      area: area.trim() || undefined,
+                      location_url: normalizeLocationUrl(locationUrl),
+                      description: description.trim() || undefined,
+                      photo_url: photoUrl,
+                      ...formToDetails(details),
+                      scope:
+                        inCompany && isOwner
+                          ? scope
+                          : "personal",
+                    });
                     setName("");
                     setArea("");
                     setLocationUrl("");
                     setDescription("");
-                    setPhotoUrl(null);
+                    photo.resetPhoto();
                     setDetails(EMPTY_VILLA_DETAILS_FORM);
                     setShowAdd(false);
                     setError(null);
-                  })
-                  .catch((e: unknown) =>
-                    setError(e instanceof Error ? e.message : "Could not add."),
-                  );
+                  } catch (e: unknown) {
+                    setError(e instanceof Error ? e.message : "Could not add.");
+                  } finally {
+                    setSaving(false);
+                  }
+                })();
               }}
             >
-              {t("common.save")}
+              {saving || photo.photoBusy
+                ? `${t("common.save")}…`
+                : t("common.save")}
             </Button>
           </div>
         </Card>
@@ -313,17 +347,18 @@ export default function VillasPage() {
         />
       ) : (
         <>
-          {companyVillas.length > 0 ? (
+          {companyGroups.map((group) => (
             <VillaSection
-              title={companyVillas[0]?.orgLabel ?? data.orgName}
+              key={group.orgId}
+              title={group.label}
               subtitle={t("villas.company")}
               icon="company"
-              villas={companyVillas}
+              villas={group.villas}
               showAssignees={isOwner}
               assigneesFor={assigneesFor}
               t={t}
             />
-          ) : null}
+          ))}
 
           {personalVillas.length > 0 ? (
             <VillaSection

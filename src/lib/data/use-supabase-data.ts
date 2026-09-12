@@ -52,6 +52,7 @@ import {
   buildTaskCreateNotifications,
   buildVillaDateNotifications,
   insertNotifications,
+  isChatBadgeNotification,
   makeNotification,
   notificationVisibleTo,
   orgMemberIds,
@@ -78,7 +79,8 @@ import {
   rememberLocallyRead,
 } from "@/lib/notifications-read";
 import { capitalizeLabel } from "@/lib/format-label";
-import { normalizeVillaRow, pickVillaDetails } from "@/lib/villas/property-details";
+import { normalizeVillaRow, omitVillaDetails, pickVillaDetails, isMissingVillaDetailsColumn } from "@/lib/villas/property-details";
+import { isTransientPhotoUrl } from "@/lib/villas/prepare-photo";
 
 const scheduleSyncedOrgs = new Set<string>();
 
@@ -348,7 +350,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       supabase
         .from("tasks")
         .select("*")
-        .eq("org_id", orgId)
+        .in("org_id", orgIds)
         .order("created_at", { ascending: false }),
       supabase
         .from("bills")
@@ -366,7 +368,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       supabase
         .from("notifications")
         .select("*")
-        .in("org_id", isGuest ? orgIds : [orgId])
+        .in("org_id", orgIds)
         .order("created_at", { ascending: false }),
       supabase
         .from("service_orders")
@@ -382,7 +384,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         : supabase
             .from("stay_date_requests")
             .select("*")
-            .eq("org_id", orgId)
+            .in("org_id", orgIds)
             .order("created_at", { ascending: false }),
       isGuest
         ? supabase
@@ -393,7 +395,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         : supabase
             .from("guest_stays")
             .select("*")
-            .eq("org_id", orgId)
+            .in("org_id", orgIds)
             .order("created_at", { ascending: false }),
       supabase.from("house_guides").select("*").in("org_id", orgIds),
       isGuest
@@ -409,24 +411,24 @@ export function useSupabaseData(enabled: boolean): AppData {
             .select(
               "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
             )
-            .eq("org_id", orgId)
+            .in("org_id", orgIds)
             .order("created_at", { ascending: true }),
       supabase
         .from("guest_briefings")
         .select("*")
-        .in("org_id", isGuest ? orgIds : [orgId]),
+        .in("org_id", orgIds),
       supabase
         .from("guest_deposits")
         .select("*")
-        .in("org_id", isGuest ? orgIds : [orgId]),
+        .in("org_id", orgIds),
       supabase
         .from("guest_charges")
         .select("*")
-        .in("org_id", isGuest ? orgIds : [orgId]),
+        .in("org_id", orgIds),
       supabase
         .from("stay_photos")
         .select("*")
-        .in("org_id", isGuest ? orgIds : [orgId]),
+        .in("org_id", orgIds),
     ]);
 
     setOrganization((orgRes.data as Organization) ?? null);
@@ -579,7 +581,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         const { data: freshNotes } = await supabase
           .from("notifications")
           .select("*")
-          .eq("org_id", orgId)
+          .in("org_id", orgIds)
           .order("created_at", { ascending: false });
         setNotifications(
           ((freshNotes as AppNotification[]) ?? []).map((n) => ({
@@ -607,9 +609,19 @@ export function useSupabaseData(enabled: boolean): AppData {
   const refreshRef = useRef(refresh);
   refreshRef.current = refresh;
 
+  const realtimeOrgKey = [
+    profile?.org_id,
+    profile?.personal_org_id,
+    ...memberships.map((m) => m.org_id),
+  ]
+    .filter(Boolean)
+    .sort()
+    .join(",");
+
   useEffect(() => {
     if (!enabled || !profile?.org_id) return;
     const supabase = createClient();
+    const orgKeys = [...new Set(realtimeOrgKey.split(",").filter(Boolean))];
     const topic = `org-${profile.org_id}`;
 
     for (const existing of supabase.getChannels()) {
@@ -618,50 +630,37 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
     }
 
-    const channel = supabase
-      .channel(topic)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "messages",
-          filter: `org_id=eq.${profile.org_id}`,
-        },
-        () => {
-          void refreshRef.current();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "service_orders",
-          filter: `org_id=eq.${profile.org_id}`,
-        },
-        () => {
-          void refreshRef.current();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "notifications",
-          filter: `org_id=eq.${profile.org_id}`,
-        },
-        () => {
-          void refreshRef.current();
-        },
-      )
-      .subscribe();
+    const tables = [
+      "messages",
+      "service_orders",
+      "notifications",
+      "support_messages",
+      "guest_briefings",
+    ] as const;
+
+    let channel = supabase.channel(topic);
+    for (const orgKey of orgKeys) {
+      for (const table of tables) {
+        channel = channel.on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table,
+            filter: `org_id=eq.${orgKey}`,
+          },
+          () => {
+            void refreshRef.current();
+          },
+        );
+      }
+    }
+    channel.subscribe();
 
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [enabled, profile?.org_id]);
+  }, [enabled, profile?.org_id, realtimeOrgKey]);
 
   const companyEntitled = useMemo(
     () => isCompanyEntitled(organization),
@@ -693,17 +692,29 @@ export function useSupabaseData(enabled: boolean): AppData {
   const visible = villaList.map(
     ({ bucket: _b, orgLabel: _o, ...v }) => v as Villa,
   );
-  const allOrgVillas = villas.filter((v) =>
-    profile?.role === "guest"
-      ? memberships.some(
+  const allOrgVillas = villas.filter((v) => {
+    if (!profile) return false;
+    if (profile.role === "guest") {
+      return (
+        memberships.some(
           (m) => m.org_id === v.org_id && m.role === "guest",
         ) || v.org_id === profile.org_id
-      : v.org_id === profile?.org_id,
-  );
+      );
+    }
+    if (v.org_id === profile.org_id) return true;
+    if (profile.personal_org_id && v.org_id === profile.personal_org_id) {
+      return false;
+    }
+    return memberships.some((m) => m.org_id === v.org_id);
+  });
   const visibleVillaIds = new Set(visible.map((v) => v.id));
   const scopedTasks = tasks.filter((t) => {
-    if (t.org_id !== profile?.org_id) return false;
-    if (profile?.role === "owner") return true;
+    if (!profile) return false;
+    const inMemberOrg =
+      t.org_id === profile.org_id ||
+      memberships.some((m) => m.org_id === t.org_id);
+    if (!inMemberOrg) return false;
+    if (profile.role === "owner" || profile.role === "manager") return true;
     if (!t.villa_id) return true;
     return visibleVillaIds.has(t.villa_id);
   });
@@ -729,7 +740,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         visibleNotifications,
         profile.id,
         profile.org_id,
-      ).filter((n) => n.kind === "message").length
+      ).filter(isChatBadgeNotification).length
     : 0;
 
   const scopedGuestStays = (() => {
@@ -738,7 +749,11 @@ export function useSupabaseData(enabled: boolean): AppData {
       return guestStays.filter((s) => s.guest_profile_id === profile.id);
     }
     if (profile.role === "owner" || profile.role === "manager") {
-      return guestStays.filter((s) => s.org_id === profile.org_id);
+      return guestStays.filter(
+        (s) =>
+          s.org_id === profile.org_id ||
+          memberships.some((m) => m.org_id === s.org_id),
+      );
     }
     return [] as GuestStay[];
   })();
@@ -838,11 +853,12 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     markAllNotificationsRead: async (kind) => {
       if (!profile) return;
-      const unread = visibleNotifications.filter(
-        (n) =>
-          !(n.read_by ?? []).includes(profile.id) &&
-          (!kind || n.kind === kind),
-      );
+      const unread = visibleNotifications.filter((n) => {
+        if ((n.read_by ?? []).includes(profile.id)) return false;
+        if (!kind) return true;
+        if (kind === "message") return isChatBadgeNotification(n);
+        return n.kind === kind;
+      });
       if (!unread.length) return;
       markIdsRead(unread.map((n) => n.id));
 
@@ -851,10 +867,15 @@ export function useSupabaseData(enabled: boolean): AppData {
         "mark_my_notifications_read",
         { p_kind: kind ?? null },
       );
-      if (rpcError) {
-        // Fallback row updates if migration 011 is not applied yet
+      const leftover =
+        kind === "message"
+          ? unread.filter((n) => n.kind !== "message")
+          : [];
+      if (rpcError || leftover.length) {
+        // Fallback row updates if migration 011 is not applied yet,
+        // plus Support pings stored as guest_update.
         await Promise.all(
-          unread.map(async (n) => {
+          (rpcError ? unread : leftover).map(async (n) => {
             const read_by = Array.from(
               new Set([...(n.read_by ?? []), profile.id]),
             );
@@ -1155,10 +1176,18 @@ export function useSupabaseData(enabled: boolean): AppData {
       const villa = villas.find((v) => v.id === id);
       if (villa) requireOrgWrite(villa.org_id);
       const supabase = createClient();
-      const { error } = await supabase
-        .from("villas")
-        .update({ ...patch, updated_at: new Date().toISOString() })
-        .eq("id", id);
+      const payload = { ...patch, updated_at: new Date().toISOString() };
+      if ("photo_url" in payload && isTransientPhotoUrl(payload.photo_url)) {
+        payload.photo_url = null;
+      }
+      let { error } = await supabase.from("villas").update(payload).eq("id", id);
+      if (error && isMissingVillaDetailsColumn(error.message)) {
+        const retry = await supabase
+          .from("villas")
+          .update(omitVillaDetails(payload))
+          .eq("id", id);
+        error = retry.error;
+      }
       if (error) throw error;
       if (villa) {
         const alerts = buildVillaDateNotifications({
@@ -1206,11 +1235,11 @@ export function useSupabaseData(enabled: boolean): AppData {
 
       const supabase = createClient();
       let photo_url = input.photo_url ?? null;
-      if (photo_url?.startsWith("data:")) {
+      if (isTransientPhotoUrl(photo_url)) {
         photo_url = null;
       }
 
-      const { error } = await supabase.from("villas").insert({
+      const row = {
         org_id: orgId,
         name: input.name,
         area: input.area ?? null,
@@ -1220,7 +1249,12 @@ export function useSupabaseData(enabled: boolean): AppData {
         status: input.status ?? "available",
         created_by: profile.id,
         ...pickVillaDetails(input),
-      });
+      };
+      let { error } = await supabase.from("villas").insert(row);
+      if (error && isMissingVillaDetailsColumn(error.message)) {
+        const retry = await supabase.from("villas").insert(omitVillaDetails(row));
+        error = retry.error;
+      }
       if (error) throw error;
       await refresh();
     },
@@ -1526,14 +1560,18 @@ export function useSupabaseData(enabled: boolean): AppData {
       return data.publicUrl;
     },
     uploadVillaPhoto: async (file) => {
-      if (!profile) return null;
+      if (!profile) throw new Error("Not signed in.");
       requireCurrentOrgWrite();
       const supabase = createClient();
       const safeName = file.name.replace(/[^\w.\-]+/g, "_");
       const path = `${profile.org_id}/${profile.id}/${Date.now()}-${safeName}`;
-      const { error } = await supabase.storage.from("villas").upload(path, file);
+      const { error } = await supabase.storage.from("villas").upload(path, file, {
+        contentType: file.type || "image/jpeg",
+        upsert: false,
+      });
       if (error) throw error;
       const { data } = supabase.storage.from("villas").getPublicUrl(path);
+      if (!data.publicUrl) throw new Error("Could not upload photo.");
       return data.publicUrl;
     },
     createInvite: async (input) => {
@@ -1892,9 +1930,9 @@ export function useSupabaseData(enabled: boolean): AppData {
         [
           makeNotification({
             org_id: stay.org_id,
-            kind: "guest_update",
+            kind: "message",
             title: "Support message",
-            body: text.slice(0, 120),
+            body: (text || "Photo attached").slice(0, 120),
             href: "/messages",
             entity_id: stay.id,
             audience_profile_ids: recipients,
