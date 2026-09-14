@@ -219,12 +219,12 @@ export function AppMenuButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex size-9 items-center justify-center text-ink/85 transition hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-sand"
+        className="flex size-8 items-center justify-center text-ink/85 transition hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
         aria-label={t("nav.menu")}
         aria-expanded={open}
         aria-haspopup="dialog"
       >
-        <Menu className="size-[1.15rem]" strokeWidth={1.85} />
+        <Menu className="size-4" strokeWidth={1.9} />
       </button>
 
       {open ? (

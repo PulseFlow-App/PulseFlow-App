@@ -145,19 +145,19 @@ export function BottomNav() {
   const pathname = usePathname();
   const { t } = useI18n();
   const tabs = useAppTabs();
+  // 5 tabs + long localized labels overflow phones — icons only when crowded.
+  const iconOnly = tabs.length >= 5;
 
   if (!tabs.length) {
     return (
       <nav
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden"
         aria-hidden
       >
-        <ul className="flex w-full max-w-md items-center justify-between gap-1 rounded-full bg-nav px-2 py-1.5 shadow-[var(--shadow-nav)]">
+        <ul className="mx-auto flex h-12 w-full max-w-lg items-center justify-around rounded-2xl bg-nav px-1 shadow-[var(--shadow-nav)]">
           {[0, 1, 2, 3].map((i) => (
             <li key={i} className="flex-1">
-              <div className="mx-auto flex h-10 w-10 flex-col items-center justify-center gap-1">
-                <div className="size-4 rounded-full bg-white/15" />
-              </div>
+              <div className="mx-auto size-4 rounded-full bg-white/15" />
             </li>
           ))}
         </ul>
@@ -166,8 +166,8 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
-      <ul className="pointer-events-auto flex w-full max-w-md items-center justify-between gap-0.5 rounded-full bg-nav px-1.5 py-1.5 shadow-[var(--shadow-nav)]">
+    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden">
+      <ul className="pointer-events-auto mx-auto flex h-12 w-full max-w-lg items-stretch justify-between gap-0 overflow-hidden rounded-2xl bg-nav px-0.5 shadow-[var(--shadow-nav)]">
         {tabs.map(({ href, labelKey, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           const label = t(labelKey);
@@ -179,20 +179,20 @@ export function BottomNav() {
                 aria-current={active ? "page" : undefined}
                 title={label}
                 className={cn(
-                  "mx-auto flex h-11 w-full max-w-[3.75rem] flex-col items-center justify-center gap-0.5 rounded-full px-1 transition",
-                  active
-                    ? "bg-white text-ink"
-                    : "text-white/70 hover:text-white",
+                  "flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 transition",
+                  active ? "bg-white/95 text-ink" : "text-white/75",
                 )}
               >
                 <Icon
-                  className="size-[1.15rem] shrink-0"
-                  strokeWidth={active ? 2.35 : 1.9}
+                  className="size-4 shrink-0"
+                  strokeWidth={active ? 2.4 : 1.9}
                   aria-hidden
                 />
-                <span className="max-w-full truncate text-[9px] font-bold leading-none tracking-wide">
-                  {label}
-                </span>
+                {!iconOnly ? (
+                  <span className="max-w-full truncate text-[8px] font-bold leading-none">
+                    {label}
+                  </span>
+                ) : null}
               </Link>
             </li>
           );

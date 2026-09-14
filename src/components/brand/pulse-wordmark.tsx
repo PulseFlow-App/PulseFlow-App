@@ -16,7 +16,7 @@ export function PulseWordmark({
   return (
     <span
       className={cn(
-        "inline-flex max-w-full items-center gap-2.5 overflow-visible",
+        "inline-flex max-w-full items-center gap-2 overflow-visible sm:gap-2.5",
         className,
       )}
     >

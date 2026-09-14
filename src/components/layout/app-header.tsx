@@ -10,7 +10,7 @@ import { canUseTeamChat } from "@/lib/roles";
 import { AppMenuButton } from "./app-menu";
 
 const headerIconBtn =
-  "relative flex size-9 items-center justify-center text-ink/85 transition hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-sand";
+  "relative flex size-8 shrink-0 items-center justify-center text-ink/85 transition hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
 
 export function AppHeader({
   unreadMessages = 0,
@@ -28,23 +28,27 @@ export function AppHeader({
     canUseTeamChat(data.orgKind, data.profile?.role);
 
   return (
-    <header className="flex w-full max-w-full items-center justify-between gap-3 overflow-visible pb-3 pt-[max(0.65rem,env(safe-area-inset-top))] md:justify-end md:pb-4 md:pt-4">
+    <header className="sticky top-0 z-40 -mx-[var(--shell-pad)] mb-2 flex w-[calc(100%+2*var(--shell-pad))] max-w-none items-center justify-between gap-2 border-b border-[var(--color-border)] bg-sand/95 px-[var(--shell-pad)] py-2 backdrop-blur-md md:static md:mx-0 md:mb-0 md:w-full md:justify-end md:border-0 md:bg-transparent md:px-0 md:py-4 md:backdrop-blur-none">
       <Link
         href="/home"
-        className="flex min-w-0 flex-1 items-center overflow-visible md:hidden"
+        className="flex min-w-0 flex-1 items-center md:hidden"
         aria-label={brandName}
       >
-        <PulseWordmark name={brandName} />
+        <PulseWordmark
+          name={brandName}
+          markClassName="size-8 rounded-[0.65rem]"
+          textClassName="text-[1.05rem]"
+        />
       </Link>
-      <div className="flex shrink-0 items-center gap-0.5">
+      <div className="flex shrink-0 items-center">
         <Link
           href="/notifications"
           className={headerIconBtn}
           aria-label={t("nav.notifications")}
         >
-          <Bell className="size-[1.15rem]" strokeWidth={1.85} />
+          <Bell className="size-4" strokeWidth={1.9} />
           {unreadNotifications > 0 ? (
-            <span className="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-white">
+            <span className="absolute right-0.5 top-0.5 flex h-3 min-w-3 items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-bold text-white">
               {unreadNotifications > 9 ? "9+" : unreadNotifications}
             </span>
           ) : null}
@@ -55,9 +59,9 @@ export function AppHeader({
             className={headerIconBtn}
             aria-label={t("nav.messages")}
           >
-            <MessageCircle className="size-[1.15rem]" strokeWidth={1.85} />
+            <MessageCircle className="size-4" strokeWidth={1.9} />
             {unreadMessages > 0 ? (
-              <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
+              <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-primary" />
             ) : null}
           </Link>
         ) : null}
@@ -66,7 +70,7 @@ export function AppHeader({
           className={`${headerIconBtn} md:hidden`}
           aria-label={t("nav.settings")}
         >
-          <Settings className="size-[1.15rem]" strokeWidth={1.85} />
+          <Settings className="size-4" strokeWidth={1.9} />
         </Link>
         <AppMenuButton />
       </div>

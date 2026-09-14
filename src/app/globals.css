@@ -58,9 +58,9 @@
   --shadow-nav: 0 12px 32px rgba(28, 28, 30, 0.28);
 
   /* Layout breakpoints content */
-  --shell-pad: 1rem; /* 16 — phone */
+  --shell-pad: 0.75rem; /* 12 — phone */
   --shell-max: 100%;
-  --content-gap: 1rem; /* 16 */
+  --content-gap: 0.75rem; /* 12 */
 }
 
 @media (min-width: 768px) {

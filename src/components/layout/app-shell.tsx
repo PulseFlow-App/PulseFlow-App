@@ -54,32 +54,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <SideNav />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <div
-          className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pb-28 md:pb-8"
+          className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pb-20 md:pb-8"
           style={{ paddingInline: "var(--shell-pad)" }}
         >
           <div
             className="mx-auto w-full"
             style={{ maxWidth: "var(--shell-max)" }}
           >
+            <AppHeader
+              unreadMessages={data.unreadMessageCount}
+              unreadNotifications={data.unreadNotificationCount}
+            />
             <OfflineBanner show={offline} />
             {demo ? (
-              <div className="mb-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-secondary-soft px-4 py-3 text-sm text-secondary-dark">
+              <div className="mb-2 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-secondary-soft px-3 py-2 text-xs text-secondary-dark md:mb-4 md:px-4 md:py-3 md:text-sm">
                 <p className="font-semibold">{t("demo.readOnlyBanner")}</p>
                 <a
                   href="https://pulseflow.site"
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-1 inline-flex text-xs font-bold underline"
+                  className="mt-0.5 inline-flex text-[11px] font-bold underline md:mt-1 md:text-xs"
                 >
                   Sign up
                 </a>
               </div>
             ) : null}
             <TrialBanner />
-            <AppHeader
-              unreadMessages={data.unreadMessageCount}
-              unreadNotifications={data.unreadNotificationCount}
-            />
             <main className="w-full max-w-full pb-4">{children}</main>
           </div>
         </div>

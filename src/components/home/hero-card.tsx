@@ -21,9 +21,9 @@ export function HeroCard({
       : t("home.attention", { count: attentionCount }));
 
   return (
-    <section className="relative overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-primary to-primary-dark px-5 py-6 text-white lift-shadow md:px-6 md:py-7">
-      <div className="absolute -right-8 -top-10 size-36 rounded-full bg-white/10" />
-      <div className="absolute bottom-4 right-6 h-8 w-24 opacity-50">
+    <section className="relative overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-primary to-primary-dark px-4 py-4 text-white lift-shadow md:px-6 md:py-7">
+      <div className="absolute -right-8 -top-10 hidden size-36 rounded-full bg-white/10 md:block" />
+      <div className="absolute bottom-3 right-4 hidden h-7 w-20 opacity-40 md:block">
         <svg viewBox="0 0 120 32" className="h-full w-full" fill="none">
           <path
             d="M0 18h20l6-10 10 22 7-12h77"
@@ -34,17 +34,21 @@ export function HeroCard({
           />
         </svg>
       </div>
-      <p className="type-meta !text-white/80">{t("home.ready")}</p>
-      <h1 className="mt-2 font-display text-[clamp(1.5rem,1.2rem+1.2vw,1.875rem)] font-extrabold leading-tight tracking-tight">
+      <p className="text-[11px] font-semibold tracking-wide text-white/80 md:text-xs">
+        {t("home.ready")}
+      </p>
+      <h1 className="mt-1 font-display text-[1.35rem] font-extrabold leading-tight tracking-tight md:mt-2 md:text-[clamp(1.5rem,1.2rem+1.2vw,1.875rem)]">
         {t("home.hello", { name: greetingName(name) })}
       </h1>
-      <p className="mt-2 max-w-[36rem] text-[0.9375rem] text-white/90">{subtitle}</p>
-      <div className="mt-5">
-        <div className="mb-2 flex items-center justify-between text-xs font-semibold text-white/90">
+      <p className="mt-1 max-w-[36rem] text-sm text-white/90 md:mt-2 md:text-[0.9375rem]">
+        {subtitle}
+      </p>
+      <div className="mt-3 md:mt-5">
+        <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold text-white/90 md:mb-2 md:text-xs">
           <span>{t("home.opsReadiness")}</span>
           <span>{progress}%</span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-white/25">
+        <div className="h-1.5 overflow-hidden rounded-full bg-white/25 md:h-2">
           <div
             className="h-full rounded-full bg-white transition-all duration-700"
             style={{ width: `${progress}%` }}
