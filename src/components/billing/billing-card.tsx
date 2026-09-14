@@ -80,7 +80,7 @@ export function BillingSettingsCard({
         </p>
       )}
 
-      <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3 text-sm">
+      <div className="rounded-[var(--radius-control)] bg-sand px-3 py-3 text-sm">
         <div className="flex justify-between gap-3 py-1">
           <span className="text-muted">{t("billing.status")}</span>
           <span className="font-semibold capitalize text-ink">{status}</span>
@@ -90,10 +90,12 @@ export function BillingSettingsCard({
             <span className="text-muted">{t("billing.trial")}</span>
             <span className="font-semibold text-ink">
               {days > 0
-                ? t("billing.daysLeftOf", {
-                    count: days,
-                    total: COMPANY_TRIAL_DAYS,
-                  })
+                ? days > COMPANY_TRIAL_DAYS
+                  ? t("billing.daysLeft", { count: days })
+                  : t("billing.daysLeftOf", {
+                      count: days,
+                      total: COMPANY_TRIAL_DAYS,
+                    })
                 : t("billing.ended")}
             </span>
           </div>

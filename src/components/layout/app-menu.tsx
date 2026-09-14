@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   BookOpen,
+  Building2,
   ClipboardList,
   FileText,
   Globe,
@@ -18,6 +19,7 @@ import {
   X,
   Search,
   CalendarClock,
+  LogOut,
 } from "lucide-react";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
@@ -32,6 +34,7 @@ import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
 import { brand } from "@/lib/design-tokens";
 import { cn } from "@/lib/utils";
+import { labelRole } from "@/lib/i18n/labels";
 
 type MenuLink = {
   href: string;
@@ -43,18 +46,15 @@ type MenuLink = {
 type MenuSection = {
   id: string;
   label?: string;
-  quiet?: boolean;
   links: MenuLink[];
 };
-
-const ROW =
-  "flex w-full items-center gap-3 px-3 py-[14px] font-semibold text-ink transition hover:bg-white/70";
 
 export function AppMenuButton() {
   const data = useData();
   const { t } = useI18n();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const titleId = useId();
   const profile = data.profile;
 
   useEffect(() => {
@@ -62,8 +62,13 @@ export function AppMenuButton() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
   }, [open]);
 
   if (!profile) return null;
@@ -81,6 +86,7 @@ export function AppMenuButton() {
       organization: data.organization,
     });
   const showInvites = !isGuest && canInviteAnyone(profile.role);
+  const initial = (profile.full_name.trim().charAt(0) || "?").toUpperCase();
 
   const primary: MenuLink[] = [];
   if (showReputation) {
@@ -125,7 +131,7 @@ export function AppMenuButton() {
     manage.push({
       href: "/company",
       label: t("nav.company"),
-      icon: Users,
+      icon: Building2,
     });
   }
   if (showInvites) {
@@ -192,7 +198,6 @@ export function AppMenuButton() {
     {
       id: "account",
       label: t("nav.menuAccount"),
-      quiet: true,
       links: account,
     },
   ].filter((section) => section.links.length > 0);
@@ -214,59 +219,80 @@ export function AppMenuButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
+        className="flex size-9 items-center justify-center text-ink/85 transition hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-sand"
         aria-label={t("nav.menu")}
+        aria-expanded={open}
+        aria-haspopup="dialog"
       >
-        <Menu className="size-4" />
+        <Menu className="size-[1.15rem]" strokeWidth={1.85} />
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-[80]">
+        <div className="fixed inset-0 z-[80] md:bg-ink/25">
           <button
             type="button"
-            className="absolute inset-0 bg-ink/40"
+            className="absolute inset-0 bg-ink/40 md:bg-transparent"
             aria-label={t("common.close")}
             onClick={() => setOpen(false)}
           />
           <div
             className={cn(
-              "absolute right-0 top-0 flex h-full w-[min(20rem,88vw)] flex-col bg-sand shadow-xl",
-              "animate-rise pt-[max(0.75rem,env(safe-area-inset-top))]",
+              "pf-sheet absolute inset-y-0 right-0 flex w-full max-w-[22rem] flex-col",
+              "border-l border-[var(--color-border)] bg-card shadow-[var(--shadow-lift)]",
+              "pt-[max(0.75rem,env(safe-area-inset-top))]",
+              "pb-[max(1rem,env(safe-area-inset-bottom))]",
+              "overscroll-contain animate-rise",
             )}
             role="dialog"
             aria-modal="true"
-            aria-label={t("nav.menu")}
+            aria-labelledby={titleId}
           >
-            <div className="flex items-center justify-between px-4 pb-3">
-              <p className="font-display text-lg font-bold text-ink">
+            <div className="flex items-center justify-between gap-3 px-4 pb-3">
+              <p id={titleId} className="type-title text-[1.25rem]">
                 {t("nav.menu")}
               </p>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="flex size-9 items-center justify-center rounded-full bg-white text-ink soft-shadow"
+                className="flex size-9 shrink-0 items-center justify-center text-ink/80 transition hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                 aria-label={t("common.close")}
               >
-                <X className="size-4" />
+                <X className="size-[1.15rem]" strokeWidth={1.85} />
               </button>
             </div>
-            <nav className="flex-1 overflow-y-auto pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              {sections.map((section, index) => (
-                <div
-                  key={section.id}
-                  className={index > 0 ? "border-t border-[#EDE8E0]" : undefined}
-                >
+
+            <div className="mx-4 mb-3 flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-sand px-3 py-3">
+              <div
+                className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-extrabold text-white"
+                aria-hidden
+              >
+                {initial}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-extrabold text-ink">
+                  {profile.full_name}
+                </p>
+                <p className="type-meta truncate">
+                  {isCompany
+                    ? `${labelRole(t, profile.role)} · ${data.orgName}`
+                    : data.orgName}
+                </p>
+              </div>
+            </div>
+
+            <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3">
+              {sections.map((section) => (
+                <div key={section.id} className="mb-3">
                   {section.label ? (
-                    <p className="font-display px-3 pb-0.5 pt-3 text-[11px] font-bold uppercase tracking-wide text-muted">
+                    <p className="type-meta mb-1.5 px-2 pt-1 uppercase tracking-[0.06em]">
                       {section.label}
                     </p>
                   ) : null}
-                  <ul>
+                  <ul className="space-y-1">
                     {section.links.map((link) => (
                       <li key={link.href + link.label}>
                         <MenuRow
                           link={link}
-                          quiet={section.quiet}
                           onNavigate={() => setOpen(false)}
                         />
                       </li>
@@ -274,16 +300,18 @@ export function AppMenuButton() {
                   </ul>
                 </div>
               ))}
-              <div className="border-t border-[#EDE8E0]">
-                <button
-                  type="button"
-                  onClick={() => void signOut()}
-                  className="flex w-full items-center px-3 py-[14px] text-start text-[15px] font-semibold text-[#c0392b]"
-                >
-                  {t("settings.signOut")}
-                </button>
-              </div>
             </nav>
+
+            <div className="mt-auto border-t border-[var(--color-border)] px-3 pt-3">
+              <button
+                type="button"
+                onClick={() => void signOut()}
+                className="flex min-h-11 w-full items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-sm font-bold text-danger transition hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/30"
+              >
+                <LogOut className="size-4 shrink-0" strokeWidth={2.2} />
+                {t("settings.signOut")}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
@@ -293,22 +321,14 @@ export function AppMenuButton() {
 
 function MenuRow({
   link,
-  quiet,
   onNavigate,
 }: {
   link: MenuLink;
-  quiet?: boolean;
   onNavigate: () => void;
 }) {
   const Icon = link.icon;
-  const className = cn(
-    ROW,
-    quiet ? "text-[14px]" : "text-[15px]",
-  );
-  const iconClass = cn(
-    "shrink-0 text-muted",
-    quiet ? "size-3.5" : "size-4",
-  );
+  const className =
+    "flex min-h-11 w-full items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-[0.9375rem] font-semibold text-ink transition hover:bg-primary-soft hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
 
   if (link.external) {
     return (
@@ -319,16 +339,16 @@ function MenuRow({
         onClick={onNavigate}
         className={className}
       >
-        <Icon className={iconClass} />
-        {link.label}
+        <Icon className="size-5 shrink-0 text-ink/70" strokeWidth={1.9} />
+        <span className="truncate">{link.label}</span>
       </a>
     );
   }
 
   return (
     <Link href={link.href} onClick={onNavigate} className={className}>
-      <Icon className={iconClass} />
-      {link.label}
+      <Icon className="size-5 shrink-0 text-ink/70" strokeWidth={1.9} />
+      <span className="truncate">{link.label}</span>
     </Link>
   );
 }

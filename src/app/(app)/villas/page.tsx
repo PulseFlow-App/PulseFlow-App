@@ -109,10 +109,10 @@ export default function VillasPage() {
     <div className="relative space-y-4 animate-rise">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">
+          <h1 className="type-title">
             {t("villas.title")}
           </h1>
-          <p className="text-sm text-muted">
+          <p className="type-meta mt-1">
             {isPersonalWorkspace
               ? t("villas.subtitle")
               : staff

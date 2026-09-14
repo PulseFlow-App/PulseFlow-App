@@ -274,10 +274,10 @@ export default function GuestsPage() {
   return (
     <div className="space-y-4 animate-rise">
       <div>
-        <h1 className="font-display text-2xl font-bold text-ink">
+        <h1 className="type-title">
           {t("guests.title")}
         </h1>
-        <p className="text-sm text-muted">{t("guests.subtitle")}</p>
+        <p className="type-meta mt-1">{t("guests.subtitle")}</p>
       </div>
 
       {pendingDates > 0 ? (

@@ -36,6 +36,7 @@
 
 ## Phase 4 - Hardening
 
+- [ ] Apply migration `036_mvp_security_hardening.sql` (guest RLS + entitlement expiry)
 - [ ] `NEXT_PUBLIC_DEMO_MODE=false` on production; demo credentials hidden
 - [ ] Error monitoring (e.g. Sentry) + webhook logging
 - [ ] Supabase PITR / backups enabled

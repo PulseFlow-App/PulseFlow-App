@@ -31,9 +31,12 @@ export function isCompanyEntitled(
 ): boolean {
   if (!org) return false;
   if (org.kind === "personal") return true;
+  // Paid active always. "trialing" alone is not enough — require an unexpired trial.
+  if (org.subscription_status === "active") return true;
   if (
-    org.subscription_status === "trialing" ||
-    org.subscription_status === "active"
+    org.subscription_status === "trialing" &&
+    org.trial_ends_at &&
+    new Date(org.trial_ends_at) > now
   ) {
     return true;
   }

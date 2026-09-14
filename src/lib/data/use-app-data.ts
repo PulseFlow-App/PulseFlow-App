@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { isDemoMode } from "@/lib/supabase/client";
+import { useIsDemoMode } from "@/lib/demo/use-is-demo-mode";
 import { assertDemoWritable } from "@/lib/demo/guard";
 import { useSupabaseData } from "@/lib/data/use-supabase-data";
 import {
@@ -1732,7 +1732,7 @@ function useDemoData(): AppData {
 }
 
 export function useData(): AppData {
-  const demo = isDemoMode();
+  const demo = useIsDemoMode();
   const demoData = useDemoData();
   const supabaseData = useSupabaseData(!demo);
   return demo ? demoData : supabaseData;

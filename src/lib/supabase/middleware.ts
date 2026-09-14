@@ -6,6 +6,7 @@ const PUBLIC_PREFIXES = [
   "/login",
   "/register",
   "/join",
+  "/merge",
   "/auth/callback",
   "/u",
   "/terms",

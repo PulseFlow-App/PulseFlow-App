@@ -3,12 +3,14 @@ import { cn } from "@/lib/utils";
 export function Card({
   className,
   children,
+  elevated = false,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: React.HTMLAttributes<HTMLDivElement> & { elevated?: boolean }) {
   return (
     <div
       className={cn(
-        "rounded-[1.5rem] bg-card text-ink soft-shadow",
+        "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-card text-ink",
+        elevated ? "lift-shadow" : "soft-shadow",
         className,
       )}
       {...props}

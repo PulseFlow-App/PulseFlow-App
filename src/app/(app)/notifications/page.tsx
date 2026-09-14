@@ -24,6 +24,7 @@ import { cn, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
+import { Screen, ScreenHeader } from "@/components/ui/page";
 import { notificationsSubtitleKey } from "@/lib/settings/audience-copy";
 
 function kindIcon(kind: NotificationKind) {
@@ -71,27 +72,24 @@ export default function NotificationsPage() {
   if (!data.ready || !data.profile) return <LoadingState />;
 
   return (
-    <div className="space-y-4 animate-rise font-sans">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-ink">
-            {t("notifications.title")}
-          </h1>
-          <p className="text-sm text-muted">
-            {t(notificationsSubtitleKey(data.profile.role))}
-          </p>
-        </div>
-        {data.unreadNotificationCount > 0 ? (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => void data.markAllNotificationsRead()}
-          >
-            <CheckCheck className="size-4" />
-            {t("common.markAll")}
-          </Button>
-        ) : null}
-      </div>
+    <Screen>
+      <ScreenHeader
+        title={t("notifications.title")}
+        description={t(notificationsSubtitleKey(data.profile.role))}
+        action={
+          data.unreadNotificationCount > 0 ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="min-h-10"
+              onClick={() => void data.markAllNotificationsRead()}
+            >
+              <CheckCheck className="size-4" />
+              {t("common.markAll")}
+            </Button>
+          ) : null
+        }
+      />
 
       {data.notifications.length === 0 ? (
         <EmptyState
@@ -132,11 +130,11 @@ export default function NotificationsPage() {
                   >
                     <div
                       className={cn(
-                        "flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#F7F5F1]",
+                        "flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-sand",
                         unread && "bg-primary-soft",
                       )}
                     >
-                      <Icon className="size-5 text-primary" />
+                      <Icon className="size-5 text-primary" strokeWidth={2.1} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
@@ -150,7 +148,7 @@ export default function NotificationsPage() {
                       <p className="mt-0.5 text-sm text-muted">
                         <LocalizedText text={n.body} />
                       </p>
-                      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+                      <p className="type-meta mt-1 uppercase tracking-[0.04em]">
                         {kindLabel}
                         {" · "}
                         {formatShortDate(n.created_at.slice(0, 10))}
@@ -166,6 +164,6 @@ export default function NotificationsPage() {
           })}
         </ul>
       )}
-    </div>
+    </Screen>
   );
 }

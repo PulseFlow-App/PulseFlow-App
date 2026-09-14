@@ -14,6 +14,7 @@ import type { VillaStatus } from "@/lib/design-tokens";
 import { isGuestApp, isStaffApp } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 import { GuestHome } from "@/components/home/guest-home";
+import { Screen, Grid12, Col } from "@/components/ui/page";
 
 export default function HomePage() {
   const data = useData();
@@ -49,7 +50,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="space-y-4 animate-rise">
+    <Screen>
       <HeroCard
         name={data.profile.full_name}
         attentionCount={attentionCount}
@@ -59,19 +60,25 @@ export default function HomePage() {
             : t("home.attention", { count: attentionCount })
         }
       />
-      <div className="animate-rise-delay space-y-4">
-        <StatGrid counts={counts} />
-        <UrgentTasks
-          tasks={urgent}
-          onClose={async (id) => data.setTaskStatus(id, "done")}
-        />
-        <DateStrip
-          villas={data.villas}
-          selected={selectedDay}
-          onSelect={setSelectedDay}
-        />
-        <WeeklyChart tasks={data.tasks} />
+      <div className="animate-rise-delay">
+        <Grid12>
+          <Col span={8} className="space-y-4 md:space-y-6">
+            <StatGrid counts={counts} />
+            <UrgentTasks
+              tasks={urgent}
+              onClose={async (id) => data.setTaskStatus(id, "done")}
+            />
+          </Col>
+          <Col span={4} className="space-y-4 md:space-y-6">
+            <DateStrip
+              villas={data.villas}
+              selected={selectedDay}
+              onSelect={setSelectedDay}
+            />
+            <WeeklyChart tasks={data.tasks} />
+          </Col>
+        </Grid12>
       </div>
-    </div>
+    </Screen>
   );
 }

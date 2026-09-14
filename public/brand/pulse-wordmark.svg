@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320">
+  <defs>
+    <linearGradient id="bgOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F26A36"/>
+      <stop offset="100%" stop-color="#D94E1B"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(32, 32) scale(0.5)">
+    <rect width="512" height="512" rx="112" fill="url(#bgOrange)"/>
+    <path d="M 160 260 V 370 H 352 V 260" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 100 260 H 160 L 256 140 L 300 290 L 320 220 L 352 260 H 412" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="236" y="300" width="40" height="70" rx="8" fill="#FFFFFF"/>
+  </g>
+  <text x="320" y="195"
+        font-family="Nunito, Arial Black, Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="110" font-weight="800" fill="#1F1815"
+        letter-spacing="-2">Pulse Flow</text>
+</svg>

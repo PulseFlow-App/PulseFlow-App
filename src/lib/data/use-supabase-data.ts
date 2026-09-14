@@ -346,35 +346,49 @@ export function useSupabaseData(enabled: boolean): AppData {
       supabase.from("profiles").select("*").eq("org_id", orgId),
       supabase.from("profiles").select("*"),
       supabase.from("villas").select("*").in("org_id", orgIds).order("name"),
-      supabase.from("contacts").select("*").eq("org_id", orgId).order("role"),
-      supabase
-        .from("tasks")
-        .select("*")
-        .in("org_id", orgIds)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("bills")
-        .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("messages")
-        .select("*, sender:profiles!messages_sender_id_fkey(id, full_name, role)")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: true }),
-      supabase.from("invites").select("*").eq("org_id", orgId).is("used_at", null),
+      isGuest
+        ? Promise.resolve({ data: [] })
+        : supabase.from("contacts").select("*").eq("org_id", orgId).order("role"),
+      isGuest
+        ? Promise.resolve({ data: [] })
+        : supabase
+            .from("tasks")
+            .select("*")
+            .in("org_id", orgIds)
+            .order("created_at", { ascending: false }),
+      isGuest
+        ? Promise.resolve({ data: [] })
+        : supabase
+            .from("bills")
+            .select("*")
+            .eq("org_id", orgId)
+            .order("created_at", { ascending: false }),
+      isGuest
+        ? Promise.resolve({ data: [] })
+        : supabase
+            .from("messages")
+            .select("*, sender:profiles!messages_sender_id_fkey(id, full_name, role)")
+            .eq("org_id", orgId)
+            .order("created_at", { ascending: true }),
+      isGuest
+        ? Promise.resolve({ data: [] })
+        : supabase.from("invites").select("*").eq("org_id", orgId).is("used_at", null),
       supabase.from("villa_assignments").select("*").in("org_id", orgIds),
-      supabase.from("endorsements").select("*").eq("org_id", orgId),
+      isGuest
+        ? Promise.resolve({ data: [] })
+        : supabase.from("endorsements").select("*").eq("org_id", orgId),
       supabase
         .from("notifications")
         .select("*")
         .in("org_id", orgIds)
         .order("created_at", { ascending: false }),
-      supabase
-        .from("service_orders")
-        .select("*")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false }),
+      isGuest
+        ? Promise.resolve({ data: [] })
+        : supabase
+            .from("service_orders")
+            .select("*")
+            .eq("org_id", orgId)
+            .order("created_at", { ascending: false }),
       isGuest
         ? supabase
             .from("stay_date_requests")

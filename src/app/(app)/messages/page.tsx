@@ -151,10 +151,10 @@ export default function MessagesPage() {
       <HostSupportInbox />
       <div className="flex h-[calc(100dvh-9.5rem)] flex-col">
       <div className="mb-3">
-        <h1 className="font-display text-2xl font-bold text-ink">
+        <h1 className="type-title">
           {t("messages.title")}
         </h1>
-        <p className="text-sm text-muted">{t("messages.subtitle")}</p>
+        <p className="type-meta mt-1">{t("messages.subtitle")}</p>
       </div>
 
       <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">

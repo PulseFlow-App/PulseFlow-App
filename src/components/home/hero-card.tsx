@@ -21,7 +21,7 @@ export function HeroCard({
       : t("home.attention", { count: attentionCount }));
 
   return (
-    <section className="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-primary to-primary-dark px-5 py-6 text-white shadow-[0_16px_36px_rgba(240,122,58,0.32)]">
+    <section className="relative overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-primary to-primary-dark px-5 py-6 text-white lift-shadow md:px-6 md:py-7">
       <div className="absolute -right-8 -top-10 size-36 rounded-full bg-white/10" />
       <div className="absolute bottom-4 right-6 h-8 w-24 opacity-50">
         <svg viewBox="0 0 120 32" className="h-full w-full" fill="none">
@@ -34,13 +34,13 @@ export function HeroCard({
           />
         </svg>
       </div>
-      <p className="text-sm font-medium text-white/85">{t("home.ready")}</p>
-      <h1 className="mt-1 font-display text-[1.75rem] font-bold leading-tight">
+      <p className="type-meta !text-white/80">{t("home.ready")}</p>
+      <h1 className="mt-2 font-display text-[clamp(1.5rem,1.2rem+1.2vw,1.875rem)] font-extrabold leading-tight tracking-tight">
         {t("home.hello", { name: greetingName(name) })}
       </h1>
-      <p className="mt-2 max-w-[90%] text-sm text-white/90">{subtitle}</p>
+      <p className="mt-2 max-w-[36rem] text-[0.9375rem] text-white/90">{subtitle}</p>
       <div className="mt-5">
-        <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-white/90">
+        <div className="mb-2 flex items-center justify-between text-xs font-semibold text-white/90">
           <span>{t("home.opsReadiness")}</span>
           <span>{progress}%</span>
         </div>

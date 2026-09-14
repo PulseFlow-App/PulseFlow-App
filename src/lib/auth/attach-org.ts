@@ -19,8 +19,10 @@ export function rankRole(role: string) {
 }
 
 /** Keep the stronger app role so a guest invite cannot demote an owner/manager. */
-export function pickPrimaryRole(current: string, incoming: string) {
-  return rankRole(current) >= rankRole(incoming) ? current : incoming;
+export function pickPrimaryRole(current: string, incoming: string): UserRole {
+  const next =
+    rankRole(current) >= rankRole(incoming) ? current : incoming;
+  return next as UserRole;
 }
 
 export function roleInOrg(

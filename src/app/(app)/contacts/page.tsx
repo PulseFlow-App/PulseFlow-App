@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Phone,
   MessageCircle,
@@ -24,6 +25,7 @@ import {
   canBrowseTalent,
   canCastEndorsement,
   canEditContacts,
+  isGuestApp,
   isStaffApp,
 } from "@/lib/roles";
 import { cn, lineDeepLink, phoneToWaMe } from "@/lib/utils";
@@ -46,6 +48,7 @@ export default function ContactsPage() {
   const data = useData();
   const { t } = useI18n();
   const label = useLocalizedDemoText();
+  const router = useRouter();
   const canEdit = data.profile ? canEditContacts(data.profile.role) : false;
   const canBook = data.profile
     ? canBookServices(data.profile.role, data.orgKind)
@@ -58,6 +61,12 @@ export default function ContactsPage() {
     : false;
   const isPersonal = data.orgKind === "personal";
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
+
+  useEffect(() => {
+    if (data.profile && isGuestApp(data.profile.role)) {
+      router.replace("/home");
+    }
+  }, [data.profile, router]);
   const [editing, setEditing] = useState<Contact | null>(null);
   const [creating, setCreating] = useState(false);
   const [ordering, setOrdering] = useState<Contact | null>(null);
@@ -123,10 +132,10 @@ export default function ContactsPage() {
     <div className="space-y-4 animate-rise">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">
+          <h1 className="type-title">
             {t("contacts.title")}
           </h1>
-          <p className="text-sm text-muted">
+          <p className="type-meta mt-1">
             {isPersonal
               ? t("contacts.subtitlePersonal")
               : t("contacts.subtitleCompany")}

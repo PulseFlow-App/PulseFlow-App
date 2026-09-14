@@ -42,6 +42,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
   }
 
+  const orgIds = [...new Set(body.notifications.map((n) => n.org_id))];
+  const [{ data: profile }, { data: memberships }] = await Promise.all([
+    supabase.from("profiles").select("org_id, personal_org_id").eq("id", user.id).maybeSingle(),
+    supabase.from("org_memberships").select("org_id").eq("profile_id", user.id),
+  ]);
+  const allowedOrgs = new Set(
+    [
+      profile?.org_id,
+      profile?.personal_org_id,
+      ...(memberships ?? []).map((m) => m.org_id as string),
+    ].filter(Boolean) as string[],
+  );
+  if (orgIds.some((id) => !allowedOrgs.has(id))) {
+    return NextResponse.json({ error: "Forbidden org." }, { status: 403 });
+  }
+
   const payloads: PushPayload[] = body.notifications.map((n) => ({
     org_id: n.org_id,
     kind: n.kind as NotificationKind,

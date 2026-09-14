@@ -267,10 +267,10 @@ export default function BillsPage() {
     <div className="space-y-4 animate-rise">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-2xl font-bold text-ink">
+          <h1 className="type-title">
             {showFinance ? t("bills.financeTitle") : t("bills.title")}
           </h1>
-          <p className="text-sm text-muted">
+          <p className="type-meta mt-1">
             {showFinance ? t("bills.financeSubtitle") : t("bills.subtitle")}
           </p>
         </div>

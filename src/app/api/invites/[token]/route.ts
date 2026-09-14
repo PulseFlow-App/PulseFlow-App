@@ -34,10 +34,23 @@ export async function GET(_request: Request, context: Ctx) {
       .maybeSingle(),
     admin
       .from("profiles")
-      .select("id, full_name, role, email, org_id, personal_org_id, phone, job_title, share_slug")
+      .select("id, full_name, role, job_title")
       .eq("id", invite.created_by)
       .maybeSingle(),
   ]);
 
-  return NextResponse.json({ invite, org, inviter });
+  // Do not leak invitee PII or unused invite row fields to anonymous clients.
+  return NextResponse.json({
+    invite: {
+      id: invite.id,
+      org_id: invite.org_id,
+      role: invite.role,
+      job_title: invite.job_title,
+      token: invite.token,
+      email: invite.email ?? null,
+      full_name: invite.full_name ?? null,
+    },
+    org,
+    inviter,
+  });
 }

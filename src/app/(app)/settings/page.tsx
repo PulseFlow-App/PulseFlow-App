@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/empty-state";
+import { Screen, ScreenHeader } from "@/components/ui/page";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
@@ -76,21 +77,16 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-4 animate-rise">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-ink">
-          {t("settings.title")}
-        </h1>
-        <p className="text-sm text-muted">{t("brand.tagline")}</p>
-      </div>
+    <Screen>
+      <ScreenHeader title={t("settings.title")} description={t("brand.tagline")} />
 
-      <Card id="language" className="scroll-mt-4 space-y-3 p-5">
+      <Card id="language" className="scroll-mt-4 space-y-4 p-4 sm:p-5">
         <LanguageSwitcher hideHint={isGuest} />
-        <div className="space-y-2 border-t border-[#EDE8E0] pt-3">
+        <div className="space-y-2 border-t border-[var(--color-border)] pt-4">
           <div>
             <p className="text-sm font-bold text-ink">{t("bills.currency")}</p>
             {!isGuest && t("bills.displayCurrencyHint") ? (
-              <p className="text-xs text-muted">{t("bills.displayCurrencyHint")}</p>
+              <p className="type-meta mt-0.5">{t("bills.displayCurrencyHint")}</p>
             ) : null}
           </div>
           <DisplayCurrencySelect aria-label={t("bills.currency")} />
@@ -98,11 +94,11 @@ export default function SettingsPage() {
         <TranslateContentSettingsCard />
       </Card>
 
-      <Card className="space-y-3 p-5">
+      <Card className="space-y-4 p-4 sm:p-5">
         <div>
           <Label>{t("common.name")}</Label>
           {nameEditing ? (
-            <div className="mt-1 space-y-2">
+            <div className="mt-2 space-y-2">
               <Input
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
@@ -111,7 +107,7 @@ export default function SettingsPage() {
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  className="flex-1"
+                  className="min-h-11 flex-1"
                   disabled={nameBusy || !displayName.trim()}
                   onClick={() => void saveDisplayName()}
                 >
@@ -120,7 +116,7 @@ export default function SettingsPage() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="flex-1"
+                  className="min-h-11 flex-1"
                   disabled={nameBusy}
                   onClick={() => {
                     setNameEditing(false);
@@ -133,10 +129,13 @@ export default function SettingsPage() {
             </div>
           ) : (
             <div className="mt-1 flex items-center justify-between gap-3">
-              <p className="font-semibold text-ink">{profile.full_name}</p>
-              <button
-                type="button"
-                className="shrink-0 text-sm font-semibold text-primary"
+              <p className="min-w-0 truncate text-base font-bold text-ink">
+                {profile.full_name}
+              </p>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="min-h-10 shrink-0"
                 onClick={() => {
                   setDisplayName(profile.full_name);
                   setNameEditing(true);
@@ -144,7 +143,7 @@ export default function SettingsPage() {
                 }}
               >
                 {t("common.edit")}
-              </button>
+              </Button>
             </div>
           )}
           {nameMsg ? (
@@ -158,13 +157,13 @@ export default function SettingsPage() {
         ) : null}
 
         {profile.share_slug ? (
-          <div className="space-y-2 border-t border-[#EDE8E0] pt-3">
+          <div className="space-y-2 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-sand px-3 py-3">
             <p className="text-sm font-bold text-ink">{t("plan.referralTitle")}</p>
-            <p className="text-xs text-muted">{t("plan.referralHint")}</p>
+            <p className="type-meta">{t("plan.referralHint")}</p>
             <Button
               size="sm"
               variant="secondary"
-              className="w-full"
+              className="min-h-11 w-full"
               onClick={() => {
                 const url = referralRegisterUrl(
                   window.location.origin,
@@ -183,17 +182,15 @@ export default function SettingsPage() {
         ) : null}
 
         {canRenameOrg ? (
-          <div>
+          <div className="border-t border-[var(--color-border)] pt-4">
             <Label>
               {isPersonal ? t("settings.workspace") : t("settings.organization")}
             </Label>
             {isCompany ? (
-              <p className="mt-0.5 text-xs text-muted">
-                {t("settings.orgNameHint")}
-              </p>
+              <p className="type-meta mt-0.5">{t("settings.orgNameHint")}</p>
             ) : null}
             {orgEditing ? (
-              <div className="mt-1 space-y-2">
+              <div className="mt-2 space-y-2">
                 <Input
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
@@ -202,7 +199,7 @@ export default function SettingsPage() {
                 <div className="flex gap-2">
                   <Button
                     size="sm"
-                    className="flex-1"
+                    className="min-h-11 flex-1"
                     disabled={orgBusy || !orgName.trim()}
                     onClick={() => void saveOrgName()}
                   >
@@ -211,7 +208,7 @@ export default function SettingsPage() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="flex-1"
+                    className="min-h-11 flex-1"
                     disabled={orgBusy}
                     onClick={() => {
                       setOrgEditing(false);
@@ -224,10 +221,13 @@ export default function SettingsPage() {
               </div>
             ) : (
               <div className="mt-1 flex items-center justify-between gap-3">
-                <p className="font-semibold text-ink">{data.orgName}</p>
-                <button
-                  type="button"
-                  className="shrink-0 text-sm font-semibold text-primary"
+                <p className="min-w-0 truncate text-base font-bold text-ink">
+                  {data.orgName}
+                </p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="min-h-10 shrink-0"
                   onClick={() => {
                     setOrgName(data.orgName);
                     setOrgEditing(true);
@@ -235,7 +235,7 @@ export default function SettingsPage() {
                   }}
                 >
                   {t("common.edit")}
-                </button>
+                </Button>
               </div>
             )}
             {orgMsg ? (
@@ -252,34 +252,32 @@ export default function SettingsPage() {
         )}
       </Card>
 
-      <Card className="space-y-3 p-5">
+      <Card className="space-y-4 p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="font-display text-lg font-bold text-ink">
+          <div className="min-w-0">
+            <h2 className="text-lg font-extrabold tracking-tight text-ink">
               {t("plan.title")}
             </h2>
             {planNote ? (
-              <p className="mt-1 text-sm text-muted">{planNote}</p>
+              <p className="type-meta mt-1">{planNote}</p>
             ) : null}
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1">
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide",
+                "inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-3 py-1.5 text-xs font-bold uppercase tracking-wide",
                 plan.tier === "full" || plan.tier === "trial"
                   ? "bg-primary-soft text-primary-dark"
                   : plan.tier === "expired"
                     ? "bg-danger/10 text-danger"
-                    : "bg-[#F7F5F1] text-ink",
+                    : "bg-sand text-ink",
               )}
             >
-              <NotebookPen className="size-3.5" />
+              <NotebookPen className="size-3.5" aria-hidden />
               {t(plan.labelKey)}
             </span>
             {isGuest ? (
-              <span className="text-xs font-semibold text-muted">
-                {t("plan.guestFree")}
-              </span>
+              <span className="type-meta">{t("plan.guestFree")}</span>
             ) : null}
           </div>
         </div>
@@ -287,7 +285,6 @@ export default function SettingsPage() {
       </Card>
 
       <PasskeySettingsCard hideHint={isGuest} />
-
       <PushSettingsCard />
 
       {profile.role !== "owner" ? (
@@ -295,17 +292,15 @@ export default function SettingsPage() {
           <JobSearchSettingsCard />
         </div>
       ) : null}
-    </div>
+    </Screen>
   );
 }
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-        {label}
-      </p>
-      <p className="font-semibold text-ink">{value}</p>
+      <p className="type-meta uppercase tracking-[0.04em]">{label}</p>
+      <p className="mt-0.5 break-words font-semibold text-ink">{value}</p>
     </div>
   );
 }

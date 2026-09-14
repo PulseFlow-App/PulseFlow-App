@@ -9,7 +9,7 @@ import { Input, Label, Select } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
-import { isStaffApp } from "@/lib/roles";
+import { isGuestApp, isStaffApp } from "@/lib/roles";
 import { formatShortDate, cn } from "@/lib/utils";
 import type { TaskPriority } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
@@ -36,6 +36,9 @@ export default function TasksPage() {
   useEffect(() => {
     if (data.profile && isStaffApp(data.profile.role)) {
       router.replace("/jobs");
+    }
+    if (data.profile && isGuestApp(data.profile.role)) {
+      router.replace("/home");
     }
   }, [data.profile, router]);
 
@@ -85,8 +88,8 @@ export default function TasksPage() {
     <div className="space-y-4 animate-rise">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-ink">{t("tasks.title")}</h1>
-          <p className="text-sm text-muted">{t("tasks.openCount", { count: open.length })}</p>
+          <h1 className="type-title">{t("tasks.title")}</h1>
+          <p className="type-meta mt-1">{t("tasks.openCount", { count: open.length })}</p>
         </div>
         <Button size="sm" onClick={() => setShowForm((v) => !v)}>
           <Plus className="size-4" /> {t("tasks.add")}

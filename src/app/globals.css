@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
+/* ─── Design system: Pulse Flow premium SaaS ─── */
 @theme inline {
-  --color-sand: #fdf7f2;
+  --color-sand: #f7f1eb;
+  --color-sand-deep: #efe6dc;
   --color-card: #ffffff;
   --color-primary: #f07a3a;
   --color-primary-dark: #d45a1f;
@@ -17,13 +19,64 @@
   --color-warning-dark: #8a5a14;
   --color-danger: #e15a4a;
   --color-danger-dark: #b03a2e;
-  --color-ink: #2b211c;
-  --color-muted: #8a817c;
+  --color-ink: #1f1815;
+  --color-muted: #7a716c;
+  --color-border: rgba(31, 24, 21, 0.1);
   --color-nav: #1c1c1e;
   --color-background: var(--color-sand);
   --color-foreground: var(--color-ink);
   --font-sans: var(--font-pulse), "Nunito", ui-sans-serif, sans-serif;
-  --radius-card: 1.5rem;
+
+  /* Spacing scale: 8px base */
+  --spacing-1: 0.5rem; /* 8 */
+  --spacing-2: 1rem; /* 16 */
+  --spacing-3: 1.5rem; /* 24 */
+  --spacing-4: 2rem; /* 32 */
+  --spacing-5: 2.5rem; /* 40 */
+  --spacing-6: 3rem; /* 48 */
+
+  /* Radii */
+  --radius-card: 1rem;
+  --radius-control: 0.75rem;
+  --radius-pill: 999px;
+}
+
+:root {
+  /* Typography — 3 levels */
+  --type-title: clamp(1.5rem, 1.2rem + 1vw, 1.875rem); /* L1 */
+  --type-body: 0.9375rem; /* L2 — 15px */
+  --type-meta: 0.75rem; /* L3 — 12px */
+  --leading-title: 1.2;
+  --leading-body: 1.5;
+  --leading-meta: 1.35;
+
+  /* Elevation */
+  --shadow-soft: 0 1px 2px rgba(31, 24, 21, 0.04),
+    0 8px 24px rgba(31, 24, 21, 0.06);
+  --shadow-lift: 0 2px 4px rgba(31, 24, 21, 0.05),
+    0 16px 40px rgba(31, 24, 21, 0.08);
+  --shadow-nav: 0 12px 32px rgba(28, 28, 30, 0.28);
+
+  /* Layout breakpoints content */
+  --shell-pad: 1rem; /* 16 — phone */
+  --shell-max: 100%;
+  --content-gap: 1rem; /* 16 */
+}
+
+@media (min-width: 768px) {
+  :root {
+    --shell-pad: 1.5rem; /* 24 */
+    --shell-max: 48rem;
+    --content-gap: 1.5rem; /* 24 */
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --shell-pad: 2rem; /* 32 */
+    --shell-max: 72rem;
+    --content-gap: 1.5rem;
+  }
 }
 
 * {
@@ -46,11 +99,17 @@ body {
   position: fixed;
   inset: 0;
   touch-action: pan-y;
-  background: var(--color-sand);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(240, 122, 58, 0.08), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(60, 184, 154, 0.06), transparent 50%),
+    var(--color-sand);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-size: var(--type-body);
+  line-height: var(--leading-body);
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .app-shell {
@@ -58,15 +117,40 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Same family everywhere - hierarchy is weight/size only */
+/* Same family everywhere — hierarchy is weight/size only */
 .font-display,
 .font-sans {
   font-family: var(--font-sans) !important;
 }
 
 .font-display {
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* Type levels */
+.type-title {
+  font-family: var(--font-sans);
+  font-size: var(--type-title);
+  line-height: var(--leading-title);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+}
+
+.type-body {
+  font-size: var(--type-body);
+  line-height: var(--leading-body);
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.type-meta {
+  font-size: var(--type-meta);
+  line-height: var(--leading-meta);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
 }
 
 button,
@@ -85,10 +169,60 @@ label {
   font-family: inherit;
 }
 
+/* 12-column content grid */
+.pf-grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--content-gap);
+}
+
+.pf-col-12 {
+  grid-column: span 12;
+}
+.pf-col-6 {
+  grid-column: span 12;
+}
+.pf-col-4 {
+  grid-column: span 12;
+}
+.pf-col-8 {
+  grid-column: span 12;
+}
+.pf-col-3 {
+  grid-column: span 6;
+}
+
+@media (min-width: 768px) {
+  .pf-col-6 {
+    grid-column: span 6;
+  }
+  .pf-col-4 {
+    grid-column: span 4;
+  }
+  .pf-col-8 {
+    grid-column: span 8;
+  }
+  .pf-col-3 {
+    grid-column: span 3;
+  }
+}
+
+@media (min-width: 1440px) {
+  .pf-col-4 {
+    grid-column: span 4;
+  }
+  .pf-col-8 {
+    grid-column: span 8;
+  }
+  .pf-col-3 {
+    grid-column: span 3;
+  }
+}
+
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -97,13 +231,65 @@ label {
 }
 
 .animate-rise {
-  animation: rise-in 0.45s ease-out both;
+  animation: rise-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-rise-delay {
-  animation: rise-in 0.5s ease-out 0.08s both;
+  animation: rise-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
 }
 
 .soft-shadow {
-  box-shadow: 0 10px 30px rgba(43, 33, 28, 0.06);
+  box-shadow: var(--shadow-soft);
+}
+
+.lift-shadow {
+  box-shadow: var(--shadow-lift);
+}
+
+/* Screen rhythm */
+.pf-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--content-gap);
+  width: 100%;
+  max-width: 100%;
+}
+
+.pf-screen-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.pf-screen-header h1 {
+  margin: 0;
+  font-size: var(--type-title);
+  line-height: var(--leading-title);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.pf-screen-header p {
+  margin: 0.25rem 0 0;
+  font-size: var(--type-meta);
+  line-height: var(--leading-meta);
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+/* Slide-over sheet (burger / more menu) — PWA safe */
+.pf-sheet {
+  max-width: min(22rem, 100vw);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-rise-delay {
+    animation: none;
+  }
 }
