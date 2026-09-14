@@ -28,10 +28,7 @@ export async function GET(
       .maybeSingle();
 
     if (profileError) {
-      return NextResponse.json(
-        { error: profileError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
     if (!profile || profile.role === "owner") {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -116,8 +113,7 @@ export async function GET(
       tasksDone: tasksDoneRows?.length ?? 0,
       tasksOpen: tasksOpenRows?.length ?? 0,
     });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Could not load profile.";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 }

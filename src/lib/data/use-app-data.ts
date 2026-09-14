@@ -11,6 +11,7 @@ import {
   demoCompleteServiceOrder,
   demoCastEndorsement,
   demoCreateInvite,
+  demoDeleteInvite,
   demoCreateServiceOrder,
   demoMarkAllNotificationsRead,
   demoMarkNotificationRead,
@@ -870,6 +871,11 @@ function useDemoData(): AppData {
       assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       return demoCreateInvite(profile, input);
+    },
+    deleteInvite: async (inviteId) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      demoDeleteInvite(profile, inviteId);
     },
     setVillaAssignments: async (managerId, villaIds) => {
       assertDemoWritable();

@@ -11,6 +11,7 @@ import {
 } from "@/lib/billing/entitlement";
 import { COMPANY_TRIAL_DAYS } from "@/lib/auth/helpers";
 import { useI18n } from "@/lib/i18n/provider";
+import { useIsDemoMode } from "@/lib/demo/use-is-demo-mode";
 import { cn } from "@/lib/utils";
 
 export function BillingSettingsCard({
@@ -20,6 +21,7 @@ export function BillingSettingsCard({
 }) {
   const data = useData();
   const { t } = useI18n();
+  const demo = useIsDemoMode();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -109,7 +111,9 @@ export function BillingSettingsCard({
       </div>
 
       <div className="flex flex-col gap-2">
-          {status === "active" || status === "trialing" ? (
+          {demo ? (
+            <p className="text-xs text-muted">{t("billing.demoHint")}</p>
+          ) : status === "active" || status === "trialing" ? (
             <Button
               variant="secondary"
               className="w-full"
@@ -127,7 +131,7 @@ export function BillingSettingsCard({
               {busy ? t("billing.redirecting") : t("billing.subscribe")}
             </Button>
           )}
-          {!entitled ? (
+          {!demo && !entitled ? (
             <Button
               className="w-full"
               disabled={busy}

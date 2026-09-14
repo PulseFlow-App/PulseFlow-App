@@ -52,7 +52,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v15";
+const STORE_KEY = "pulseflow_demo_store_v16";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -67,9 +67,45 @@ function plainDash(value: string | null | undefined) {
   return value.replaceAll("-", "-").replaceAll("-", "-");
 }
 
+function repairDemoCompanyBilling(orgs: Organization[]): Organization[] {
+  const freshTrial = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 90);
+    return d.toISOString();
+  })();
+  return orgs.map((org) => {
+    if (org.kind !== "company") return org;
+    return {
+      ...org,
+      subscription_status: "active",
+      trial_ends_at:
+        org.trial_ends_at && new Date(org.trial_ends_at) > new Date()
+          ? org.trial_ends_at
+          : freshTrial,
+    };
+  });
+}
+
 function normalizeStore(store: DemoStore): DemoStore {
+  const fresh = createFreshDemoStore();
+  const profileById = new Map(store.profiles.map((p) => [p.id, p]));
+  for (const p of fresh.profiles) {
+    if (!profileById.has(p.id)) profileById.set(p.id, p);
+  }
+  const accountByEmail = new Map(
+    store.accounts.map((a) => [a.email.toLowerCase(), a]),
+  );
+  for (const a of fresh.accounts) {
+    if (!accountByEmail.has(a.email.toLowerCase())) {
+      accountByEmail.set(a.email.toLowerCase(), a);
+    }
+  }
+
   return {
     ...store,
+    orgs: repairDemoCompanyBilling(store.orgs ?? fresh.orgs),
+    profiles: [...profileById.values()],
+    accounts: [...accountByEmail.values()],
     notifications: (store.notifications ?? []).map((n) => ({
       ...n,
       title: plainDash(n.title) ?? n.title,
@@ -147,6 +183,7 @@ function readStore(): DemoStore {
         "pulseflow_demo_store_v12",
         "pulseflow_demo_store_v13",
         "pulseflow_demo_store_v14",
+        "pulseflow_demo_store_v15",
       ]) {
         localStorage.removeItem(key);
       }
@@ -357,6 +394,21 @@ export function demoCreateInvite(
 
   updateDemoStore((s) => ({ ...s, invites: [invite, ...s.invites] }));
   return invite;
+}
+
+export function demoDeleteInvite(actor: Profile, inviteId: string) {
+  const store = readStore();
+  const invite = store.invites.find((i) => i.id === inviteId);
+  if (!invite || invite.org_id !== actor.org_id) {
+    throw new Error("Invite not found.");
+  }
+  if (invite.used_at) {
+    throw new Error("This invite was already used.");
+  }
+  updateDemoStore((s) => ({
+    ...s,
+    invites: s.invites.filter((i) => i.id !== inviteId),
+  }));
 }
 
 export function getInviteContext(token: string) {
@@ -618,13 +670,23 @@ export function getPublicProfileBySlug(slug: string) {
   const store = readStore();
   const profile = store.profiles.find((p) => p.share_slug === slug);
   if (!profile || profile.role === "owner") return null;
+  const publicProfile: Profile = {
+    ...profile,
+    email: "",
+    phone: "",
+  };
   return {
-    profile,
+    profile: publicProfile,
     endorsements: store.endorsements.filter(
       (e) => e.to_profile_id === profile.id,
     ),
     memberships: store.memberships.filter((m) => m.profile_id === profile.id),
-    orgs: store.orgs,
+    orgs: store.orgs.map((o) => ({
+      ...o,
+      billing_email: null,
+      stripe_customer_id: null,
+      stripe_subscription_id: null,
+    })),
     tasksDone: store.tasks.filter(
       (t) => t.assigned_to === profile.id && t.status === "done",
     ).length,

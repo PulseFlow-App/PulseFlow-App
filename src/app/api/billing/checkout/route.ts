@@ -12,7 +12,7 @@ import { isDemoMode } from "@/lib/env";
 export async function POST() {
   if (isDemoMode()) {
     return NextResponse.json(
-      { error: "Billing is unavailable in demo mode." },
+      { error: "Billing is unavailable in this demo." },
       { status: 400 },
     );
   }

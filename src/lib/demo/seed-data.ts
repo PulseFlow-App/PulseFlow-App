@@ -52,8 +52,9 @@ export const demoOrg: Organization = {
   name: "Phangan Villas Co.",
   kind: "company",
   created_at: "2026-01-01T00:00:00.000Z",
+  // Demo companies stay on Full so owners never land on "Full expired".
   trial_ends_at: companyTrialEndsAt(),
-  subscription_status: "trialing",
+  subscription_status: "active",
   billing_email: "owner@pulseflow.site",
 };
 
@@ -63,7 +64,7 @@ export const demoOrg2: Organization = {
   kind: "company",
   created_at: "2026-02-01T00:00:00.000Z",
   trial_ends_at: companyTrialEndsAt(),
-  subscription_status: "trialing",
+  subscription_status: "active",
   billing_email: "bee@pulseflow.site",
 };
 
@@ -608,7 +609,7 @@ export const demoContacts: Contact[] = [
     phone: "66813210987",
     messenger: "whatsapp",
     messenger_handle: null,
-    notes: "Spare parts in Thong Sala · not on PulseFlow yet",
+    notes: "Spare parts in Thong Sala · not on Pulse Flow yet",
     linked_profile_id: null,
   },
 ];
@@ -1243,7 +1244,27 @@ export const demoStayPhotos: StayPhoto[] = [
   },
 ];
 
-export const demoStayDateRequests: StayDateRequest[] = [];
+export const demoStayDateRequests: StayDateRequest[] = [
+  {
+    id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.lotus,
+    guest_profile_id: DEMO_GUEST_ID,
+    check_in: daysFromNow(21),
+    check_out: daysFromNow(28),
+    note: "Returning guest · quiet week preferred",
+    status: "pending",
+    guest_price_amount: null,
+    guest_price_currency: null,
+    quoted_price_amount: null,
+    quoted_price_currency: null,
+    quoted_deposit_amount: null,
+    quoted_deposit_currency: null,
+    quoted_deposit_timing: null,
+    payment_note: null,
+    created_at: daysAgo(1) + "T11:00:00.000Z",
+  },
+];
 
 export const demoVillaAssignments: VillaAssignment[] = [
   {

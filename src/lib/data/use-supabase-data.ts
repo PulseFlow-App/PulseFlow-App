@@ -228,6 +228,9 @@ export function useSupabaseData(enabled: boolean): AppData {
     createInvite: async () => {
       throw new Error("Connect Supabase to create invites.");
     },
+    deleteInvite: async () => {
+      throw new Error("Connect Supabase to manage invites.");
+    },
     setVillaAssignments: async () => undefined,
     setVillaAssignees: async () => undefined,
     castEndorsement: async () => undefined,
@@ -1622,6 +1625,22 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (error) throw error;
       await refresh();
       return data as Invite;
+    },
+    deleteInvite: async (inviteId) => {
+      if (!profile) throw new Error("Not signed in.");
+      requireCurrentOrgWrite();
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("invites")
+        .update({
+          used_at: new Date().toISOString(),
+          used_by: profile.id,
+        })
+        .eq("id", inviteId)
+        .eq("org_id", profile.org_id)
+        .is("used_at", null);
+      if (error) throw error;
+      await refresh();
     },
     setVillaAssignments: async (managerId, villaIds) => {
       if (!profile) return;

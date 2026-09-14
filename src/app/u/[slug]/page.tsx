@@ -35,7 +35,7 @@ type PublicData = {
   tasksOpen: number;
 };
 
-function PublicProfileBack() {
+function PublicProfileBack({ label }: { label: string }) {
   const router = useRouter();
 
   return (
@@ -55,7 +55,7 @@ function PublicProfileBack() {
       className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition hover:text-ink"
     >
       <ArrowLeft className="size-4" />
-      Back
+      {label}
     </button>
   );
 }
@@ -112,7 +112,7 @@ export default function PublicProfilePage({
   if (!loaded) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-sand font-sans text-sm text-muted">
-        Loading profile…
+        {t("publicProfile.loading")}
       </div>
     );
   }
@@ -122,17 +122,17 @@ export default function PublicProfilePage({
       <div className="flex min-h-dvh items-center justify-center bg-sand px-4 font-sans">
         <Card className="w-full max-w-md space-y-3 p-6 text-center">
           <PulseMark className="mx-auto size-12" />
-          <h1 className="text-xl font-bold text-ink">Profile not found</h1>
-          <p className="text-sm text-muted">
-            This share link may be invalid or private.
-          </p>
+          <h1 className="text-xl font-bold text-ink">
+            {t("publicProfile.notFound")}
+          </h1>
+          <p className="text-sm text-muted">{t("publicProfile.notFoundHint")}</p>
           <Link href="/settings">
             <Button className="w-full" variant="secondary">
-              Back to settings
+              {t("publicProfile.backSettings")}
             </Button>
           </Link>
           <Link href="/login">
-            <Button className="w-full">Go to PulseFlow</Button>
+            <Button className="w-full">{t("publicProfile.goApp")}</Button>
           </Link>
         </Card>
       </div>
@@ -147,12 +147,12 @@ export default function PublicProfilePage({
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-lg bg-sand px-4 py-8 font-sans">
-      <PublicProfileBack />
+      <PublicProfileBack label={t("publicProfile.back")} />
       <div className="mb-6 flex items-center gap-3">
         <PulseMark className="size-10" />
         <div>
           <p className="text-lg font-bold text-ink">{brand.name}</p>
-          <p className="text-xs text-muted">Public reputation profile</p>
+          <p className="text-xs text-muted">{t("publicProfile.subtitle")}</p>
         </div>
       </div>
 
@@ -179,7 +179,7 @@ export default function PublicProfilePage({
         </div>
 
         <div className="rounded-[1.5rem] bg-gradient-to-br from-primary to-primary-dark p-5 text-white">
-          <p className="text-sm text-white/85">Reputation</p>
+          <p className="text-sm text-white/85">{t("publicProfile.reputation")}</p>
           <p className="mt-1 text-4xl font-bold">
             {ratingSummary.voteCount > 0 ? ratingSummary.average.toFixed(1) : "-"}
           </p>
@@ -187,21 +187,23 @@ export default function PublicProfilePage({
             <StarsDisplay value={ratingSummary.average} size="lg" />
           </div>
           <p className="mt-3 text-sm text-white/90">
-            {ratingSummary.totalStars} stars collected · {ratingSummary.voteCount} weekly
-            endorsements
+            {t("publicProfile.starsLine", {
+              stars: ratingSummary.totalStars,
+              votes: ratingSummary.voteCount,
+            })}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-[#F7F5F1] p-3">
             <p className="text-xs font-semibold uppercase text-muted">
-              Tasks done
+              {t("publicProfile.tasksDone")}
             </p>
             <p className="mt-1 text-2xl font-bold text-ink">{data.tasksDone}</p>
           </div>
           <div className="rounded-2xl bg-[#F7F5F1] p-3">
             <p className="text-xs font-semibold uppercase text-muted">
-              Open tasks
+              {t("publicProfile.tasksOpen")}
             </p>
             <p className="mt-1 text-2xl font-bold text-ink">{data.tasksOpen}</p>
           </div>

@@ -176,6 +176,8 @@ export type AppData = {
     role: Exclude<UserRole, "owner">;
     jobTitle?: string;
   }) => Promise<Invite>;
+  /** Revoke an unused invite link so it can no longer be opened. */
+  deleteInvite: (inviteId: string) => Promise<void>;
   setVillaAssignments: (managerId: string, villaIds: string[]) => Promise<void>;
   setVillaAssignees: (villaId: string, profileIds: string[]) => Promise<void>;
   castEndorsement: (

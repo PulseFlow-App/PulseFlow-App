@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Copy, QrCode, RotateCcw, Users, UserPlus, BedDouble } from "lucide-react";
+import { Copy, QrCode, RotateCcw, Trash2, Users, UserPlus, BedDouble } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
@@ -39,6 +39,7 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
     useState<"manager" | "cleaner" | "staff">("staff");
   const [jobTitle, setJobTitle] = useState("");
   const [creating, setCreating] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [qrToken, setQrToken] = useState<string | null>(null);
@@ -94,6 +95,20 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
       setError(e instanceof Error ? e.message : t("settings.inviteError"));
     } finally {
       setCreating(false);
+    }
+  };
+
+  const deleteInvite = async (inviteId: string) => {
+    const target = invites.find((i) => i.id === inviteId);
+    setDeletingId(inviteId);
+    setError(null);
+    try {
+      await data.deleteInvite(inviteId);
+      if (target && qrToken === target.token) setQrToken(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("settings.inviteDeleteError"));
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -335,6 +350,16 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                         <QrCode className="size-4" />
                       </Button>
                     ) : null}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-danger hover:bg-danger/10 hover:text-danger"
+                      disabled={deletingId === inv.id}
+                      aria-label={t("settings.deleteInvite")}
+                      onClick={() => void deleteInvite(inv.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
                   </div>
                 </div>
                 {qrToken === inv.token ? (

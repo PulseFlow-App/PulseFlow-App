@@ -59,6 +59,18 @@ const en = {
   "nav.dateRequests": "Date requests",
   "nav.menuManage": "Manage",
   "nav.menuAccount": "Account",
+  "publicProfile.loading": "Loading profile…",
+  "publicProfile.notFound": "Profile not found",
+  "publicProfile.notFoundHint": "This share link may be invalid or private.",
+  "publicProfile.backSettings": "Back to settings",
+  "publicProfile.goApp": "Go to Pulse Flow",
+  "publicProfile.subtitle": "Public reputation profile",
+  "publicProfile.reputation": "Reputation",
+  "publicProfile.starsLine": "{stars} stars collected · {votes} weekly endorsements",
+  "publicProfile.tasksDone": "Tasks done",
+  "publicProfile.tasksOpen": "Open tasks",
+  "publicProfile.back": "Back",
+
 
   "brand.name": "Pulse Flow",
   "brand.tagline": "The pulse of your rental operations",
@@ -80,7 +92,7 @@ const en = {
   "auth.demoAccounts": "Quick demo sign-in",
   "auth.demoOwner": "Owner",
   "auth.demoManager": "Manager",
-  "auth.demoEmployee": "Employee",
+  "auth.demoEmployee": "Staff (cleaner)",
   "auth.demoGuest": "Guest",
   "auth.signInWithPasskey": "Sign in with Face ID",
   "auth.signingInWithPasskey": "Waiting for Face ID…",
@@ -107,6 +119,9 @@ const en = {
   "home.attention":
     "{count} property needs attention today|{count} properties need attention today",
   "home.opsReadiness": "Ops readiness",
+  "home.focusToday": "Focus of today",
+  "home.focusTodayClear": "Nothing urgent right now.",
+  "home.focusTodayMore": "+{count} more",
   "home.staffClear": "Your job board looks clear.",
   "home.staffPending":
     "{count} job waiting for Read & agreed|{count} jobs waiting for Read & agreed",
@@ -300,13 +315,13 @@ const en = {
   "contacts.reviewSubmit": "Submit {stars}-star review",
   "contacts.reviewSaved": "Review saved for this week.",
   "contacts.reviewDone": "Reviewed this week",
-  "contacts.reviewNeedLink": "Link a PulseFlow user to leave a review.",
+  "contacts.reviewNeedLink": "Link a Pulse Flow user to leave a review.",
   "contacts.sendOrder": "Send order",
   "contacts.sending": "Sending…",
   "contacts.reach.awaiting": "Not contacted - awaiting Read & agreed",
   "contacts.reach.offline": "Not on app - call to reach",
   "contacts.reach.ok": "Reachable in app",
-  "contacts.linkUser": "PulseFlow user (for in-app booking)",
+  "contacts.linkUser": "Pulse Flow user (for in-app booking)",
   "contacts.notOnApp": "Not on app - phone only",
   "contacts.messenger": "Messenger",
   "contacts.handle": "Handle",
@@ -415,7 +430,7 @@ const en = {
   "settings.publicLink": "Public profile link",
   "settings.copyShare": "Copy share link",
   "settings.language": "Language",
-  "settings.languageHint": "Choose the language for your PulseFlow apps.",
+  "settings.languageHint": "Choose the language for your Pulse Flow apps.",
   "settings.languageHint.guest": "",
   "settings.invite": "Invite teammate",
   "settings.inviteHint": "Share a link. They fill in their own details.",
@@ -432,6 +447,8 @@ const en = {
   "settings.creating": "Creating…",
   "settings.inviteCopied": "Invite link copied - send it to them.",
   "settings.openInvites": "Open invites",
+  "settings.deleteInvite": "Delete invite",
+  "settings.inviteDeleteError": "Could not delete this invite.",
   "settings.waitingToJoin": "Waiting to join",
   "settings.villaAccess": "Assign properties to team",
   "settings.villaAccessHint":
@@ -504,7 +521,7 @@ const en = {
   "billing.yes": "Yes",
   "billing.readOnly": "Read-only",
   "billing.demoHint":
-    "Billing checkout runs when Supabase + Stripe are connected (demo mode skips payment).",
+    "Demo mode: billing checkout is off. Your company shows as Full so you can explore the owner tools.",
   "billing.opening": "Opening…",
   "billing.manage": "Manage plan",
   "billing.redirecting": "Redirecting…",
@@ -571,11 +588,11 @@ const en = {
   "demo.villa.cliff.desc": "Compact studio for side-client bookings.",
   "demo.villa.cliff.notes": "Side client - not company inventory.",
 
-  "demo.contact.nokNotes": "Preferred for turnovers · on PulseFlow",
+  "demo.contact.nokNotes": "Preferred for turnovers · on Pulse Flow",
   "demo.contact.somchaiNotes": "24h emergency",
   "demo.contact.poolNotes": "Weekly Wednesdays",
   "demo.contact.coolairNotes":
-    "Spare parts in Thong Sala · not on PulseFlow yet",
+    "Spare parts in Thong Sala · not on Pulse Flow yet",
   "demo.contact.roleAc": "AC/appliance repair",
 
   "demo.task.palmDeepClean": "Finish Palm Villa deep clean",
@@ -686,7 +703,7 @@ const en = {
 
   "contacts.subtitlePersonal": "Save numbers in one place - call from here",
   "contacts.subtitleCompany":
-    "Link a PulseFlow user to Order in-app; call others",
+    "Link a Pulse Flow user to Order in-app; call others",
   "contacts.whatsapp": "WhatsApp",
   "contacts.line": "LINE",
 
@@ -712,7 +729,7 @@ const en = {
     "Rankings by company - switch tabs if you work with more than one",
   "leaderboard.sorted": "Sorted by average stars",
   "leaderboard.empty": "No team endorsements yet for this company.",
-  "leaderboard.overall": "Your overall PulseFlow rating",
+  "leaderboard.overall": "Your overall Pulse Flow rating",
   "leaderboard.public": "Public profile",
 
   "roles.owner": "Owner",
