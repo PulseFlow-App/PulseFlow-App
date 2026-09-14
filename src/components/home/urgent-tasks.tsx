@@ -23,7 +23,7 @@ export function UrgentTasks({
   if (!focus) {
     return (
       <Card className="px-3 py-3 md:px-4 md:py-4">
-        <h2 className="font-sans text-sm font-bold text-ink md:text-base">
+        <h2 className="type-section">
           {t("home.focusToday")}
         </h2>
         <p className="mt-1 text-sm text-muted">{t("home.focusTodayClear")}</p>
@@ -34,7 +34,7 @@ export function UrgentTasks({
   return (
     <Card className="overflow-hidden font-sans">
       <div className="flex items-center justify-between gap-2 border-b border-black/5 px-3 py-2 md:px-4 md:py-3">
-        <h2 className="font-sans text-sm font-bold text-ink md:text-base">
+        <h2 className="type-section">
           {t("home.focusToday")}
         </h2>
         {tasks.length > 1 ? (

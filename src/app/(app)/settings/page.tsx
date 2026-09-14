@@ -17,7 +17,7 @@ import { JobSearchSettingsCard } from "@/components/settings/job-search-settings
 import { PushSettingsCard } from "@/components/settings/push-settings-card";
 import { TranslateContentSettingsCard } from "@/components/settings/translate-content-settings-card";
 import type { MessageKey } from "@/lib/i18n";
-import { resolvePlanTier, referralRegisterUrl } from "@/lib/billing/plans";
+import { resolvePlanTier } from "@/lib/billing/plans";
 import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
@@ -31,7 +31,6 @@ export default function SettingsPage() {
   const [orgEditing, setOrgEditing] = useState(false);
   const [orgBusy, setOrgBusy] = useState(false);
   const [orgMsg, setOrgMsg] = useState<string | null>(null);
-  const [referralCopied, setReferralCopied] = useState(false);
 
   if (!data.ready || !data.profile) return <LoadingState />;
   const profile = data.profile;
@@ -154,31 +153,6 @@ export default function SettingsPage() {
         <Info label={t("common.email")} value={profile.email} />
         {isCompany ? (
           <Info label={t("common.role")} value={t(roleKey)} />
-        ) : null}
-
-        {profile.share_slug ? (
-          <div className="space-y-2 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-sand px-3 py-3">
-            <p className="text-sm font-bold text-ink">{t("plan.referralTitle")}</p>
-            <p className="type-meta">{t("plan.referralHint")}</p>
-            <Button
-              size="sm"
-              variant="secondary"
-              className="min-h-11 w-full"
-              onClick={() => {
-                const url = referralRegisterUrl(
-                  window.location.origin,
-                  profile.share_slug,
-                  { src: "app_profile_referral" },
-                );
-                void navigator.clipboard.writeText(url).then(() => {
-                  setReferralCopied(true);
-                  window.setTimeout(() => setReferralCopied(false), 2000);
-                });
-              }}
-            >
-              {referralCopied ? t("plan.referralCopied") : t("plan.copyReferral")}
-            </Button>
-          </div>
         ) : null}
 
         {canRenameOrg ? (

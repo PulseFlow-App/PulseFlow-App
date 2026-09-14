@@ -107,8 +107,8 @@ export default function VillasPage() {
 
   return (
     <div className="relative space-y-4 animate-rise">
-      <div className="flex items-start justify-between gap-3">
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="type-title">
             {t("villas.title")}
           </h1>
@@ -122,13 +122,14 @@ export default function VillasPage() {
         </div>
         {canAdd ? (
           <Button
-            size="sm"
+            size="xs"
+            className="shrink-0"
             onClick={() => {
               setScope(defaultScope);
               setShowAdd(true);
             }}
           >
-            <Plus className="size-4" /> {t("villas.addNew")}
+            <Plus className="size-3.5" strokeWidth={2.4} /> {t("villas.addNew")}
           </Button>
         ) : null}
       </div>
@@ -153,19 +154,6 @@ export default function VillasPage() {
             </span>
           </Card>
         </Link>
-      ) : null}
-
-      {canAdd ? (
-        <Button
-          className="hidden w-full md:inline-flex"
-          size="lg"
-          onClick={() => {
-            setScope(defaultScope);
-            setShowAdd(true);
-          }}
-        >
-          <Plus className="size-5" /> {t("villas.addNew")}
-        </Button>
       ) : null}
 
       {showAdd ? (

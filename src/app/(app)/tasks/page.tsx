@@ -86,13 +86,23 @@ export default function TasksPage() {
 
   return (
     <div className="space-y-4 animate-rise">
-      <div className="flex items-start justify-between gap-3">
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="type-title">{t("tasks.title")}</h1>
           <p className="type-meta mt-1">{t("tasks.openCount", { count: open.length })}</p>
         </div>
-        <Button size="sm" onClick={() => setShowForm((v) => !v)}>
-          <Plus className="size-4" /> {t("tasks.add")}
+        <Button
+          size="xs"
+          className="shrink-0"
+          onClick={() => setShowForm((v) => !v)}
+        >
+          {showForm ? (
+            t("common.cancel")
+          ) : (
+            <>
+              <Plus className="size-3.5" strokeWidth={2.4} /> {t("tasks.add")}
+            </>
+          )}
         </Button>
       </div>
 

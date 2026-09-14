@@ -33,7 +33,7 @@ export function DateStrip({
   return (
     <Card className="p-3">
       <div className="mb-2 flex items-center justify-between px-1">
-        <h2 className="font-display text-base font-bold text-ink">
+        <h2 className="type-section">
           {t("home.checkInsOuts")}
         </h2>
         <span className="text-xs text-muted">
