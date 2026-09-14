@@ -26,44 +26,80 @@ export function UrgentTasks({
     );
   }
 
+  const [first, ...rest] = tasks;
+
   return (
-    <Card className="overflow-hidden font-sans">
-      <div className="border-b border-black/5 px-4 py-3">
-        <h2 className="font-sans text-base font-bold text-ink">
-          {t("tasks.urgent")}
-        </h2>
-      </div>
-      <ul className="divide-y divide-black/5">
-        {tasks.map((task) => (
-          <li
-            key={task.id}
-            className="flex items-center gap-3 px-4 py-3"
+    <div className="space-y-2 md:space-y-3">
+      <Card className="overflow-hidden font-sans">
+        <div className="flex items-center justify-between gap-2 border-b border-black/5 px-3 py-2 md:px-4 md:py-3">
+          <h2 className="font-sans text-sm font-bold text-ink md:text-base">
+            {t("tasks.urgent")}
+          </h2>
+          {tasks.length > 1 ? (
+            <span className="type-meta">{tasks.length}</span>
+          ) : null}
+        </div>
+        <div className="flex items-center gap-3 bg-danger/[0.04] px-3 py-2.5 md:px-4 md:py-3">
+          <button
+            type="button"
+            onClick={() => void onClose(first.id)}
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/10 text-secondary"
+            aria-label={`${t("common.done")} ${localizeDemoText(first.title, t)}`}
           >
-            <button
-              type="button"
-              onClick={() => void onClose(task.id)}
-              className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/10 text-secondary"
-              aria-label={`${t("common.done")} ${localizeDemoText(task.title, t)}`}
-            >
-              <Check className="size-4" />
-            </button>
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-sans text-[15px] font-semibold text-ink">
-                <LocalizedText text={task.title} />
-              </p>
-              <p className="truncate font-sans text-xs font-medium text-muted">
-                {task.villa?.name ?? t("common.general")}
-                {task.due_date
-                  ? ` · ${t("home.due", { date: formatShortDateLocalized(task.due_date, locale) })}`
-                  : ""}
-              </p>
-            </div>
-            <span className="rounded-full bg-danger/10 px-2 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-danger">
-              {t("tasks.urgent")}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </Card>
+            <Check className="size-4" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-sans text-[0.9375rem] font-semibold text-ink">
+              <LocalizedText text={first.title} />
+            </p>
+            <p className="truncate font-sans text-xs font-medium text-muted">
+              {first.villa?.name ?? t("common.general")}
+              {first.due_date
+                ? ` · ${t("home.due", { date: formatShortDateLocalized(first.due_date, locale) })}`
+                : ""}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-full bg-danger/10 px-2 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-danger">
+            {t("tasks.urgent")}
+          </span>
+        </div>
+      </Card>
+
+      {rest.length > 0 ? (
+        <Card className="overflow-hidden font-sans">
+          <ul className="divide-y divide-black/5">
+            {rest.map((task) => (
+              <li
+                key={task.id}
+                className="flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3"
+              >
+                <button
+                  type="button"
+                  onClick={() => void onClose(task.id)}
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/10 text-secondary"
+                  aria-label={`${t("common.done")} ${localizeDemoText(task.title, t)}`}
+                >
+                  <Check className="size-4" />
+                </button>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-sans text-[0.9375rem] font-semibold text-ink">
+                    <LocalizedText text={task.title} />
+                  </p>
+                  <p className="truncate font-sans text-xs font-medium text-muted">
+                    {task.villa?.name ?? t("common.general")}
+                    {task.due_date
+                      ? ` · ${t("home.due", { date: formatShortDateLocalized(task.due_date, locale) })}`
+                      : ""}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-danger/10 px-2 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-danger">
+                  {t("tasks.urgent")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
+    </div>
   );
 }

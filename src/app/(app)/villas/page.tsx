@@ -157,7 +157,7 @@ export default function VillasPage() {
 
       {canAdd ? (
         <Button
-          className="w-full"
+          className="hidden w-full md:inline-flex"
           size="lg"
           onClick={() => {
             setScope(defaultScope);

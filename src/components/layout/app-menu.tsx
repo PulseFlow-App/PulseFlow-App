@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -54,8 +55,13 @@ export function AppMenuButton() {
   const { t } = useI18n();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const titleId = useId();
   const profile = data.profile;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -214,6 +220,99 @@ export function AppMenuButton() {
     router.refresh();
   };
 
+  const sheet =
+    open && mounted
+      ? createPortal(
+          <div className="fixed inset-0 z-[200] md:bg-ink/25">
+            <button
+              type="button"
+              className="absolute inset-0 bg-ink/45 md:bg-transparent"
+              aria-label={t("common.close")}
+              onClick={() => setOpen(false)}
+            />
+            <div
+              className={cn(
+                "pf-sheet absolute inset-y-0 right-0 flex h-dvh max-h-dvh w-full max-w-[22rem] flex-col",
+                "border-l border-[var(--color-border)] bg-card shadow-[var(--shadow-lift)]",
+                "pt-[max(0.75rem,env(safe-area-inset-top))]",
+                "pb-[max(1rem,env(safe-area-inset-bottom))]",
+                "overscroll-contain",
+              )}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={titleId}
+            >
+              <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-3">
+                <p id={titleId} className="type-title text-[1.25rem]">
+                  {t("nav.menu")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="flex size-9 shrink-0 items-center justify-center text-ink/80 transition hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                  aria-label={t("common.close")}
+                >
+                  <X className="size-[1.15rem]" strokeWidth={1.85} />
+                </button>
+              </div>
+
+              <div className="mx-4 mb-3 flex shrink-0 items-center gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-sand px-3 py-3">
+                <div
+                  className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-extrabold text-white"
+                  aria-hidden
+                >
+                  {initial}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-extrabold text-ink">
+                    {profile.full_name}
+                  </p>
+                  <p className="type-meta truncate">
+                    {isCompany
+                      ? `${labelRole(t, profile.role)} · ${data.orgName}`
+                      : data.orgName}
+                  </p>
+                </div>
+              </div>
+
+              <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3">
+                {sections.map((section) => (
+                  <div key={section.id} className="mb-3">
+                    {section.label ? (
+                      <p className="type-meta mb-1.5 px-2 pt-1 uppercase tracking-[0.06em]">
+                        {section.label}
+                      </p>
+                    ) : null}
+                    <ul className="space-y-1">
+                      {section.links.map((link) => (
+                        <li key={link.href + link.label}>
+                          <MenuRow
+                            link={link}
+                            onNavigate={() => setOpen(false)}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </nav>
+
+              <div className="shrink-0 border-t border-[var(--color-border)] px-3 pt-3">
+                <button
+                  type="button"
+                  onClick={() => void signOut()}
+                  className="flex min-h-11 w-full items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-sm font-bold text-danger transition hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/30"
+                >
+                  <LogOut className="size-4 shrink-0" strokeWidth={2.2} />
+                  {t("settings.signOut")}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
     <>
       <button
@@ -226,95 +325,7 @@ export function AppMenuButton() {
       >
         <Menu className="size-4" strokeWidth={1.9} />
       </button>
-
-      {open ? (
-        <div className="fixed inset-0 z-[80] md:bg-ink/25">
-          <button
-            type="button"
-            className="absolute inset-0 bg-ink/40 md:bg-transparent"
-            aria-label={t("common.close")}
-            onClick={() => setOpen(false)}
-          />
-          <div
-            className={cn(
-              "pf-sheet absolute inset-y-0 right-0 flex w-full max-w-[22rem] flex-col",
-              "border-l border-[var(--color-border)] bg-card shadow-[var(--shadow-lift)]",
-              "pt-[max(0.75rem,env(safe-area-inset-top))]",
-              "pb-[max(1rem,env(safe-area-inset-bottom))]",
-              "overscroll-contain animate-rise",
-            )}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={titleId}
-          >
-            <div className="flex items-center justify-between gap-3 px-4 pb-3">
-              <p id={titleId} className="type-title text-[1.25rem]">
-                {t("nav.menu")}
-              </p>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="flex size-9 shrink-0 items-center justify-center text-ink/80 transition hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-                aria-label={t("common.close")}
-              >
-                <X className="size-[1.15rem]" strokeWidth={1.85} />
-              </button>
-            </div>
-
-            <div className="mx-4 mb-3 flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-sand px-3 py-3">
-              <div
-                className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-extrabold text-white"
-                aria-hidden
-              >
-                {initial}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-extrabold text-ink">
-                  {profile.full_name}
-                </p>
-                <p className="type-meta truncate">
-                  {isCompany
-                    ? `${labelRole(t, profile.role)} · ${data.orgName}`
-                    : data.orgName}
-                </p>
-              </div>
-            </div>
-
-            <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-3">
-              {sections.map((section) => (
-                <div key={section.id} className="mb-3">
-                  {section.label ? (
-                    <p className="type-meta mb-1.5 px-2 pt-1 uppercase tracking-[0.06em]">
-                      {section.label}
-                    </p>
-                  ) : null}
-                  <ul className="space-y-1">
-                    {section.links.map((link) => (
-                      <li key={link.href + link.label}>
-                        <MenuRow
-                          link={link}
-                          onNavigate={() => setOpen(false)}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </nav>
-
-            <div className="mt-auto border-t border-[var(--color-border)] px-3 pt-3">
-              <button
-                type="button"
-                onClick={() => void signOut()}
-                className="flex min-h-11 w-full items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-sm font-bold text-danger transition hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/30"
-              >
-                <LogOut className="size-4 shrink-0" strokeWidth={2.2} />
-                {t("settings.signOut")}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {sheet}
     </>
   );
 }

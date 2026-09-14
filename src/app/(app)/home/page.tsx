@@ -33,9 +33,16 @@ export default function HomePage() {
   }, [data.villas]);
 
   const attentionCount = counts.turnover + counts.maintenance;
-  const urgent = data.tasks.filter(
-    (t) => t.status === "open" && t.priority === "urgent",
-  );
+  const urgent = useMemo(() => {
+    return data.tasks
+      .filter((task) => task.status === "open" && task.priority === "urgent")
+      .sort((a, b) => {
+        if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
+        if (a.due_date) return -1;
+        if (b.due_date) return 1;
+        return a.title.localeCompare(b.title);
+      });
+  }, [data.tasks]);
 
   if (!data.ready || !data.profile) {
     return <LoadingState label={t("home.loading")} />;
@@ -62,7 +69,7 @@ export default function HomePage() {
       />
       <div className="animate-rise-delay">
         <Grid12>
-          <Col span={8} className="space-y-4 md:space-y-6">
+          <Col span={8} className="space-y-3 md:space-y-6">
             <StatGrid counts={counts} />
             <UrgentTasks
               tasks={urgent}

@@ -47,23 +47,28 @@ export function StatGrid({
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4 md:gap-4">
+    <div className="grid grid-cols-4 gap-1.5 sm:gap-3 md:gap-4">
       {order.map((status) => {
         const Icon = meta[status].icon;
+        const label = labelVillaStatus(t, status);
         return (
-          <Card key={status} className="p-3 md:p-5">
+          <Card
+            key={status}
+            className="flex flex-col items-center px-1.5 py-2 text-center md:items-start md:p-5 md:text-left"
+            title={label}
+          >
             <Icon
               className={`size-4 md:size-5 ${meta[status].ink}`}
               strokeWidth={1.85}
               aria-hidden
             />
-            <p className="mt-2 font-display text-xl font-extrabold leading-none tracking-tight text-ink md:mt-4 md:text-3xl">
+            <p className="mt-1 font-display text-lg font-extrabold leading-none tracking-tight text-ink md:mt-4 md:text-3xl">
               {counts[status]}
             </p>
             <p
-              className={`mt-1 truncate text-xs font-semibold md:mt-2 md:text-sm ${meta[status].ink}`}
+              className={`mt-0.5 w-full truncate text-[0.625rem] font-semibold leading-tight md:mt-2 md:text-sm ${meta[status].ink}`}
             >
-              {labelVillaStatus(t, status)}
+              {label}
             </p>
           </Card>
         );
