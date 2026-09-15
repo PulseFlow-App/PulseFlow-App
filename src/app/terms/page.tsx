@@ -5,8 +5,7 @@ import {
   AudienceSections,
   LegalDocumentFooter,
   LegalIntro,
-  PrivacyCommonSections,
-  PrivacySummary,
+  LEGAL_LAST_UPDATED,
   TermsCommonSections,
   TermsSummary,
 } from "@/components/legal/legal-sections";
@@ -58,7 +57,7 @@ export default async function TermsPage({ searchParams }: Props) {
             </p>
           ) : null}
           <p className="mt-1 text-muted">
-            {brand.name} · Last updated: 2 September 2026
+            {brand.name} · Last updated: {LEGAL_LAST_UPDATED}
           </p>
         </div>
 

@@ -354,7 +354,7 @@ export default function VillaDetailPage({
           <div>
             <Label>{t("villas.assignedTo")}</Label>
             <p className="mb-2 text-xs text-muted">
-              Who can see and update this villa
+              Who can see and update this property
             </p>
             <ul className="space-y-2">
               {team.map((person) => {

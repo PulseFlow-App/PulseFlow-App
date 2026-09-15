@@ -177,6 +177,14 @@ const en = {
     "New properties you add go to No company (your own list). You only see company properties assigned to you - not the full inventory. Booking you for a job also grants access.",
   "villas.details": "Property details",
   "villas.detailsHint": "All optional. Only filled fields show on the card.",
+  "villas.propertyType": "Property type",
+  "villas.propertyType.villa": "Villa",
+  "villas.propertyType.bungalow": "Bungalow",
+  "villas.propertyType.house": "House",
+  "villas.propertyType.apartment": "Apartment",
+  "villas.propertyType.studio": "Studio",
+  "villas.propertyType.office": "Office",
+  "villas.propertyType.other": "Other",
   "villas.sqm": "Size (m²)",
   "villas.sqmShort": "{n} m²",
   "villas.bedrooms": "Bedrooms",
@@ -579,11 +587,11 @@ const en = {
 
   "demo.villa.lotus.desc": "Sea-view 2BR with private pool near Srithanu.",
   "demo.villa.lotus.notes": "Guests requested extra towels.",
-  "demo.villa.palm.desc": "Family villa close to Haad Yao beach.",
+  "demo.villa.palm.desc": "Family home close to Haad Yao beach.",
   "demo.villa.palm.notes": "Deep clean before tomorrow check-in.",
   "demo.villa.jungle.desc": "Quiet hillside retreat - AC unit pending repair.",
   "demo.villa.jungle.notes": "AC compressor replacement scheduled.",
-  "demo.villa.sunset.desc": "Sunset-facing deck villa.",
+  "demo.villa.sunset.desc": "Sunset-facing deck property.",
   "demo.villa.sunset.notes": "Checkout tomorrow 11:00.",
   "demo.villa.cliff.desc": "Compact studio for side-client bookings.",
   "demo.villa.cliff.notes": "Side client - not company inventory.",
@@ -669,7 +677,7 @@ const en = {
   "demo.sys.agreedMsg":
     "✅ Read and agreed - {service} at {location} ({when})",
   "demo.sys.locationFallback": "location",
-  "demo.sys.villaFallback": "Villa",
+  "demo.sys.villaFallback": "Property",
 
   "demo.orderChat.header": "📋 Service order for {name}",
   "demo.orderChat.what": "What: {serviceType}",
@@ -780,7 +788,7 @@ const en = {
   "guest.homeSubtitle": "Browse properties to request dates.",
   "guest.comingSoon": "Guest stay tools are coming next",
   "guest.comingSoonHint":
-    "House guide, support chat with owners/managers, deposit bills, and more villas from this company.",
+    "House guide, support chat with owners/managers, deposit bills, and more properties from this company.",
   "guest.hi": "Hi {name}",
   "guest.otherBookings": "Other bookings",
   "guest.expandPhoto": "Expand photo",
@@ -805,7 +813,7 @@ const en = {
   "guest.departure": "Departure",
   "guest.addPhoto": "Add photo",
   "guest.nav.stay": "Stay",
-  "guest.nav.villas": "Villas",
+  "guest.nav.villas": "Properties",
   "guest.nav.guide": "Booking Guide",
   "guest.nav.support": "Support",
   "guest.nav.bills": "Bills",
@@ -905,7 +913,7 @@ const en = {
   "guest.villasHint":
     "Browse properties from this host and request dates — your host will send a price quote.",
   "guest.villasHost": "Hosted by {name}",
-  "guest.villasEmpty": "No company villas to show.",
+  "guest.villasEmpty": "No company properties to show.",
   "guest.villaUnavailable": "This property is not available for new date requests right now.",
   "guest.currentStayDates": "Your stay · {from} → {to}",
   "guest.requestDates": "Request dates & price",
@@ -971,7 +979,7 @@ const en = {
   "dateRequests.decline": "Decline",
   "dateRequests.recent": "Recently handled",
   "dateRequests.awaitingGuest": "Waiting for guest to confirm price",
-  "dateRequests.unknownVilla": "Villa",
+  "dateRequests.unknownVilla": "Property",
   "dateRequests.pendingOne": "1 guest is waiting for a yes or no.",
   "dateRequests.pendingMany":
     "{count} guests are waiting for a yes or no.",
@@ -1052,7 +1060,7 @@ const en = {
   "guests.depositNone": "No deposit recorded yet.",
   "guests.cancelTitle": "Cancel booking",
   "guests.cancelHint":
-    "Cancels this guest stay and frees the villa dates. The guest is notified in the app and by push if enabled.",
+    "Cancels this guest stay and frees the property dates. The guest is notified in the app and by push if enabled.",
   "guests.cancelUnpaidDepositHint":
     "This deposit is still due before arrival. You may cancel the booking if it has not been paid or confirmed.",
   "guests.cancelConfirm":
@@ -1150,7 +1158,7 @@ const en = {
   "talent.geoDenied": "Location permission was denied.",
   "talent.settingsBio": "Short bio (optional)",
   "talent.settingsBioPlaceholder":
-    "e.g. 5 years villa cleaning in Phuket, own transport, English & Thai.",
+    "e.g. 5 years property cleaning in Phuket, own transport, English & Thai.",
   "talent.settingsSave": "Save talent profile",
   "talent.settingsSaved": "Talent profile updated.",
   "talent.demoReadOnly": "Talent settings are read-only in demo mode.",

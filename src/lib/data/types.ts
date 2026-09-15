@@ -95,6 +95,7 @@ export type AppData = {
         | "location_url"
         | "description"
         | "photo_url"
+        | "property_type"
         | "sq_m"
         | "bedrooms"
         | "bathrooms"
@@ -121,6 +122,7 @@ export type AppData = {
     status?: Villa["status"];
     /** Owners default to company; managers default to personal side work. */
     scope?: "company" | "personal";
+    property_type?: Villa["property_type"];
     sq_m?: number | null;
     bedrooms?: number | null;
     bathrooms?: number | null;

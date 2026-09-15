@@ -49,7 +49,7 @@ export const DEMO_DEPOSIT_ID = "77777777-7777-4777-8777-777777777772";
 
 export const demoOrg: Organization = {
   id: DEMO_ORG_ID,
-  name: "Phangan Villas Co.",
+  name: "Phangan Properties Co.",
   kind: "company",
   created_at: "2026-01-01T00:00:00.000Z",
   // Demo companies stay on Full so owners never land on "Full expired".
@@ -140,7 +140,7 @@ export const demoProfiles: Profile[] = [
     share_slug: "sam-manager",
     job_search_visible: true,
     job_search_skills: ["manager", "maintenance"],
-    job_search_bio: "On-site manager for villa portfolios in Phuket.",
+    job_search_bio: "On-site manager for rental portfolios in Phuket.",
     job_search_location: "Phuket",
     job_search_country: "Thailand",
     job_search_lat: 7.8804,
@@ -159,7 +159,7 @@ export const demoProfiles: Profile[] = [
     share_slug: "nok-cleaning",
     job_search_visible: true,
     job_search_skills: ["cleaner", "pool"],
-    job_search_bio: "Villa turnover cleaning, pool checks, English & Thai.",
+    job_search_bio: "Turnover cleaning, pool checks, English & Thai.",
     job_search_location: "Koh Samui",
     job_search_country: "Thailand",
     job_search_lat: 9.512,
@@ -233,11 +233,16 @@ export const VILLA_IDS = {
   cliff: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa7",
   tide: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa8",
   reef: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa9",
+  office: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa10",
 } as const;
 
+function propertyPhoto(slug: keyof typeof VILLA_IDS) {
+  return `/demo/properties/${slug}.jpg`;
+}
 
+/** Lightweight SVG for stay arrival/departure shots (not property cards). */
 function villaPhoto(name: string, tone: string) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${tone}" offset="0%"/><stop stop-color="#2B211C" stop-opacity=".35" offset="100%"/></linearGradient></defs><rect width="640" height="400" fill="url(#g)"/><path d="M120 260 L320 120 L520 260 V340 H120 Z" fill="none" stroke="#fff" stroke-width="14" stroke-linejoin="round"/><rect x="290" y="280" width="60" height="60" rx="8" fill="#fff" opacity=".9"/><text x="320" y="80" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="28" font-weight="700">${name}</text></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${tone}" offset="0%"/><stop stop-color="#2B211C" stop-opacity=".35" offset="100%"/></linearGradient></defs><rect width="640" height="400" fill="url(#g)"/><text x="320" y="210" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="26" font-weight="700">${name}</text></svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
@@ -249,7 +254,7 @@ export const demoVillas: Villa[] = [
     area: "Srithanu",
     location_url: "https://maps.google.com/?q=Srithanu+Koh+Phangan",
     description: "Sea-view 2BR with private pool near Srithanu.",
-    photo_url: villaPhoto("Lotus House", "#3CB89A"),
+    photo_url: propertyPhoto("lotus"),
     status: "occupied",
     check_in: daysAgo(2),
     check_out: daysFromNow(3),
@@ -258,6 +263,7 @@ export const demoVillas: Villa[] = [
     created_by: DEMO_OWNER_ID,
     updated_at: new Date().toISOString(),
     ...facts({
+      property_type: "villa",
       sq_m: 120,
       bedrooms: 2,
       bathrooms: 2,
@@ -280,8 +286,8 @@ export const demoVillas: Villa[] = [
     name: "Palm Villa",
     area: "Haad Yao",
     location_url: "https://maps.google.com/?q=Haad+Yao+Koh+Phangan",
-    description: "Family villa close to Haad Yao beach.",
-    photo_url: villaPhoto("Palm Villa", "#F26A36"),
+    description: "Family home close to Haad Yao beach.",
+    photo_url: propertyPhoto("palm"),
     status: "turnover",
     check_in: daysFromNow(1),
     check_out: daysFromNow(6),
@@ -290,6 +296,7 @@ export const demoVillas: Villa[] = [
     created_by: DEMO_OWNER_ID,
     updated_at: new Date().toISOString(),
     ...facts({
+      property_type: "villa",
       sq_m: 180,
       bedrooms: 3,
       bathrooms: 3,
@@ -313,7 +320,7 @@ export const demoVillas: Villa[] = [
     area: "Thong Sala",
     location_url: "https://maps.google.com/?q=Thong+Sala+Koh+Phangan",
     description: "Two-bedroom bungalow near the pier with a shaded garden.",
-    photo_url: villaPhoto("Coral Bungalow", "#E07A5F"),
+    photo_url: propertyPhoto("coral"),
     status: "available",
     check_in: null,
     check_out: null,
@@ -322,6 +329,7 @@ export const demoVillas: Villa[] = [
     created_by: DEMO_OWNER_ID,
     updated_at: new Date().toISOString(),
     ...facts({
+      property_type: "bungalow",
       sq_m: 85,
       bedrooms: 2,
       bathrooms: 1,
@@ -345,7 +353,7 @@ export const demoVillas: Villa[] = [
     area: "Chaloklum",
     location_url: "https://maps.google.com/?q=Chaloklum+Koh+Phangan",
     description: "Quiet hillside retreat - AC unit pending repair.",
-    photo_url: villaPhoto("Jungle Retreat", "#2A8F78"),
+    photo_url: propertyPhoto("jungle"),
     status: "maintenance",
     check_in: daysFromNow(5),
     check_out: daysFromNow(12),
@@ -354,6 +362,7 @@ export const demoVillas: Villa[] = [
     created_by: DEMO_OWNER_ID,
     updated_at: new Date().toISOString(),
     ...facts({
+      property_type: "villa",
       sq_m: 140,
       bedrooms: 2,
       bathrooms: 2,
@@ -376,8 +385,8 @@ export const demoVillas: Villa[] = [
     name: "Sunset Deck",
     area: "Haad Rin",
     location_url: "https://maps.google.com/?q=Haad+Rin+Koh+Phangan",
-    description: "Sunset-facing deck villa.",
-    photo_url: villaPhoto("Sunset Deck", "#E0A84A"),
+    description: "Sunset-facing deck property.",
+    photo_url: propertyPhoto("sunset"),
     status: "occupied",
     check_in: daysAgo(5),
     check_out: daysFromNow(1),
@@ -386,6 +395,7 @@ export const demoVillas: Villa[] = [
     created_by: DEMO_OWNER_ID,
     updated_at: new Date().toISOString(),
     ...facts({
+      property_type: "villa",
       sq_m: 110,
       bedrooms: 2,
       bathrooms: 2,
@@ -409,7 +419,7 @@ export const demoVillas: Villa[] = [
     area: "Srithanu",
     location_url: "https://maps.google.com/?q=Srithanu+Koh+Phangan",
     description: "Bamboo loft for yoga guests — quiet lane behind Srithanu.",
-    photo_url: villaPhoto("Bamboo Nest", "#81B29A"),
+    photo_url: propertyPhoto("bamboo"),
     status: "available",
     check_in: daysFromNow(4),
     check_out: daysFromNow(10),
@@ -418,6 +428,7 @@ export const demoVillas: Villa[] = [
     created_by: DEMO_OWNER_ID,
     updated_at: new Date().toISOString(),
     ...facts({
+      property_type: "bungalow",
       sq_m: 42,
       bedrooms: 1,
       bathrooms: 1,
@@ -442,7 +453,7 @@ export const demoVillas: Villa[] = [
     area: "Haad Salad",
     location_url: "https://maps.google.com/?q=Haad+Salad+Koh+Phangan",
     description: "Compact studio for side-client bookings.",
-    photo_url: null,
+    photo_url: propertyPhoto("cliff"),
     status: "occupied",
     check_in: daysAgo(1),
     check_out: daysFromNow(4),
@@ -451,6 +462,7 @@ export const demoVillas: Villa[] = [
     created_by: DEMO_EMPLOYEE_ID,
     updated_at: new Date().toISOString(),
     ...facts({
+      property_type: "studio",
       sq_m: 28,
       bedrooms: 1,
       bathrooms: 1,
@@ -473,8 +485,8 @@ export const demoVillas: Villa[] = [
     name: "Tide Hut",
     area: "Haad Yao",
     location_url: "https://maps.google.com/?q=Haad+Yao+Koh+Phangan",
-    description: null,
-    photo_url: null,
+    description: "Beach hut Sam manages for a private owner.",
+    photo_url: propertyPhoto("tide"),
     status: "available",
     check_in: null,
     check_out: null,
@@ -483,6 +495,7 @@ export const demoVillas: Villa[] = [
     created_by: DEMO_EMPLOYEE_ID,
     updated_at: new Date().toISOString(),
     ...facts({
+      property_type: "bungalow",
       sq_m: 36,
       bedrooms: 1,
       bathrooms: 1,
@@ -507,7 +520,7 @@ export const demoVillas: Villa[] = [
     area: "Thong Sala",
     location_url: "https://maps.google.com/?q=Thong+Sala+Koh+Phangan",
     description: "Side-client cottage Nok manages outside the company.",
-    photo_url: null,
+    photo_url: propertyPhoto("reef"),
     status: "available",
     check_in: null,
     check_out: null,
@@ -516,6 +529,7 @@ export const demoVillas: Villa[] = [
     created_by: DEMO_CLEANER_ID,
     updated_at: new Date().toISOString(),
     ...facts({
+      property_type: "bungalow",
       sq_m: 70,
       bedrooms: 2,
       bathrooms: 1,
@@ -529,6 +543,41 @@ export const demoVillas: Villa[] = [
       parking: "street",
       kitchen: "basic",
       aircon: "partial",
+      view: "garden",
+    }),
+  },
+  // Commercial listing — office for rent (not a villa).
+  {
+    id: VILLA_IDS.office,
+    org_id: DEMO_ORG_ID,
+    name: "Harbor Office",
+    area: "Thong Sala",
+    location_url: "https://maps.google.com/?q=Thong+Sala+Koh+Phangan",
+    description:
+      "Ground-floor office for rent near the pier. Desk space for 4, fiber Wi-Fi, meeting table, street parking. Commercial lease — not a guest stay.",
+    photo_url: propertyPhoto("office"),
+    status: "available",
+    check_in: null,
+    check_out: null,
+    cleaning_status: "done",
+    notes: "Office for rent · showings by appointment.",
+    created_by: DEMO_OWNER_ID,
+    updated_at: new Date().toISOString(),
+    ...facts({
+      property_type: "office",
+      sq_m: 48,
+      bedrooms: null,
+      bathrooms: 1,
+      max_guests: null,
+      floors: 1,
+      has_pool: false,
+      has_garden: false,
+      pet_friendly: false,
+      has_wifi: true,
+      setting: "community",
+      parking: "street",
+      kitchen: "none",
+      aircon: "full",
       view: "garden",
     }),
   },

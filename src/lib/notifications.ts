@@ -382,7 +382,7 @@ export function buildScheduleAlerts(input: {
         org_id: order.org_id,
         kind: "appointment",
         title: `Appointment ${when}`,
-        body: `${capitalizeLabel(order.service_type)} · ${order.location_label ?? "Villa"} · ${window}`,
+        body: `${capitalizeLabel(order.service_type)} · ${order.location_label ?? "Property"} · ${window}`,
         href: "/jobs",
         entity_id: order.id,
         audience_profile_ids: audience,

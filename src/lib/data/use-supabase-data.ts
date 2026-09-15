@@ -1234,7 +1234,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     },
     createVilla: async (input) => {
       if (!profile || !canCreateVillas(profile.role)) {
-        throw new Error("You cannot add villas.");
+        throw new Error("You cannot add properties.");
       }
       let scope =
         input.scope ??
@@ -1893,7 +1893,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         body: text,
         profile,
         stay,
-        villaName: villaForStay?.name ?? "Villa",
+        villaName: villaForStay?.name ?? "Property",
         ownerManagerIds: ownerManagerIds(profiles, stay.org_id),
       });
 
@@ -2257,7 +2257,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           .eq("id", stay.villa_id);
       }
 
-      const villaName = villa?.name ?? "Villa";
+      const villaName = villa?.name ?? "Property";
       const dateLine = `${stay.check_in} → ${stay.check_out}`;
       const stayDeposit = scopedGuestDeposits.find((d) => d.stay_id === stayId);
       const hostCancelledUnpaidDeposit =
@@ -2301,7 +2301,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         villas.find((v) => v.id === villaId) ??
         allOrgVillas.find((v) => v.id === villaId);
       if (!villa || villa.org_id !== profile.org_id) {
-        throw new Error("Villa not found.");
+        throw new Error("Property not found.");
       }
       const supabase = createClient();
       const now = new Date().toISOString();
@@ -2363,7 +2363,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       const supabase = createClient();
       const villa = villas.find((v) => v.id === input.villa_id);
-      if (!villa) throw new Error("Villa not found.");
+      if (!villa) throw new Error("Property not found.");
       const requestOrgId = villa.org_id;
       const { data: inserted, error } = await supabase
         .from("stay_date_requests")
@@ -2399,7 +2399,7 @@ export function useSupabaseData(enabled: boolean): AppData {
               org_id: requestOrgId,
               kind: "appointment",
               title: "Date request",
-              body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${input.check_in} → ${input.check_out}`,
+              body: `${profile.full_name} · ${villa?.name ?? "Property"} · ${input.check_in} → ${input.check_out}`,
               href: "/date-requests",
               entity_id: inserted.id,
               audience_profile_ids: managers,
@@ -2493,7 +2493,7 @@ export function useSupabaseData(enabled: boolean): AppData {
               org_id: profile.org_id,
               kind: "guest_update",
               title: "Price quote for your stay",
-              body: `${villa?.name ?? "Villa"} · ${quoteBody} · Tap to accept or decline.`,
+              body: `${villa?.name ?? "Property"} · ${quoteBody} · Tap to accept or decline.`,
               href: "/villas",
               entity_id: requestId,
               audience_profile_ids: [request.guest_profile_id],
@@ -2508,7 +2508,7 @@ export function useSupabaseData(enabled: boolean): AppData {
               org_id: profile.org_id,
               kind: "guest_update",
               title: "Dates declined",
-              body: `${villa?.name ?? "Villa"} · your date request was declined`,
+              body: `${villa?.name ?? "Property"} · your date request was declined`,
               href: "/villas",
               entity_id: requestId,
               audience_profile_ids: [request.guest_profile_id],
@@ -2564,7 +2564,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           org_id: request.org_id,
           kind: "guest_update",
           title: "Guest confirmed the stay",
-          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${formatStayQuoteLine({
+          body: `${profile.full_name} · ${villa?.name ?? "Property"} · ${formatStayQuoteLine({
             amount: Number(request.quoted_price_amount),
             currency: request.quoted_price_currency,
             checkIn: request.check_in,
@@ -2646,7 +2646,7 @@ export function useSupabaseData(enabled: boolean): AppData {
               request.status === "quoted"
                 ? "Guest declined the price quote"
                 : "Guest cancelled date request",
-            body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${request.check_in} → ${request.check_out}`,
+            body: `${profile.full_name} · ${villa?.name ?? "Property"} · ${request.check_in} → ${request.check_out}`,
             href: "/date-requests",
             entity_id: requestId,
             audience_profile_ids: ownerManagerIds(profiles, request.org_id),

@@ -5,6 +5,9 @@ import {
   legalPageHref,
 } from "@/lib/legal/audiences";
 
+/** Bump when Terms or Privacy substantive text changes. */
+export const LEGAL_LAST_UPDATED = "15 September 2026";
+
 export function LegalIntro({
   kind,
   audience,
@@ -26,9 +29,22 @@ export function LegalIntro({
   if (kind === "terms") {
     return (
       <p className="text-muted">
-        These Terms govern your use of {brand.name} (the “Service”), including
-        app.pulseflow.site and related sites. By creating an account or using
-        the Service as {label}, you agree to these Terms.
+        These Terms govern your use of {brand.name} (the “Service”), including{" "}
+        <a
+          className="font-semibold text-primary"
+          href="https://app.pulseflow.site"
+        >
+          app.pulseflow.site
+        </a>
+        ,{" "}
+        <a
+          className="font-semibold text-primary"
+          href="https://pulseflow.site"
+        >
+          pulseflow.site
+        </a>
+        , and related sites or apps. By creating an account or using the Service
+        as {label}, you agree to these Terms.
       </p>
     );
   }
@@ -36,8 +52,18 @@ export function LegalIntro({
   return (
     <p className="text-muted">
       This Privacy Policy explains how {brand.name} collects, uses, and shares
-      information when you use app.pulseflow.site and related sites (the
-      “Service”) as {label}.
+      information when you use{" "}
+      <a
+        className="font-semibold text-primary"
+        href="https://app.pulseflow.site"
+      >
+        app.pulseflow.site
+      </a>
+      ,{" "}
+      <a className="font-semibold text-primary" href="https://pulseflow.site">
+        pulseflow.site
+      </a>
+      , and related sites or apps (the “Service”) as {label}.
     </p>
   );
 }
@@ -48,25 +74,26 @@ export function TermsSummary() {
       <h2 className="font-display text-lg font-bold">Summary</h2>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
-          {brand.name} is operations software for property and short-term rental
-          teams, not a landlord, employer, payment processor, or travel agency.
+          {brand.name} is operations software for properties that are rented,
+          managed, and maintained. It is not a landlord, employer, payment
+          processor, escrow, insurer, or travel agency.
         </li>
         <li>
           Keep your login secure and use accurate registration details. You are
           responsible for activity under your account.
         </li>
         <li>
-          Personal workspaces are free for solo use. Company workspaces support
-          teams; company billing applies to the owner when subscriptions are
-          live.
+          Personal workspaces are for solo use. Company workspaces support teams;
+          company billing applies to the company owner when paid plans are
+          active.
         </li>
         <li>
-          Do not misuse chat, upload harmful content, scrape the Service, or
-          process data you are not authorized to handle.
+          Do not misuse chat, upload harmful or unlawful content, scrape the
+          Service, or process data you are not authorized to handle.
         </li>
         <li>
           We may update these Terms and suspend accounts that create risk for
-          other users.
+          other users or the Service.
         </li>
       </ul>
     </section>
@@ -88,7 +115,8 @@ export function TermsGuestSection() {
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
           <strong className="text-ink">Quotes:</strong> submit dates and a note;
-          your host sends a total price, optional deposit, timing, and how to pay.
+          your host sends a total price, optional deposit, timing, and how to
+          pay.
         </li>
         <li>
           <strong className="text-ink">Deposits:</strong> paid directly to your
@@ -120,13 +148,11 @@ export function TermsGuestSection() {
 export function TermsOwnerSection() {
   return (
     <section className="space-y-2">
-      <h2 className="font-display text-lg font-bold">
-        Owners & managers
-      </h2>
+      <h2 className="font-display text-lg font-bold">Owners & managers</h2>
       <p className="text-muted">
-        You operate properties, invite team members and stay guests, and are
-        responsible for rental agreements, pricing, deposits, refunds, and local
-        compliance.
+        You operate properties (homes, offices, and other rentable units), invite
+        team members and stay guests, and are responsible for rental or lease
+        agreements, pricing, deposits, refunds, and local compliance.
       </p>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
@@ -170,8 +196,8 @@ export function TermsEmployeeSection() {
       </p>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
-          Complete assigned jobs and update property status only for villas you
-          are allowed to access.
+          Complete assigned jobs and update property status only for properties
+          you are allowed to access.
         </li>
         <li>
           Submit bills and receipts for work-related expenses according to your
@@ -201,7 +227,7 @@ export function TermsStaffSection() {
       <p className="text-muted">
         If you join as staff, you use the field app for assigned properties,
         tasks, jobs, team chat, and bills. Your company owner or manager controls
-        invites, villa access, and work assignments.
+        invites, property access, and work assignments.
       </p>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
@@ -237,28 +263,44 @@ export function TermsCommonSections() {
         <p className="text-muted">
           You retain ownership of properties, tasks, contacts, messages, bills,
           photos, and other data you submit. You grant us a limited license to
-          host and process it to operate the Service. You are responsible for
-          its legality and for privacy and employment rules when inviting others.
+          host and process it to operate, secure, and improve the Service. You
+          are responsible for its legality and for privacy and employment rules
+          when inviting others.
+        </p>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="font-display text-lg font-bold">Acceptable use</h2>
+        <p className="text-muted">
+          You may not reverse engineer the Service except where allowed by law,
+          probe or disrupt systems, impersonate others, spam, upload malware, or
+          use the Service for unlawful activity. We may remove content or suspend
+          accounts that violate these rules.
         </p>
       </section>
 
       <section className="space-y-2">
         <h2 className="font-display text-lg font-bold">Billing & referrals</h2>
         <p className="text-muted">
-          Until Stripe checkout is live, registered users receive a 3-month free
-          period with full features. When billing is active, company owners
-          subscribe for gated company features; referral rewards may unlock
-          extended Full access as described in the app.
+          New company workspaces receive about 90 days (roughly 3 months) of full
+          features while billing is rolling out. Personal workspaces stay free for
+          solo use. When paid company plans are active, company owners subscribe
+          through Stripe for gated company features; referral rewards may unlock
+          extended Full access as described in the app. Fees are non-refundable
+          except where required by law or stated in a written offer.
         </p>
       </section>
 
       <section className="space-y-2">
         <h2 className="font-display text-lg font-bold">Disclaimers & liability</h2>
         <p className="text-muted">
-          The Service is provided “as is”. {brand.name} coordinates operations;
-          it is not legal, tax, accounting, or insurance advice. To the fullest
-          extent permitted by law, our aggregate liability is limited to fees you
-          paid in the prior twelve months (or USD 100 if none).
+          The Service is provided “as is”. {brand.name} coordinates operations; it
+          is not legal, tax, accounting, or insurance advice, and it does not
+          guarantee occupancy, staff performance, or payment between hosts and
+          guests. To the fullest extent permitted by law, our aggregate liability
+          for claims relating to the Service is limited to the fees you paid us
+          for the Service in the prior twelve months (or USD 100 if you paid
+          none).
         </p>
       </section>
 
@@ -267,7 +309,18 @@ export function TermsCommonSections() {
         <p className="text-muted">
           We may update these Terms, suspend access for breach or risk, or
           discontinue features. You may stop using the Service at any time.
-          Continued use after changes means you accept the updated Terms.
+          Continued use after we post changes means you accept the updated Terms.
+          We will show a revised “Last updated” date on this page.
+        </p>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="font-display text-lg font-bold">Governing law</h2>
+        <p className="text-muted">
+          These Terms are governed by the laws of Thailand, without regard to
+          conflict-of-law rules, except where mandatory consumer or local law
+          gives you non-waivable rights. Courts in Thailand have non-exclusive
+          jurisdiction, subject to those mandatory rights.
         </p>
       </section>
     </>
@@ -285,11 +338,12 @@ export function PrivacySummary() {
         </li>
         <li>
           We use data to authenticate you, deliver features, send notifications,
-          and improve the product.
+          secure the Service, and improve the product.
         </li>
         <li>
-          We share data with infrastructure providers, Stripe when billing is
-          enabled, teammates according to role, and authorities when required.
+          We share data with infrastructure providers (for example hosting,
+          database, and email), Stripe when billing is enabled, teammates
+          according to role, and authorities when required by law.
         </li>
         <li>We do not sell your personal information.</li>
       </ul>
@@ -317,7 +371,7 @@ export function PrivacyGuestSection() {
         </li>
         <li>
           Push notifications may alert you to booking, deposit, and briefing
-          updates if enabled.
+          updates if you enable them.
         </li>
       </ul>
     </section>
@@ -344,7 +398,7 @@ export function PrivacyOwnerSection() {
         </li>
         <li>
           Stripe customer and subscription IDs are stored on the organization when
-          billing is enabled; card numbers are handled by Stripe.
+          billing is enabled; card numbers are handled by Stripe, not by us.
         </li>
       </ul>
     </section>
@@ -357,7 +411,7 @@ export function PrivacyEmployeeSection() {
       <h2 className="font-display text-lg font-bold">Cleaning team</h2>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
-          We store your profile, assigned villas, job confirmations, and bills
+          We store your profile, assigned properties, job confirmations, and bills
           you submit for your organization.
         </li>
         <li>
@@ -406,20 +460,78 @@ export function PrivacyCommonSections() {
   return (
     <>
       <section className="space-y-2">
-        <h2 className="font-display text-lg font-bold">Retention & security</h2>
+        <h2 className="font-display text-lg font-bold">
+          What we collect
+        </h2>
+        <ul className="list-disc space-y-1 pl-5 text-muted">
+          <li>
+            Account data: name, email, role, organization, and optional profile
+            fields you enter.
+          </li>
+          <li>
+            Operations data: properties, tasks, jobs, contacts, bills, messages,
+            photos, guest stays, and related records you or your teammates create.
+          </li>
+          <li>
+            Technical data: device and browser type, IP address, app version, log
+            events, and session cookies needed to keep you signed in.
+          </li>
+          <li>
+            Optional push subscription tokens if you enable notifications, and
+            demo-session cookies when you use public demo seats.
+          </li>
+        </ul>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="font-display text-lg font-bold">
+          Cookies & local storage
+        </h2>
         <p className="text-muted">
-          We retain data while your organization is active and for a reasonable
-          period afterward. We use encrypted transport and access controls. No
-          method is 100% secure; use strong passwords and limit invites.
+          We use essential cookies and local storage for authentication, language
+          preference, and (when used) demo mode. We do not use third-party
+          advertising cookies. Disabling essential cookies may prevent sign-in.
         </p>
       </section>
 
       <section className="space-y-2">
-        <h2 className="font-display text-lg font-bold">Your choices</h2>
+        <h2 className="font-display text-lg font-bold">Service providers</h2>
+        <p className="text-muted">
+          We use trusted processors to run the Service, including cloud hosting
+          and content delivery (for example Vercel), database and authentication
+          (for example Supabase), file storage for photos and receipts, email
+          delivery, and Stripe for paid company subscriptions when billing is
+          enabled. Providers process data only to provide their services to us.
+        </p>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="font-display text-lg font-bold">Retention & security</h2>
+        <p className="text-muted">
+          We retain data while your organization is active and for a reasonable
+          period afterward for backups, dispute handling, and legal compliance.
+          We use encrypted transport (HTTPS) and access controls. No method is
+          100% secure; use strong passwords and limit invites.
+        </p>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="font-display text-lg font-bold">Your choices & requests</h2>
         <ul className="list-disc space-y-1 pl-5 text-muted">
           <li>Update profile and organization settings in the app</li>
           <li>Manage company billing via the billing portal when available</li>
-          <li>Contact us to access, correct, or delete data where applicable</li>
+          <li>
+            Email{" "}
+            <a
+              className="font-semibold text-primary"
+              href={`mailto:${brand.supportEmail}`}
+            >
+              {brand.supportEmail}
+            </a>{" "}
+            to access, correct, export, or request deletion of your account or
+            personal data where applicable. We may need to verify your identity
+            and keep limited records required by law.
+          </li>
         </ul>
       </section>
 
@@ -429,16 +541,16 @@ export function PrivacyCommonSections() {
         </h2>
         <p className="text-muted">
           Data may be processed outside your home country through our providers.
-          The Service is for business operations and is not directed at children
-          under 16.
+          The Service is for business and rental operations and is not directed at
+          children under 16. Do not create an account for a child under 16.
         </p>
       </section>
 
       <section className="space-y-2">
         <h2 className="font-display text-lg font-bold">Changes</h2>
         <p className="text-muted">
-          We may update this Policy and post a revised date. Continued use means
-          you accept the updated Policy.
+          We may update this Policy and post a revised “Last updated” date on this
+          page. Continued use means you accept the updated Policy.
         </p>
       </section>
     </>
@@ -518,9 +630,23 @@ export function LegalDocumentFooter({
   return (
     <>
       <section className="space-y-2">
-        <h2 className="font-display text-lg font-bold">Contact</h2>
+        <h2 className="font-display text-lg font-bold">Operator & contact</h2>
         <p className="text-muted">
-          Questions:{" "}
+          The Service is operated under the {brand.name} brand at{" "}
+          <a
+            className="font-semibold text-primary"
+            href="https://pulseflow.site"
+          >
+            pulseflow.site
+          </a>{" "}
+          and{" "}
+          <a
+            className="font-semibold text-primary"
+            href="https://app.pulseflow.site"
+          >
+            app.pulseflow.site
+          </a>
+          . Legal notices, privacy requests, and questions:{" "}
           <a
             className="font-semibold text-primary"
             href={`mailto:${brand.supportEmail}`}

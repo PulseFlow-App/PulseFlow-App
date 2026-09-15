@@ -52,13 +52,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell mx-auto flex h-dvh w-full max-w-[90rem] overflow-hidden bg-transparent">
       <SideNav />
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <div
-          className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pb-20 md:pb-8"
-          style={{ paddingInline: "var(--shell-pad)" }}
+          className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pb-[max(5.5rem,calc(4.5rem+env(safe-area-inset-bottom)))] md:pb-8"
+          style={{
+            paddingInline:
+              "max(var(--shell-pad), env(safe-area-inset-left)) max(var(--shell-pad), env(safe-area-inset-right))",
+          }}
         >
           <div
-            className="mx-auto w-full"
+            className="mx-auto w-full min-w-0"
             style={{ maxWidth: "var(--shell-max)" }}
           >
             <AppHeader

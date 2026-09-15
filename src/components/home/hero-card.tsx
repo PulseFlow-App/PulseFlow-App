@@ -52,11 +52,11 @@ export function HeroCard({
       <h1 className="relative mt-1 font-display text-[1.35rem] font-extrabold leading-tight tracking-tight md:mt-2 md:text-[clamp(1.5rem,1.2rem+1.2vw,1.875rem)]">
         {t("home.hello", { name: greetingName(name) })}
       </h1>
-      <p className="type-section relative mt-1 max-w-[36rem] text-white/95">
+      <p className="type-section relative mt-1 max-w-[36rem] text-white">
         {subtitle}
       </p>
       <div className="relative mt-3 md:mt-5">
-        <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold text-white/90 md:mb-2 md:text-xs">
+        <div className="mb-1.5 flex items-center justify-between text-[11px] font-bold text-white md:mb-2 md:text-xs">
           <span>{t("home.opsReadiness")}</span>
           <span>{progress}%</span>
         </div>

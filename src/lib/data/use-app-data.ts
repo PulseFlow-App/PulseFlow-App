@@ -493,7 +493,7 @@ function useDemoData(): AppData {
     createVilla: async (input) => {
       assertDemoWritable();
       if (!profile || !canCreateVillas(profile.role)) {
-        throw new Error("You cannot add villas.");
+        throw new Error("You cannot add properties.");
       }
       let scope =
         input.scope ??
@@ -539,10 +539,10 @@ function useDemoData(): AppData {
       const isPersonal =
         profile.personal_org_id && villa.org_id === profile.personal_org_id;
       if (profile.role !== "owner" && !isPersonal) {
-        throw new Error("You can only remove your personal villas.");
+        throw new Error("You can only remove your personal properties.");
       }
       if (profile.role === "owner" && villa.org_id !== profile.org_id) {
-        throw new Error("Only company villas can be removed by the owner.");
+        throw new Error("Only company properties can be removed by the owner.");
       }
       updateDemoStore((s) => ({
         ...s,
@@ -1029,7 +1029,7 @@ function useDemoData(): AppData {
         body: text,
         profile,
         stay,
-        villaName: villaForStay?.name ?? "Villa",
+        villaName: villaForStay?.name ?? "Property",
         ownerManagerIds: ownerManagerIds(store.profiles, stay.org_id),
       });
 
@@ -1318,7 +1318,7 @@ function useDemoData(): AppData {
             : s.villas,
       }));
 
-      const villaName = villa?.name ?? "Villa";
+      const villaName = villa?.name ?? "Property";
       const dateLine = `${stay.check_in} → ${stay.check_out}`;
       const stayDeposit = (store.guestDeposits ?? []).find(
         (d) => d.stay_id === stayId,
@@ -1406,7 +1406,7 @@ function useDemoData(): AppData {
         throw new Error("Check-out must be after check-in.");
       }
       const villa = store.villas.find((v) => v.id === input.villa_id);
-      if (!villa) throw new Error("Villa not found.");
+      if (!villa) throw new Error("Property not found.");
       const requestId = uid("dates");
       updateDemoStore((s) => ({
         ...s,
@@ -1520,7 +1520,7 @@ function useDemoData(): AppData {
             org_id: profile.org_id,
             kind: "guest_update",
             title: "Price quote for your stay",
-            body: `${villa?.name ?? "Villa"} · ${quoteBody} · Tap to accept or decline.`,
+            body: `${villa?.name ?? "Property"} · ${quoteBody} · Tap to accept or decline.`,
             href: "/villas",
             entity_id: requestId,
             audience_profile_ids: [request.guest_profile_id],
@@ -1532,7 +1532,7 @@ function useDemoData(): AppData {
             org_id: profile.org_id,
             kind: "guest_update",
             title: "Dates declined",
-            body: `${villa?.name ?? "Villa"} · your date request was declined`,
+            body: `${villa?.name ?? "Property"} · your date request was declined`,
             href: "/villas",
             entity_id: requestId,
             audience_profile_ids: [request.guest_profile_id],
@@ -1623,7 +1623,7 @@ function useDemoData(): AppData {
           org_id: request.org_id,
           kind: "guest_update",
           title: "Guest confirmed the stay",
-          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${formatStayQuoteLine({
+          body: `${profile.full_name} · ${villa?.name ?? "Property"} · ${formatStayQuoteLine({
             amount: Number(request.quoted_price_amount),
             currency: request.quoted_price_currency,
             checkIn: request.check_in,
@@ -1699,7 +1699,7 @@ function useDemoData(): AppData {
             request.status === "quoted"
               ? "Guest declined the price quote"
               : "Guest cancelled date request",
-          body: `${profile.full_name} · ${villa?.name ?? "Villa"} · ${request.check_in} → ${request.check_out}`,
+          body: `${profile.full_name} · ${villa?.name ?? "Property"} · ${request.check_in} → ${request.check_out}`,
           href: "/date-requests",
           entity_id: requestId,
           audience_profile_ids: ownerManagerIds(store.profiles, request.org_id),

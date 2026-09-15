@@ -125,7 +125,7 @@ export const deLocalePatch: Partial<Dictionary> = {
   "demo.sys.agreedMsg":
     "✅ Gelesen & zugestimmt – {service} bei {location} ({when})",
   "demo.sys.locationFallback": "Ort",
-  "demo.sys.villaFallback": "Villa",
+  "demo.sys.villaFallback": "Property",
 
   "demo.orderChat.header": "📋 Serviceauftrag für {name}",
   "demo.orderChat.what": "Was: {serviceType}",
@@ -168,7 +168,7 @@ export const deLocalePatch: Partial<Dictionary> = {
   "billing.trial": "Testphase",
   "plan.basic": "Basic",
   "guest.host": "Gastgeber",
-  "dateRequests.unknownVilla": "Villa",
+  "dateRequests.unknownVilla": "Property",
   "reports.property": "Objekt",
   "reports.snapshotLabel": "Bezeichnung (optional)",
   "talent.skill.ac": "Klima / HLK",

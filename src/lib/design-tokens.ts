@@ -87,6 +87,6 @@ export const brand = {
   name: "Pulse Flow",
   tagline: "The pulse of your rental operations",
   description:
-    "The pulse of your rental operations. Villa status, tasks, contacts, and bills for owners and on-site managers, in one place.",
+    "The pulse of your rental operations. Property status, tasks, contacts, and bills for owners and on-site managers, in one place.",
   supportEmail: "support@pulseflow.site",
 } as const;

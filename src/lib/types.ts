@@ -117,9 +117,18 @@ export type VillaParking = "none" | "street" | "private";
 export type VillaKitchen = "none" | "basic" | "full";
 export type VillaAircon = "none" | "partial" | "full";
 export type VillaView = "sea" | "jungle" | "pool" | "garden" | "mountain";
+export type PropertyType =
+  | "villa"
+  | "bungalow"
+  | "house"
+  | "apartment"
+  | "studio"
+  | "office"
+  | "other";
 
 /** Optional listing facts shown on property cards. */
 export type VillaDetails = {
+  property_type: PropertyType | null;
   sq_m: number | null;
   bedrooms: number | null;
   bathrooms: number | null;

@@ -1,6 +1,27 @@
 "use client";
 
-import { createFreshDemoStore, type DemoStore } from "./seed-data";
+import {
+  createFreshDemoStore as createBaseDemoStore,
+  DEMO_DEPOSIT_ID,
+  type DemoStore,
+} from "./seed-data";
+import {
+  enrichDemoVillas,
+  extraBills,
+  extraGuestBriefings,
+  extraGuestCharges,
+  extraGuestDeposits,
+  extraGuestStays,
+  extraHouseGuides,
+  extraMessages,
+  extraNotifications,
+  extraServiceOrders,
+  extraStayDateRequests,
+  extraStayPhotos,
+  extraSupportMessages,
+  extraTasks,
+  extraVillaAssignments,
+} from "./seed-enrichment";
 import type {
   AppNotification,
   DemoAccount,
@@ -32,6 +53,58 @@ import { dateDrivenVillaPatch } from "@/lib/villas/status-from-dates";
 import { normalizeVillaRow } from "@/lib/villas/property-details";
 import { pickPrimaryRole } from "@/lib/auth/attach-org";
 
+function createFreshDemoStore(): DemoStore {
+  const base = createBaseDemoStore();
+  return {
+    ...base,
+    villas: enrichDemoVillas(base.villas),
+    tasks: [...base.tasks, ...structuredClone(extraTasks)],
+    bills: [...base.bills, ...structuredClone(extraBills)],
+    messages: [...base.messages, ...structuredClone(extraMessages)],
+    villaAssignments: [
+      ...base.villaAssignments,
+      ...structuredClone(extraVillaAssignments),
+    ],
+    notifications: [
+      ...base.notifications,
+      ...structuredClone(extraNotifications),
+    ],
+    serviceOrders: [
+      ...base.serviceOrders,
+      ...structuredClone(extraServiceOrders),
+    ],
+    guestStays: [...base.guestStays, ...structuredClone(extraGuestStays)],
+    houseGuides: [...base.houseGuides, ...structuredClone(extraHouseGuides)],
+    supportMessages: [
+      ...base.supportMessages,
+      ...structuredClone(extraSupportMessages),
+    ],
+    guestBriefings: [
+      ...base.guestBriefings,
+      ...structuredClone(extraGuestBriefings),
+    ],
+    guestDeposits: [
+      ...base.guestDeposits.map((d) =>
+        d.id === DEMO_DEPOSIT_ID
+          ? {
+              ...d,
+              status: "held" as const,
+              notes:
+                "Held at check-in · glass + remote + late checkout logged as cuts.",
+            }
+          : d,
+      ),
+      ...structuredClone(extraGuestDeposits),
+    ],
+    guestCharges: [...base.guestCharges, ...structuredClone(extraGuestCharges)],
+    stayPhotos: [...base.stayPhotos, ...structuredClone(extraStayPhotos)],
+    stayDateRequests: [
+      ...base.stayDateRequests,
+      ...structuredClone(extraStayDateRequests),
+    ],
+  };
+}
+
 function slugifyName(name: string) {
   return (
     name
@@ -52,7 +125,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v16";
+const STORE_KEY = "pulseflow_demo_store_v21";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -184,6 +257,11 @@ function readStore(): DemoStore {
         "pulseflow_demo_store_v13",
         "pulseflow_demo_store_v14",
         "pulseflow_demo_store_v15",
+        "pulseflow_demo_store_v16",
+        "pulseflow_demo_store_v17",
+        "pulseflow_demo_store_v18",
+        "pulseflow_demo_store_v19",
+        "pulseflow_demo_store_v20",
       ]) {
         localStorage.removeItem(key);
       }
@@ -1165,9 +1243,9 @@ export function ensurePersonalOrg(profile: Profile): string {
 export function demoMergeVillaToCompany(actor: Profile, villaId: string) {
   const store = readStore();
   const villa = store.villas.find((v) => v.id === villaId);
-  if (!villa) throw new Error("Villa not found.");
+  if (!villa) throw new Error("Property not found.");
   if (!actor.personal_org_id || villa.org_id !== actor.personal_org_id) {
-    throw new Error("Only personal (no-company) villas can be merged.");
+    throw new Error("Only personal (no-company) properties can be merged.");
   }
   const company = store.orgs.find((o) => o.id === actor.org_id);
   if (!company || company.kind !== "company") {
@@ -1195,7 +1273,7 @@ export function demoSetVillaAssignments(
   villaIds: string[],
 ) {
   if (actor.role !== "owner") {
-    throw new Error("Only owners can assign villas to managers.");
+    throw new Error("Only owners can assign properties to managers.");
   }
   const store = readStore();
   const manager = store.profiles.find(
@@ -1228,13 +1306,13 @@ export function demoSetVillaAssignees(
   profileIds: string[],
 ) {
   if (actor.role !== "owner") {
-    throw new Error("Only owners can set villa assignees.");
+    throw new Error("Only owners can set property assignees.");
   }
   const store = readStore();
   const villa = store.villas.find(
     (v) => v.id === villaId && v.org_id === actor.org_id,
   );
-  if (!villa) throw new Error("Villa not found.");
+  if (!villa) throw new Error("Property not found.");
 
   const kept = store.villaAssignments.filter(
     (a) => !(a.org_id === actor.org_id && a.villa_id === villaId),

@@ -1,4 +1,5 @@
 import type {
+  PropertyType,
   Villa,
   VillaAircon,
   VillaDetails,
@@ -12,6 +13,7 @@ import type { MessageKey } from "@/lib/i18n";
 type TFn = (key: MessageKey, params?: Record<string, string | number>) => string;
 
 export const EMPTY_VILLA_DETAILS: VillaDetails = {
+  property_type: null,
   sq_m: null,
   bedrooms: null,
   bathrooms: null,
@@ -28,6 +30,15 @@ export const EMPTY_VILLA_DETAILS: VillaDetails = {
   view: null,
 };
 
+export const PROPERTY_TYPES: PropertyType[] = [
+  "villa",
+  "bungalow",
+  "house",
+  "apartment",
+  "studio",
+  "office",
+  "other",
+];
 export const VILLA_SETTINGS: VillaSetting[] = ["community", "standalone"];
 export const VILLA_PARKING: VillaParking[] = ["none", "street", "private"];
 export const VILLA_KITCHENS: VillaKitchen[] = ["none", "basic", "full"];
@@ -43,6 +54,7 @@ export const VILLA_VIEWS: VillaView[] = [
 export type TriSelect = "" | "yes" | "no";
 
 export type VillaDetailsForm = {
+  property_type: "" | PropertyType;
   sq_m: string;
   bedrooms: string;
   bathrooms: string;
@@ -60,6 +72,7 @@ export type VillaDetailsForm = {
 };
 
 export const EMPTY_VILLA_DETAILS_FORM: VillaDetailsForm = {
+  property_type: "",
   sq_m: "",
   bedrooms: "",
   bathrooms: "",
@@ -100,6 +113,7 @@ function formatQty(n: number) {
 }
 
 export const VILLA_DETAIL_KEYS = [
+  "property_type",
   "sq_m",
   "bedrooms",
   "bathrooms",
@@ -126,7 +140,7 @@ export function omitVillaDetails<T extends object>(row: T): T {
 
 export function isMissingVillaDetailsColumn(message: string | undefined) {
   if (!message) return false;
-  return /(sq_m|bedrooms|bathrooms|max_guests|floors|has_pool|has_garden|pet_friendly|has_wifi|setting|parking|kitchen|aircon|view).*(column|schema cache)|(column|schema cache).*(sq_m|bedrooms|bathrooms|max_guests|floors|has_pool|has_garden|pet_friendly|has_wifi|setting|parking|kitchen|aircon|view)/i.test(
+  return /(property_type|sq_m|bedrooms|bathrooms|max_guests|floors|has_pool|has_garden|pet_friendly|has_wifi|setting|parking|kitchen|aircon|view).*(column|schema cache)|(column|schema cache).*(property_type|sq_m|bedrooms|bathrooms|max_guests|floors|has_pool|has_garden|pet_friendly|has_wifi|setting|parking|kitchen|aircon|view)/i.test(
     message,
   );
 }
@@ -135,6 +149,7 @@ export function pickVillaDetails(
   input: Partial<VillaDetails> | null | undefined,
 ): VillaDetails {
   return {
+    property_type: oneOf(input?.property_type, PROPERTY_TYPES),
     sq_m: numOrNull(input?.sq_m),
     bedrooms: numOrNull(input?.bedrooms),
     bathrooms: numOrNull(input?.bathrooms),
@@ -177,6 +192,7 @@ export function detailsToForm(
 ): VillaDetailsForm {
   const d = pickVillaDetails(details);
   return {
+    property_type: d.property_type ?? "",
     sq_m: numToInput(d.sq_m),
     bedrooms: numToInput(d.bedrooms),
     bathrooms: numToInput(d.bathrooms),
@@ -196,6 +212,7 @@ export function detailsToForm(
 
 export function formToDetails(form: VillaDetailsForm): VillaDetails {
   return {
+    property_type: oneOf(form.property_type, PROPERTY_TYPES),
     sq_m: numOrNull(form.sq_m),
     bedrooms: numOrNull(form.bedrooms),
     bathrooms: numOrNull(form.bathrooms),
@@ -215,6 +232,9 @@ export function formToDetails(form: VillaDetailsForm): VillaDetails {
 
 export function villaFactChips(villa: Pick<Villa, keyof VillaDetails>, t: TFn) {
   const chips: string[] = [];
+  if (villa.property_type) {
+    chips.push(t(`villas.propertyType.${villa.property_type}` as MessageKey));
+  }
   if (villa.sq_m != null) {
     chips.push(t("villas.sqmShort", { n: formatQty(villa.sq_m) }));
   }

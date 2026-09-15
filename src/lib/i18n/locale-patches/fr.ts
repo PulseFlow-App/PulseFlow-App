@@ -24,7 +24,7 @@ export const frLocalePatch: Partial<Dictionary> = {
   "demo.sys.agreedMsg":
     "✅ Lu et accepté - {service} à {location} ({when})",
   "demo.sys.locationFallback": "lieu",
-  "demo.sys.villaFallback": "Villa",
+  "demo.sys.villaFallback": "Property",
 
   "demo.guest.ownerNotices":
     "Bienvenue ! Le chauffage de la piscine est allumé à partir de 16h. Départ à 11h - laissez les clés sur le comptoir de la cuisine.",

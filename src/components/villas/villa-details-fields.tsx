@@ -4,6 +4,7 @@ import { Input, Label, Select } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 import {
+  PROPERTY_TYPES,
   VILLA_AIRCON,
   VILLA_KITCHENS,
   VILLA_PARKING,
@@ -32,6 +33,17 @@ export function VillaDetailsFields({
         <p className="text-sm font-semibold text-ink">{t("villas.details")}</p>
         <p className="text-xs text-muted">{t("villas.detailsHint")}</p>
       </div>
+
+      <EnumField
+        label={t("villas.propertyType")}
+        value={value.property_type}
+        unsetLabel={t("villas.unset")}
+        options={PROPERTY_TYPES.map((id) => ({
+          id,
+          label: t(`villas.propertyType.${id}` as MessageKey),
+        }))}
+        onChange={(v) => set("property_type", v)}
+      />
 
       <div className="grid grid-cols-2 gap-3">
         <NumberField

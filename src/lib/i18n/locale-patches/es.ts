@@ -117,7 +117,7 @@ export const esLocalePatch: Partial<Dictionary> = {
   "demo.sys.agreedMsg":
     "✅ Leído y aceptado – {service} en {location} ({when})",
   "demo.sys.locationFallback": "ubicación",
-  "demo.sys.villaFallback": "Villa",
+  "demo.sys.villaFallback": "Property",
 
   "demo.orderChat.header": "📋 Orden de servicio para {name}",
   "demo.orderChat.what": "Qué: {serviceType}",

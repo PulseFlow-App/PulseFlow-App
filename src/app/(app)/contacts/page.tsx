@@ -485,7 +485,7 @@ function OrderForm({
         />
       </div>
       <div>
-        <Label>Where (villa)</Label>
+        <Label>Where (property)</Label>
         <Select value={villaId} onChange={(e) => setVillaId(e.target.value)}>
           <option value="">Other / custom</option>
           {villas.map((v) => (

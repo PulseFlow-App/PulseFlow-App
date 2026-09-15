@@ -98,7 +98,7 @@ export default function RegisterPage() {
     try {
       const workspaceName =
         orgName.trim() ||
-        `${fullName.trim().split(" ")[0] || "My"}'s villas`;
+        `${fullName.trim().split(" ")[0] || "My"}'s properties`;
 
       // Personal = solo workspace. Company register = owner only (staff use /join).
       const role = "owner" as const;
@@ -256,8 +256,9 @@ export default function RegisterPage() {
               ) : null}
               {useKind === "company" ? (
                 <p className="text-xs text-muted">
-                  Company accounts include 3 months of full features free while
-                  billing is not live. By creating an account you agree to our{" "}
+                  Company accounts include about 90 days of full features free
+                  while billing rolls out. By creating an account you agree to
+                  our{" "}
                   <Link href="/terms" className="font-semibold text-primary">
                     Terms
                   </Link>{" "}

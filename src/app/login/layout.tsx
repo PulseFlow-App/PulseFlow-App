@@ -4,7 +4,7 @@ import { APP_URL, MARKETING_URL, createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Sign in",
-  description: `Sign in to ${brand.name}. Villa status, tasks, contacts, and bills for owners and on-site managers.`,
+  description: `Sign in to ${brand.name}. Property status, tasks, contacts, and bills for owners and on-site managers.`,
   path: "/login",
 });
 

@@ -113,7 +113,7 @@ export const myLocalePatch: Partial<Dictionary> = {
   "demo.sys.agreedMsg":
     "✅ ဖတ်ပြီး သဘောတူပြီး – {location} တွင် {service} ({when})",
   "demo.sys.locationFallback": "တည်နေရာ",
-  "demo.sys.villaFallback": "Villa",
+  "demo.sys.villaFallback": "Property",
 
   "demo.orderChat.header": "📋 {name} အတွက် ဝန်ဆောင်မှုအမိန့်",
   "demo.orderChat.what": "ဘာလဲ: {serviceType}",
