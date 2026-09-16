@@ -125,7 +125,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v21";
+const STORE_KEY = "pulseflow_demo_store_v22";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -174,34 +174,36 @@ function normalizeStore(store: DemoStore): DemoStore {
     }
   }
 
+  // Demo inventory always comes from the latest seed (photos, office, occupancy,
+  // tasks, deposits, etc.). Keep only user-created rows that are not in seed.
+  const seedVillaIds = new Set(fresh.villas.map((v) => v.id));
+  const seedTaskIds = new Set(fresh.tasks.map((t) => t.id));
+  const seedBillIds = new Set(fresh.bills.map((b) => b.id));
+  const seedOrderIds = new Set(fresh.serviceOrders.map((o) => o.id));
+  const seedMsgIds = new Set(fresh.messages.map((m) => m.id));
+  const seedNotifIds = new Set(fresh.notifications.map((n) => n.id));
+  const seedContactIds = new Set(fresh.contacts.map((c) => c.id));
+  const seedStayIds = new Set(fresh.guestStays.map((s) => s.id));
+  const seedAssignKeys = new Set(
+    fresh.villaAssignments.map((a) => `${a.villa_id}:${a.profile_id}`),
+  );
+
   return {
-    ...store,
-    orgs: repairDemoCompanyBilling(store.orgs ?? fresh.orgs),
+    ...fresh,
+    orgs: repairDemoCompanyBilling(fresh.orgs),
     profiles: [...profileById.values()],
     accounts: [...accountByEmail.values()],
-    notifications: (store.notifications ?? []).map((n) => ({
-      ...n,
-      title: plainDash(n.title) ?? n.title,
-      body: plainDash(n.body) ?? n.body,
-      read_by: Array.isArray(n.read_by) ? n.read_by : [],
-    })),
-    serviceOrders: (store.serviceOrders ?? []).map((o) => ({
-      ...o,
-      service_type: plainDash(o.service_type) ?? o.service_type,
-      details: plainDash(o.details) ?? null,
-      location_label: plainDash(o.location_label) ?? null,
-    })),
-    bills: store.bills.map((b) => ({
-      ...b,
-      due_date: b.due_date ?? null,
-      category: b.category ?? "other",
-    })),
-    contacts: store.contacts.map((c) => ({
-      ...c,
-      linked_profile_id: c.linked_profile_id ?? null,
-      notes: plainDash(c.notes) ?? null,
-    })),
-    villas: store.villas.map((v) =>
+    endorsements: store.endorsements?.length
+      ? store.endorsements
+      : fresh.endorsements,
+    memberships: store.memberships?.length
+      ? store.memberships
+      : fresh.memberships,
+    invites: store.invites ?? [],
+    villas: [
+      ...fresh.villas,
+      ...store.villas.filter((v) => !seedVillaIds.has(v.id)),
+    ].map((v) =>
       normalizeVillaRow({
         ...v,
         photo_url: v.photo_url ?? null,
@@ -209,26 +211,80 @@ function normalizeStore(store: DemoStore): DemoStore {
         notes: plainDash(v.notes) ?? null,
       }),
     ),
-    tasks: store.tasks.map((t) => ({
+    tasks: [
+      ...fresh.tasks,
+      ...store.tasks.filter((t) => !seedTaskIds.has(t.id)),
+    ].map((t) => ({
       ...t,
       title: plainDash(t.title) ?? t.title,
       time_start: t.time_start ?? null,
       time_end: t.time_end ?? null,
       service_order_id: t.service_order_id ?? null,
     })),
-    messages: store.messages.map((m) => ({
+    bills: [
+      ...fresh.bills,
+      ...store.bills.filter((b) => !seedBillIds.has(b.id)),
+    ].map((b) => ({
+      ...b,
+      due_date: b.due_date ?? null,
+      category: b.category ?? "other",
+    })),
+    contacts: [
+      ...fresh.contacts,
+      ...store.contacts.filter((c) => !seedContactIds.has(c.id)),
+    ].map((c) => ({
+      ...c,
+      linked_profile_id: c.linked_profile_id ?? null,
+      notes: plainDash(c.notes) ?? null,
+    })),
+    messages: [
+      ...fresh.messages,
+      ...store.messages.filter((m) => !seedMsgIds.has(m.id)),
+    ].map((m) => ({
       ...m,
       body: plainDash(m.body) ?? m.body,
       service_order_id: m.service_order_id ?? null,
     })),
-    guestStays: store.guestStays ?? [],
-    houseGuides: store.houseGuides ?? [],
-    supportMessages: store.supportMessages ?? [],
-    guestBriefings: store.guestBriefings ?? [],
-    guestDeposits: store.guestDeposits ?? [],
-    guestCharges: store.guestCharges ?? [],
-    stayPhotos: store.stayPhotos ?? [],
-    stayDateRequests: store.stayDateRequests ?? [],
+    notifications: [
+      ...fresh.notifications,
+      ...store.notifications.filter((n) => !seedNotifIds.has(n.id)),
+    ].map((n) => ({
+      ...n,
+      title: plainDash(n.title) ?? n.title,
+      body: plainDash(n.body) ?? n.body,
+      read_by: Array.isArray(n.read_by) ? n.read_by : [],
+    })),
+    serviceOrders: [
+      ...fresh.serviceOrders,
+      ...store.serviceOrders.filter((o) => !seedOrderIds.has(o.id)),
+    ].map((o) => ({
+      ...o,
+      service_type: plainDash(o.service_type) ?? o.service_type,
+      details: plainDash(o.details) ?? null,
+      location_label: plainDash(o.location_label) ?? null,
+    })),
+    villaAssignments: [
+      ...fresh.villaAssignments,
+      ...store.villaAssignments.filter(
+        (a) => !seedAssignKeys.has(`${a.villa_id}:${a.profile_id}`),
+      ),
+    ],
+    guestStays: [
+      ...fresh.guestStays,
+      ...(store.guestStays ?? []).filter((s) => !seedStayIds.has(s.id)),
+    ],
+    houseGuides: fresh.houseGuides,
+    supportMessages: fresh.supportMessages,
+    guestBriefings: fresh.guestBriefings,
+    guestDeposits: fresh.guestDeposits,
+    guestCharges: fresh.guestCharges,
+    stayPhotos: fresh.stayPhotos,
+    stayDateRequests: [
+      ...fresh.stayDateRequests,
+      ...(store.stayDateRequests ?? []).filter(
+        (r) => !fresh.stayDateRequests.some((f) => f.id === r.id),
+      ),
+    ],
   };
 }
 
@@ -240,6 +296,7 @@ function readStore(): DemoStore {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) {
       memoryStore = normalizeStore(JSON.parse(raw) as DemoStore);
+      persist(memoryStore);
     } else {
       for (const key of [
         "pulseflow_demo_store_v1",
@@ -262,6 +319,7 @@ function readStore(): DemoStore {
         "pulseflow_demo_store_v18",
         "pulseflow_demo_store_v19",
         "pulseflow_demo_store_v20",
+        "pulseflow_demo_store_v21",
       ]) {
         localStorage.removeItem(key);
       }
@@ -305,6 +363,8 @@ function setSession(profileId: string) {
 }
 
 export function demoLogin(email: string, password: string): Profile | null {
+  // Always load the latest screenshot-ready seed for demo seats.
+  resetDemoStore();
   const store = readStore();
   const account = store.accounts.find(
     (a) => a.email.toLowerCase() === email.toLowerCase() && a.password === password,

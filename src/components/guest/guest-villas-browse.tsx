@@ -15,6 +15,7 @@ import { confirmedQuoteForVilla } from "@/lib/guest/stay-date-request";
 import { todayIsoDate } from "@/lib/villas/status-from-dates";
 import type { VillaListItem } from "@/lib/types";
 import { VillaFacts } from "@/components/villas/villa-facts";
+import { ExpandableVillaPhoto } from "@/components/villas/villa-photo";
 
 type GuestConfirm =
   | { kind: "cancel-request"; requestId: string }
@@ -198,7 +199,15 @@ export function GuestVillasBrowse({
             isConfirmedStayStatus(s.status),
         );
         return (
-          <Card key={v.id} className="space-y-2 p-4">
+          <Card key={v.id} className="overflow-hidden p-0">
+            {v.photo_url ? (
+              <ExpandableVillaPhoto
+                src={v.photo_url}
+                alt={v.name}
+                className="w-full rounded-none"
+              />
+            ) : null}
+            <div className="space-y-2 p-4">
             <div className="flex items-start justify-between gap-2">
               <p className="font-display text-base font-bold text-ink">
                 {v.name}
@@ -319,6 +328,7 @@ export function GuestVillasBrowse({
                 {t("guest.requestDates")}
               </Button>
             )}
+            </div>
           </Card>
         );
       })}
