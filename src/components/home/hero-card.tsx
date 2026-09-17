@@ -49,7 +49,7 @@ export function HeroCard({
       <p className="type-section relative text-white">
         {t("home.ready")}
       </p>
-      <h1 className="relative mt-1 font-display text-[1.35rem] font-extrabold leading-tight tracking-tight md:mt-2 md:text-[clamp(1.5rem,1.2rem+1.2vw,1.875rem)]">
+      <h1 className="relative mt-1 font-display text-[1.35rem] font-extrabold leading-tight tracking-tight text-white md:mt-2 md:text-[clamp(1.5rem,1.2rem+1.2vw,1.875rem)]">
         {t("home.hello", { name: greetingName(name) })}
       </h1>
       <p className="type-section relative mt-1 max-w-[36rem] text-white">

@@ -9,6 +9,7 @@ import { thLocalePatch } from "./locale-patches/th";
 import { frLocalePatch } from "./locale-patches/fr";
 import { ruLocalePatch } from "./locale-patches/ru";
 import { arLocalePatch } from "./locale-patches/ar";
+import { inviteUiPatches } from "./locale-patches/invite-ui";
 
 function mergePatches(
   ...parts: Array<Partial<Dictionary>>
@@ -176,13 +177,13 @@ const arUiPatch: Partial<Dictionary> = {
 export const localePatches: Partial<
   Record<Locale, Partial<Record<MessageKey, string>>>
 > = {
-  de: deLocalePatch,
-  he: mergePatches(heLocalePatch, heUiPatch),
-  es: esLocalePatch,
-  it: itLocalePatch,
-  my: mergePatches(myLocalePatch, myUiPatch),
-  th: mergePatches(thLocalePatch, thUiPatch),
-  fr: frLocalePatch,
-  ru: ruLocalePatch,
-  ar: mergePatches(arLocalePatch, arUiPatch),
+  de: mergePatches(deLocalePatch, inviteUiPatches.de),
+  he: mergePatches(heLocalePatch, heUiPatch, inviteUiPatches.he),
+  es: mergePatches(esLocalePatch, inviteUiPatches.es),
+  it: mergePatches(itLocalePatch, inviteUiPatches.it),
+  my: mergePatches(myLocalePatch, myUiPatch, inviteUiPatches.my),
+  th: mergePatches(thLocalePatch, thUiPatch, inviteUiPatches.th),
+  fr: mergePatches(frLocalePatch, inviteUiPatches.fr),
+  ru: mergePatches(ruLocalePatch, inviteUiPatches.ru),
+  ar: mergePatches(arLocalePatch, arUiPatch, inviteUiPatches.ar),
 } satisfies Partial<Record<Locale, Partial<Dictionary>>>;

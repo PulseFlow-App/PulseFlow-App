@@ -216,6 +216,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     updateProfileName: async () => undefined,
     createTask: async () => undefined,
     setTaskStatus: async () => undefined,
+    deleteTask: async () => undefined,
     createContact: async () => undefined,
     updateContact: async () => undefined,
     deleteContact: async () => undefined,
@@ -1389,6 +1390,14 @@ export function useSupabaseData(enabled: boolean): AppData {
           ),
         ]);
       }
+      await refresh();
+    },
+    deleteTask: async (id) => {
+      const task = tasks.find((t) => t.id === id);
+      if (task) requireOrgWrite(task.org_id);
+      const supabase = createClient();
+      const { error } = await supabase.from("tasks").delete().eq("id", id);
+      if (error) throw error;
       await refresh();
     },
     createContact: async (input) => {

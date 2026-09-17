@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n";
+import { detectLikelySourceLocale } from "@/lib/translate/locale-script";
 
 const MYMEMORY_LANG: Record<Locale, string> = {
   en: "en",
@@ -38,7 +39,7 @@ async function translateWithGoogle(
 async function translateWithMyMemory(
   text: string,
   target: Locale,
-  source = "en",
+  source: string,
 ): Promise<string | null> {
   const langpair = `${source}|${MYMEMORY_LANG[target] ?? target}`;
   const url = new URL("https://api.mymemory.translated.net/get");
@@ -61,20 +62,37 @@ async function translateWithMyMemory(
   return out;
 }
 
-/** Server-side translation for team-authored content. */
+/** Server-side translation for team-authored content into the viewer's locale. */
 export async function translateUserContent(
   text: string,
   target: Locale,
   source?: string,
 ): Promise<string> {
   const trimmed = text.trim();
-  if (!trimmed || target === "en") return text;
+  if (!trimmed) return text;
 
-  const google = await translateWithGoogle(trimmed, target, source);
+  const detected =
+    source ?? detectLikelySourceLocale(trimmed) ?? undefined;
+  if (detected && detected === target) return text;
+
+  const google = await translateWithGoogle(trimmed, target, detected);
   if (google) return google;
 
-  const mymemory = await translateWithMyMemory(trimmed, target, source ?? "en");
+  // MyMemory needs an explicit pair; prefer detected script, else Autodetect.
+  const mymemorySource = detected ?? "Autodetect";
+  const mymemory = await translateWithMyMemory(
+    trimmed,
+    target,
+    mymemorySource,
+  );
   if (mymemory) return mymemory;
+
+  // Last resort: if we guessed wrong and Autodetect failed, try en as source
+  // for non-English targets (legacy dictionary / demo fill path).
+  if (target !== "en" && mymemorySource !== "en") {
+    const fromEn = await translateWithMyMemory(trimmed, target, "en");
+    if (fromEn) return fromEn;
+  }
 
   return text;
 }

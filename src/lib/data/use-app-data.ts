@@ -678,6 +678,13 @@ function useDemoData(): AppData {
         ]);
       }
     },
+    deleteTask: async (id) => {
+      assertDemoWritable();
+      updateDemoStore((s) => ({
+        ...s,
+        tasks: s.tasks.filter((t) => t.id !== id),
+      }));
+    },
     createContact: async (input) => {
       assertDemoWritable();
       if (!profile) return;

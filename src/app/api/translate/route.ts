@@ -39,10 +39,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unsupported locale" }, { status: 400 });
   }
 
-  if (target === "en") {
-    return NextResponse.json({ translated: text });
-  }
-
   try {
     const translated = await translateUserContent(text, target, source);
     return NextResponse.json({ translated });

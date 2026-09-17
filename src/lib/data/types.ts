@@ -153,6 +153,7 @@ export type AppData = {
     time_end?: string | null;
   }) => Promise<void>;
   setTaskStatus: (id: string, status: TaskStatus) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
   createContact: (input: Omit<Contact, "id" | "org_id">) => Promise<void>;
   updateContact: (
     id: string,

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import type { TaskWithRelations } from "@/lib/types";
 import { formatShortDateLocalized } from "@/lib/i18n/date-format";
@@ -13,9 +13,11 @@ import { LocalizedText } from "@/components/i18n/localized-text";
 export function UrgentTasks({
   tasks,
   onClose,
+  onDelete,
 }: {
   tasks: TaskWithRelations[];
   onClose: (id: string) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
 }) {
   const { t, locale } = useI18n();
   const focus = tasks[0];
@@ -69,6 +71,19 @@ export function UrgentTasks({
         <span className="shrink-0 rounded-full bg-danger/10 px-2 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-danger">
           {t("tasks.urgent")}
         </span>
+        {onDelete ? (
+          <button
+            type="button"
+            className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+            aria-label={t("common.delete")}
+            onClick={() => {
+              if (!window.confirm(t("tasks.deleteConfirm"))) return;
+              void onDelete(focus.id);
+            }}
+          >
+            <Trash2 className="size-4" />
+          </button>
+        ) : null}
       </div>
     </Card>
   );

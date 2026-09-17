@@ -270,6 +270,7 @@ const en = {
   "tasks.noOpenHint": "Nice and clear.",
   "tasks.noDone": "No completed tasks yet.",
   "tasks.urgent": "Urgent",
+  "tasks.deleteConfirm": "Delete this task? It will be removed for everyone.",
 
   "jobs.titleStaff": "My jobs",
   "jobs.titleOwner": "Bookings",
@@ -968,6 +969,22 @@ const en = {
   "join.addToAccount": "Add this company to my account",
   "join.addingToAccount": "Adding…",
   "join.orNewAccount": "Or create / use a different email below.",
+  "join.loading": "Loading invite…",
+  "join.unavailableTitle": "Invite unavailable",
+  "join.unavailableHint":
+    "This link is invalid or already used. Ask your owner or manager for a new invite.",
+  "join.backToSignIn": "Back to sign in",
+  "join.jobTitle": "Job title",
+  "join.fullName": "Full name",
+  "join.phoneOptional": "Phone (optional)",
+  "join.joining": "Joining…",
+  "join.accept": "Accept invite & join",
+  "join.nameEmailRequired": "Name and email are required.",
+  "join.passwordMin": "Password must be at least 6 characters.",
+  "join.passwordMismatch": "Passwords do not match.",
+  "join.couldNotJoin": "Could not join.",
+  "join.thisOrganization": "this organization",
+  "join.thisCompany": "this company",
 
   "dateRequests.title": "Date requests",
   "dateRequests.subtitle":

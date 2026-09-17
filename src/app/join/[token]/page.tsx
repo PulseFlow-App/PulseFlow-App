@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PulseMark } from "@/components/brand/pulse-mark";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
@@ -119,15 +120,15 @@ export default function JoinPage({
   const accept = async () => {
     setError(null);
     if (!fullName.trim() || !email.trim()) {
-      setError("Name and email are required.");
+      setError(t("join.nameEmailRequired"));
       return;
     }
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(t("join.passwordMin"));
       return;
     }
     if (password !== confirm) {
-      setError("Passwords do not match.");
+      setError(t("join.passwordMismatch"));
       return;
     }
     setSaving(true);
@@ -160,11 +161,11 @@ export default function JoinPage({
         alreadyMember?: boolean;
       };
       if (!res.ok) {
-        throw new Error(payload.error ?? "Could not join.");
+        throw new Error(payload.error ?? t("join.couldNotJoin"));
       }
       if (payload.needsMergeConfirm) {
         setMergePending({
-          orgName: payload.orgName ?? "this company",
+          orgName: payload.orgName ?? t("join.thisCompany"),
           email: payload.email ?? email.trim().toLowerCase(),
           mergeUrl: payload.mergeUrl,
           mergeEmailSent: Boolean(payload.mergeEmailSent),
@@ -185,7 +186,7 @@ export default function JoinPage({
       router.replace("/setup-passkey");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not join.");
+      setError(e instanceof Error ? e.message : t("join.couldNotJoin"));
     } finally {
       setSaving(false);
     }
@@ -193,61 +194,73 @@ export default function JoinPage({
 
   if (!loaded) {
     return (
-      <div className="flex h-dvh items-center justify-center overflow-y-auto bg-sand text-sm text-muted">
-        Loading invite…
+      <div className="flex h-dvh flex-col overflow-y-auto bg-sand">
+        <div className="flex justify-end px-4 pt-4">
+          <LanguageSwitcher variant="inline" />
+        </div>
+        <div className="flex flex-1 items-center justify-center text-sm text-muted">
+          {t("join.loading")}
+        </div>
       </div>
     );
   }
 
   if (!ctx?.invite) {
     return (
-      <div className="flex h-dvh items-center justify-center overflow-y-auto bg-sand px-4">
-        <Card className="w-full max-w-md space-y-3 p-6 text-center">
-          <PulseMark className="mx-auto size-12" />
-          <h1 className="font-display text-xl font-bold text-ink">
-            Invite unavailable
-          </h1>
-          <p className="text-sm text-muted">
-            This link is invalid or already used. Ask your owner or manager for
-            a new invite.
-          </p>
-          <Link href="/login" className="font-semibold text-primary">
-            Back to sign in
-          </Link>
-        </Card>
+      <div className="flex h-dvh flex-col overflow-y-auto bg-sand px-4">
+        <div className="flex justify-end pt-4">
+          <LanguageSwitcher variant="inline" />
+        </div>
+        <div className="flex flex-1 items-center justify-center">
+          <Card className="w-full max-w-md space-y-3 p-6 text-center">
+            <PulseMark className="mx-auto size-12" />
+            <h1 className="font-display text-xl font-bold text-ink">
+              {t("join.unavailableTitle")}
+            </h1>
+            <p className="text-sm text-muted">{t("join.unavailableHint")}</p>
+            <Link href="/login" className="font-semibold text-primary">
+              {t("join.backToSignIn")}
+            </Link>
+          </Card>
+        </div>
       </div>
     );
   }
 
   if (mergePending) {
     return (
-      <div className="flex h-dvh items-center justify-center overflow-y-auto bg-sand px-4">
-        <Card className="w-full max-w-md space-y-3 p-6 text-center">
-          <PulseMark className="mx-auto size-12" />
-          <h1 className="font-display text-xl font-bold text-ink">
-            {t("guest.mergeEmailTitle")}
-          </h1>
-          <p className="text-sm text-muted">
-            {t("guest.mergeEmailHint", {
-              email: mergePending.email,
-              org: mergePending.orgName,
-            })}
-          </p>
-          {!mergePending.mergeEmailSent && mergePending.mergeUrl ? (
+      <div className="flex h-dvh flex-col overflow-y-auto bg-sand px-4">
+        <div className="flex justify-end pt-4">
+          <LanguageSwitcher variant="inline" />
+        </div>
+        <div className="flex flex-1 items-center justify-center">
+          <Card className="w-full max-w-md space-y-3 p-6 text-center">
+            <PulseMark className="mx-auto size-12" />
+            <h1 className="font-display text-xl font-bold text-ink">
+              {t("guest.mergeEmailTitle")}
+            </h1>
             <p className="text-sm text-muted">
-              {t("guest.mergeEmailFallback")}{" "}
-              <Link
-                href={mergePending.mergeUrl}
-                className="font-semibold text-primary"
-              >
-                {t("guest.mergeOpenLink")}
-              </Link>
+              {t("guest.mergeEmailHint", {
+                email: mergePending.email,
+                org: mergePending.orgName,
+              })}
             </p>
-          ) : null}
-          <Link href="/login" className="font-semibold text-primary">
-            Back to sign in
-          </Link>
-        </Card>
+            {!mergePending.mergeEmailSent && mergePending.mergeUrl ? (
+              <p className="text-sm text-muted">
+                {t("guest.mergeEmailFallback")}{" "}
+                <Link
+                  href={mergePending.mergeUrl}
+                  className="font-semibold text-primary"
+                >
+                  {t("guest.mergeOpenLink")}
+                </Link>
+              </p>
+            ) : null}
+            <Link href="/login" className="font-semibold text-primary">
+              {t("join.backToSignIn")}
+            </Link>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -258,6 +271,9 @@ export default function JoinPage({
   return (
     <div className="h-dvh overflow-x-hidden overflow-y-auto overscroll-contain bg-sand px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
       <div className="mx-auto w-full max-w-md animate-rise">
+        <div className="mb-4 flex justify-end">
+          <LanguageSwitcher variant="inline" />
+        </div>
         <div className="mb-6 text-center">
           <PulseMark className="mx-auto mb-3 size-12" />
           <h1 className="font-display text-2xl font-bold text-ink">
@@ -268,7 +284,7 @@ export default function JoinPage({
           </p>
           <p className="mt-2 text-sm text-muted">
             <span className="font-semibold text-ink">
-              {org?.name ?? "this organization"}
+              {org?.name ?? t("join.thisOrganization")}
             </span>
             {inviter ? (
               <>
@@ -308,21 +324,21 @@ export default function JoinPage({
         <Card className="space-y-4 p-5">
           <div className="rounded-2xl bg-[#F7F5F1] px-4 py-3 text-sm">
             <div className="flex justify-between gap-3 py-1">
-              <span className="text-muted">Your role</span>
+              <span className="text-muted">{t("common.role")}</span>
               <span className="font-semibold text-ink">
                 {labelRole(t, invite.role)}
               </span>
             </div>
             {invite.job_title ? (
               <div className="flex justify-between gap-3 py-1">
-                <span className="text-muted">Job title</span>
+                <span className="text-muted">{t("join.jobTitle")}</span>
                 <span className="font-semibold text-ink">{invite.job_title}</span>
               </div>
             ) : null}
           </div>
 
           <div>
-            <Label>Full name</Label>
+            <Label>{t("join.fullName")}</Label>
             <Input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -330,7 +346,7 @@ export default function JoinPage({
             />
           </div>
           <div>
-            <Label>Email</Label>
+            <Label>{t("common.email")}</Label>
             <Input
               type="email"
               value={email}
@@ -339,7 +355,7 @@ export default function JoinPage({
             />
           </div>
           <div>
-            <Label>Phone (optional)</Label>
+            <Label>{t("join.phoneOptional")}</Label>
             <Input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -376,10 +392,10 @@ export default function JoinPage({
             onClick={() => void accept()}
           >
             {saving
-              ? "Joining…"
+              ? t("join.joining")
               : isGuestInvite
                 ? t("guest.joinContinue")
-                : "Accept invite & join"}
+                : t("join.accept")}
           </Button>
         </Card>
       </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
@@ -81,6 +81,15 @@ export default function TasksPage() {
       setShowForm(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create task.");
+    }
+  };
+
+  const removeTask = async (id: string) => {
+    if (!window.confirm(t("tasks.deleteConfirm"))) return;
+    try {
+      await data.deleteTask(id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("common.error"));
     }
   };
 
@@ -200,6 +209,10 @@ export default function TasksPage() {
         </Card>
       ) : null}
 
+      {error && !showForm ? (
+        <p className="text-sm text-danger">{error}</p>
+      ) : null}
+
       <section className="space-y-2">
         <h2 className="text-sm font-semibold text-muted">{t("tasks.open")}</h2>
         {open.length === 0 ? (
@@ -240,6 +253,14 @@ export default function TasksPage() {
                   {t("tasks.urgent")}
                 </span>
               ) : null}
+              <button
+                type="button"
+                className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+                aria-label={t("common.delete")}
+                onClick={() => void removeTask(task.id)}
+              >
+                <Trash2 className="size-4" />
+              </button>
             </Card>
           ))
         )}
@@ -266,6 +287,14 @@ export default function TasksPage() {
                   <LocalizedText text={task.title} />
                 </p>
               </div>
+              <button
+                type="button"
+                className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+                aria-label={t("common.delete")}
+                onClick={() => void removeTask(task.id)}
+              >
+                <Trash2 className="size-4" />
+              </button>
             </Card>
           ))
         )}

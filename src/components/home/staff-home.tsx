@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
+import { Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AgreeButton } from "@/components/jobs/agree-button";
@@ -168,6 +169,17 @@ export function StaffHome({ data }: { data: AppData }) {
                     : ""}
                 </p>
               </div>
+              <button
+                type="button"
+                className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+                aria-label={t("common.delete")}
+                onClick={() => {
+                  if (!window.confirm(t("tasks.deleteConfirm"))) return;
+                  void data.deleteTask(task.id);
+                }}
+              >
+                <Trash2 className="size-4" />
+              </button>
             </Card>
           ))}
       </section>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
@@ -216,7 +217,7 @@ export default function JobsPage() {
           <p className="text-sm text-muted">{t("jobs.noOpenTasks")}</p>
         ) : (
           myTasks.map((task) => {
-            const window = formatWorkWindow(
+            const workWindow = formatWorkWindow(
               task.due_date,
               task.time_start,
               task.time_end,
@@ -235,7 +236,7 @@ export default function JobsPage() {
                   </p>
                   <p className="truncate text-xs text-muted">
                     {task.villa?.name ?? t("common.general")}
-                    {window ? ` · ${window}` : ""}
+                    {workWindow ? ` · ${workWindow}` : ""}
                   </p>
                 </div>
                 {task.priority === "urgent" ? (
@@ -243,6 +244,17 @@ export default function JobsPage() {
                     Urgent
                   </span>
                 ) : null}
+                <button
+                  type="button"
+                  className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+                  aria-label={t("common.delete")}
+                  onClick={() => {
+                    if (!window.confirm(t("tasks.deleteConfirm"))) return;
+                    void data.deleteTask(task.id);
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                </button>
               </Card>
             );
           })

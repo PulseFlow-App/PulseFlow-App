@@ -81,11 +81,16 @@ function syncLocalizedText(
   const demo = localizeDemoText(text, t);
   if (demo !== text) return demo;
 
-  if (locale === "en" || !translateEnabled) {
+  if (!translateEnabled) {
     return text;
   }
 
-  if (likelySameLanguage(text, locale as Parameters<typeof likelySameLanguage>[1])) {
+  if (
+    likelySameLanguage(
+      text,
+      locale as Parameters<typeof likelySameLanguage>[1],
+    )
+  ) {
     return text;
   }
 

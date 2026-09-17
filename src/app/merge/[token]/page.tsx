@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PulseMark } from "@/components/brand/pulse-mark";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
@@ -106,25 +107,35 @@ export default function MergeProfilePage({
 
   if (!loaded) {
     return (
-      <div className="flex h-dvh items-center justify-center overflow-y-auto bg-sand text-sm text-muted">
-        {t("common.loading")}
+      <div className="flex h-dvh flex-col overflow-y-auto bg-sand">
+        <div className="flex justify-end px-4 pt-4">
+          <LanguageSwitcher variant="inline" />
+        </div>
+        <div className="flex flex-1 items-center justify-center text-sm text-muted">
+          {t("common.loading")}
+        </div>
       </div>
     );
   }
 
   if (loadError || !ctx) {
     return (
-      <div className="flex h-dvh items-center justify-center overflow-y-auto bg-sand px-4">
-        <Card className="w-full max-w-md space-y-3 p-6 text-center">
-          <PulseMark className="mx-auto size-12" />
-          <h1 className="font-display text-xl font-bold text-ink">
-            {t("guest.mergeInvalidTitle")}
-          </h1>
-          <p className="text-sm text-muted">{loadError ?? t("guest.mergeInvalid")}</p>
-          <Link href="/login" className="font-semibold text-primary">
-            Back to sign in
-          </Link>
-        </Card>
+      <div className="flex h-dvh flex-col overflow-y-auto bg-sand px-4">
+        <div className="flex justify-end pt-4">
+          <LanguageSwitcher variant="inline" />
+        </div>
+        <div className="flex flex-1 items-center justify-center">
+          <Card className="w-full max-w-md space-y-3 p-6 text-center">
+            <PulseMark className="mx-auto size-12" />
+            <h1 className="font-display text-xl font-bold text-ink">
+              {t("guest.mergeInvalidTitle")}
+            </h1>
+            <p className="text-sm text-muted">{loadError ?? t("guest.mergeInvalid")}</p>
+            <Link href="/login" className="font-semibold text-primary">
+              {t("join.backToSignIn")}
+            </Link>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -132,6 +143,9 @@ export default function MergeProfilePage({
   return (
     <div className="h-dvh overflow-x-hidden overflow-y-auto overscroll-contain bg-sand px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
       <div className="mx-auto w-full max-w-md animate-rise">
+        <div className="mb-4 flex justify-end">
+          <LanguageSwitcher variant="inline" />
+        </div>
         <div className="mb-6 text-center">
           <PulseMark className="mx-auto mb-3 size-12" />
           <h1 className="font-display text-2xl font-bold text-ink">

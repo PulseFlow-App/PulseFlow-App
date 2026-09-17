@@ -74,6 +74,7 @@ export default function HomePage() {
             <UrgentTasks
               tasks={urgent}
               onClose={async (id) => data.setTaskStatus(id, "done")}
+              onDelete={async (id) => data.deleteTask(id)}
             />
           </Col>
           <Col span={4} className="space-y-4 md:space-y-6">
