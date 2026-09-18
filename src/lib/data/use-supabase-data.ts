@@ -1536,6 +1536,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       const first = profile.full_name.split(" ")[0];
       const msgId = inserted?.id ?? null;
       const rows = [];
+      const chatHref = `/messages?channel=${channel}`;
       if (mentioned.length) {
         rows.push({
           org_id: profile.org_id,
@@ -1544,7 +1545,7 @@ export function useSupabaseData(enabled: boolean): AppData {
             ? `${first} mentioned @everyone`
             : `${first} mentioned you`,
           body: preview,
-          href: "/messages",
+          href: chatHref,
           entity_id: msgId,
           audience_profile_ids: mentioned,
           read_by: [],
@@ -1557,7 +1558,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           kind: "message",
           title: `New message from ${first}`,
           body: preview,
-          href: "/messages",
+          href: chatHref,
           entity_id: msgId,
           audience_profile_ids: rest,
           read_by: [],

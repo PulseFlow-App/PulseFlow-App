@@ -838,6 +838,7 @@ function useDemoData(): AppData {
       const alerts: ReturnType<typeof makeNotification>[] = [];
       const preview = body.trim().slice(0, 80);
       const first = profile.full_name.split(" ")[0];
+      const chatHref = `/messages?channel=${channel}`;
       if (mentioned.length) {
         alerts.push(
           makeNotification({
@@ -847,7 +848,7 @@ function useDemoData(): AppData {
               ? `${first} mentioned @everyone`
               : `${first} mentioned you`,
             body: preview,
-            href: "/messages",
+            href: chatHref,
             entity_id: msgId,
             audience_profile_ids: mentioned,
           }),
@@ -861,7 +862,7 @@ function useDemoData(): AppData {
             kind: "message",
             title: `New message from ${first}`,
             body: preview,
-            href: "/messages",
+            href: chatHref,
             entity_id: msgId,
             audience_profile_ids: rest,
           }),

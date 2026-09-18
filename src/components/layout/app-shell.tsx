@@ -35,18 +35,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       data.unreadNotificationCount > 0
     ) {
       void data.markAllNotificationsRead();
-      return;
     }
-    if (pathname.startsWith("/messages") && data.unreadMessageCount > 0) {
-      void data.markAllNotificationsRead("message");
-    }
+    // Team chat marks message notifications read itself after picking the
+    // correct channel tab — clearing here would hide which thread had mail.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- route + unread driven clear
   }, [
     pathname,
     data.ready,
     data.profile?.id,
     data.unreadNotificationCount,
-    data.unreadMessageCount,
   ]);
 
   return (

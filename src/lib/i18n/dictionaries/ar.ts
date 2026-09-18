@@ -378,7 +378,7 @@ const ar: Dictionary = {
   "messages.channel.general": "General",
   "messages.channel.generalHint": "Everyday chat",
   "messages.photoNote":
-    "Use this thread when a photo or screenshot helps — damage, a screen code, proof of work, and similar. Not for property bills or receipts; those belong in Bills.",
+    "Use this thread when a photo or screenshot helps: damage, a screen code, proof of work, and similar. Not for property bills or receipts; those belong in Bills.",
   "messages.attachPhoto": "Add photo",
   "messages.photoRequired": "Add a photo or screenshot for this thread.",
   "messages.removePhoto": "Remove photo",

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Suspense,
   useEffect,
   useMemo,
   useRef,
@@ -8,6 +9,7 @@ import {
   useOptimistic,
   startTransition,
 } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ImagePlus, Send, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +35,11 @@ import {
   mentionSegments,
   type MentionPick,
 } from "@/lib/mentions";
+import {
+  parseMessageChannel,
+  resolveTeamChatChannel,
+  unreadTeamChatCountByChannel,
+} from "@/lib/message-channels";
 
 const CHANNELS: {
   id: MessageChannel;
@@ -57,9 +64,24 @@ const CHANNELS: {
 ];
 
 export default function MessagesPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <MessagesPageInner />
+    </Suspense>
+  );
+}
+
+function MessagesPageInner() {
   const data = useData();
   const { t } = useI18n();
-  const [channel, setChannel] = useState<MessageChannel>("request");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const urlChannel = parseMessageChannel(searchParams.get("channel"));
+  const [channel, setChannel] = useState<MessageChannel>(
+    urlChannel ?? "request",
+  );
+  const [channelReady, setChannelReady] = useState(Boolean(urlChannel));
   const [body, setBody] = useState("");
   const [cursor, setCursor] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -89,6 +111,20 @@ export default function MessagesPage() {
     [data.profiles, data.profile?.org_id],
   );
 
+  const unreadByChannel = useMemo(() => {
+    if (!data.profile) {
+      return { request: 0, photo: 0, general: 0 } as Record<
+        MessageChannel,
+        number
+      >;
+    }
+    return unreadTeamChatCountByChannel({
+      messages: data.messages,
+      notifications: data.notifications,
+      profileId: data.profile.id,
+    });
+  }, [data.messages, data.notifications, data.profile]);
+
   const activeMention = useMemo(
     () => getActiveMention(body, cursor),
     [body, cursor],
@@ -102,6 +138,41 @@ export default function MessagesPage() {
       data.profile.id,
     );
   }, [activeMention, teammates, data.profile, mentionDismissed]);
+
+  const selectChannel = (next: MessageChannel, replaceUrl = true) => {
+    setChannel(next);
+    if (!replaceUrl) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("channel", next);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  useEffect(() => {
+    if (urlChannel) {
+      setChannel(urlChannel);
+      setChannelReady(true);
+    }
+  }, [urlChannel]);
+
+  useEffect(() => {
+    if (!data.ready || !data.profile || channelReady) return;
+    const next = resolveTeamChatChannel({
+      urlChannel: searchParams.get("channel"),
+      messages: data.messages,
+      notifications: data.notifications,
+      profileId: data.profile.id,
+    });
+    selectChannel(next);
+    setChannelReady(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- settle once when data is ready
+  }, [
+    data.ready,
+    data.profile?.id,
+    data.messages,
+    data.notifications,
+    channelReady,
+    searchParams,
+  ]);
 
   useEffect(() => {
     setMentionIndex(0);
@@ -122,11 +193,11 @@ export default function MessagesPage() {
   }, [channel]);
 
   useEffect(() => {
-    if (!data.ready || !data.profile) return;
+    if (!data.ready || !data.profile || !channelReady) return;
     if (data.unreadMessageCount <= 0) return;
     void data.markAllNotificationsRead("message");
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional open clear
-  }, [data.ready, data.profile?.id, data.unreadMessageCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional open clear after channel pick
+  }, [data.ready, data.profile?.id, data.unreadMessageCount, channelReady]);
 
   if (!data.ready || !data.profile) return <LoadingState />;
 
@@ -230,13 +301,14 @@ export default function MessagesPage() {
         <div className="mb-3 flex gap-1.5 overflow-x-auto pb-0.5">
           {CHANNELS.map((c) => {
             const active = channel === c.id;
+            const unread = unreadByChannel[c.id] ?? 0;
             return (
               <button
                 key={c.id}
                 type="button"
-                onClick={() => setChannel(c.id)}
+                onClick={() => selectChannel(c.id)}
                 className={cn(
-                  "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                  "relative shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition",
                   active
                     ? "bg-primary text-white"
                     : "bg-card text-muted shadow-sm",
@@ -244,6 +316,18 @@ export default function MessagesPage() {
                 title={t(c.hintKey)}
               >
                 {t(c.labelKey)}
+                {unread > 0 ? (
+                  <span
+                    className={cn(
+                      "ml-1.5 inline-flex min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold",
+                      active
+                        ? "bg-white/25 text-white"
+                        : "bg-primary text-white",
+                    )}
+                  >
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                ) : null}
               </button>
             );
           })}
@@ -389,7 +473,7 @@ export default function MessagesPage() {
                 </div>
               </div>
             ) : null}
-            <div className="flex gap-2">
+            <div className="flex items-center gap-1.5">
               {channel === "photo" ? (
                 <>
                   <input
@@ -404,12 +488,13 @@ export default function MessagesPage() {
                   <Button
                     type="button"
                     variant="secondary"
-                    className="shrink-0 px-3"
+                    size="xs"
+                    className="h-8 w-8 shrink-0 px-0"
                     disabled={uploading}
                     aria-label={t("messages.attachPhoto")}
                     onClick={() => fileRef.current?.click()}
                   >
-                    <ImagePlus className="size-4" />
+                    <ImagePlus className="size-3.5" />
                   </Button>
                 </>
               ) : null}
@@ -467,11 +552,12 @@ export default function MessagesPage() {
               />
               <Button
                 aria-label="Send"
+                size="xs"
                 onClick={send}
-                className="shrink-0 px-3"
+                className="h-8 w-8 shrink-0 px-0"
                 disabled={uploading}
               >
-                <Send className="size-4" />
+                <Send className="size-3.5" />
               </Button>
             </div>
           </div>
