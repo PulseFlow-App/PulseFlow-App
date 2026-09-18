@@ -29,6 +29,7 @@ import {
   DEMO_OWNER_ID,
   DEMO_STAY_ID,
   VILLA_IDS,
+  demoPropertyPhoto,
 } from "./seed-data";
 
 function daysFromNow(n: number) {
@@ -41,10 +42,18 @@ function daysAgo(n: number) {
   return daysFromNow(-n);
 }
 
-function villaPhoto(name: string, tone: string) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${tone}" offset="0%"/><stop stop-color="#2B211C" stop-opacity=".35" offset="100%"/></linearGradient></defs><rect width="640" height="400" fill="url(#g)"/><path d="M120 260 L320 120 L520 260 V340 H120 Z" fill="none" stroke="#fff" stroke-width="14" stroke-linejoin="round"/><rect x="290" y="280" width="60" height="60" rx="8" fill="#fff" opacity=".9"/><text x="320" y="80" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="28" font-weight="700">${name}</text></svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
+const PROPERTY_PHOTO_BY_ID: Record<string, string> = {
+  [VILLA_IDS.lotus]: demoPropertyPhoto("lotus"),
+  [VILLA_IDS.palm]: demoPropertyPhoto("palm"),
+  [VILLA_IDS.coral]: demoPropertyPhoto("coral"),
+  [VILLA_IDS.jungle]: demoPropertyPhoto("jungle"),
+  [VILLA_IDS.sunset]: demoPropertyPhoto("sunset"),
+  [VILLA_IDS.bamboo]: demoPropertyPhoto("bamboo"),
+  [VILLA_IDS.cliff]: demoPropertyPhoto("cliff"),
+  [VILLA_IDS.tide]: demoPropertyPhoto("tide"),
+  [VILLA_IDS.reef]: demoPropertyPhoto("reef"),
+  [VILLA_IDS.office]: demoPropertyPhoto("office"),
+};
 
 export const STAY_LOTUS_UPCOMING = "77777777-7777-4777-8777-777777777781";
 export const STAY_PALM_DONE = "77777777-7777-4777-8777-777777777782";
@@ -55,12 +64,14 @@ export const ORDER_POOL = "77777777-7777-4777-8777-777777777786";
 export const ORDER_GARDEN = "77777777-7777-4777-8777-777777777787";
 export const ORDER_DONE = "77777777-7777-4777-8777-777777777788";
 
-/** Push richer occupancy / cleaning states onto company villas. */
+/** Push richer occupancy / cleaning states onto company villas + real photos. */
 export function enrichDemoVillas(villas: Villa[]): Villa[] {
   return villas.map((v) => {
+    const photo_url = PROPERTY_PHOTO_BY_ID[v.id] ?? v.photo_url;
     if (v.id === VILLA_IDS.office) {
       return {
         ...v,
+        photo_url,
         property_type: "office",
         status: "available",
         check_in: null,
@@ -72,6 +83,7 @@ export function enrichDemoVillas(villas: Villa[]): Villa[] {
     if (v.id === VILLA_IDS.bamboo) {
       return {
         ...v,
+        photo_url,
         property_type: v.property_type ?? "bungalow",
         status: "turnover",
         check_in: daysFromNow(0),
@@ -83,6 +95,7 @@ export function enrichDemoVillas(villas: Villa[]): Villa[] {
     if (v.id === VILLA_IDS.coral) {
       return {
         ...v,
+        photo_url,
         property_type: v.property_type ?? "bungalow",
         status: "occupied",
         check_in: daysAgo(1),
@@ -94,6 +107,7 @@ export function enrichDemoVillas(villas: Villa[]): Villa[] {
     if (v.id === VILLA_IDS.tide) {
       return {
         ...v,
+        photo_url,
         property_type: v.property_type ?? "bungalow",
         status: "turnover",
         check_in: daysFromNow(1),
@@ -105,6 +119,7 @@ export function enrichDemoVillas(villas: Villa[]): Villa[] {
     if (v.id === VILLA_IDS.reef) {
       return {
         ...v,
+        photo_url,
         property_type: v.property_type ?? "bungalow",
         status: "occupied",
         check_in: daysAgo(3),
@@ -116,6 +131,7 @@ export function enrichDemoVillas(villas: Villa[]): Villa[] {
     if (v.id === VILLA_IDS.cliff) {
       return {
         ...v,
+        photo_url,
         property_type: v.property_type ?? "studio",
       };
     }
@@ -127,10 +143,11 @@ export function enrichDemoVillas(villas: Villa[]): Villa[] {
     ) {
       return {
         ...v,
+        photo_url,
         property_type: v.property_type ?? "villa",
       };
     }
-    return v;
+    return { ...v, photo_url };
   });
 }
 
@@ -665,7 +682,7 @@ export const extraStayPhotos: StayPhoto[] = [
     org_id: DEMO_ORG_ID,
     stay_id: DEMO_STAY_ID,
     kind: "arrival",
-    photo_url: villaPhoto("Pool on arrival", "#3CB89A"),
+    photo_url: demoPropertyPhoto("lotus"),
     note: "Pool area on arrival",
     uploaded_by: DEMO_GUEST_ID,
     created_at: daysAgo(5) + "T13:20:00.000Z",
@@ -675,7 +692,7 @@ export const extraStayPhotos: StayPhoto[] = [
     org_id: DEMO_ORG_ID,
     stay_id: STAY_PALM_DONE,
     kind: "departure",
-    photo_url: villaPhoto("Palm checkout", "#F26A36"),
+    photo_url: demoPropertyPhoto("palm"),
     note: "Living room after checkout",
     uploaded_by: DEMO_CLEANER_ID,
     created_at: daysAgo(14) + "T12:00:00.000Z",

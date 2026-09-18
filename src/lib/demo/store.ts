@@ -22,6 +22,14 @@ import {
   extraTasks,
   extraVillaAssignments,
 } from "./seed-enrichment";
+import {
+  denseBills,
+  denseGuestCharges,
+  denseGuestDeposits,
+  denseMessages,
+  denseServiceOrders,
+  denseTasks,
+} from "./seed-density";
 import type {
   AppNotification,
   DemoAccount,
@@ -58,9 +66,21 @@ function createFreshDemoStore(): DemoStore {
   return {
     ...base,
     villas: enrichDemoVillas(base.villas),
-    tasks: [...base.tasks, ...structuredClone(extraTasks)],
-    bills: [...base.bills, ...structuredClone(extraBills)],
-    messages: [...base.messages, ...structuredClone(extraMessages)],
+    tasks: [
+      ...base.tasks,
+      ...structuredClone(extraTasks),
+      ...structuredClone(denseTasks),
+    ],
+    bills: [
+      ...base.bills,
+      ...structuredClone(extraBills),
+      ...structuredClone(denseBills),
+    ],
+    messages: [
+      ...base.messages,
+      ...structuredClone(extraMessages),
+      ...structuredClone(denseMessages),
+    ],
     villaAssignments: [
       ...base.villaAssignments,
       ...structuredClone(extraVillaAssignments),
@@ -72,6 +92,7 @@ function createFreshDemoStore(): DemoStore {
     serviceOrders: [
       ...base.serviceOrders,
       ...structuredClone(extraServiceOrders),
+      ...structuredClone(denseServiceOrders),
     ],
     guestStays: [...base.guestStays, ...structuredClone(extraGuestStays)],
     houseGuides: [...base.houseGuides, ...structuredClone(extraHouseGuides)],
@@ -95,8 +116,13 @@ function createFreshDemoStore(): DemoStore {
           : d,
       ),
       ...structuredClone(extraGuestDeposits),
+      ...structuredClone(denseGuestDeposits),
     ],
-    guestCharges: [...base.guestCharges, ...structuredClone(extraGuestCharges)],
+    guestCharges: [
+      ...base.guestCharges,
+      ...structuredClone(extraGuestCharges),
+      ...structuredClone(denseGuestCharges),
+    ],
     stayPhotos: [...base.stayPhotos, ...structuredClone(extraStayPhotos)],
     stayDateRequests: [
       ...base.stayDateRequests,
@@ -125,7 +151,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v23";
+const STORE_KEY = "pulseflow_demo_store_v24";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -200,16 +226,18 @@ function normalizeStore(store: DemoStore): DemoStore {
       ? store.memberships
       : fresh.memberships,
     invites: store.invites ?? [],
-    villas: [
-      ...fresh.villas,
-      ...store.villas.filter((v) => !seedVillaIds.has(v.id)),
-    ].map((v) =>
-      normalizeVillaRow({
-        ...v,
-        photo_url: v.photo_url ?? null,
-        description: plainDash(v.description) ?? null,
-        notes: plainDash(v.notes) ?? null,
-      }),
+    villas: enrichDemoVillas(
+      [
+        ...fresh.villas,
+        ...store.villas.filter((v) => !seedVillaIds.has(v.id)),
+      ].map((v) =>
+        normalizeVillaRow({
+          ...v,
+          photo_url: v.photo_url ?? null,
+          description: plainDash(v.description) ?? null,
+          notes: plainDash(v.notes) ?? null,
+        }),
+      ),
     ),
     tasks: [
       ...fresh.tasks,
@@ -323,6 +351,7 @@ function readStore(): DemoStore {
         "pulseflow_demo_store_v20",
         "pulseflow_demo_store_v21",
         "pulseflow_demo_store_v22",
+        "pulseflow_demo_store_v23",
       ]) {
         localStorage.removeItem(key);
       }

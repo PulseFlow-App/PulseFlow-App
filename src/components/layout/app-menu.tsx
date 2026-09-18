@@ -52,7 +52,7 @@ type MenuSection = {
 
 export function AppMenuButton() {
   const data = useData();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -155,14 +155,17 @@ export function AppMenuButton() {
     });
   }
 
-  const guideHref =
+  const guideRolePath =
     profile.role === "guest"
-      ? "https://www.pulseflow.site/guests"
+      ? "guests"
       : profile.role === "manager"
-        ? "https://www.pulseflow.site/managers"
+        ? "managers"
         : profile.role === "owner"
-          ? "https://www.pulseflow.site/owners"
-          : "https://www.pulseflow.site/staff";
+          ? "owners"
+          : "staff";
+  // The site serves English at the root and every other locale under /<locale>.
+  const guideLocalePath = locale === "en" ? "" : `/${locale}`;
+  const guideHref = `https://www.pulseflow.site${guideLocalePath}/${guideRolePath}`;
   const legalAudience = legalAudienceFromRole(profile.role);
 
   const account: MenuLink[] = [

@@ -240,7 +240,11 @@ function propertyPhoto(slug: keyof typeof VILLA_IDS) {
   return `/demo/properties/${slug}.jpg`;
 }
 
-/** Lightweight SVG for stay arrival/departure shots (not property cards). */
+export function demoPropertyPhoto(slug: keyof typeof VILLA_IDS) {
+  return propertyPhoto(slug);
+}
+
+/** @deprecated Prefer demoPropertyPhoto — kept for non-property thumbnails only. */
 function villaPhoto(name: string, tone: string) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${tone}" offset="0%"/><stop stop-color="#2B211C" stop-opacity=".35" offset="100%"/></linearGradient></defs><rect width="640" height="400" fill="url(#g)"/><text x="320" y="210" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="26" font-weight="700">${name}</text></svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
@@ -1296,7 +1300,7 @@ export const demoStayPhotos: StayPhoto[] = [
     org_id: DEMO_ORG_ID,
     stay_id: DEMO_STAY_ID,
     kind: "arrival",
-    photo_url: villaPhoto("Arrival living room", "#7BA3A8"),
+    photo_url: demoPropertyPhoto("lotus"),
     note: "Living room on arrival",
     uploaded_by: DEMO_GUEST_ID,
     created_at: daysAgo(5) + "T13:00:00.000Z",
