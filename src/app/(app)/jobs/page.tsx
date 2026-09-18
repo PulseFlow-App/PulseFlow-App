@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
+import { TaskAssigneeMeta } from "@/components/tasks/task-assignee-meta";
 import type { MessageKey } from "@/lib/i18n";
 
 function CancelOrderButton({ orderId }: { orderId: string }) {
@@ -355,11 +356,11 @@ export default function JobsPage() {
                   <p className="truncate font-semibold text-ink">
                     <LocalizedText text={task.title} />
                   </p>
-                  <p className="truncate text-xs text-muted">
-                    {task.villa?.name ?? t("common.general")}
-                    {workWindow ? ` · ${workWindow}` : ""}
-                    {task.assignee ? ` · ${task.assignee.full_name}` : ""}
-                  </p>
+                  <TaskAssigneeMeta
+                    task={task}
+                    villaLabel={task.villa?.name ?? t("common.general")}
+                    schedule={workWindow}
+                  />
                 </div>
                 {task.priority === "urgent" ? (
                   <span className="text-[10px] font-bold uppercase text-danger">

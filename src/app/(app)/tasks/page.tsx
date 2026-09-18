@@ -14,6 +14,7 @@ import { formatShortDate, cn } from "@/lib/utils";
 import type { TaskPriority } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
+import { TaskAssigneeMeta } from "@/components/tasks/task-assignee-meta";
 import type { MessageKey } from "@/lib/i18n";
 
 type Filter = "all" | "mine" | "urgent";
@@ -235,23 +236,18 @@ export default function TasksPage() {
                 <p className="truncate font-semibold text-ink">
                   <LocalizedText text={task.title} />
                 </p>
-                <p className="truncate text-xs text-muted">
-                  {task.villa?.name ?? t("common.general")}
-                  {formatWorkWindow(
-                    task.due_date,
-                    task.time_start,
-                    task.time_end,
-                  )
-                    ? ` · ${formatWorkWindow(
-                        task.due_date,
-                        task.time_start,
-                        task.time_end,
-                      )}`
-                    : task.due_date
-                      ? ` · ${formatShortDate(task.due_date)}`
-                      : ""}
-                  {task.assignee ? ` · ${task.assignee.full_name}` : ""}
-                </p>
+                <TaskAssigneeMeta
+                  task={task}
+                  villaLabel={task.villa?.name ?? t("common.general")}
+                  schedule={
+                    formatWorkWindow(
+                      task.due_date,
+                      task.time_start,
+                      task.time_end,
+                    ) ??
+                    (task.due_date ? formatShortDate(task.due_date) : null)
+                  }
+                />
               </div>
               {task.priority === "urgent" ? (
                 <span className="text-[10px] font-bold uppercase text-danger">

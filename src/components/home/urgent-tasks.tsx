@@ -67,6 +67,11 @@ export function UrgentTasks({
               ? ` · ${t("home.due", { date: formatShortDateLocalized(focus.due_date, locale) })}`
               : ""}
           </p>
+          {focus.assignee ? (
+            <p className="truncate font-sans text-xs font-semibold text-ink">
+              {focus.assignee.full_name}
+            </p>
+          ) : null}
         </div>
         <span className="shrink-0 rounded-full bg-danger/10 px-2 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-danger">
           {t("tasks.urgent")}

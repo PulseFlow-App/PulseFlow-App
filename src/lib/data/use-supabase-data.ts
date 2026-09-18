@@ -125,17 +125,34 @@ function enrichTasks(
   tasks: Task[],
   villas: Villa[],
   profiles: Profile[],
+  serviceOrders: ServiceOrder[] = [],
+  contacts: Contact[] = [],
 ): AppData["tasks"] {
   return tasks
     .map((t) => {
       const villa = villas.find((v) => v.id === t.villa_id);
-      const assignee = profiles.find((p) => p.id === t.assigned_to);
+      const order = t.service_order_id
+        ? serviceOrders.find((o) => o.id === t.service_order_id)
+        : undefined;
+      const assigneeId = t.assigned_to ?? order?.staff_profile_id ?? null;
+      const fromProfile = assigneeId
+        ? profiles.find((p) => p.id === assigneeId)
+        : undefined;
+      const fromContact = assigneeId
+        ? contacts.find((c) => c.linked_profile_id === assigneeId) ??
+          (order?.contact_id
+            ? contacts.find((c) => c.id === order.contact_id)
+            : undefined)
+        : undefined;
+      const assignee = fromProfile
+        ? { id: fromProfile.id, full_name: fromProfile.full_name }
+        : assigneeId && fromContact
+          ? { id: assigneeId, full_name: fromContact.name }
+          : null;
       return {
         ...t,
         villa: villa ? { id: villa.id, name: villa.name } : null,
-        assignee: assignee
-          ? { id: assignee.id, full_name: assignee.full_name }
-          : null,
+        assignee,
       };
     })
     .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
@@ -465,8 +482,25 @@ export function useSupabaseData(enabled: boolean): AppData {
 
     setOrganization((orgRes.data as Organization) ?? null);
     setOrgs((orgsRes.data as Organization[]) ?? []);
-    setProfiles((profilesRes.data as Profile[]) ?? []);
-    setAllProfiles((allProfilesRes.data as Profile[]) ?? []);
+    const loadedAll = (allProfilesRes.data as Profile[]) ?? [];
+    const loadedOrg = (profilesRes.data as Profile[]) ?? [];
+    const { data: orgMemberRows } = await supabase
+      .from("org_memberships")
+      .select("profile_id")
+      .eq("org_id", orgId);
+    const memberIds = new Set(
+      ((orgMemberRows as { profile_id: string }[]) ?? []).map(
+        (m) => m.profile_id,
+      ),
+    );
+    const byId = new Map<string, Profile>();
+    for (const row of [...loadedOrg, ...loadedAll]) {
+      if (row.org_id === orgId || memberIds.has(row.id) || row.id === p.id) {
+        byId.set(row.id, normalizeProfile(row));
+      }
+    }
+    setProfiles(Array.from(byId.values()));
+    setAllProfiles(loadedAll.map(normalizeProfile));
     setVillas(asVillas(villasRes.data));
     setContacts((contactsRes.data as Contact[]) ?? []);
     setTasks((tasksRes.data as Task[]) ?? []);
@@ -846,6 +880,8 @@ export function useSupabaseData(enabled: boolean): AppData {
       scopedTasks,
       visible,
       allProfiles.length > 0 ? allProfiles : profiles,
+      serviceOrders,
+      contacts,
     ),
     bills: enrichBills(
       profile && !canViewAllBills(profile.role)

@@ -100,17 +100,34 @@ function enrichTasks(
   tasks: Task[],
   villas: Villa[],
   profiles: Profile[],
+  serviceOrders: ServiceOrder[] = [],
+  contacts: Contact[] = [],
 ): TaskWithRelations[] {
   return tasks
     .map((t) => {
       const villa = villas.find((v) => v.id === t.villa_id);
-      const assignee = profiles.find((p) => p.id === t.assigned_to);
+      const order = t.service_order_id
+        ? serviceOrders.find((o) => o.id === t.service_order_id)
+        : undefined;
+      const assigneeId = t.assigned_to ?? order?.staff_profile_id ?? null;
+      const fromProfile = assigneeId
+        ? profiles.find((p) => p.id === assigneeId)
+        : undefined;
+      const fromContact = assigneeId
+        ? contacts.find((c) => c.linked_profile_id === assigneeId) ??
+          (order?.contact_id
+            ? contacts.find((c) => c.id === order.contact_id)
+            : undefined)
+        : undefined;
+      const assignee = fromProfile
+        ? { id: fromProfile.id, full_name: fromProfile.full_name }
+        : assigneeId && fromContact
+          ? { id: assigneeId, full_name: fromContact.name }
+          : null;
       return {
         ...t,
         villa: villa ? { id: villa.id, name: villa.name } : null,
-        assignee: assignee
-          ? { id: assignee.id, full_name: assignee.full_name }
-          : null,
+        assignee,
       };
     })
     .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
@@ -164,13 +181,17 @@ function useDemoData(): AppData {
     setLocalReadIds(loadLocallyReadIds(profile.id));
   }, [profile?.id]);
 
-  const orgProfiles = useMemo(
-    () =>
-      profile
-        ? store.profiles.filter((p) => p.org_id === profile.org_id)
-        : [],
-    [store.profiles, profile],
-  );
+  const orgProfiles = useMemo(() => {
+    if (!profile) return [];
+    const memberIds = new Set(
+      (store.memberships ?? [])
+        .filter((m) => m.org_id === profile.org_id)
+        .map((m) => m.profile_id),
+    );
+    return store.profiles.filter(
+      (p) => p.org_id === profile.org_id || memberIds.has(p.id),
+    );
+  }, [store.profiles, store.memberships, profile]);
 
   const allOrgVillas = useMemo(() => {
     if (!profile) return [];
@@ -226,9 +247,26 @@ function useDemoData(): AppData {
     });
   }, [store.bills, profile]);
 
+  const contacts = useMemo(() => {
+    if (!profile) return [];
+    return store.contacts.filter((c) => c.org_id === profile.org_id);
+  }, [store.contacts, profile]);
+
+  const serviceOrders = useMemo(() => {
+    if (!profile) return [];
+    return (store.serviceOrders ?? []).filter((o) => o.org_id === profile.org_id);
+  }, [store.serviceOrders, profile]);
+
   const tasks = useMemo(
-    () => enrichTasks(orgTasks, visibleVillas, store.profiles),
-    [orgTasks, visibleVillas, store.profiles],
+    () =>
+      enrichTasks(
+        orgTasks,
+        visibleVillas,
+        store.profiles,
+        serviceOrders,
+        contacts,
+      ),
+    [orgTasks, visibleVillas, store.profiles, serviceOrders, contacts],
   );
   const bills = useMemo(
     () => enrichBills(orgBills, visibleVillas, orgProfiles),
@@ -251,11 +289,6 @@ function useDemoData(): AppData {
     if (!profile) return [];
     return store.invites.filter((i) => i.org_id === profile.org_id && !i.used_at);
   }, [store.invites, profile]);
-
-  const contacts = useMemo(() => {
-    if (!profile) return [];
-    return store.contacts.filter((c) => c.org_id === profile.org_id);
-  }, [store.contacts, profile]);
 
   const notifications = useMemo(() => {
     if (!profile) return [];
@@ -294,11 +327,6 @@ function useDemoData(): AppData {
     if (!profile) return [];
     return store.villaAssignments.filter((a) => a.org_id === profile.org_id);
   }, [store.villaAssignments, profile]);
-
-  const serviceOrders = useMemo(() => {
-    if (!profile) return [];
-    return (store.serviceOrders ?? []).filter((o) => o.org_id === profile.org_id);
-  }, [store.serviceOrders, profile]);
 
   const guestStays = useMemo(() => {
     if (!profile) return [];

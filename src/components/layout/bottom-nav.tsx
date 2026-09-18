@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -16,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useData } from "@/lib/data/use-app-data";
 import { isGuestApp, isStaffApp } from "@/lib/roles";
+import type { UserRole } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 import { PulseWordmark } from "@/components/brand/pulse-wordmark";
@@ -26,6 +28,10 @@ type Tab = {
   labelKey: MessageKey;
   icon: typeof Home;
 };
+
+type TabSet = "company" | "main" | "staff" | "guest";
+
+const NAV_TAB_SET_KEY = "pulseflow.navTabSet";
 
 const mainTabs: Tab[] = [
   { href: "/home", labelKey: "nav.home", icon: Home },
@@ -59,27 +65,68 @@ const guestTabs: Tab[] = [
   { href: "/bills", labelKey: "guest.nav.bills", icon: Receipt },
 ];
 
-/** Pressable fallback while profile/role is still loading. */
-const loadingTabs: Tab[] = [
-  { href: "/home", labelKey: "nav.home", icon: Home },
-  { href: "/villas", labelKey: "nav.villas", icon: Building2 },
-  { href: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
-  { href: "/bills", labelKey: "nav.bills", icon: Receipt },
-];
+function tabsForSet(set: TabSet): Tab[] {
+  if (set === "guest") return guestTabs;
+  if (set === "staff") return staffTabs;
+  if (set === "company") return companyHostTabs;
+  return mainTabs;
+}
+
+function readCachedTabSet(): TabSet | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const v = window.localStorage.getItem(NAV_TAB_SET_KEY);
+    if (v === "company" || v === "main" || v === "staff" || v === "guest") {
+      return v;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function writeCachedTabSet(set: TabSet) {
+  try {
+    window.localStorage.setItem(NAV_TAB_SET_KEY, set);
+  } catch {
+    /* ignore */
+  }
+}
+
+function resolveTabSet(
+  role: UserRole | undefined,
+  orgKind: string | null | undefined,
+): TabSet | null {
+  if (!role) return null;
+  if (isGuestApp(role)) return "guest";
+  if (isStaffApp(role)) return "staff";
+  if (orgKind === "company" && (role === "owner" || role === "manager")) {
+    return "company";
+  }
+  return "main";
+}
 
 export function useAppTabs() {
   const data = useData();
-  const role = data.profile?.role;
-  const isCompanyHost =
-    data.orgKind === "company" &&
-    (role === "owner" || role === "manager");
+  const [cachedSet, setCachedSet] = useState<TabSet | null>(null);
 
-  if (!data.ready || !role) return loadingTabs;
+  useEffect(() => {
+    setCachedSet(readCachedTabSet());
+  }, []);
 
-  if (isGuestApp(role)) return guestTabs;
-  if (isStaffApp(role)) return staffTabs;
-  if (isCompanyHost) return companyHostTabs;
-  return mainTabs;
+  const resolved = resolveTabSet(data.profile?.role, data.orgKind);
+
+  useEffect(() => {
+    if (!data.ready || !resolved) return;
+    setCachedSet(resolved);
+    writeCachedTabSet(resolved);
+  }, [data.ready, resolved]);
+
+  if (data.ready && resolved) return tabsForSet(resolved);
+  if (cachedSet) return tabsForSet(cachedSet);
+  // First visit before profile loads: reserve company host slots so owner/
+  // manager footers do not grow from 4 → 6 after hydration.
+  return companyHostTabs;
 }
 
 /** Desktop / tablet side rail — SaaS product chrome. */
@@ -137,9 +184,11 @@ export function SideNav() {
 export function BottomNav() {
   const pathname = usePathname();
   const { t } = useI18n();
+  const data = useData();
   const tabs = useAppTabs();
   // 5 tabs + long localized labels overflow phones — icons only when crowded.
   const iconOnly = tabs.length >= 5;
+  const tabsReady = data.ready && Boolean(data.profile?.role);
 
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden">
@@ -156,8 +205,10 @@ export function BottomNav() {
                 title={label}
                 className={cn(
                   "flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 transition",
+                  !tabsReady && "pointer-events-none opacity-40",
                   active ? "bg-white/95 text-ink" : "text-white/75",
                 )}
+                tabIndex={tabsReady ? undefined : -1}
               >
                 <Icon
                   className="size-4 shrink-0"
