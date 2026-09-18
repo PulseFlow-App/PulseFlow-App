@@ -170,7 +170,15 @@ export type AppData = {
     receipt_photo_url?: string | null;
   }) => Promise<void>;
   setBillStatus: (id: string, status: BillStatus) => Promise<void>;
-  sendMessage: (body: string) => Promise<void>;
+  sendMessage: (
+    body: string,
+    options?: {
+      channel?: import("@/lib/types").MessageChannel;
+      attachmentUrl?: string | null;
+    },
+  ) => Promise<void>;
+  /** Team chat image for the photo-proof channel. */
+  uploadChatAttachment: (file: File) => Promise<string | null>;
   uploadReceipt: (file: File) => Promise<string | null>;
   /** Guest/host receipt or image for support chat (no write entitlement check). */
   uploadSupportAttachment: (file: File) => Promise<string | null>;

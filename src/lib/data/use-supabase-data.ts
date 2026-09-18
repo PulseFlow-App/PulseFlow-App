@@ -224,6 +224,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     setBillStatus: async () => undefined,
     sendMessage: async () => undefined,
     uploadReceipt: async () => null,
+    uploadChatAttachment: async () => null,
     uploadSupportAttachment: async () => null,
     uploadVillaPhoto: async () => null,
     createInvite: async () => {
@@ -457,7 +458,13 @@ export function useSupabaseData(enabled: boolean): AppData {
     setContacts((contactsRes.data as Contact[]) ?? []);
     setTasks((tasksRes.data as Task[]) ?? []);
     setBills((billsRes.data as Bill[]) ?? []);
-    setMessages((messagesRes.data as MessageWithSender[]) ?? []);
+    setMessages(
+      ((messagesRes.data as MessageWithSender[]) ?? []).map((m) => ({
+        ...m,
+        channel: m.channel ?? "general",
+        attachment_url: m.attachment_url ?? null,
+      })),
+    );
     setInvites((invitesRes.data as Invite[]) ?? []);
     setVillaAssignments((assignRes.data as VillaAssignment[]) ?? []);
     setEndorsements((endorsementsRes.data as Endorsement[]) ?? []);
@@ -1493,9 +1500,14 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       await refresh();
     },
-    sendMessage: async (body) => {
+    sendMessage: async (body, options) => {
       if (!profile) return;
       requireCurrentOrgWrite();
+      const channel = options?.channel ?? "general";
+      const attachmentUrl = options?.attachmentUrl ?? null;
+      if (channel === "photo" && !attachmentUrl) {
+        throw new Error("Add a photo or screenshot for this thread.");
+      }
       const supabase = createClient();
       const { data: inserted, error } = await supabase
         .from("messages")
@@ -1503,6 +1515,8 @@ export function useSupabaseData(enabled: boolean): AppData {
           org_id: profile.org_id,
           sender_id: profile.id,
           body,
+          channel,
+          attachment_url: attachmentUrl,
         })
         .select("id")
         .single();
@@ -1570,6 +1584,17 @@ export function useSupabaseData(enabled: boolean): AppData {
       requireCurrentOrgWrite();
       const supabase = createClient();
       const path = `${profile.org_id}/${profile.id}/${Date.now()}-${file.name}`;
+      const { error } = await supabase.storage.from("receipts").upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("receipts").getPublicUrl(path);
+      return data.publicUrl;
+    },
+    uploadChatAttachment: async (file) => {
+      if (!profile) return null;
+      requireCurrentOrgWrite();
+      const supabase = createClient();
+      const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+      const path = `${profile.org_id}/${profile.id}/chat/${Date.now()}-${safeName}`;
       const { error } = await supabase.storage.from("receipts").upload(path, file);
       if (error) throw error;
       const { data } = supabase.storage.from("receipts").getPublicUrl(path);

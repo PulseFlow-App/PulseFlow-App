@@ -237,6 +237,8 @@ function useDemoData(): AppData {
       .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))
       .map((m) => ({
         ...m,
+        channel: m.channel ?? "general",
+        attachment_url: m.attachment_url ?? null,
         sender: orgProfiles.find((p) => p.id === m.sender_id) ?? null,
       }));
   }, [store.messages, profile, orgProfiles]);
@@ -796,9 +798,14 @@ function useDemoData(): AppData {
         ]);
       }
     },
-    sendMessage: async (body) => {
+    sendMessage: async (body, options) => {
       assertDemoWritable();
       if (!profile) return;
+      const channel = options?.channel ?? "general";
+      const attachmentUrl = options?.attachmentUrl ?? null;
+      if (channel === "photo" && !attachmentUrl) {
+        throw new Error("Add a photo or screenshot for this thread.");
+      }
       const msgId = uid("msg");
       updateDemoStore((s) => ({
         ...s,
@@ -811,6 +818,8 @@ function useDemoData(): AppData {
             body,
             created_at: new Date().toISOString(),
             service_order_id: null,
+            channel,
+            attachment_url: attachmentUrl,
           },
         ],
       }));
@@ -863,6 +872,11 @@ function useDemoData(): AppData {
     uploadReceipt: async (file) => {
       assertDemoWritable();
       return URL.createObjectURL(file);
+    },
+    uploadChatAttachment: async (file) => {
+      assertDemoWritable();
+      const { fileToDataUrl } = await import("@/lib/file-to-data-url");
+      return fileToDataUrl(file);
     },
     uploadSupportAttachment: async (file) => {
       assertDemoWritable();

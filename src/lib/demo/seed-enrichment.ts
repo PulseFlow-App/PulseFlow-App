@@ -690,6 +690,8 @@ export const extraMessages: Message[] = [
     body: "Bamboo Nest turns over today - Nok please prioritize after Palm.",
     created_at: daysAgo(0) + "T06:05:00.000Z",
     service_order_id: null,
+    channel: "request",
+    attachment_url: null,
   },
   {
     id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeea2",
@@ -698,6 +700,8 @@ export const extraMessages: Message[] = [
     body: "Got it. Palm deep clean done by noon, then Bamboo.",
     created_at: daysAgo(0) + "T06:18:00.000Z",
     service_order_id: null,
+    channel: "request",
+    attachment_url: null,
   },
   {
     id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeea3",
@@ -706,6 +710,8 @@ export const extraMessages: Message[] = [
     body: "Jungle AC tech confirmed for 14:00. I'll meet them on site.",
     created_at: daysAgo(0) + "T07:40:00.000Z",
     service_order_id: null,
+    channel: "general",
+    attachment_url: null,
   },
   {
     id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeea4",
@@ -714,6 +720,8 @@ export const extraMessages: Message[] = [
     body: "Guest reported sink leak at Sunset - Sam please check this morning.",
     created_at: daysAgo(0) + "T06:42:00.000Z",
     service_order_id: null,
+    channel: "request",
+    attachment_url: null,
   },
 ];
 

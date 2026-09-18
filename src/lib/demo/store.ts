@@ -125,7 +125,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v22";
+const STORE_KEY = "pulseflow_demo_store_v23";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -244,6 +244,8 @@ function normalizeStore(store: DemoStore): DemoStore {
       ...m,
       body: plainDash(m.body) ?? m.body,
       service_order_id: m.service_order_id ?? null,
+      channel: m.channel ?? "general",
+      attachment_url: m.attachment_url ?? null,
     })),
     notifications: [
       ...fresh.notifications,
@@ -320,6 +322,7 @@ function readStore(): DemoStore {
         "pulseflow_demo_store_v19",
         "pulseflow_demo_store_v20",
         "pulseflow_demo_store_v21",
+        "pulseflow_demo_store_v22",
       ]) {
         localStorage.removeItem(key);
       }
@@ -811,7 +814,7 @@ export function getPublicProfileBySlug(slug: string) {
   const publicProfile: Profile = {
     ...profile,
     email: "",
-    phone: "",
+    phone: null,
   };
   return {
     profile: publicProfile,
@@ -1032,6 +1035,8 @@ export function demoCreateServiceOrder(
         body: chatBody,
         created_at: order.created_at,
         service_order_id: orderId,
+        channel: "request" as const,
+        attachment_url: null,
       },
     ];
 
@@ -1100,6 +1105,8 @@ export function demoCompleteServiceOrder(actor: Profile, orderId: string) {
     } (${formatOrderWhen(order)})`,
     created_at: now,
     service_order_id: orderId,
+    channel: "request" as const,
+    attachment_url: null,
   };
   const audience = ownerManagerIds(store.profiles, order.org_id).filter(
     (id) => id !== actor.id,
@@ -1161,6 +1168,8 @@ export function demoAgreeServiceOrder(actor: Profile, orderId: string) {
     } (${formatOrderWhen(order)})`,
     created_at: now,
     service_order_id: orderId,
+    channel: "request" as const,
+    attachment_url: null,
   };
 
   updateDemoStore((s) => ({
@@ -1223,6 +1232,8 @@ export function demoCancelServiceOrder(actor: Profile, orderId: string) {
         } (${formatOrderWhen(order)})`,
     created_at: now,
     service_order_id: orderId,
+    channel: "request" as const,
+    attachment_url: null,
   };
   const audience = declined
     ? [

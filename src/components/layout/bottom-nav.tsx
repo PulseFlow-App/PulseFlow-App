@@ -21,11 +21,13 @@ import type { MessageKey } from "@/lib/i18n";
 import { PulseWordmark } from "@/components/brand/pulse-wordmark";
 import { useBrandName } from "@/lib/i18n/use-brand-name";
 
-const mainTabs: {
+type Tab = {
   href: string;
   labelKey: MessageKey;
   icon: typeof Home;
-}[] = [
+};
+
+const mainTabs: Tab[] = [
   { href: "/home", labelKey: "nav.home", icon: Home },
   { href: "/villas", labelKey: "nav.villas", icon: Building2 },
   { href: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
@@ -33,23 +35,16 @@ const mainTabs: {
   { href: "/bills", labelKey: "nav.bills", icon: Receipt },
 ];
 
-const companyHostTabs: {
-  href: string;
-  labelKey: MessageKey;
-  icon: typeof Home;
-}[] = [
+const companyHostTabs: Tab[] = [
   { href: "/home", labelKey: "nav.home", icon: Home },
   { href: "/villas", labelKey: "nav.villas", icon: Building2 },
   { href: "/guests", labelKey: "nav.guests", icon: BedDouble },
   { href: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
+  { href: "/messages", labelKey: "nav.chat", icon: MessageCircle },
   { href: "/bills", labelKey: "nav.bills", icon: Receipt },
 ];
 
-const staffTabs: {
-  href: string;
-  labelKey: MessageKey;
-  icon: typeof Home;
-}[] = [
+const staffTabs: Tab[] = [
   { href: "/home", labelKey: "nav.home", icon: Home },
   { href: "/jobs", labelKey: "nav.jobs", icon: CalendarClock },
   { href: "/villas", labelKey: "nav.villas", icon: Building2 },
@@ -57,19 +52,19 @@ const staffTabs: {
   { href: "/bills", labelKey: "nav.bills", icon: Receipt },
 ];
 
-const guestTabs = [
-  { href: "/home", labelKey: "guest.nav.stay" as MessageKey, icon: Home },
-  {
-    href: "/villas",
-    labelKey: "guest.nav.guide" as MessageKey,
-    icon: Building2,
-  },
-  {
-    href: "/messages",
-    labelKey: "guest.nav.support" as MessageKey,
-    icon: MessageCircle,
-  },
-  { href: "/bills", labelKey: "guest.nav.bills" as MessageKey, icon: Receipt },
+const guestTabs: Tab[] = [
+  { href: "/home", labelKey: "guest.nav.stay", icon: Home },
+  { href: "/villas", labelKey: "guest.nav.guide", icon: Building2 },
+  { href: "/messages", labelKey: "guest.nav.support", icon: MessageCircle },
+  { href: "/bills", labelKey: "guest.nav.bills", icon: Receipt },
+];
+
+/** Pressable fallback while profile/role is still loading. */
+const loadingTabs: Tab[] = [
+  { href: "/home", labelKey: "nav.home", icon: Home },
+  { href: "/villas", labelKey: "nav.villas", icon: Building2 },
+  { href: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
+  { href: "/bills", labelKey: "nav.bills", icon: Receipt },
 ];
 
 export function useAppTabs() {
@@ -79,7 +74,7 @@ export function useAppTabs() {
     data.orgKind === "company" &&
     (role === "owner" || role === "manager");
 
-  if (!data.ready || !role) return [];
+  if (!data.ready || !role) return loadingTabs;
 
   if (isGuestApp(role)) return guestTabs;
   if (isStaffApp(role)) return staffTabs;
@@ -93,8 +88,6 @@ export function SideNav() {
   const { t } = useI18n();
   const brandName = useBrandName();
   const tabs = useAppTabs();
-
-  if (!tabs.length) return null;
 
   return (
     <aside className="hidden h-full w-[15.5rem] shrink-0 flex-col border-r border-[var(--color-border)] bg-card/80 px-3 py-4 backdrop-blur-md md:flex lg:w-[16.5rem]">
@@ -147,23 +140,6 @@ export function BottomNav() {
   const tabs = useAppTabs();
   // 5 tabs + long localized labels overflow phones — icons only when crowded.
   const iconOnly = tabs.length >= 5;
-
-  if (!tabs.length) {
-    return (
-      <nav
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden"
-        aria-hidden
-      >
-        <ul className="mx-auto flex h-12 w-full max-w-lg items-center justify-around rounded-2xl bg-nav px-1 shadow-[var(--shadow-nav)]">
-          {[0, 1, 2, 3].map((i) => (
-            <li key={i} className="flex-1">
-              <div className="mx-auto size-4 rounded-full bg-white/15" />
-            </li>
-          ))}
-        </ul>
-      </nav>
-    );
-  }
 
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden">

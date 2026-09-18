@@ -278,6 +278,8 @@ export type AppNotification = {
   read_by: string[];
 };
 
+export type MessageChannel = "request" | "photo" | "general";
+
 export type Message = {
   id: string;
   org_id: string;
@@ -285,6 +287,8 @@ export type Message = {
   body: string;
   created_at: string;
   service_order_id: string | null;
+  channel: MessageChannel;
+  attachment_url: string | null;
 };
 
 export type TaskWithRelations = Task & {

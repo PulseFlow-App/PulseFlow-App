@@ -165,6 +165,9 @@ export default function PublicProfilePage({
             {labelRole(t, data.profile.role)}
             {data.profile.job_title ? ` · ${data.profile.job_title}` : ""}
           </p>
+          <p className="mt-2 text-xs leading-relaxed text-muted">
+            {t("publicProfile.contactsPrivate")}
+          </p>
           {data.profile.job_search_visible
             ? (() => {
                 const place = formatTalentPlace(data.profile);

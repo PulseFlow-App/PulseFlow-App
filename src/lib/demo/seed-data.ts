@@ -986,6 +986,8 @@ export const demoMessages: Message[] = [
     body: "Morning - Palm Villa needs to be guest-ready by tomorrow noon.",
     created_at: daysAgo(0) + "T07:15:00.000Z",
     service_order_id: null,
+    channel: "general",
+    attachment_url: null,
   },
   {
     id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2",
@@ -994,6 +996,8 @@ export const demoMessages: Message[] = [
     body: "On it. Cleaning team is already there. Will update when done.",
     created_at: daysAgo(0) + "T07:22:00.000Z",
     service_order_id: null,
+    channel: "general",
+    attachment_url: null,
   },
   {
     id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee3",
@@ -1002,6 +1006,8 @@ export const demoMessages: Message[] = [
     body: "AC tech confirmed for Jungle Retreat at 2pm.",
     created_at: daysAgo(0) + "T08:05:00.000Z",
     service_order_id: null,
+    channel: "general",
+    attachment_url: null,
   },
   {
     id: ORDER_MSG_AGREED,
@@ -1010,6 +1016,8 @@ export const demoMessages: Message[] = [
     body: "📋 Service order for Nok Cleaning\nWhat: Deep clean\nWhere: Palm Villa\nWhen: today 09:00-12:00\nDetails: Deep clean before tomorrow check-in.\nFrom: Alex Owner\n\nStaff: open this and tap “Read and agreed” to confirm you got the job.",
     created_at: daysAgo(1) + "T18:00:00.000Z",
     service_order_id: ORDER_AGREED_ID,
+    channel: "request",
+    attachment_url: null,
   },
   {
     id: ORDER_MSG_PENDING,
@@ -1018,6 +1026,8 @@ export const demoMessages: Message[] = [
     body: "📋 Service order for Nok Cleaning\nWhat: Turnover cleaning\nWhere: Lotus House\nWhen: tomorrow 11:00-14:00\nDetails: Full turnover after checkout. Extra towels in laundry room.\nFrom: Alex Owner\n\nStaff: open this and tap “Read and agreed” to confirm you got the job.",
     created_at: daysAgo(0) + "T09:00:00.000Z",
     service_order_id: ORDER_PENDING_ID,
+    channel: "request",
+    attachment_url: null,
   },
 ];
 
