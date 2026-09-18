@@ -563,6 +563,10 @@ const th: Dictionary = {
   "demo.orderChat.when": "เมื่อไหร่: {when}",
   "demo.orderChat.where": "ที่ไหน: {location}",
   "demo.readOnlyBanner": "โหมดเดโมเท่านั้น สำรวจได้เต็มที่ สมัครบัญชีจริงเพื่อบันทึกการเปลี่ยนแปลง",
+  "demo.sys.cancelledMsg": "Cancelled - {service} at {location} ({when})",
+  "demo.sys.declinedMsg": "Declined - {service} at {location} ({when})",
+  "demo.sys.revokeMsg":
+    "↩️ Agreement cancelled - {service} at {location} ({when})",
   "demo.sys.agreedMsg": "✅ อ่านและยอมรับ - {service} ที่ {location} ({when})",
   "demo.sys.agreedTitle": "{name} ยอมรับแล้ว",
   "demo.sys.appointmentBody": "{service} · {location} · {window}",

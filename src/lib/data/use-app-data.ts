@@ -227,8 +227,8 @@ function useDemoData(): AppData {
   }, [store.bills, profile]);
 
   const tasks = useMemo(
-    () => enrichTasks(orgTasks, visibleVillas, orgProfiles),
-    [orgTasks, visibleVillas, orgProfiles],
+    () => enrichTasks(orgTasks, visibleVillas, store.profiles),
+    [orgTasks, visibleVillas, store.profiles],
   );
   const bills = useMemo(
     () => enrichBills(orgBills, visibleVillas, orgProfiles),

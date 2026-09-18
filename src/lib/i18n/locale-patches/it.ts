@@ -120,6 +120,11 @@ export const itLocalePatch: Partial<Dictionary> = {
   "demo.sys.villaFallback": "Property",
 
   "demo.orderChat.header": "📋 Ordine di servizio per {name}",
+  "demo.orderChat.assignedLine": "{mention} è stato assegnato a {job}. Letto e accettato?",
+  "demo.orderChat.openLine": "Lavoro: {job}. Letto e accettato?",
+  "demo.sys.cancelledMsg": "Annullato – {service} a {location} ({when})",
+  "demo.sys.declinedMsg": "Rifiutato – {service} a {location} ({when})",
+  "demo.sys.revokeMsg": "↩️ Accordo annullato – {service} a {location} ({when})",
   "demo.orderChat.what": "Cosa: {serviceType}",
   "demo.orderChat.where": "Dove: {location}",
   "demo.orderChat.when": "Quando: {when}",

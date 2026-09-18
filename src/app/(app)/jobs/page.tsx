@@ -249,8 +249,10 @@ export default function JobsPage() {
             const photo =
               (order.villa_id && villaPhotoById.get(order.villa_id)) || null;
             const staffName = order.staff_profile_id
-              ? data.profiles.find((p) => p.id === order.staff_profile_id)
-                  ?.full_name
+              ? (
+                  data.profiles.find((p) => p.id === order.staff_profile_id) ??
+                  data.allProfiles.find((p) => p.id === order.staff_profile_id)
+                )?.full_name
               : null;
             return (
               <Card
@@ -356,6 +358,7 @@ export default function JobsPage() {
                   <p className="truncate text-xs text-muted">
                     {task.villa?.name ?? t("common.general")}
                     {workWindow ? ` · ${workWindow}` : ""}
+                    {task.assignee ? ` · ${task.assignee.full_name}` : ""}
                   </p>
                 </div>
                 {task.priority === "urgent" ? (

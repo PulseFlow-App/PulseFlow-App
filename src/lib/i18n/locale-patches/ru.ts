@@ -37,4 +37,9 @@ export const ruLocalePatch: Partial<Dictionary> = {
     "Пляжные полотенца в левом шкафу. Доп. вода под раковиной.",
   "demo.guest.depositNote": "Залог удержан при заезде.",
   "demo.guest.chargeGlass": "Разбитый бокал (замена)",
+  "demo.orderChat.assignedLine": "{mention} назначен на {job}. Прочитано и согласовано?",
+  "demo.orderChat.openLine": "Задание: {job}. Прочитано и согласовано?",
+  "demo.sys.cancelledMsg": "Отменено – {service} · {location} ({when})",
+  "demo.sys.declinedMsg": "Отклонено – {service} · {location} ({when})",
+  "demo.sys.revokeMsg": "↩️ Согласие отменено – {service} · {location} ({when})",
 };

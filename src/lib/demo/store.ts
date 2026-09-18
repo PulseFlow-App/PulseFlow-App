@@ -1220,9 +1220,7 @@ export function demoAgreeServiceOrder(actor: Profile, orderId: string) {
         : o,
     ),
     tasks: s.tasks.map((t) =>
-      t.id === order.task_id && !order.staff_profile_id
-        ? { ...t, assigned_to: claimStaff }
-        : t,
+      t.id === order.task_id ? { ...t, assigned_to: claimStaff } : t,
     ),
     messages: [...s.messages, confirmMsg],
     notifications: [

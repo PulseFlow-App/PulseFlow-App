@@ -567,6 +567,10 @@ const fr: Dictionary = {
   "demo.orderChat.when": "When: {when}",
   "demo.orderChat.where": "Where: {location}",
   "demo.readOnlyBanner": "Démo uniquement. Explorez librement. Créez un compte réel pour apporter des modifications.",
+  "demo.sys.cancelledMsg": "Cancelled - {service} at {location} ({when})",
+  "demo.sys.declinedMsg": "Declined - {service} at {location} ({when})",
+  "demo.sys.revokeMsg":
+    "↩️ Agreement cancelled - {service} at {location} ({when})",
   "demo.sys.agreedMsg": "✅ Read and agreed - {service} at {location} ({when})",
   "demo.sys.agreedTitle": "{name} agreed",
   "demo.sys.appointmentBody": "{service} · {location} · {window}",

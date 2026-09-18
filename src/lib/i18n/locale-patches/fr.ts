@@ -46,4 +46,9 @@ export const frLocalePatch: Partial<Dictionary> = {
     "Serviettes de plage dans le placard de gauche. Eau supplémentaire sous l'évier.",
   "demo.guest.depositNote": "Caution enregistrée à l'arrivée.",
   "demo.guest.chargeGlass": "Verre à vin cassé (remplacement)",
+  "demo.orderChat.assignedLine": "{mention} a été assigné à {job}. Lu et accepté ?",
+  "demo.orderChat.openLine": "Mission : {job}. Lu et accepté ?",
+  "demo.sys.cancelledMsg": "Annulé – {service} à {location} ({when})",
+  "demo.sys.declinedMsg": "Refusé – {service} à {location} ({when})",
+  "demo.sys.revokeMsg": "↩️ Accord annulé – {service} à {location} ({when})",
 };

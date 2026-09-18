@@ -23,6 +23,7 @@ import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { canUseTeamChat, isGuestApp } from "@/lib/roles";
+import { isJobSystemChatBody } from "@/lib/demo/localize";
 import {
   GuestSupportChat,
   HostSupportInbox,
@@ -612,6 +613,19 @@ function MessageBody({
   profiles: Profile[];
   mine: boolean;
 }) {
+  // Job system posts are stored in English templates. Localize the full body
+  // first — splitting @mentions would break the pattern match.
+  if (isJobSystemChatBody(body)) {
+    return (
+      <LocalizedText
+        text={body}
+        as="p"
+        multiline
+        className="whitespace-pre-wrap"
+      />
+    );
+  }
+
   const segments = mentionSegments(body, profiles);
   return (
     <p>

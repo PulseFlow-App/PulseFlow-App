@@ -37,4 +37,9 @@ export const thLocalePatch: Partial<Dictionary> = {
     "ผ้าเช็ดตัวชายหาดในตู้ซ้าย น้ำสำรองใต้ซิงก์",
   "demo.guest.depositNote": "มัดจำเก็บไว้ตอนเช็คอิน",
   "demo.guest.chargeGlass": "แก้วไวน์แตก (เปลี่ยนใหม่)",
+  "demo.orderChat.assignedLine": "{mention} ได้รับมอบหมายงาน {job} อ่านและยอมรับแล้ว?",
+  "demo.orderChat.openLine": "งาน: {job} อ่านและยอมรับแล้ว?",
+  "demo.sys.cancelledMsg": "ยกเลิกแล้ว - {service} ที่ {location} ({when})",
+  "demo.sys.declinedMsg": "ปฏิเสธแล้ว - {service} ที่ {location} ({when})",
+  "demo.sys.revokeMsg": "↩️ ยกเลิกการยอมรับแล้ว - {service} ที่ {location} ({when})",
 };

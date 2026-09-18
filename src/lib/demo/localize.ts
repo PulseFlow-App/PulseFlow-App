@@ -207,39 +207,57 @@ function localizeOrderChatBody(text: string, t: TFn): string {
   return out.join("\n");
 }
 
-function localizeDoneOrAgreedMsg(
+function localizeStatusJobMsg(
   text: string,
-  kind: "done" | "agreed",
+  kind: "done" | "agreed" | "cancelled" | "declined" | "revoke",
   t: TFn,
 ): string {
-  const re =
-    kind === "done"
-      ? /^✅ Done - (.+) at (.+) \((.+)\)$/
-      : /^✅ Read and agreed - (.+) at (.+) \((.+)\)$/;
-  const m = text.match(re);
+  const patterns: Record<typeof kind, RegExp> = {
+    done: /^✅ Done - (.+) at (.+) \((.+)\)$/,
+    agreed: /^✅ Read and agreed - (.+) at (.+) \((.+)\)$/,
+    cancelled: /^Cancelled - (.+) at (.+) \((.+)\)$/,
+    declined: /^Declined - (.+) at (.+) \((.+)\)$/,
+    revoke: /^↩️ Agreement cancelled - (.+) at (.+) \((.+)\)$/,
+  };
+  const keys: Record<typeof kind, MessageKey> = {
+    done: "demo.sys.doneMsg",
+    agreed: "demo.sys.agreedMsg",
+    cancelled: "demo.sys.cancelledMsg",
+    declined: "demo.sys.declinedMsg",
+    revoke: "demo.sys.revokeMsg",
+  };
+  const m = text.trim().match(patterns[kind]);
   if (!m) return replaceKnownPhrases(text, t);
   const location =
     m[2] === "location" ? t("demo.sys.locationFallback") : m[2]!;
-  const params = {
+  return t(keys[kind], {
     service: localizeDemoText(m[1]!, t),
     location,
     when: replaceKnownPhrases(m[3]!, t),
-  };
-  return kind === "done"
-    ? t("demo.sys.doneMsg", params)
-    : t("demo.sys.agreedMsg", params);
+  });
+}
+
+/** Team-chat job system copy stored in English — localize as a whole message. */
+export function isJobSystemChatBody(text: string): boolean {
+  if (!text) return false;
+  const first = (text.split("\n")[0] ?? text).trim();
+  return (
+    /^@\S+ was assigned to .+\. Read and agreed\?$/.test(first) ||
+    /^Job: .+\. Read and agreed\?$/.test(first) ||
+    first.startsWith("📋 Service order for ") ||
+    first.startsWith("✅ Read and agreed - ") ||
+    first.startsWith("✅ Done - ") ||
+    first.startsWith("Cancelled - ") ||
+    first.startsWith("Declined - ") ||
+    first.startsWith("↩️ Agreement cancelled - ")
+  );
 }
 
 /** True when stored copy is a known demo seed string (use dictionary, not live translate). */
 export function isKnownDemoPhrase(text: string): boolean {
   if (!text) return false;
   if (DEMO_ENGLISH_TO_KEY[text]) return true;
-  if (text.startsWith("📋 Service order for ")) return true;
-  if (/^@\S+ was assigned to .+\. Read and agreed\?/.test(text)) return true;
-  if (/^Job: .+\. Read and agreed\?/.test(text)) return true;
-  if (text.startsWith("✅ Done - ") || text.startsWith("✅ Read and agreed - ")) {
-    return true;
-  }
+  if (isJobSystemChatBody(text)) return true;
   if (/^(Appointment|Check-in|Check-out) .+$/.test(text)) return true;
   if (/^Bill .+$/.test(text)) return true;
   if (/^New job: .+$/.test(text)) return true;
@@ -256,20 +274,24 @@ export function localizeDemoText(text: string, t: TFn): string {
   const exact = DEMO_ENGLISH_TO_KEY[text];
   if (exact) return t(exact);
 
-  if (text.startsWith("📋 Service order for ")) {
+  if (isJobSystemChatBody(text)) {
+    const first = (text.split("\n")[0] ?? text).trim();
+    if (first.startsWith("✅ Done - ")) {
+      return localizeStatusJobMsg(first, "done", t);
+    }
+    if (first.startsWith("✅ Read and agreed - ")) {
+      return localizeStatusJobMsg(first, "agreed", t);
+    }
+    if (first.startsWith("Cancelled - ")) {
+      return localizeStatusJobMsg(first, "cancelled", t);
+    }
+    if (first.startsWith("Declined - ")) {
+      return localizeStatusJobMsg(first, "declined", t);
+    }
+    if (first.startsWith("↩️ Agreement cancelled - ")) {
+      return localizeStatusJobMsg(first, "revoke", t);
+    }
     return localizeOrderChatBody(text, t);
-  }
-  if (
-    /^@\S+ was assigned to .+\. Read and agreed\?/.test(text) ||
-    /^Job: .+\. Read and agreed\?/.test(text)
-  ) {
-    return localizeOrderChatBody(text, t);
-  }
-  if (text.startsWith("✅ Done - ")) {
-    return localizeDoneOrAgreedMsg(text, "done", t);
-  }
-  if (text.startsWith("✅ Read and agreed - ")) {
-    return localizeDoneOrAgreedMsg(text, "agreed", t);
   }
 
   const scheduleTitle = text.match(/^(Appointment|Check-in|Check-out) (.+)$/);

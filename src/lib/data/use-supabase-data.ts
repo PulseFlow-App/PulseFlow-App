@@ -842,7 +842,11 @@ export function useSupabaseData(enabled: boolean): AppData {
     villaList,
     allOrgVillas,
     contacts,
-    tasks: enrichTasks(scopedTasks, visible, profiles),
+    tasks: enrichTasks(
+      scopedTasks,
+      visible,
+      allProfiles.length > 0 ? allProfiles : profiles,
+    ),
     bills: enrichBills(
       profile && !canViewAllBills(profile.role)
         ? bills.filter((b) => b.submitted_by === profile.id)
@@ -1091,7 +1095,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         })
         .eq("id", orderId);
       if (error) throw error;
-      if (order.task_id && !order.staff_profile_id) {
+      if (order.task_id) {
         await supabase
           .from("tasks")
           .update({ assigned_to: claimStaff })

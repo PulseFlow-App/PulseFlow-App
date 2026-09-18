@@ -611,6 +611,10 @@ const ar: Dictionary = {
   "demo.sys.jobBody": "{service} · {location} · {when}",
   "demo.sys.jobBodyShort": "{service} · {when}",
   "demo.sys.doneMsg": "✅ Done - {service} at {location} ({when})",
+  "demo.sys.cancelledMsg": "Cancelled - {service} at {location} ({when})",
+  "demo.sys.declinedMsg": "Declined - {service} at {location} ({when})",
+  "demo.sys.revokeMsg":
+    "↩️ Agreement cancelled - {service} at {location} ({when})",
   "demo.sys.agreedMsg": "✅ Read and agreed - {service} at {location} ({when})",
   "demo.sys.locationFallback": "location",
   "demo.sys.villaFallback": "Property",

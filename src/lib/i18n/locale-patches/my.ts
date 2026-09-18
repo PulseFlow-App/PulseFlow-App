@@ -116,6 +116,11 @@ export const myLocalePatch: Partial<Dictionary> = {
   "demo.sys.villaFallback": "Property",
 
   "demo.orderChat.header": "📋 {name} အတွက် ဝန်ဆောင်မှုအမိန့်",
+  "demo.orderChat.assignedLine": "{mention} ကို {job} သို့ တာဝန်ပေးထားသည်။ ဖတ်ပြီး သဘောတူပါသလား?",
+  "demo.orderChat.openLine": "အလုပ်: {job}။ ဖတ်ပြီး သဘောတူပါသလား?",
+  "demo.sys.cancelledMsg": "ပယ်ဖျက်ပြီး - {service} · {location} ({when})",
+  "demo.sys.declinedMsg": "ငြင်းပယ်ပြီး - {service} · {location} ({when})",
+  "demo.sys.revokeMsg": "↩️ သဘောတူမှု ပယ်ဖျက်ပြီး - {service} · {location} ({when})",
   "demo.orderChat.what": "ဘာလဲ: {serviceType}",
   "demo.orderChat.where": "ဘယ်မှာ: {location}",
   "demo.orderChat.when": "ဘယ်အချိန်: {when}",
