@@ -293,7 +293,18 @@ const en = {
   "jobs.agreed": "You agreed to this job",
   "jobs.readAgreed": "Read and agreed",
   "jobs.decline": "Decline job",
+  "jobs.cancelAgreement": "Cancel agreement",
+  "jobs.cancelAgreementHint":
+    "Undo if you tapped by mistake. Available until 24 hours before the job.",
   "jobs.cancelOrder": "Cancel job",
+  "jobs.reassign": "Reassign",
+  "jobs.repostOpen": "Post open again",
+  "jobs.repostHint":
+    "Posts Read and agreed again to Questions/Feedback. Pick a teammate or leave open.",
+  "jobs.assigneeOptional": "Assignee (optional)",
+  "jobs.repostSend": "Post to chat",
+  "jobs.cancelViaChat":
+    "Within 24 hours of the job, staff cancel in Team chat with /cancel job",
   "jobs.saving": "Saving…",
 
   "order.status.pending_ack": "Awaiting Read & agreed",
@@ -301,8 +312,15 @@ const en = {
   "order.status.done": "Done",
   "order.status.cancelled": "Cancelled",
   "order.reach.pending": "Not contacted (awaiting agreement)",
+  "order.reach.open": "Open job - awaiting agreement",
   "order.reach.offline": "Not on app - call them",
   "order.reach.confirmed": "Confirmed in app",
+
+  "messages.cmdCancelJob":
+    "Cancel a job (required within 24h of the work window)",
+  "messages.cancelJobDone": "Cancelled job: {job}",
+  "messages.cancelJobNone": "No matching open job to cancel.",
+  "messages.cancelJobHint": "Try /cancel job or /cancel job deep clean",
 
   "contacts.title": "Contacts",
   "contacts.subtitle": "Vendors & island team - Order books them in-app",
@@ -316,7 +334,7 @@ const en = {
   "contacts.order": "Order",
   "contacts.orderTitle": "Order {name}",
   "contacts.orderHint":
-    "Sends chat + notification. They must tap Read & agreed.",
+    "Posts to Questions/Feedback. They must tap Read and agreed.",
   "contacts.review": "Review",
   "contacts.reviewTitle": "Review {name}",
   "contacts.reviewHint":
@@ -695,6 +713,9 @@ const en = {
   "demo.sys.villaFallback": "Property",
 
   "demo.orderChat.header": "📋 Service order for {name}",
+  "demo.orderChat.assignedLine":
+    "{mention} was assigned to {job}. Read and agreed?",
+  "demo.orderChat.openLine": "Job: {job}. Read and agreed?",
   "demo.orderChat.what": "What: {serviceType}",
   "demo.orderChat.where": "Where: {location}",
   "demo.orderChat.when": "When: {when}",

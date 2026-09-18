@@ -78,7 +78,20 @@ export type AppData = {
     time_end?: string | null;
   }) => Promise<ServiceOrder>;
   agreeServiceOrder: (orderId: string) => Promise<void>;
-  cancelServiceOrder: (orderId: string) => Promise<void>;
+  /** Undo Read and agreed while the job is still >24h away. */
+  revokeServiceOrderAgreement: (orderId: string) => Promise<void>;
+  cancelServiceOrder: (
+    orderId: string,
+    options?: { viaChatCommand?: boolean },
+  ) => Promise<void>;
+  /**
+   * Owner/manager: reset to pending Read and agreed, optionally assign someone,
+   * and post again to Questions/Feedback.
+   */
+  reopenServiceOrder: (
+    orderId: string,
+    options?: { assigned_to?: string | null },
+  ) => Promise<void>;
   completeServiceOrder: (orderId: string) => Promise<void>;
   updateVilla: (
     id: string,

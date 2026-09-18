@@ -5,14 +5,25 @@ import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Label, Select } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { AgreeButton } from "@/components/jobs/agree-button";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
-import { canCancelServiceOrder, formatOrderWhen } from "@/lib/service-orders";
-import { isStaffApp, canBookServices } from "@/lib/roles";
-import { cn, formatShortDate } from "@/lib/utils";
+import {
+  canCancelServiceOrder,
+  canAgreeServiceOrder,
+  canReopenServiceOrder,
+  formatOrderWhen,
+  orderReachabilityLabel,
+} from "@/lib/service-orders";
+import {
+  isStaffApp,
+  canBookServices,
+  taskAssignableProfiles,
+} from "@/lib/roles";
+import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
@@ -47,6 +58,107 @@ function CancelOrderButton({ orderId }: { orderId: string }) {
   );
 }
 
+function ReopenOrderPanel({ orderId }: { orderId: string }) {
+  const data = useData();
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const [assignee, setAssignee] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const assignees = useMemo(
+    () => taskAssignableProfiles(data.profiles),
+    [data.profiles],
+  );
+
+  if (!open) {
+    return (
+      <div className="space-y-2">
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="flex-1"
+            onClick={() => {
+              setOpen(true);
+              setAssignee("");
+              setError(null);
+            }}
+          >
+            {t("jobs.reassign")}
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="flex-1"
+            disabled={busy}
+            onClick={() => {
+              setBusy(true);
+              setError(null);
+              void data
+                .reopenServiceOrder(orderId, { assigned_to: null })
+                .catch((e: unknown) =>
+                  setError(e instanceof Error ? e.message : t("common.error")),
+                )
+                .finally(() => setBusy(false));
+            }}
+          >
+            {busy ? t("jobs.saving") : t("jobs.repostOpen")}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2 rounded-xl bg-sand/50 p-3">
+      <p className="text-xs text-muted">{t("jobs.repostHint")}</p>
+      <div>
+        <Label>{t("jobs.assigneeOptional")}</Label>
+        <Select value={assignee} onChange={(e) => setAssignee(e.target.value)}>
+          <option value="">{t("tasks.unassigned")}</option>
+          {assignees.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.full_name}
+            </option>
+          ))}
+        </Select>
+      </div>
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="ghost"
+          className="flex-1"
+          onClick={() => setOpen(false)}
+        >
+          {t("common.cancel")}
+        </Button>
+        <Button
+          size="sm"
+          className="flex-1"
+          disabled={busy}
+          onClick={() => {
+            setBusy(true);
+            setError(null);
+            void data
+              .reopenServiceOrder(orderId, {
+                assigned_to: assignee || null,
+              })
+              .then(() => setOpen(false))
+              .catch((e: unknown) =>
+                setError(e instanceof Error ? e.message : t("common.error")),
+              )
+              .finally(() => setBusy(false));
+          }}
+        >
+          {busy ? t("jobs.saving") : t("jobs.repostSend")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function JobsPage() {
   const data = useData();
   const { t } = useI18n();
@@ -67,8 +179,13 @@ export default function JobsPage() {
   const myOrders = useMemo(() => {
     if (!data.profile) return [];
     const list = data.serviceOrders.filter((o) => {
-      if (staff) return o.staff_profile_id === data.profile!.id;
-      return true;
+      if (staff) {
+        return (
+          o.staff_profile_id === data.profile!.id ||
+          (!o.staff_profile_id && o.status === "pending_ack")
+        );
+      }
+      return o.status !== "done";
     });
     return [...list].sort((a, b) => {
       const da = `${a.scheduled_date}${a.time_start ?? ""}`;
@@ -122,11 +239,19 @@ export default function JobsPage() {
         ) : (
           myOrders.map((order) => {
             const pendingForMe =
-              staff &&
-              order.status === "pending_ack" &&
-              order.staff_profile_id === data.profile!.id;
+              !!data.profile && canAgreeServiceOrder(data.profile, order);
+            const canReopen =
+              !!data.profile &&
+              canReopenServiceOrder(data.profile, order, data.orgKind);
+            const canCancel =
+              !!data.profile &&
+              canCancelServiceOrder(data.profile, order, data.orgKind);
             const photo =
               (order.villa_id && villaPhotoById.get(order.villa_id)) || null;
+            const staffName = order.staff_profile_id
+              ? data.profiles.find((p) => p.id === order.staff_profile_id)
+                  ?.full_name
+              : null;
             return (
               <Card
                 key={order.id}
@@ -150,6 +275,7 @@ export default function JobsPage() {
                       </p>
                       <p className="text-sm text-muted">
                         {order.location_label ?? t("tasks.villa")}
+                        {staffName ? ` · ${staffName}` : ""}
                       </p>
                     </div>
                     <span
@@ -159,7 +285,9 @@ export default function JobsPage() {
                           ? "bg-warning/20 text-warning-dark"
                           : order.status === "agreed"
                             ? "bg-secondary/15 text-secondary-dark"
-                            : "bg-[#F7F5F1] text-muted",
+                            : order.status === "cancelled"
+                              ? "bg-danger/10 text-danger"
+                              : "bg-[#F7F5F1] text-muted",
                       )}
                     >
                       {t(`order.status.${order.status}` as MessageKey)}
@@ -173,13 +301,7 @@ export default function JobsPage() {
                   ) : null}
                   {!staff ? (
                     <p className="text-xs font-semibold text-muted">
-                      {!order.staff_profile_id
-                        ? t("order.reach.offline")
-                        : order.status === "pending_ack"
-                          ? t("order.reach.pending")
-                          : order.status === "agreed"
-                            ? t("order.reach.confirmed")
-                            : t(`order.status.${order.status}` as MessageKey)}
+                      {orderReachabilityLabel(order, t)}
                     </p>
                   ) : null}
                   {pendingForMe ? <AgreeButton orderId={order.id} /> : null}
@@ -193,14 +315,11 @@ export default function JobsPage() {
                       {t("jobs.markDone")}
                     </Button>
                   ) : null}
-                  {!staff &&
-                  data.profile &&
-                  canCancelServiceOrder(
-                    data.profile,
-                    order,
-                    data.orgKind,
-                  ) ? (
+                  {!staff && canCancel ? (
                     <CancelOrderButton orderId={order.id} />
+                  ) : null}
+                  {!staff && canReopen ? (
+                    <ReopenOrderPanel orderId={order.id} />
                   ) : null}
                 </div>
               </Card>
@@ -264,12 +383,7 @@ export default function JobsPage() {
       {!staff ? (
         <p className="text-center text-xs text-muted">{t("jobs.tipOwner")}</p>
       ) : (
-        <p className="text-center text-xs text-muted">
-          {t("jobs.tipStaff")}
-          {myTasks[0]?.due_date
-            ? ` ${formatShortDate(myTasks[0].due_date)}`
-            : ""}
-        </p>
+        <p className="text-center text-xs text-muted">{t("jobs.tipStaff")}</p>
       )}
     </div>
   );

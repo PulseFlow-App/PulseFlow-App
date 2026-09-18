@@ -2,9 +2,13 @@ import type { ServiceOrder, ServiceOrderStatus } from "@/lib/types";
 import type { UserRole } from "@/lib/design-tokens";
 import { formatWorkWindow } from "@/lib/notifications";
 import type { MessageKey } from "@/lib/i18n";
-import { canBookServices } from "@/lib/roles";
+import { canBookServices, isTaskAssignableRole } from "@/lib/roles";
 
 type TFn = (key: MessageKey, params?: Record<string, string | number>) => string;
+
+const MS_PER_HOUR = 60 * 60 * 1000;
+/** UI cancel / revoke allowed until this many hours before the scheduled start. */
+export const JOB_UI_CANCEL_HOURS_BEFORE = 24;
 
 export function orderStatusLabel(status: ServiceOrderStatus, t?: TFn) {
   const key = `order.status.${status}` as MessageKey;
@@ -25,7 +29,7 @@ export function orderStatusLabel(status: ServiceOrderStatus, t?: TFn) {
 
 export function orderReachabilityLabel(order: ServiceOrder, t?: TFn) {
   if (!order.staff_profile_id) {
-    return t ? t("order.reach.offline") : "Not on app - call them";
+    return t ? t("order.reach.open") : "Open job - awaiting agreement";
   }
   if (order.status === "pending_ack") {
     return t ? t("order.reach.pending") : "Not contacted (awaiting agreement)";
@@ -46,42 +50,153 @@ export function formatOrderWhen(order: ServiceOrder) {
   );
 }
 
-/** Staff can decline while awaiting ack. Owners/managers can cancel until done. */
+/** Scheduled start as Date (local). Missing time → start of scheduled_date. */
+export function orderScheduledStart(order: Pick<ServiceOrder, "scheduled_date" | "time_start">) {
+  const time = (order.time_start || "00:00").slice(0, 5);
+  return new Date(`${order.scheduled_date}T${time}:00`);
+}
+
+export function hoursUntilOrderStart(order: Pick<ServiceOrder, "scheduled_date" | "time_start">) {
+  return (orderScheduledStart(order).getTime() - Date.now()) / MS_PER_HOUR;
+}
+
+/** True when the job is still more than 24h away (UI cancel/revoke allowed). */
+export function canUseJobUiCancel(order: Pick<ServiceOrder, "scheduled_date" | "time_start">) {
+  return hoursUntilOrderStart(order) > JOB_UI_CANCEL_HOURS_BEFORE;
+}
+
+export function mentionLabel(fullName: string) {
+  const first = fullName.trim().split(/\s+/)[0] || fullName.trim();
+  return `@${first}`;
+}
+
+/**
+ * Team-chat copy for a job on Questions/Feedback.
+ * Assigned: "@Nok was assigned to Deep clean · Palm · today 09:00. Read and agreed?"
+ * Open: "Job: Deep clean · Palm · today 09:00. Read and agreed?"
+ */
+export function buildOrderChatBody(input: {
+  assigneeName?: string | null;
+  serviceType: string;
+  location: string;
+  when: string;
+  details?: string | null;
+  orderedBy?: string;
+}) {
+  const jobLine = [input.serviceType, input.location, input.when]
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .join(" · ");
+  const lines: string[] = [];
+  if (input.assigneeName?.trim()) {
+    lines.push(
+      `${mentionLabel(input.assigneeName)} was assigned to ${jobLine}. Read and agreed?`,
+    );
+  } else {
+    lines.push(`Job: ${jobLine}. Read and agreed?`);
+  }
+  if (input.details?.trim()) lines.push(`Details: ${input.details.trim()}`);
+  if (input.orderedBy?.trim()) lines.push(`From: ${input.orderedBy.trim()}`);
+  return lines.join("\n");
+}
+
+/** Staff can agree when assigned to them, or claim an open (unassigned) job. */
+export function canAgreeServiceOrder(
+  actor: { id: string; role: UserRole },
+  order: ServiceOrder,
+) {
+  if (order.status !== "pending_ack") return false;
+  if (order.staff_profile_id === actor.id) return true;
+  if (!order.staff_profile_id && isTaskAssignableRole(actor.role)) return true;
+  return false;
+}
+
+/** Undo accidental agreement while the job is still >24h away. */
+export function canRevokeServiceOrderAgreement(
+  actor: { id: string; role: UserRole },
+  order: ServiceOrder,
+) {
+  if (order.status !== "agreed") return false;
+  if (order.staff_profile_id !== actor.id) return false;
+  return canUseJobUiCancel(order);
+}
+
+/**
+ * Hard-cancel a job from the Jobs UI.
+ * - Staff: decline while pending_ack, only if still >24h before start.
+ * - Owners/managers: cancel anytime (pending or agreed) so they can reassign.
+ * Within 24h, staff must use /cancel job in team chat.
+ */
 export function canCancelServiceOrder(
   actor: { id: string; role: UserRole },
   order: ServiceOrder,
   orgKind?: "personal" | "company" | null,
 ) {
   if (order.status === "done" || order.status === "cancelled") return false;
+  if (canBookServices(actor.role, orgKind)) return true;
   if (
     order.staff_profile_id === actor.id &&
-    order.status === "pending_ack"
+    order.status === "pending_ack" &&
+    canUseJobUiCancel(order)
   ) {
     return true;
   }
-  if (canBookServices(actor.role, orgKind)) return true;
   return false;
 }
 
-export function buildOrderChatBody(input: {
-  contactName: string;
-  serviceType: string;
-  location: string;
-  when: string;
-  details?: string | null;
-  orderedBy: string;
-}) {
-  const lines = [
-    `📋 Service order for ${input.contactName}`,
-    `What: ${input.serviceType}`,
-    `Where: ${input.location}`,
-    `When: ${input.when}`,
-  ];
-  if (input.details?.trim()) lines.push(`Details: ${input.details.trim()}`);
-  lines.push(`From: ${input.orderedBy}`);
-  lines.push("");
-  lines.push(
-    "Staff: open this and tap “Read and agreed” to confirm you got the job.",
+/** Owners/managers can reopen a cancelled/agreed/pending job with a new assignee (or open). */
+export function canReopenServiceOrder(
+  actor: { id: string; role: UserRole },
+  order: ServiceOrder,
+  orgKind?: "personal" | "company" | null,
+) {
+  if (!canBookServices(actor.role, orgKind)) return false;
+  return (
+    order.status === "pending_ack" ||
+    order.status === "agreed" ||
+    order.status === "cancelled"
   );
-  return lines.join("\n");
+}
+
+const CANCEL_JOB_RE = /^\/cancel\s+job(?:\s+(.+))?$/i;
+
+export function parseCancelJobCommand(body: string): {
+  matched: boolean;
+  query: string | null;
+} {
+  const m = body.trim().match(CANCEL_JOB_RE);
+  if (!m) return { matched: false, query: null };
+  const query = m[1]?.trim() || null;
+  return { matched: true, query };
+}
+
+/** Pick which open/agreed order /cancel job should cancel. */
+export function resolveCancelJobTarget(
+  orders: ServiceOrder[],
+  actor: { id: string; role: UserRole },
+  query: string | null,
+): ServiceOrder | null {
+  const active = orders.filter(
+    (o) => o.status === "pending_ack" || o.status === "agreed",
+  );
+  const booker = canBookServices(actor.role, "company");
+  let pool = active.filter((o) => {
+    if (booker) return true;
+    if (!o.staff_profile_id) return true;
+    return o.staff_profile_id === actor.id;
+  });
+  if (query) {
+    const q = query.toLowerCase();
+    pool = pool.filter(
+      (o) =>
+        o.service_type.toLowerCase().includes(q) ||
+        (o.location_label ?? "").toLowerCase().includes(q),
+    );
+  }
+  if (!pool.length) return null;
+  return [...pool].sort((a, b) => {
+    const da = `${a.scheduled_date}${a.time_start ?? ""}`;
+    const db = `${b.scheduled_date}${b.time_start ?? ""}`;
+    return da.localeCompare(db);
+  })[0]!;
 }

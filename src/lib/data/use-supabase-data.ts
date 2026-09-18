@@ -38,6 +38,7 @@ import {
   canViewAllBills,
   invitableStaffRoles,
   isStaffApp,
+  isTaskAssignableRole,
   personalVillasOnly,
 } from "@/lib/roles";
 import {
@@ -51,6 +52,7 @@ import {
   buildEndorsementReceivedNotification,
   buildTaskCreateNotifications,
   buildVillaDateNotifications,
+  formatWorkWindow,
   insertNotifications,
   isChatBadgeNotification,
   makeNotification,
@@ -72,7 +74,16 @@ import {
 import { resolveSupportDepositAction } from "@/lib/guest/handle-support-deposit";
 import { resolveSupportCancelAction } from "@/lib/guest/handle-support-cancel";
 import { resolveSupportRefundAction } from "@/lib/guest/handle-support-refund";
-import { formatOrderWhen, canCancelServiceOrder } from "@/lib/service-orders";
+import {
+  formatOrderWhen,
+  canCancelServiceOrder,
+  canAgreeServiceOrder,
+  canRevokeServiceOrderAgreement,
+  canReopenServiceOrder,
+  buildOrderChatBody,
+  parseCancelJobCommand,
+  resolveCancelJobTarget,
+} from "@/lib/service-orders";
 import {
   loadLocallyReadIds,
   mergeReadBy,
@@ -206,7 +217,9 @@ export function useSupabaseData(enabled: boolean): AppData {
       throw new Error("Connect Supabase to book services.");
     },
     agreeServiceOrder: async () => undefined,
+    revokeServiceOrderAgreement: async () => undefined,
     cancelServiceOrder: async () => undefined,
+    reopenServiceOrder: async () => undefined,
     completeServiceOrder: async () => undefined,
     updateVilla: async () => undefined,
     createVilla: async () => undefined,
@@ -926,12 +939,24 @@ export function useSupabaseData(enabled: boolean): AppData {
           "This contact is not on PulseFlow. Link a team member or call them.",
         );
       }
+      const staffProfile = profiles.find(
+        (p) => p.id === contact.linked_profile_id,
+      );
+      if (!staffProfile || !isTaskAssignableRole(staffProfile.role)) {
+        throw new Error("Guests cannot be assigned jobs.");
+      }
       const villa = input.villa_id
         ? villas.find((v) => v.id === input.villa_id)
         : null;
       const location =
         villa?.name ?? input.location_label?.trim() ?? "Location TBC";
       const serviceType = capitalizeLabel(input.service_type);
+      const when =
+        formatWorkWindow(
+          input.scheduled_date,
+          input.time_start ?? null,
+          input.time_end ?? null,
+        ) ?? input.scheduled_date;
 
       const { data: order, error } = await supabase
         .from("service_orders")
@@ -972,13 +997,22 @@ export function useSupabaseData(enabled: boolean): AppData {
         .select("*")
         .single();
 
+      const chatBody = buildOrderChatBody({
+        assigneeName: contact.name,
+        serviceType,
+        location,
+        when,
+        details: input.details?.trim() || null,
+        orderedBy: profile.full_name,
+      });
       const { data: msg } = await supabase
         .from("messages")
         .insert({
           org_id: profile.org_id,
           sender_id: profile.id,
-          body: `Service booked: ${title}`,
+          body: chatBody,
           service_order_id: order.id,
+          channel: "request",
         })
         .select("*")
         .single();
@@ -996,8 +1030,8 @@ export function useSupabaseData(enabled: boolean): AppData {
           org_id: profile.org_id,
           kind: "appointment",
           title: "New service order",
-          body: title,
-          href: "/jobs",
+          body: `${title} · tap Read & agreed`,
+          href: "/messages?channel=request",
           entity_id: order.id,
           audience_profile_ids: [contact.linked_profile_id],
         },
@@ -1005,9 +1039,6 @@ export function useSupabaseData(enabled: boolean): AppData {
 
       // Staff booked on a company villa get property access automatically.
       if (villa?.id && contact.linked_profile_id) {
-        const staffProfile = profiles.find(
-          (p) => p.id === contact.linked_profile_id,
-        );
         if (staffProfile && isStaffApp(staffProfile.role)) {
           const already = villaAssignments.some(
             (a) =>
@@ -1045,24 +1076,46 @@ export function useSupabaseData(enabled: boolean): AppData {
           .single();
         order = (data as ServiceOrder | null) ?? null;
       }
-      if (order) requireOrgWrite(order.org_id);
+      if (!order) throw new Error("Order not found.");
+      requireOrgWrite(order.org_id);
+      if (!canAgreeServiceOrder(profile, order)) {
+        throw new Error("You cannot agree to this job.");
+      }
+      const claimStaff = order.staff_profile_id ?? profile.id;
       const { error } = await supabase
         .from("service_orders")
         .update({
           status: "agreed",
           agreed_at: new Date().toISOString(),
+          staff_profile_id: claimStaff,
         })
         .eq("id", orderId);
       if (error) throw error;
+      if (order.task_id && !order.staff_profile_id) {
+        await supabase
+          .from("tasks")
+          .update({ assigned_to: claimStaff })
+          .eq("id", order.task_id);
+      }
 
-      if (order?.ordered_by && order.ordered_by !== profile.id) {
+      const location = order.location_label ?? "location";
+      const when = formatOrderWhen(order);
+      await supabase.from("messages").insert({
+        org_id: order.org_id,
+        sender_id: profile.id,
+        body: `✅ Read and agreed - ${order.service_type} at ${location} (${when})`,
+        service_order_id: orderId,
+        channel: "request",
+      });
+
+      if (order.ordered_by && order.ordered_by !== profile.id) {
         await insertNotifications(supabase, [
           {
             org_id: profile.org_id,
             kind: "appointment",
             title: `${profile.full_name} agreed`,
             body: `${order.service_type} · ${formatOrderWhen(order)}`,
-            href: "/jobs",
+            href: "/messages?channel=request",
             entity_id: orderId,
             audience_profile_ids: [order.ordered_by],
           },
@@ -1070,7 +1123,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       await refresh();
     },
-    cancelServiceOrder: async (orderId) => {
+    revokeServiceOrderAgreement: async (orderId) => {
       if (!profile) throw new Error("Not signed in.");
       const supabase = createClient();
       let order = serviceOrders.find((o) => o.id === orderId) ?? null;
@@ -1084,8 +1137,67 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       if (!order) throw new Error("Order not found.");
       requireOrgWrite(order.org_id);
-      if (!canCancelServiceOrder(profile, order, organization?.kind ?? null)) {
-        throw new Error("You cannot cancel this job.");
+      if (!canRevokeServiceOrderAgreement(profile, order)) {
+        throw new Error(
+          "Cancel agreement is only available until 24 hours before the job. Use /cancel job in Team chat.",
+        );
+      }
+      const { error } = await supabase
+        .from("service_orders")
+        .update({ status: "pending_ack", agreed_at: null })
+        .eq("id", orderId);
+      if (error) throw error;
+      const location = order.location_label ?? "location";
+      const when = formatOrderWhen(order);
+      await supabase.from("messages").insert({
+        org_id: order.org_id,
+        sender_id: profile.id,
+        body: `↩️ Agreement cancelled - ${order.service_type} at ${location} (${when})`,
+        service_order_id: orderId,
+        channel: "request",
+      });
+      if (order.ordered_by && order.ordered_by !== profile.id) {
+        await insertNotifications(supabase, [
+          {
+            org_id: order.org_id,
+            kind: "appointment",
+            title: `${profile.full_name} cancelled agreement`,
+            body: `${order.service_type} · ${when}`,
+            href: "/messages?channel=request",
+            entity_id: orderId,
+            audience_profile_ids: [order.ordered_by],
+          },
+        ]);
+      }
+      await refresh();
+    },
+    cancelServiceOrder: async (orderId, options) => {
+      if (!profile) throw new Error("Not signed in.");
+      const supabase = createClient();
+      let order = serviceOrders.find((o) => o.id === orderId) ?? null;
+      if (!order) {
+        const { data } = await supabase
+          .from("service_orders")
+          .select("*")
+          .eq("id", orderId)
+          .single();
+        order = (data as ServiceOrder | null) ?? null;
+      }
+      if (!order) throw new Error("Order not found.");
+      requireOrgWrite(order.org_id);
+      const viaChat = Boolean(options?.viaChatCommand);
+      if (viaChat) {
+        const allowed =
+          canBookServices(profile.role, organization?.kind ?? null) ||
+          order.staff_profile_id === profile.id ||
+          !order.staff_profile_id;
+        if (!allowed) throw new Error("You cannot cancel this job.");
+      } else if (
+        !canCancelServiceOrder(profile, order, organization?.kind ?? null)
+      ) {
+        throw new Error(
+          "Within 24 hours of the job, cancel in Team chat with /cancel job.",
+        );
       }
       const declined =
         order.staff_profile_id === profile.id &&
@@ -1113,6 +1225,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           ? `Declined - ${order.service_type} at ${location} (${when})`
           : `Cancelled - ${order.service_type} at ${location} (${when})`,
         service_order_id: orderId,
+        channel: "request",
       });
       const audience = declined
         ? [
@@ -1138,6 +1251,98 @@ export function useSupabaseData(enabled: boolean): AppData {
           ),
         ]);
       }
+      await refresh();
+    },
+    reopenServiceOrder: async (orderId, options) => {
+      if (!profile) throw new Error("Not signed in.");
+      const supabase = createClient();
+      let order = serviceOrders.find((o) => o.id === orderId) ?? null;
+      if (!order) {
+        const { data } = await supabase
+          .from("service_orders")
+          .select("*")
+          .eq("id", orderId)
+          .single();
+        order = (data as ServiceOrder | null) ?? null;
+      }
+      if (!order) throw new Error("Order not found.");
+      requireOrgWrite(order.org_id);
+      if (!canReopenServiceOrder(profile, order, organization?.kind ?? null)) {
+        throw new Error("Only owners or managers can reassign this job.");
+      }
+      const assigneeId =
+        options && "assigned_to" in options
+          ? options.assigned_to ?? null
+          : order.staff_profile_id;
+      if (assigneeId) {
+        const assignee = profiles.find((p) => p.id === assigneeId);
+        if (!assignee || !isTaskAssignableRole(assignee.role)) {
+          throw new Error("Guests cannot be assigned jobs.");
+        }
+      }
+      const when = formatOrderWhen(order);
+      const location = order.location_label ?? "General";
+      const assigneeName = assigneeId
+        ? profiles.find((p) => p.id === assigneeId)?.full_name ?? null
+        : null;
+      const chatBody = buildOrderChatBody({
+        assigneeName,
+        serviceType: order.service_type,
+        location,
+        when,
+        details: order.details,
+        orderedBy: profile.full_name,
+      });
+
+      const { data: msg, error: msgError } = await supabase
+        .from("messages")
+        .insert({
+          org_id: order.org_id,
+          sender_id: profile.id,
+          body: chatBody,
+          service_order_id: orderId,
+          channel: "request",
+        })
+        .select("id")
+        .single();
+      if (msgError) throw msgError;
+
+      const { error } = await supabase
+        .from("service_orders")
+        .update({
+          status: "pending_ack",
+          agreed_at: null,
+          staff_profile_id: assigneeId,
+          chat_message_id: msg?.id ?? order.chat_message_id,
+        })
+        .eq("id", orderId);
+      if (error) throw error;
+
+      if (order.task_id) {
+        await supabase
+          .from("tasks")
+          .update({
+            assigned_to: assigneeId,
+            status: "open",
+            completed_at: null,
+          })
+          .eq("id", order.task_id);
+      }
+
+      const audience = assigneeId
+        ? [assigneeId]
+        : orgMemberIds(profiles, order.org_id).filter((id) => id !== profile.id);
+      await insertNotifications(supabase, [
+        {
+          org_id: order.org_id,
+          kind: "appointment",
+          title: assigneeId ? "Job reassigned" : "Open job posted",
+          body: `${order.service_type} · ${location} · tap Read & agreed`,
+          href: "/messages?channel=request",
+          entity_id: orderId,
+          audience_profile_ids: audience.length ? audience : null,
+        },
+      ]);
       await refresh();
     },
     completeServiceOrder: async (orderId) => {
@@ -1177,6 +1382,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         sender_id: profile.id,
         body: `✅ Done - ${order.service_type} at ${location} (${when})`,
         service_order_id: orderId,
+        channel: "request",
       });
 
       const audience = ownerManagerIds(profiles, order.org_id).filter(
@@ -1335,33 +1541,113 @@ export function useSupabaseData(enabled: boolean): AppData {
       requireCurrentOrgWrite();
       const supabase = createClient();
       const title = capitalizeLabel(input.title);
+      const assigneeId = input.assigned_to ?? null;
+      if (assigneeId) {
+        const assignee = profiles.find((p) => p.id === assigneeId);
+        if (!assignee || !isTaskAssignableRole(assignee.role)) {
+          throw new Error("Guests cannot be assigned tasks.");
+        }
+      }
+      const villa = input.villa_id
+        ? villas.find((v) => v.id === input.villa_id)
+        : null;
+      const location = villa?.name ?? "General";
+      const scheduledDate =
+        input.due_date || new Date().toISOString().slice(0, 10);
+      const when =
+        formatWorkWindow(
+          scheduledDate,
+          input.time_start ?? null,
+          input.time_end ?? null,
+        ) ?? scheduledDate;
+      const assignee = assigneeId
+        ? profiles.find((p) => p.id === assigneeId)
+        : null;
+
+      const { data: order, error: orderError } = await supabase
+        .from("service_orders")
+        .insert({
+          org_id: profile.org_id,
+          contact_id: null,
+          staff_profile_id: assigneeId,
+          ordered_by: profile.id,
+          villa_id: villa?.id ?? null,
+          location_label: location,
+          service_type: title,
+          details: null,
+          scheduled_date: scheduledDate,
+          time_start: input.time_start || null,
+          time_end: input.time_end || null,
+          status: "pending_ack",
+        })
+        .select("*")
+        .single();
+      if (orderError || !order) {
+        throw orderError ?? new Error("Could not create job confirmation.");
+      }
+
+      const chatBody = buildOrderChatBody({
+        assigneeName: assignee?.full_name ?? null,
+        serviceType: title,
+        location,
+        when,
+        orderedBy: profile.full_name,
+      });
+      const { data: msg } = await supabase
+        .from("messages")
+        .insert({
+          org_id: profile.org_id,
+          sender_id: profile.id,
+          body: chatBody,
+          service_order_id: order.id,
+          channel: "request",
+        })
+        .select("id")
+        .single();
+
       const { data: inserted, error } = await supabase
         .from("tasks")
         .insert({
           org_id: profile.org_id,
           created_by: profile.id,
           status: "open",
-          ...input,
           title,
+          villa_id: input.villa_id,
+          priority: input.priority,
+          assigned_to: assigneeId,
+          due_date: input.due_date,
+          time_start: input.time_start ?? null,
+          time_end: input.time_end ?? null,
+          service_order_id: order.id,
         })
         .select("id")
         .single();
       if (error) throw error;
-      const alerts = buildTaskCreateNotifications({
-        org_id: profile.org_id,
-        taskId: inserted.id,
-        title,
-        priority: input.priority,
-        assigned_to: input.assigned_to ?? null,
-        created_by: profile.id,
-        memberIds: orgMemberIds(profiles, profile.org_id),
-      });
-      if (alerts.length) {
-        await insertNotifications(
-          supabase,
-          alerts.map((n) => toInsertRow(n)),
-        );
-      }
+
+      await supabase
+        .from("service_orders")
+        .update({
+          task_id: inserted.id,
+          chat_message_id: msg?.id ?? null,
+        })
+        .eq("id", order.id);
+
+      const audience = assigneeId
+        ? [assigneeId]
+        : orgMemberIds(profiles, profile.org_id).filter(
+            (id) => id !== profile.id,
+          );
+      await insertNotifications(supabase, [
+        {
+          org_id: profile.org_id,
+          kind: "appointment",
+          title: assigneeId ? "New service order" : "Open job",
+          body: `${title} · tap Read & agreed`,
+          href: "/messages?channel=request",
+          entity_id: order.id,
+          audience_profile_ids: audience.length ? audience : null,
+        },
+      ]);
       await refresh();
     },
     setTaskStatus: async (id, status) => {
@@ -1508,6 +1794,84 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (channel === "photo" && !attachmentUrl) {
         throw new Error("Add a photo or screenshot for this thread.");
       }
+
+      const cancelCmd = parseCancelJobCommand(body);
+      if (cancelCmd.matched) {
+        const target = resolveCancelJobTarget(
+          serviceOrders.filter((o) => o.org_id === profile.org_id),
+          profile,
+          cancelCmd.query,
+        );
+        if (!target) {
+          throw new Error(
+            "No matching open job to cancel. Try /cancel job or /cancel job deep clean",
+          );
+        }
+        const supabase = createClient();
+        const { data: inserted, error } = await supabase
+          .from("messages")
+          .insert({
+            org_id: profile.org_id,
+            sender_id: profile.id,
+            body: body.trim(),
+            channel,
+            attachment_url: null,
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+
+        const allowed =
+          canBookServices(profile.role, organization?.kind ?? null) ||
+          target.staff_profile_id === profile.id ||
+          !target.staff_profile_id;
+        if (!allowed) throw new Error("You cannot cancel this job.");
+
+        await supabase
+          .from("service_orders")
+          .update({ status: "cancelled" })
+          .eq("id", target.id);
+        if (target.task_id) {
+          await supabase
+            .from("tasks")
+            .update({
+              status: "done",
+              completed_at: new Date().toISOString(),
+            })
+            .eq("id", target.task_id);
+        }
+        const location = target.location_label ?? "location";
+        const when = formatOrderWhen(target);
+        await supabase.from("messages").insert({
+          org_id: target.org_id,
+          sender_id: profile.id,
+          body: `Cancelled - ${target.service_type} at ${location} (${when})`,
+          service_order_id: target.id,
+          channel: "request",
+        });
+        const audience = [target.staff_profile_id, target.ordered_by].filter(
+          (id): id is string => Boolean(id) && id !== profile.id,
+        );
+        if (audience.length) {
+          await insertNotifications(supabase, [
+            toInsertRow(
+              makeNotification({
+                org_id: target.org_id,
+                kind: "appointment",
+                title: "Job cancelled",
+                body: `${target.service_type} · ${location} · ${when}`,
+                href: "/jobs",
+                entity_id: target.id,
+                audience_profile_ids: [...new Set(audience)],
+              }),
+            ),
+          ]);
+        }
+        void inserted;
+        await refresh();
+        return;
+      }
+
       const supabase = createClient();
       const { data: inserted, error } = await supabase
         .from("messages")

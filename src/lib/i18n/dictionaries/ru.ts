@@ -242,13 +242,25 @@ const ru: Dictionary = {
   "jobs.tipStaff": "Время заезда у владельца - вам нужно окно работы.",
   "jobs.agreed": "Вы согласились с этой работой",
   "jobs.readAgreed": "Прочитано и согласен",
+  "jobs.cancelAgreement": "Cancel agreement",
+  "jobs.cancelAgreementHint":
+    "Undo if you tapped by mistake. Available until 24 hours before the job.",
   "jobs.decline": "Отклонить заказ",
+  "jobs.cancelViaChat":
+    "Within 24 hours of the job, cancel in Team chat with /cancel job",
+  "jobs.reassign": "Reassign",
+  "jobs.repostOpen": "Post open again",
+  "jobs.repostHint":
+    "Posts Read and agreed again to Questions/Feedback. Pick a teammate or leave open.",
+  "jobs.assigneeOptional": "Assignee (optional)",
+  "jobs.repostSend": "Post to chat",
   "jobs.cancelOrder": "Отменить заказ",
   "jobs.saving": "Сохранение…",
   "order.status.pending_ack": "Ждёт «Прочитано и согласен»",
   "order.status.agreed": "Подтверждено",
   "order.status.done": "Готово",
   "order.status.cancelled": "Отменено",
+  "order.reach.open": "Open job - awaiting agreement",
   "order.reach.pending": "Не связан (ждёт согласия)",
   "order.reach.offline": "Не в приложении - позвоните",
   "order.reach.confirmed": "Подтверждено в приложении",
@@ -349,6 +361,11 @@ const ru: Dictionary = {
     "Use this thread when a photo or screenshot helps: damage, a screen code, proof of work, and similar. Not for property bills or receipts; those belong in Bills.",
   "messages.attachPhoto": "Add photo",
   "messages.photoRequired": "Add a photo or screenshot for this thread.",
+  "messages.cmdCancelJob":
+    "Cancel a job (required within 24h of the work window)",
+  "messages.cancelJobDone": "Cancelled job: {job}",
+  "messages.cancelJobNone": "No matching open job to cancel.",
+  "messages.cancelJobHint": "Try /cancel job or /cancel job deep clean",
   "messages.removePhoto": "Remove photo",
   "notifications.title": "Уведомления",
   "notifications.subtitle.guest": "Stay updates, host messages, confirmed prices, and deposit alerts.",
@@ -538,6 +555,9 @@ const ru: Dictionary = {
   "demo.order.turnoverDetails": "Полная смена после выезда. Доп. полотенца в прачечной.",
   "demo.orderChat.details": "Детали: {details}",
   "demo.orderChat.from": "От: {name}",
+  "demo.orderChat.assignedLine":
+    "{mention} was assigned to {job}. Read and agreed?",
+  "demo.orderChat.openLine": "Job: {job}. Read and agreed?",
   "demo.orderChat.header": "📋 Заказ для {name}",
   "demo.orderChat.staffHint":
     "Сотрудник: откройте заказ и нажмите “Read and agreed”, чтобы подтвердить получение",

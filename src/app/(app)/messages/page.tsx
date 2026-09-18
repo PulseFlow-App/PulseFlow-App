@@ -40,6 +40,8 @@ import {
   resolveTeamChatChannel,
   unreadTeamChatCountByChannel,
 } from "@/lib/message-channels";
+import { canAgreeServiceOrder } from "@/lib/service-orders";
+import { teamChatCommandSuggestions } from "@/lib/team-chat-commands";
 
 const CHANNELS: {
   id: MessageChannel;
@@ -138,6 +140,11 @@ function MessagesPageInner() {
       data.profile.id,
     );
   }, [activeMention, teammates, data.profile, mentionDismissed]);
+
+  const commandSuggestions = useMemo(
+    () => teamChatCommandSuggestions(body),
+    [body],
+  );
 
   const selectChannel = (next: MessageChannel, replaceUrl = true) => {
     setChannel(next);
@@ -350,10 +357,12 @@ function MessagesPageInner() {
                 const order = msg.service_order_id
                   ? data.serviceOrders.find((o) => o.id === msg.service_order_id)
                   : null;
-                const needsAgree =
+                const showAgreeUi =
                   order &&
-                  order.status === "pending_ack" &&
-                  order.staff_profile_id === data.profile?.id;
+                  data.profile &&
+                  (canAgreeServiceOrder(data.profile, order) ||
+                    (order.status === "agreed" &&
+                      order.staff_profile_id === data.profile.id));
                 return (
                   <div
                     key={msg.id}
@@ -401,7 +410,7 @@ function MessagesPageInner() {
                         </div>
                       ) : null}
                     </div>
-                    {needsAgree && msg.service_order_id ? (
+                    {showAgreeUi && msg.service_order_id ? (
                       <div className="w-[80%]">
                         <AgreeButton orderId={msg.service_order_id} />
                       </div>
@@ -413,6 +422,33 @@ function MessagesPageInner() {
             <div ref={bottomRef} />
           </div>
           <div className="relative border-t border-black/5 p-3">
+            {commandSuggestions.length > 0 ? (
+              <ul
+                className="absolute bottom-full left-3 right-14 z-10 mb-1 max-h-44 overflow-y-auto rounded-2xl border border-black/5 bg-white py-1 soft-shadow"
+                role="listbox"
+              >
+                {commandSuggestions.map((cmd) => (
+                  <li key={cmd.command}>
+                    <button
+                      type="button"
+                      role="option"
+                      className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-sand"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setBody(`${cmd.command} `);
+                        setCursor(cmd.command.length + 1);
+                        requestAnimationFrame(() => inputRef.current?.focus());
+                      }}
+                    >
+                      <span className="font-semibold text-ink">{cmd.command}</span>
+                      <span className="text-xs text-muted">
+                        {t(cmd.descriptionKey)}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             {mentionOptions.length > 0 ? (
               <ul
                 className="absolute bottom-full left-3 right-14 z-10 mb-1 max-h-44 overflow-y-auto rounded-2xl border border-black/5 bg-white py-1 soft-shadow"

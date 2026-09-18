@@ -44,7 +44,7 @@ import type {
   VillaListItem,
 } from "@/lib/types";
 import type { OrgKind, UserRole } from "@/lib/design-tokens";
-import { invitableStaffRoles, canInviteGuest, isStaffApp } from "@/lib/roles";
+import { invitableStaffRoles, canInviteGuest, isStaffApp, isTaskAssignableRole, canBookServices } from "@/lib/roles";
 import { weekKey } from "@/lib/endorsements";
 import {
   buildEndorsementReceivedNotification,
@@ -55,7 +55,7 @@ import {
   isChatBadgeNotification,
   ownerManagerIds,
 } from "@/lib/notifications";
-import { buildOrderChatBody, canCancelServiceOrder, formatOrderWhen } from "@/lib/service-orders";
+import { buildOrderChatBody, canCancelServiceOrder, canAgreeServiceOrder, canRevokeServiceOrderAgreement, canReopenServiceOrder, formatOrderWhen, parseCancelJobCommand, resolveCancelJobTarget } from "@/lib/service-orders";
 import { capitalizeLabel } from "@/lib/format-label";
 import { dateDrivenVillaPatch } from "@/lib/villas/status-from-dates";
 import { normalizeVillaRow } from "@/lib/villas/property-details";
@@ -975,6 +975,7 @@ export function demoCreateServiceOrder(
     scheduled_date: string;
     time_start?: string | null;
     time_end?: string | null;
+    require_ack?: boolean;
   },
 ): ServiceOrder {
   const store = readStore();
@@ -986,6 +987,12 @@ export function demoCreateServiceOrder(
     throw new Error(
       "This contact is not on PulseFlow. Link a team member or call them.",
     );
+  }
+  const staffProfile = store.profiles.find(
+    (p) => p.id === contact.linked_profile_id,
+  );
+  if (!staffProfile || !isTaskAssignableRole(staffProfile.role)) {
+    throw new Error("Guests cannot be assigned jobs.");
   }
   const villa = input.villa_id
     ? store.villas.find((v) => v.id === input.villa_id)
@@ -1004,6 +1011,7 @@ export function demoCreateServiceOrder(
       input.time_start ?? null,
       input.time_end ?? null,
     ) ?? input.scheduled_date;
+  const now = new Date().toISOString();
 
   const order: ServiceOrder = {
     id: orderId,
@@ -1022,11 +1030,11 @@ export function demoCreateServiceOrder(
     agreed_at: null,
     chat_message_id: msgId,
     task_id: taskId,
-    created_at: new Date().toISOString(),
+    created_at: now,
   };
 
   const chatBody = buildOrderChatBody({
-    contactName: contact.name,
+    assigneeName: contact.name,
     serviceType: order.service_type,
     location,
     when,
@@ -1075,16 +1083,13 @@ export function demoCreateServiceOrder(
         kind: "appointment",
         title: `New job: ${order.service_type}`,
         body: `${location} · ${when} - tap Read & agreed`,
-        href: "/jobs",
+        href: "/messages?channel=request",
         entity_id: orderId,
         audience_profile_ids: [contact.linked_profile_id!],
       }),
       ...(s.notifications ?? []),
     ];
 
-    const staffProfile = s.profiles.find(
-      (p) => p.id === contact.linked_profile_id,
-    );
     let nextAssignments = s.villaAssignments;
     if (
       order.villa_id &&
@@ -1181,13 +1186,14 @@ export function demoAgreeServiceOrder(actor: Profile, orderId: string) {
   const store = readStore();
   const order = store.serviceOrders.find((o) => o.id === orderId);
   if (!order) throw new Error("Order not found.");
-  if (order.staff_profile_id !== actor.id) {
-    throw new Error("Only the booked staff can agree to this job.");
+  if (!canAgreeServiceOrder(actor, order)) {
+    throw new Error("You cannot agree to this job.");
   }
   if (order.status !== "pending_ack") {
     throw new Error("This job is already confirmed.");
   }
   const now = new Date().toISOString();
+  const claimStaff = order.staff_profile_id ?? actor.id;
   const confirmMsg = {
     id: crypto.randomUUID(),
     org_id: order.org_id,
@@ -1205,8 +1211,18 @@ export function demoAgreeServiceOrder(actor: Profile, orderId: string) {
     ...s,
     serviceOrders: s.serviceOrders.map((o) =>
       o.id === orderId
-        ? { ...o, status: "agreed" as const, agreed_at: now }
+        ? {
+            ...o,
+            status: "agreed" as const,
+            agreed_at: now,
+            staff_profile_id: claimStaff,
+          }
         : o,
+    ),
+    tasks: s.tasks.map((t) =>
+      t.id === order.task_id && !order.staff_profile_id
+        ? { ...t, assigned_to: claimStaff }
+        : t,
     ),
     messages: [...s.messages, confirmMsg],
     notifications: [
@@ -1237,13 +1253,62 @@ export function demoAgreeServiceOrder(actor: Profile, orderId: string) {
   }));
 }
 
-export function demoCancelServiceOrder(actor: Profile, orderId: string) {
+export function demoRevokeServiceOrderAgreement(actor: Profile, orderId: string) {
+  const store = readStore();
+  const order = store.serviceOrders.find((o) => o.id === orderId);
+  if (!order) throw new Error("Order not found.");
+  if (!canRevokeServiceOrderAgreement(actor, order)) {
+    throw new Error(
+      "Cancel agreement is only available until 24 hours before the job. Use /cancel job in Team chat.",
+    );
+  }
+  const now = new Date().toISOString();
+  const when = formatOrderWhen(order);
+  updateDemoStore((s) => ({
+    ...s,
+    serviceOrders: s.serviceOrders.map((o) =>
+      o.id === orderId
+        ? { ...o, status: "pending_ack" as const, agreed_at: null }
+        : o,
+    ),
+    messages: [
+      ...s.messages,
+      {
+        id: crypto.randomUUID(),
+        org_id: order.org_id,
+        sender_id: actor.id,
+        body: `↩️ Agreement cancelled - ${order.service_type} at ${
+          order.location_label ?? "location"
+        } (${when})`,
+        created_at: now,
+        service_order_id: orderId,
+        channel: "request" as const,
+        attachment_url: null,
+      },
+    ],
+  }));
+}
+
+export function demoCancelServiceOrder(
+  actor: Profile,
+  orderId: string,
+  options?: { viaChatCommand?: boolean },
+) {
   const store = readStore();
   const order = store.serviceOrders.find((o) => o.id === orderId);
   if (!order) throw new Error("Order not found.");
   const org = store.orgs.find((o) => o.id === order.org_id);
-  if (!canCancelServiceOrder(actor, order, org?.kind ?? null)) {
-    throw new Error("You cannot cancel this job.");
+  const viaChat = Boolean(options?.viaChatCommand);
+  if (viaChat) {
+    const allowed =
+      canBookServices(actor.role, org?.kind ?? null) ||
+      order.staff_profile_id === actor.id ||
+      !order.staff_profile_id;
+    if (!allowed) throw new Error("You cannot cancel this job.");
+  } else if (!canCancelServiceOrder(actor, order, org?.kind ?? null)) {
+    throw new Error(
+      "Within 24 hours of the job, cancel in Team chat with /cancel job.",
+    );
   }
   const declined =
     order.staff_profile_id === actor.id && order.status === "pending_ack";
@@ -1315,6 +1380,107 @@ export function demoCancelServiceOrder(actor: Profile, orderId: string) {
             }
           : n,
       ),
+    ],
+  }));
+}
+
+export function demoReopenServiceOrder(
+  actor: Profile,
+  orderId: string,
+  options?: { assigned_to?: string | null },
+) {
+  const store = readStore();
+  const order = store.serviceOrders.find((o) => o.id === orderId);
+  if (!order) throw new Error("Order not found.");
+  const org = store.orgs.find((o) => o.id === order.org_id);
+  if (!canReopenServiceOrder(actor, order, org?.kind ?? null)) {
+    throw new Error("Only owners or managers can reassign this job.");
+  }
+  const assigneeId =
+    options && "assigned_to" in options
+      ? options.assigned_to ?? null
+      : order.staff_profile_id;
+  if (assigneeId) {
+    const assignee = store.profiles.find((p) => p.id === assigneeId);
+    if (!assignee || !isTaskAssignableRole(assignee.role)) {
+      throw new Error("Guests cannot be assigned jobs.");
+    }
+  }
+  const now = new Date().toISOString();
+  const when = formatOrderWhen(order);
+  const location = order.location_label ?? "General";
+  const assigneeName = assigneeId
+    ? store.profiles.find((p) => p.id === assigneeId)?.full_name ?? null
+    : null;
+  const msgId = crypto.randomUUID();
+  const chatBody = buildOrderChatBody({
+    assigneeName,
+    serviceType: order.service_type,
+    location,
+    when,
+    details: order.details,
+    orderedBy: actor.full_name,
+  });
+  const audience = assigneeId
+    ? [assigneeId]
+    : ownerManagerIds(store.profiles, order.org_id).length
+      ? store.profiles
+          .filter(
+            (p) =>
+              p.org_id === order.org_id &&
+              p.id !== actor.id &&
+              isTaskAssignableRole(p.role),
+          )
+          .map((p) => p.id)
+      : [];
+
+  updateDemoStore((s) => ({
+    ...s,
+    serviceOrders: s.serviceOrders.map((o) =>
+      o.id === orderId
+        ? {
+            ...o,
+            status: "pending_ack" as const,
+            agreed_at: null,
+            staff_profile_id: assigneeId,
+            chat_message_id: msgId,
+          }
+        : o,
+    ),
+    tasks: s.tasks.map((t) =>
+      t.id === order.task_id
+        ? {
+            ...t,
+            assigned_to: assigneeId,
+            status: "open" as const,
+            completed_at: null,
+          }
+        : t,
+    ),
+    messages: [
+      ...s.messages,
+      {
+        id: msgId,
+        org_id: order.org_id,
+        sender_id: actor.id,
+        body: chatBody,
+        created_at: now,
+        service_order_id: orderId,
+        channel: "request" as const,
+        attachment_url: null,
+      },
+    ],
+    notifications: [
+      makeNotification({
+        org_id: order.org_id,
+        kind: "appointment",
+        title: assigneeId ? "Job reassigned" : "Open job posted",
+        body: `${order.service_type} · ${location} · tap Read & agreed`,
+        href: "/messages?channel=request",
+        entity_id: orderId,
+        audience_profile_ids: audience.length ? audience : null,
+      }),
+      ...(s.notifications ?? []),
     ],
   }));
 }

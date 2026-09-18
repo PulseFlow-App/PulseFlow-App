@@ -33,7 +33,8 @@ export function StaffHome({ data }: { data: AppData }) {
     () =>
       data.serviceOrders.filter(
         (o) =>
-          o.staff_profile_id === data.profile?.id &&
+          (o.staff_profile_id === data.profile?.id ||
+            (!o.staff_profile_id && o.status === "pending_ack")) &&
           o.scheduled_date <= today &&
           o.status !== "cancelled" &&
           o.status !== "done",

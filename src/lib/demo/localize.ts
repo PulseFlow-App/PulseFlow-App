@@ -132,6 +132,27 @@ function localizeOrderChatBody(text: string, t: TFn): string {
   const lines = text.split("\n");
   const out: string[] = [];
   for (const line of lines) {
+    const assignedLine = line.match(
+      /^(@\S+) was assigned to (.+)\. Read and agreed\?$/,
+    );
+    if (assignedLine) {
+      out.push(
+        t("demo.orderChat.assignedLine", {
+          mention: assignedLine[1]!,
+          job: replaceKnownPhrases(assignedLine[2]!, t),
+        }),
+      );
+      continue;
+    }
+    const openLine = line.match(/^Job: (.+)\. Read and agreed\?$/);
+    if (openLine) {
+      out.push(
+        t("demo.orderChat.openLine", {
+          job: replaceKnownPhrases(openLine[1]!, t),
+        }),
+      );
+      continue;
+    }
     const header = line.match(/^📋 Service order for (.+)$/);
     if (header) {
       out.push(t("demo.orderChat.header", { name: header[1]! }));
@@ -214,6 +235,8 @@ export function isKnownDemoPhrase(text: string): boolean {
   if (!text) return false;
   if (DEMO_ENGLISH_TO_KEY[text]) return true;
   if (text.startsWith("📋 Service order for ")) return true;
+  if (/^@\S+ was assigned to .+\. Read and agreed\?/.test(text)) return true;
+  if (/^Job: .+\. Read and agreed\?/.test(text)) return true;
   if (text.startsWith("✅ Done - ") || text.startsWith("✅ Read and agreed - ")) {
     return true;
   }
@@ -234,6 +257,12 @@ export function localizeDemoText(text: string, t: TFn): string {
   if (exact) return t(exact);
 
   if (text.startsWith("📋 Service order for ")) {
+    return localizeOrderChatBody(text, t);
+  }
+  if (
+    /^@\S+ was assigned to .+\. Read and agreed\?/.test(text) ||
+    /^Job: .+\. Read and agreed\?/.test(text)
+  ) {
     return localizeOrderChatBody(text, t);
   }
   if (text.startsWith("✅ Done - ")) {

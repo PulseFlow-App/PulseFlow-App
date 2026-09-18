@@ -472,9 +472,7 @@ function OrderForm({
     <Card className="space-y-3 p-4">
       <div>
         <h2 className="text-lg font-bold text-ink">Order {contact.name}</h2>
-        <p className="text-sm text-muted">
-          Sends chat + notification. They must tap Read & agreed.
-        </p>
+        <p className="text-sm text-muted">{t("contacts.orderHint")}</p>
       </div>
       <div>
         <Label>For what</Label>

@@ -9,7 +9,7 @@ import { Input, Label, Select } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
-import { isGuestApp, isStaffApp } from "@/lib/roles";
+import { isGuestApp, isStaffApp, taskAssignableProfiles } from "@/lib/roles";
 import { formatShortDate, cn } from "@/lib/utils";
 import type { TaskPriority } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
@@ -32,6 +32,11 @@ export default function TasksPage() {
   const [timeStart, setTimeStart] = useState("");
   const [timeEnd, setTimeEnd] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  const assignees = useMemo(
+    () => taskAssignableProfiles(data.profiles),
+    [data.profiles],
+  );
 
   useEffect(() => {
     if (data.profile && isStaffApp(data.profile.role)) {
@@ -195,7 +200,7 @@ export default function TasksPage() {
               onChange={(e) => setAssignee(e.target.value)}
             >
               <option value="">{t("tasks.unassigned")}</option>
-              {data.profiles.map((p) => (
+              {assignees.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.full_name}
                 </option>

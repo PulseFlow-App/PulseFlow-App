@@ -9,6 +9,8 @@ import {
   demoAgreeServiceOrder,
   demoCancelServiceOrder,
   demoCompleteServiceOrder,
+  demoRevokeServiceOrderAgreement,
+  demoReopenServiceOrder,
   demoCastEndorsement,
   demoCreateInvite,
   demoDeleteInvite,
@@ -46,11 +48,12 @@ import type {
   VillaListItem,
 } from "@/lib/types";
 import type { BillStatus, TaskPriority, TaskStatus, UserRole } from "@/lib/design-tokens";
-import {
-  canBookServices,
+import { buildOrderChatBody, parseCancelJobCommand, resolveCancelJobTarget, formatOrderWhen } from "@/lib/service-orders";
+import { canBookServices,
   canCreateVillas,
   canMarkBillsPaid,
   canViewAllBills,
+  isTaskAssignableRole,
   personalVillasOnly,
 } from "@/lib/roles";
 import { isConfirmedStayStatus, pickConfirmedStay, canUseSupportStay } from "@/lib/guest/confirmed-stay";
@@ -65,6 +68,7 @@ import {
   villaOpsAudience,
   isChatBadgeNotification,
   unreadNotifications,
+  formatWorkWindow,
 } from "@/lib/notifications";
 import {
   loadLocallyReadIds,
@@ -455,10 +459,20 @@ function useDemoData(): AppData {
       if (!profile) throw new Error("Not signed in.");
       demoAgreeServiceOrder(profile, orderId);
     },
-    cancelServiceOrder: async (orderId) => {
+    revokeServiceOrderAgreement: async (orderId) => {
       assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
-      demoCancelServiceOrder(profile, orderId);
+      demoRevokeServiceOrderAgreement(profile, orderId);
+    },
+    cancelServiceOrder: async (orderId, options) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      demoCancelServiceOrder(profile, orderId, options);
+    },
+    reopenServiceOrder: async (orderId, options) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      demoReopenServiceOrder(profile, orderId, options);
     },
     completeServiceOrder: async (orderId) => {
       assertDemoWritable();
@@ -588,9 +602,63 @@ function useDemoData(): AppData {
       assertDemoWritable();
       if (!profile) return;
       const taskId = uid("task");
+      const orderId = uid("order");
+      const msgId = uid("msg");
       const title = capitalizeLabel(input.title);
+      const assigneeId = input.assigned_to ?? null;
+      if (assigneeId) {
+        const assignee = store.profiles.find((p) => p.id === assigneeId);
+        if (!assignee || !isTaskAssignableRole(assignee.role)) {
+          throw new Error("Guests cannot be assigned tasks.");
+        }
+      }
+      const villa = input.villa_id
+        ? store.villas.find((v) => v.id === input.villa_id)
+        : null;
+      const location = villa?.name ?? "General";
+      const scheduledDate =
+        input.due_date || new Date().toISOString().slice(0, 10);
+      const when =
+        formatWorkWindow(
+          scheduledDate,
+          input.time_start ?? null,
+          input.time_end ?? null,
+        ) ?? scheduledDate;
+      const now = new Date().toISOString();
+      const assigneeName = assigneeId
+        ? store.profiles.find((p) => p.id === assigneeId)?.full_name ?? null
+        : null;
+      const chatBody = buildOrderChatBody({
+        assigneeName,
+        serviceType: title,
+        location,
+        when,
+        orderedBy: profile.full_name,
+      });
       updateDemoStore((s) => ({
         ...s,
+        serviceOrders: [
+          {
+            id: orderId,
+            org_id: profile.org_id,
+            contact_id: null,
+            staff_profile_id: assigneeId,
+            ordered_by: profile.id,
+            villa_id: input.villa_id,
+            location_label: location,
+            service_type: title,
+            details: null,
+            scheduled_date: scheduledDate,
+            time_start: input.time_start ?? null,
+            time_end: input.time_end ?? null,
+            status: "pending_ack" as const,
+            agreed_at: null,
+            chat_message_id: msgId,
+            task_id: taskId,
+            created_at: now,
+          },
+          ...(s.serviceOrders ?? []),
+        ],
         tasks: [
           {
             id: taskId,
@@ -598,51 +666,48 @@ function useDemoData(): AppData {
             title,
             villa_id: input.villa_id,
             priority: input.priority,
-            assigned_to: input.assigned_to,
+            assigned_to: assigneeId,
             due_date: input.due_date,
             time_start: input.time_start ?? null,
             time_end: input.time_end ?? null,
-            status: "open",
+            status: "open" as const,
             created_by: profile.id,
-            created_at: new Date().toISOString(),
+            created_at: now,
             completed_at: null,
-            service_order_id: null,
+            service_order_id: orderId,
           },
           ...s.tasks,
         ],
+        messages: [
+          ...s.messages,
+          {
+            id: msgId,
+            org_id: profile.org_id,
+            sender_id: profile.id,
+            body: chatBody,
+            created_at: now,
+            service_order_id: orderId,
+            channel: "request" as const,
+            attachment_url: null,
+          },
+        ],
       }));
-      const alerts: AppNotification[] = [];
-      if (input.priority === "urgent") {
-        const audience = input.assigned_to
-          ? [input.assigned_to]
-          : orgMemberIds(store.profiles, profile.org_id).filter(
-              (id) => id !== profile.id,
-            );
-        alerts.push(
-          makeNotification({
-            org_id: profile.org_id,
-            kind: "urgent_task",
-            title: "Urgent task",
-            body: title,
-            href: "/tasks",
-            entity_id: taskId,
-            audience_profile_ids: audience.length ? audience : null,
-          }),
-        );
-      } else if (input.assigned_to && input.assigned_to !== profile.id) {
-        alerts.push(
-          makeNotification({
-            org_id: profile.org_id,
-            kind: "task_assigned",
-            title: "Task assigned to you",
-            body: title,
-            href: "/tasks",
-            entity_id: taskId,
-            audience_profile_ids: [input.assigned_to],
-          }),
-        );
-      }
-      demoPushNotifications(alerts);
+      const audience = assigneeId
+        ? [assigneeId]
+        : orgMemberIds(store.profiles, profile.org_id).filter(
+            (id) => id !== profile.id,
+          );
+      demoPushNotifications([
+        makeNotification({
+          org_id: profile.org_id,
+          kind: "appointment",
+          title: assigneeId ? "New service order" : "Open job",
+          body: `${title} · tap Read & agreed`,
+          href: "/messages?channel=request",
+          entity_id: orderId,
+          audience_profile_ids: audience.length ? audience : null,
+        }),
+      ]);
     },
     setTaskStatus: async (id, status) => {
       assertDemoWritable();
@@ -805,6 +870,38 @@ function useDemoData(): AppData {
       const attachmentUrl = options?.attachmentUrl ?? null;
       if (channel === "photo" && !attachmentUrl) {
         throw new Error("Add a photo or screenshot for this thread.");
+      }
+      const cancelCmd = parseCancelJobCommand(body);
+      if (cancelCmd.matched) {
+        const target = resolveCancelJobTarget(
+          store.serviceOrders.filter((o) => o.org_id === profile.org_id),
+          profile,
+          cancelCmd.query,
+        );
+        if (!target) {
+          throw new Error(
+            "No matching open job to cancel. Try /cancel job or /cancel job deep clean",
+          );
+        }
+        const msgId = uid("msg");
+        updateDemoStore((s) => ({
+          ...s,
+          messages: [
+            ...s.messages,
+            {
+              id: msgId,
+              org_id: profile.org_id,
+              sender_id: profile.id,
+              body: body.trim(),
+              created_at: new Date().toISOString(),
+              service_order_id: null,
+              channel,
+              attachment_url: null,
+            },
+          ],
+        }));
+        demoCancelServiceOrder(profile, target.id, { viaChatCommand: true });
+        return;
       }
       const msgId = uid("msg");
       updateDemoStore((s) => ({

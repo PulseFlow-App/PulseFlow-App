@@ -95,6 +95,22 @@ export function isGuestApp(role: UserRole) {
   return role === "guest";
 }
 
+/** Team members who can be assigned ops tasks / jobs (never guests). */
+export function isTaskAssignableRole(role: UserRole) {
+  return (
+    role === "owner" ||
+    role === "manager" ||
+    role === "cleaner" ||
+    role === "staff"
+  );
+}
+
+export function taskAssignableProfiles<T extends { role: UserRole }>(
+  profiles: T[],
+): T[] {
+  return profiles.filter((p) => isTaskAssignableRole(p.role));
+}
+
 /** Owners and company managers can browse the talent directory. */
 export function canBrowseTalent(role: UserRole, orgKind?: OrgKind | null) {
   if (role === "owner") return true;
