@@ -164,6 +164,7 @@ export type AppData = {
     due_date: string | null;
     time_start?: string | null;
     time_end?: string | null;
+    notes?: string | null;
   }) => Promise<void>;
   setTaskStatus: (id: string, status: TaskStatus) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;

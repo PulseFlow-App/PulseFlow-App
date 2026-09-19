@@ -217,6 +217,8 @@ export type Task = {
   org_id: string;
   villa_id: string | null;
   title: string;
+  /** Optional free-text notes from the creator. */
+  notes: string | null;
   priority: TaskPriority;
   assigned_to: string | null;
   status: TaskStatus;

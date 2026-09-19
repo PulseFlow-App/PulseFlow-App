@@ -1,6 +1,10 @@
 import webpush from "web-push";
 import type { NotificationKind } from "@/lib/types";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  isPushCategoryEnabled,
+  normalizePushPrefs,
+} from "@/lib/push/categories";
 
 export type PushPayload = {
   title: string;
@@ -84,10 +88,30 @@ export async function sendWebPush(payload: PushPayload) {
   );
   if (!profileIds.length) return { sent: 0, skipped: "no_audience" as const };
 
+  const { data: prefRows, error: prefError } = await admin
+    .from("profiles")
+    .select("id, push_prefs")
+    .in("id", profileIds);
+
+  let filteredIds = profileIds;
+  if (!prefError && prefRows) {
+    filteredIds = (
+      prefRows as { id: string; push_prefs?: unknown }[]
+    )
+      .filter((row) =>
+        isPushCategoryEnabled(normalizePushPrefs(row.push_prefs), payload.kind),
+      )
+      .map((row) => row.id);
+  }
+
+  if (!filteredIds.length) {
+    return { sent: 0, skipped: "prefs_filtered" as const };
+  }
+
   const { data: subs } = await admin
     .from("push_subscriptions")
     .select("id, endpoint, p256dh, auth")
-    .in("profile_id", profileIds);
+    .in("profile_id", filteredIds);
 
   const rows = (subs ?? []) as SubRow[];
   if (!rows.length) return { sent: 0, skipped: "no_subscriptions" as const };

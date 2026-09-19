@@ -46,7 +46,7 @@ const companyHostTabs: Tab[] = [
   { href: "/villas", labelKey: "nav.villas", icon: Building2 },
   { href: "/guests", labelKey: "nav.guests", icon: BedDouble },
   { href: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
-  { href: "/messages", labelKey: "nav.chat", icon: MessageCircle },
+  { href: "/contacts", labelKey: "nav.contacts", icon: Users },
   { href: "/bills", labelKey: "nav.bills", icon: Receipt },
 ];
 

@@ -689,6 +689,7 @@ export const demoTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(1) + "T08:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: ORDER_AGREED_ID,
   },
   {
@@ -705,6 +706,7 @@ export const demoTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(2) + "T09:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: null,
   },
   {
@@ -721,6 +723,7 @@ export const demoTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(1) + "T10:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: null,
   },
   {
@@ -737,6 +740,7 @@ export const demoTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(3) + "T11:00:00.000Z",
     completed_at: daysAgo(1) + "T15:00:00.000Z",
+    notes: null,
     service_order_id: null,
   },
   {
@@ -753,6 +757,7 @@ export const demoTasks: Task[] = [
     created_by: DEMO_EMPLOYEE_ID,
     created_at: daysAgo(4) + "T12:00:00.000Z",
     completed_at: daysAgo(2) + "T16:00:00.000Z",
+    notes: null,
     service_order_id: null,
   },
   {
@@ -769,6 +774,7 @@ export const demoTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(5) + "T08:30:00.000Z",
     completed_at: daysAgo(3) + "T14:00:00.000Z",
+    notes: null,
     service_order_id: null,
   },
   {
@@ -785,6 +791,7 @@ export const demoTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(0) + "T07:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: null,
   },
   {
@@ -801,6 +808,7 @@ export const demoTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(0) + "T09:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: ORDER_PENDING_ID,
   },
   {
@@ -817,6 +825,7 @@ export const demoTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(1) + "T12:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: ORDER_AGREED_ID,
   },
 ];

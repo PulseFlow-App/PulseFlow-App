@@ -404,38 +404,38 @@ export default function BillsPage() {
       {showFinance ? (
         <Card className="space-y-3 p-4">
           <p className="text-sm font-semibold text-ink">{t("bills.filters")}</p>
+          <div>
+            <Label>{t("bills.period")}</Label>
+            <Select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as PeriodKey)}
+            >
+              <option value="this_month">{t("bills.period.thisMonth")}</option>
+              <option value="last_30">{t("bills.period.last30")}</option>
+              <option value="last_90">{t("bills.period.last90")}</option>
+              <option value="custom">{t("bills.period.custom")}</option>
+              <option value="all">{t("bills.period.all")}</option>
+            </Select>
+          </div>
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>{t("bills.period")}</Label>
-              <Select
-                value={period}
-                onChange={(e) => setPeriod(e.target.value as PeriodKey)}
-              >
-                <option value="this_month">{t("bills.period.thisMonth")}</option>
-                <option value="last_30">{t("bills.period.last30")}</option>
-                <option value="last_90">{t("bills.period.last90")}</option>
-                <option value="custom">{t("bills.period.custom")}</option>
-                <option value="all">{t("bills.period.all")}</option>
-              </Select>
-            </div>
             <div>
               <Label>{t("bills.currency")}</Label>
               <DisplayCurrencySelect aria-label={t("bills.currency")} />
             </div>
-          </div>
-          <div>
-            <Label>{t("bills.villa")}</Label>
-            <Select
-              value={filterVilla}
-              onChange={(e) => setFilterVilla(e.target.value)}
-            >
-              <option value="">{t("bills.allVillas")}</option>
-              {data.villas.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name}
-                </option>
-              ))}
-            </Select>
+            <div>
+              <Label>{t("bills.villa")}</Label>
+              <Select
+                value={filterVilla}
+                onChange={(e) => setFilterVilla(e.target.value)}
+              >
+                <option value="">{t("bills.allVillas")}</option>
+                {data.villas.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
           </div>
           {period === "custom" ? (
             <div className="grid grid-cols-2 gap-3">

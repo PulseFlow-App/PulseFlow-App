@@ -503,7 +503,12 @@ export function useSupabaseData(enabled: boolean): AppData {
     setAllProfiles(loadedAll.map(normalizeProfile));
     setVillas(asVillas(villasRes.data));
     setContacts((contactsRes.data as Contact[]) ?? []);
-    setTasks((tasksRes.data as Task[]) ?? []);
+    setTasks(
+      ((tasksRes.data as Task[]) ?? []).map((t) => ({
+        ...t,
+        notes: t.notes ?? null,
+      })),
+    );
     setBills((billsRes.data as Bill[]) ?? []);
     setMessages(
       ((messagesRes.data as MessageWithSender[]) ?? []).map((m) => ({
@@ -1019,12 +1024,14 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (error || !order) throw error ?? new Error("Could not create order.");
 
       const title = `${serviceType} · ${location}`;
+      const orderNotes = input.details?.trim() || null;
       const { data: task } = await supabase
         .from("tasks")
         .insert({
           org_id: profile.org_id,
           villa_id: villa?.id ?? null,
           title,
+          notes: orderNotes,
           priority: "normal",
           assigned_to: contact.linked_profile_id,
           status: "open",
@@ -1603,6 +1610,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       const assignee = assigneeId
         ? profiles.find((p) => p.id === assigneeId)
         : null;
+      const notes = input.notes?.trim() || null;
 
       const { data: order, error: orderError } = await supabase
         .from("service_orders")
@@ -1614,7 +1622,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           villa_id: villa?.id ?? null,
           location_label: location,
           service_type: title,
-          details: null,
+          details: notes,
           scheduled_date: scheduledDate,
           time_start: input.time_start || null,
           time_end: input.time_end || null,
@@ -1631,6 +1639,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         serviceType: title,
         location,
         when,
+        details: notes,
         orderedBy: profile.full_name,
       });
       const { data: msg } = await supabase
@@ -1652,6 +1661,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           created_by: profile.id,
           status: "open",
           title,
+          notes,
           villa_id: input.villa_id,
           priority: input.priority,
           assigned_to: assigneeId,

@@ -361,6 +361,11 @@ export default function JobsPage() {
                     villaLabel={task.villa?.name ?? t("common.general")}
                     schedule={workWindow}
                   />
+                  {task.notes ? (
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted">
+                      <LocalizedText text={task.notes} />
+                    </p>
+                  ) : null}
                 </div>
                 {task.priority === "urgent" ? (
                   <span className="text-[10px] font-bold uppercase text-danger">

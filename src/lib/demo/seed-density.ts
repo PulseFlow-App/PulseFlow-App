@@ -63,6 +63,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_EMPLOYEE_ID,
     created_at: daysAgo(1) + "T18:00:00.000Z",
     completed_at: daysAgo(0) + "T08:18:00.000Z",
+    notes: null,
     service_order_id: null,
   },
   {
@@ -79,6 +80,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(0) + "T12:00:00.000Z",
     completed_at: daysAgo(0) + "T16:30:00.000Z",
+    notes: null,
     service_order_id: null,
   },
   {
@@ -95,6 +97,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_EMPLOYEE_ID,
     created_at: daysAgo(0) + "T07:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: ORDER_LINEN,
   },
   {
@@ -111,6 +114,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(0) + "T09:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: ORDER_PEST,
   },
   {
@@ -127,6 +131,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_EMPLOYEE_ID,
     created_at: daysAgo(1) + "T11:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: ORDER_WINDOW,
   },
   {
@@ -143,6 +148,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(0) + "T07:30:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: ORDER_HANDY,
   },
   {
@@ -159,6 +165,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(0) + "T08:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: ORDER_DEEP,
   },
   {
@@ -175,6 +182,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_EMPLOYEE_ID,
     created_at: daysAgo(2) + "T10:00:00.000Z",
     completed_at: daysAgo(1) + "T15:15:00.000Z",
+    notes: null,
     service_order_id: null,
   },
   {
@@ -191,6 +199,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(3) + "T12:00:00.000Z",
     completed_at: daysAgo(2) + "T17:10:00.000Z",
+    notes: null,
     service_order_id: null,
   },
   {
@@ -207,6 +216,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(0) + "T14:00:00.000Z",
     completed_at: daysAgo(0) + "T15:45:00.000Z",
+    notes: null,
     service_order_id: null,
   },
   {
@@ -223,6 +233,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(4) + "T09:00:00.000Z",
     completed_at: daysAgo(3) + "T11:00:00.000Z",
+    notes: null,
     service_order_id: null,
   },
   {
@@ -239,6 +250,7 @@ export const denseTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(0) + "T10:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: null,
   },
 ];

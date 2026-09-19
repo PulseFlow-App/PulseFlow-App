@@ -1049,6 +1049,7 @@ export function demoCreateServiceOrder(
         org_id: actor.org_id,
         villa_id: order.villa_id,
         title: `${order.service_type} - ${location}`,
+        notes: order.details,
         priority: "normal" as const,
         assigned_to: contact.linked_profile_id,
         status: "open" as const,

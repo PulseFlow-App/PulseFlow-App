@@ -653,6 +653,7 @@ function useDemoData(): AppData {
           input.time_end ?? null,
         ) ?? scheduledDate;
       const now = new Date().toISOString();
+      const notes = input.notes?.trim() || null;
       const assigneeName = assigneeId
         ? store.profiles.find((p) => p.id === assigneeId)?.full_name ?? null
         : null;
@@ -661,6 +662,7 @@ function useDemoData(): AppData {
         serviceType: title,
         location,
         when,
+        details: notes,
         orderedBy: profile.full_name,
       });
       updateDemoStore((s) => ({
@@ -675,7 +677,7 @@ function useDemoData(): AppData {
             villa_id: input.villa_id,
             location_label: location,
             service_type: title,
-            details: null,
+            details: notes,
             scheduled_date: scheduledDate,
             time_start: input.time_start ?? null,
             time_end: input.time_end ?? null,
@@ -692,6 +694,7 @@ function useDemoData(): AppData {
             id: taskId,
             org_id: profile.org_id,
             title,
+            notes,
             villa_id: input.villa_id,
             priority: input.priority,
             assigned_to: assigneeId,

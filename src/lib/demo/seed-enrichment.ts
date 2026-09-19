@@ -166,6 +166,7 @@ export const extraTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(0) + "T06:40:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: null,
   },
   {
@@ -182,6 +183,7 @@ export const extraTasks: Task[] = [
     created_by: DEMO_EMPLOYEE_ID,
     created_at: daysAgo(0) + "T05:50:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: null,
   },
   {
@@ -198,6 +200,7 @@ export const extraTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(0) + "T08:10:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: ORDER_POOL,
   },
   {
@@ -214,6 +217,7 @@ export const extraTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(1) + "T16:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: ORDER_GARDEN,
   },
   {
@@ -230,6 +234,7 @@ export const extraTasks: Task[] = [
     created_by: DEMO_EMPLOYEE_ID,
     created_at: daysAgo(0) + "T11:00:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: null,
   },
   {
@@ -246,6 +251,7 @@ export const extraTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(0) + "T08:20:00.000Z",
     completed_at: null,
+    notes: null,
     service_order_id: null,
   },
   {
@@ -262,6 +268,7 @@ export const extraTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(3) + "T09:00:00.000Z",
     completed_at: daysAgo(1) + "T12:15:00.000Z",
+    notes: null,
     service_order_id: ORDER_DONE,
   },
   {
@@ -278,6 +285,7 @@ export const extraTasks: Task[] = [
     created_by: DEMO_OWNER_ID,
     created_at: daysAgo(1) + "T19:00:00.000Z",
     completed_at: daysAgo(0) + "T08:35:00.000Z",
+    notes: null,
     service_order_id: null,
   },
 ];

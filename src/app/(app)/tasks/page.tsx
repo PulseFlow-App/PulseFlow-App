@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input, Label, Select } from "@/components/ui/input";
+import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import { formatWorkWindow } from "@/lib/notifications";
@@ -32,6 +32,7 @@ export default function TasksPage() {
   const [dueDate, setDueDate] = useState("");
   const [timeStart, setTimeStart] = useState("");
   const [timeEnd, setTimeEnd] = useState("");
+  const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const assignees = useMemo(
@@ -76,6 +77,7 @@ export default function TasksPage() {
         due_date: dueDate || null,
         time_start: timeStart || null,
         time_end: timeEnd || null,
+        notes: notes.trim() || null,
       });
       setTitle("");
       setVillaId("");
@@ -84,6 +86,7 @@ export default function TasksPage() {
       setDueDate("");
       setTimeStart("");
       setTimeEnd("");
+      setNotes("");
       setShowForm(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create task.");
@@ -208,6 +211,20 @@ export default function TasksPage() {
               ))}
             </Select>
           </div>
+          <div>
+            <Label>
+              {t("common.notes")}{" "}
+              <span className="font-normal text-muted">
+                ({t("common.optional")})
+              </span>
+            </Label>
+            <Textarea
+              rows={3}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={t("tasks.notesPlaceholder")}
+            />
+          </div>
           {error ? <p className="text-sm text-danger">{error}</p> : null}
           <Button className="w-full" onClick={() => void create()}>
             {t("tasks.create")}
@@ -248,6 +265,11 @@ export default function TasksPage() {
                     (task.due_date ? formatShortDate(task.due_date) : null)
                   }
                 />
+                {task.notes ? (
+                  <p className="mt-0.5 line-clamp-2 text-xs text-muted">
+                    <LocalizedText text={task.notes} />
+                  </p>
+                ) : null}
               </div>
               {task.priority === "urgent" ? (
                 <span className="text-[10px] font-bold uppercase text-danger">
