@@ -124,7 +124,7 @@ function isGuestUpdateKindRejected(message: string | undefined) {
   return /guest_update|notifications_kind_check/i.test(message);
 }
 
-/** Inserts rows; ignores duplicate dedupe_key conflicts. */
+/** Inserts rows; ignores duplicate dedupe_key conflicts. Only newly inserted rows get a push. */
 export async function insertNotifications(
   supabase: {
     from: (table: string) => {
@@ -135,29 +135,30 @@ export async function insertNotifications(
   },
   rows: NotificationInsert[],
 ) {
-  const inserted: NotificationInsert[] = [];
+  const newlyInserted: NotificationInsert[] = [];
   for (const row of rows) {
-    let { error } = await supabase.from("notifications").insert(row);
+    let working: NotificationInsert = row;
+    let { error } = await supabase.from("notifications").insert(working);
     if (
       error &&
       row.kind === "guest_update" &&
       isGuestUpdateKindRejected(error.message)
     ) {
-      const fallback: NotificationInsert = { ...row, kind: "message" };
-      const retry = await supabase.from("notifications").insert(fallback);
+      working = { ...row, kind: "message" };
+      const retry = await supabase.from("notifications").insert(working);
       error = retry.error;
-      if (!error || error.code === "23505") inserted.push(fallback);
-    } else if (!error || error.code === "23505") {
-      inserted.push(row);
     }
-    if (error && error.code !== "23505") {
+    if (!error) {
+      newlyInserted.push(working);
+    } else if (error.code === "23505") {
+      // Duplicate dedupe_key — already notified; do not push again.
+    } else {
       console.warn("insertNotifications", error.message);
     }
   }
-  const toPush = inserted.length ? inserted : rows;
-  if (typeof window !== "undefined" && toPush.length) {
+  if (typeof window !== "undefined" && newlyInserted.length) {
     const { dispatchPushForNotifications } = await import("@/lib/push/client");
-    await dispatchPushForNotifications(toPush);
+    await dispatchPushForNotifications(newlyInserted);
   }
 }
 

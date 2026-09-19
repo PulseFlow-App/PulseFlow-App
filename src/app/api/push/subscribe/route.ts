@@ -95,6 +95,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Drop stale endpoints for this user so re-enabling alerts does not multiply pushes.
+  const staleBefore = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  await supabase
+    .from("push_subscriptions")
+    .delete()
+    .eq("profile_id", profile.id)
+    .neq("endpoint", body.endpoint)
+    .lt("last_seen_at", staleBefore);
+
   return NextResponse.json({ ok: true });
 }
 

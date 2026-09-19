@@ -83,6 +83,8 @@ import {
   buildOrderChatBody,
   parseCancelJobCommand,
   resolveCancelJobTarget,
+  canViewServiceOrder,
+  canViewServiceOrderMessage,
 } from "@/lib/service-orders";
 import {
   loadLocallyReadIds,
@@ -791,6 +793,15 @@ export function useSupabaseData(enabled: boolean): AppData {
       t.org_id === profile.org_id ||
       memberships.some((m) => m.org_id === t.org_id);
     if (!inMemberOrg) return false;
+    if (t.service_order_id) {
+      const order = serviceOrders.find((o) => o.id === t.service_order_id);
+      if (
+        order &&
+        !canViewServiceOrder(profile, order, organization?.kind ?? null)
+      ) {
+        return false;
+      }
+    }
     if (profile.role === "owner" || profile.role === "manager") return true;
     if (!t.villa_id) return true;
     return visibleVillaIds.has(t.villa_id);
@@ -798,7 +809,19 @@ export function useSupabaseData(enabled: boolean): AppData {
 
   const visibleNotifications = profile
     ? notifications
-        .filter((n) => notificationVisibleTo(n, profile.id))
+        .filter((n) => {
+          if (!notificationVisibleTo(n, profile.id)) return false;
+          if (n.kind === "appointment" && n.entity_id) {
+            const order = serviceOrders.find((o) => o.id === n.entity_id);
+            if (
+              order &&
+              !canViewServiceOrder(profile, order, organization?.kind ?? null)
+            ) {
+              return false;
+            }
+          }
+          return true;
+        })
         .map((n) => ({
           ...n,
           read_by: mergeReadBy(n.read_by, profile.id, localReadIds, n.id),
@@ -867,6 +890,22 @@ export function useSupabaseData(enabled: boolean): AppData {
     );
   };
 
+  const visibleServiceOrders = profile
+    ? serviceOrders.filter((o) =>
+        canViewServiceOrder(profile, o, organization?.kind ?? null),
+      )
+    : [];
+  const visibleMessages = profile
+    ? messages.filter((m) =>
+        canViewServiceOrderMessage(
+          profile,
+          m,
+          serviceOrders,
+          organization?.kind ?? null,
+        ),
+      )
+    : messages;
+
   return {
     ready,
     profile,
@@ -885,7 +924,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       scopedTasks,
       visible,
       allProfiles.length > 0 ? allProfiles : profiles,
-      serviceOrders,
+      visibleServiceOrders,
       contacts,
     ),
     bills: enrichBills(
@@ -895,13 +934,13 @@ export function useSupabaseData(enabled: boolean): AppData {
       visible,
       profiles,
     ),
-    messages,
+    messages: visibleMessages,
     invites,
     villaAssignments,
     memberships,
     endorsements,
     notifications: visibleNotifications,
-    serviceOrders,
+    serviceOrders: visibleServiceOrders,
     unreadNotificationCount,
     unreadMessageCount,
     guestStays: scopedGuestStays,

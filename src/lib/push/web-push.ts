@@ -50,9 +50,11 @@ function ensureVapid() {
 
 type SubRow = {
   id: string;
+  profile_id: string;
   endpoint: string;
   p256dh: string;
   auth: string;
+  last_seen_at: string | null;
 };
 
 async function resolveAudienceIds(
@@ -66,6 +68,26 @@ async function resolveAudienceIds(
     .select("id")
     .eq("org_id", orgId);
   return (data ?? []).map((p) => p.id as string);
+}
+
+/** Keep a few newest subscriptions per profile (phone + tablet), drop stale spam. */
+function newestSubsPerProfile(rows: SubRow[], limit = 2): SubRow[] {
+  const byProfile = new Map<string, SubRow[]>();
+  for (const row of rows) {
+    const list = byProfile.get(row.profile_id) ?? [];
+    list.push(row);
+    byProfile.set(row.profile_id, list);
+  }
+  const out: SubRow[] = [];
+  for (const list of byProfile.values()) {
+    list.sort((a, b) => {
+      const at = a.last_seen_at ? Date.parse(a.last_seen_at) : 0;
+      const bt = b.last_seen_at ? Date.parse(b.last_seen_at) : 0;
+      return bt - at;
+    });
+    out.push(...list.slice(0, limit));
+  }
+  return out;
 }
 
 /** Send lock-screen pushes for one notification-shaped payload. */
@@ -110,10 +132,10 @@ export async function sendWebPush(payload: PushPayload) {
 
   const { data: subs } = await admin
     .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth")
+    .select("id, profile_id, endpoint, p256dh, auth, last_seen_at")
     .in("profile_id", filteredIds);
 
-  const rows = (subs ?? []) as SubRow[];
+  const rows = newestSubsPerProfile((subs ?? []) as SubRow[]);
   if (!rows.length) return { sent: 0, skipped: "no_subscriptions" as const };
 
   const body = JSON.stringify({

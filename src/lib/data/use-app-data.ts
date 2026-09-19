@@ -48,7 +48,7 @@ import type {
   VillaListItem,
 } from "@/lib/types";
 import type { BillStatus, TaskPriority, TaskStatus, UserRole } from "@/lib/design-tokens";
-import { buildOrderChatBody, parseCancelJobCommand, resolveCancelJobTarget, formatOrderWhen } from "@/lib/service-orders";
+import { buildOrderChatBody, parseCancelJobCommand, resolveCancelJobTarget, formatOrderWhen, canViewServiceOrder, canViewServiceOrderMessage } from "@/lib/service-orders";
 import { canBookServices,
   canCreateVillas,
   canMarkBillsPaid,
@@ -230,13 +230,23 @@ function useDemoData(): AppData {
 
   const orgTasks = useMemo(() => {
     if (!profile) return [];
+    const orgKind =
+      store.orgs.find((org) => org.id === profile.org_id)?.kind ?? null;
     return store.tasks.filter((t) => {
       if (t.org_id !== profile.org_id) return false;
+      if (t.service_order_id) {
+        const order = (store.serviceOrders ?? []).find(
+          (o) => o.id === t.service_order_id,
+        );
+        if (order && !canViewServiceOrder(profile, order, orgKind)) {
+          return false;
+        }
+      }
       if (profile.role === "owner") return true;
       if (!t.villa_id) return true;
       return visibleIds.has(t.villa_id);
     });
-  }, [store.tasks, profile, visibleIds]);
+  }, [store.tasks, store.serviceOrders, store.orgs, profile, visibleIds]);
 
   const orgBills = useMemo(() => {
     if (!profile) return [];
@@ -254,8 +264,12 @@ function useDemoData(): AppData {
 
   const serviceOrders = useMemo(() => {
     if (!profile) return [];
-    return (store.serviceOrders ?? []).filter((o) => o.org_id === profile.org_id);
-  }, [store.serviceOrders, profile]);
+    return (store.serviceOrders ?? []).filter(
+      (o) =>
+        o.org_id === profile.org_id &&
+        canViewServiceOrder(profile, o, store.orgs.find((org) => org.id === profile.org_id)?.kind ?? null),
+    );
+  }, [store.serviceOrders, store.orgs, profile]);
 
   const tasks = useMemo(
     () =>
@@ -272,10 +286,20 @@ function useDemoData(): AppData {
     () => enrichBills(orgBills, visibleVillas, orgProfiles),
     [orgBills, visibleVillas, orgProfiles],
   );
+  const allOrgOrders = useMemo(() => {
+    if (!profile) return [];
+    return (store.serviceOrders ?? []).filter((o) => o.org_id === profile.org_id);
+  }, [store.serviceOrders, profile]);
+
   const messages = useMemo(() => {
     if (!profile) return [];
+    const orgKind =
+      store.orgs.find((org) => org.id === profile.org_id)?.kind ?? null;
     return [...store.messages]
       .filter((m) => m.org_id === profile.org_id)
+      .filter((m) =>
+        canViewServiceOrderMessage(profile, m, allOrgOrders, orgKind),
+      )
       .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))
       .map((m) => ({
         ...m,
@@ -283,7 +307,7 @@ function useDemoData(): AppData {
         attachment_url: m.attachment_url ?? null,
         sender: orgProfiles.find((p) => p.id === m.sender_id) ?? null,
       }));
-  }, [store.messages, profile, orgProfiles]);
+  }, [store.messages, store.orgs, profile, orgProfiles, allOrgOrders]);
 
   const invites = useMemo(() => {
     if (!profile) return [];
@@ -292,18 +316,28 @@ function useDemoData(): AppData {
 
   const notifications = useMemo(() => {
     if (!profile) return [];
+    const orgKind =
+      store.orgs.find((org) => org.id === profile.org_id)?.kind ?? null;
     return [...(store.notifications ?? [])]
-      .filter(
-        (n) =>
-          n.org_id === profile.org_id &&
-          notificationVisibleTo(n, profile.id),
-      )
+      .filter((n) => {
+        if (n.org_id !== profile.org_id) return false;
+        if (!notificationVisibleTo(n, profile.id)) return false;
+        if (n.kind === "appointment" && n.entity_id) {
+          const order = (store.serviceOrders ?? []).find(
+            (o) => o.id === n.entity_id,
+          );
+          if (order && !canViewServiceOrder(profile, order, orgKind)) {
+            return false;
+          }
+        }
+        return true;
+      })
       .map((n) => ({
         ...n,
         read_by: mergeReadBy(n.read_by, profile.id, localReadIds, n.id),
       }))
       .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-  }, [store.notifications, profile, localReadIds]);
+  }, [store.notifications, store.serviceOrders, store.orgs, profile, localReadIds]);
 
   const unreadNotificationCount = useMemo(() => {
     if (!profile) return 0;

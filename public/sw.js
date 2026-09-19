@@ -1,4 +1,4 @@
-const CACHE = "pulseflow-shell-v5";
+const CACHE = "pulseflow-shell-v6";
 const SHELL = [
   "/",
   "/login",
@@ -64,6 +64,7 @@ self.addEventListener("push", (event) => {
       badge: "/icons/icon-192.png",
       data: { href: data.href || "/notifications" },
       tag: data.tag || "pulseflow",
+      renotify: false,
     }),
   );
 });

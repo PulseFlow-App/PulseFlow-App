@@ -7,6 +7,37 @@ import type { NotificationKind } from "@/lib/types";
 
 export const runtime = "nodejs";
 
+/** Short TTL so concurrent clients that race schedule-sync do not re-blast the same lock-screen alert. */
+const recentPushKeys = new Map<string, number>();
+const PUSH_DEDUPE_MS = 90_000;
+
+function pushDedupeKey(n: {
+  org_id: string;
+  kind: string;
+  title: string;
+  body: string;
+  entity_id?: string | null;
+  dedupe_key?: string | null;
+  audience_profile_ids?: string[] | null;
+}) {
+  const audience = (n.audience_profile_ids ?? []).slice().sort().join(",");
+  return (
+    n.dedupe_key ||
+    `${n.org_id}:${n.kind}:${n.entity_id ?? ""}:${n.title}:${n.body}:${audience}`
+  );
+}
+
+function takePushSlot(key: string) {
+  const now = Date.now();
+  for (const [k, at] of recentPushKeys) {
+    if (now - at > PUSH_DEDUPE_MS) recentPushKeys.delete(k);
+  }
+  const prev = recentPushKeys.get(key);
+  if (prev && now - prev < PUSH_DEDUPE_MS) return false;
+  recentPushKeys.set(key, now);
+  return true;
+}
+
 const itemSchema = z.object({
   org_id: z.string().uuid(),
   kind: z.string(),
@@ -58,17 +89,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Forbidden org." }, { status: 403 });
   }
 
-  const payloads: PushPayload[] = body.notifications.map((n) => ({
-    org_id: n.org_id,
-    kind: n.kind as NotificationKind,
-    title: n.title,
-    body: n.body,
-    href: n.href ?? "/notifications",
-    audience_profile_ids: n.audience_profile_ids ?? null,
-    tag: n.dedupe_key || (n.entity_id ? `${n.kind}:${n.entity_id}` : n.kind),
-  }));
+  const payloads: PushPayload[] = [];
+  let skipped = 0;
+  for (const n of body.notifications) {
+    const key = pushDedupeKey(n);
+    if (!takePushSlot(key)) {
+      skipped += 1;
+      continue;
+    }
+    payloads.push({
+      org_id: n.org_id,
+      kind: n.kind as NotificationKind,
+      title: n.title,
+      body: n.body,
+      href: n.href ?? "/notifications",
+      audience_profile_ids: n.audience_profile_ids ?? null,
+      tag: n.dedupe_key || (n.entity_id ? `${n.kind}:${n.entity_id}` : n.kind),
+    });
+  }
+
+  if (!payloads.length) {
+    return NextResponse.json({ ok: true, sent: 0, skipped });
+  }
 
   const results = await sendWebPushMany(payloads);
   const sent = results.reduce((sum, r) => sum + (r.sent ?? 0), 0);
-  return NextResponse.json({ ok: true, sent });
+  return NextResponse.json({ ok: true, sent, skipped });
 }

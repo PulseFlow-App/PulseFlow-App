@@ -100,6 +100,38 @@ export function buildOrderChatBody(input: {
   return lines.join("\n");
 }
 
+/**
+ * Assigned jobs stay private to the booker + assignee.
+ * Open (unassigned) jobs stay visible to bookers and staff who can claim.
+ */
+export function canViewServiceOrder(
+  actor: { id: string; role: UserRole },
+  order: Pick<ServiceOrder, "staff_profile_id" | "ordered_by">,
+  orgKind?: "personal" | "company" | null,
+) {
+  if (order.staff_profile_id) {
+    return (
+      order.staff_profile_id === actor.id || order.ordered_by === actor.id
+    );
+  }
+  if (canBookServices(actor.role, orgKind)) return true;
+  if (isTaskAssignableRole(actor.role)) return true;
+  return false;
+}
+
+/** Job chat lines (service_order_id set) follow the linked order’s visibility. */
+export function canViewServiceOrderMessage(
+  actor: { id: string; role: UserRole },
+  message: { service_order_id: string | null },
+  orders: Pick<ServiceOrder, "id" | "staff_profile_id" | "ordered_by">[],
+  orgKind?: "personal" | "company" | null,
+) {
+  if (!message.service_order_id) return true;
+  const order = orders.find((o) => o.id === message.service_order_id);
+  if (!order) return false;
+  return canViewServiceOrder(actor, order, orgKind);
+}
+
 /** Staff can agree when assigned to them, or claim an open (unassigned) job. */
 export function canAgreeServiceOrder(
   actor: { id: string; role: UserRole },
