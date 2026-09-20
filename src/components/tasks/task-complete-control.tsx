@@ -18,7 +18,8 @@ import {
 import { writeStoredReviewOffer } from "@/components/tasks/review-offer-banner";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
-import { cn } from "@/lib/utils";
+import { cn, formatShortDate } from "@/lib/utils";
+import { formatWorkWindow } from "@/lib/notifications";
 
 /** Mark-done / verify / approve control for a task row. */
 export function TaskCompleteControl({
@@ -74,9 +75,16 @@ export function TaskCompleteControl({
     }
     const doer = findProfile(doerId);
     const href = reviewOfferHref(doer, doerId);
+    const schedule =
+      formatWorkWindow(task.due_date, task.time_start, task.time_end) ??
+      (task.due_date ? formatShortDate(task.due_date) : null);
+    const workLabel = [task.title, task.villa?.name, schedule]
+      .filter(Boolean)
+      .join(" · ");
     writeStoredReviewOffer(task.id, {
       name: doer?.full_name?.trim() || t("tasks.reviewOfferSomeone"),
       href,
+      workLabel,
     });
     return true;
   };

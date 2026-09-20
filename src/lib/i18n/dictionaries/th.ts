@@ -251,6 +251,8 @@ const th: Dictionary = {
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
   "tasks.reviewOfferOptional": "Optional — you can skip.",
+  "tasks.reviewOfferJobNote": "Note about this job (optional)",
+  "tasks.reviewOfferJobNotePlaceholder": "How did this job or task go?",
   "jobs.titleStaff": "งานของฉัน",
   "jobs.titleOwner": "การจองบริการ",
   "jobs.subtitleStaff": "ช่วงเวลาทำงานตามวิลล่า - ไม่ใช่เวลาเช็คอินแขก",

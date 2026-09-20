@@ -255,6 +255,8 @@ const fr: Dictionary = {
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
   "tasks.reviewOfferOptional": "Optional — you can skip.",
+  "tasks.reviewOfferJobNote": "Note about this job (optional)",
+  "tasks.reviewOfferJobNotePlaceholder": "How did this job or task go?",
   "jobs.titleStaff": "Mes missions",
   "jobs.titleOwner": "Réservations",
   "jobs.subtitleStaff": "Créneaux par property - pas les arrivées clients",

@@ -10,6 +10,10 @@ import { DataProvider } from "@/lib/data/data-provider";
 import { useData } from "@/lib/data/use-app-data";
 import { weekKey } from "@/lib/endorsements";
 import { canCastEndorsement } from "@/lib/roles";
+import {
+  takeReviewDraftNote,
+  writeStoredReviewOffer,
+} from "@/components/tasks/review-offer-banner";
 import { useI18n } from "@/lib/i18n/provider";
 
 /** Inline weekly review form on a public profile (`?review=1`). */
@@ -35,7 +39,7 @@ function PublicProfileReviewFormInner({
   const { t } = useI18n();
   const router = useRouter();
   const [stars, setStars] = useState<1 | 2 | 3 | 4 | 5>(5);
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(() => takeReviewDraftNote());
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -112,7 +116,7 @@ function PublicProfileReviewFormInner({
               rows={2}
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder={t("contacts.reviewNotePlaceholder")}
+              placeholder={t("tasks.reviewOfferJobNotePlaceholder")}
             />
           </div>
         </>

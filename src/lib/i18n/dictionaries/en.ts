@@ -305,6 +305,9 @@ const en = {
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
   "tasks.reviewOfferOptional": "Optional — you can skip.",
+  "tasks.reviewOfferJobNote": "Note about this job (optional)",
+  "tasks.reviewOfferJobNotePlaceholder":
+    "How did this job or task go?",
 
   "jobs.titleStaff": "My jobs",
   "jobs.titleOwner": "Bookings",

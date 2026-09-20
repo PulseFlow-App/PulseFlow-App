@@ -384,6 +384,12 @@ export default function JobsPage() {
                             staffName ||
                             t("tasks.reviewOfferSomeone"),
                           href,
+                          workLabel: [
+                            order.service_type,
+                            order.location_label,
+                          ]
+                            .filter(Boolean)
+                            .join(" · "),
                         });
                         router.push(href);
                       }}

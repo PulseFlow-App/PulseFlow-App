@@ -250,6 +250,8 @@ const he: Dictionary = {
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
   "tasks.reviewOfferOptional": "Optional — you can skip.",
+  "tasks.reviewOfferJobNote": "Note about this job (optional)",
+  "tasks.reviewOfferJobNotePlaceholder": "How did this job or task go?",
   "jobs.titleStaff": "העבודות שלי",
   "jobs.titleOwner": "הזמנות",
   "jobs.subtitleStaff": "חלונות עבודה לפי וילה - לא צ׳ק־אין אורחים",
