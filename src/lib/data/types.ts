@@ -219,6 +219,10 @@ export type AppData = {
     toProfileId: string,
     stars: 1 | 2 | 3 | 4 | 5,
     note?: string,
+    options?: {
+      photoUrl?: string | null;
+      workLabel?: string | null;
+    },
   ) => Promise<void>;
   sendSupportMessage: (
     body: string,

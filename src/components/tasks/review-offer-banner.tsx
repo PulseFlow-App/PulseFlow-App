@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Star } from "lucide-react";
+import { Camera, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label, Textarea } from "@/components/ui/input";
+import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 
 const STORAGE_PREFIX = "pf-review-offer:";
 const DRAFT_NOTE_KEY = "pf-review-draft-note";
+const DRAFT_PHOTO_KEY = "pf-review-draft-photo";
+const DRAFT_WORK_KEY = "pf-review-draft-work";
 export const REVIEW_OFFER_EVENT = "pf-review-offer";
 
 export type StoredReviewOffer = {
@@ -19,6 +22,8 @@ export type StoredReviewOffer = {
   workLabel?: string;
   /** Draft note about this job/task (optional). */
   jobNote?: string;
+  /** Draft result photo URL (optional). */
+  photoUrl?: string;
 };
 
 export function reviewOfferStorageKey(taskId: string) {
@@ -38,6 +43,7 @@ export function readAnyStoredReviewOffer(): StoredReviewOffer | null {
         href?: string;
         workLabel?: string;
         jobNote?: string;
+        photoUrl?: string;
       };
       if (!parsed?.href || !parsed?.name) continue;
       return {
@@ -46,6 +52,7 @@ export function readAnyStoredReviewOffer(): StoredReviewOffer | null {
         href: parsed.href,
         workLabel: parsed.workLabel?.trim() || undefined,
         jobNote: parsed.jobNote ?? "",
+        photoUrl: parsed.photoUrl ?? undefined,
       };
     }
   } catch {
@@ -61,6 +68,7 @@ export function writeStoredReviewOffer(
     href: string;
     workLabel?: string | null;
     jobNote?: string | null;
+    photoUrl?: string | null;
   },
 ) {
   try {
@@ -71,6 +79,7 @@ export function writeStoredReviewOffer(
         href: offer.href,
         workLabel: offer.workLabel?.trim() || undefined,
         jobNote: offer.jobNote ?? "",
+        photoUrl: offer.photoUrl?.trim() || undefined,
       }),
     );
     window.dispatchEvent(new Event(REVIEW_OFFER_EVENT));
@@ -88,40 +97,81 @@ export function clearStoredReviewOffer(taskId: string) {
   }
 }
 
-/** Pass note from the banner into the profile review form. */
-export function writeReviewDraftNote(note: string) {
+/** Pass note / photo / work label from the banner into the profile review form. */
+export function writeReviewDraft(input: {
+  note: string;
+  photoUrl?: string | null;
+  workLabel?: string | null;
+}) {
   try {
-    const trimmed = note.trim();
-    if (trimmed) sessionStorage.setItem(DRAFT_NOTE_KEY, trimmed);
+    const note = input.note.trim();
+    if (note) sessionStorage.setItem(DRAFT_NOTE_KEY, note);
     else sessionStorage.removeItem(DRAFT_NOTE_KEY);
+    const photo = input.photoUrl?.trim();
+    if (photo) sessionStorage.setItem(DRAFT_PHOTO_KEY, photo);
+    else sessionStorage.removeItem(DRAFT_PHOTO_KEY);
+    const work = input.workLabel?.trim();
+    if (work) sessionStorage.setItem(DRAFT_WORK_KEY, work);
+    else sessionStorage.removeItem(DRAFT_WORK_KEY);
   } catch {
     /* ignore */
   }
 }
 
-export function takeReviewDraftNote(): string {
-  if (typeof window === "undefined") return "";
+export function takeReviewDraft(): {
+  note: string;
+  photoUrl: string | null;
+  workLabel: string | null;
+} {
+  if (typeof window === "undefined") {
+    return { note: "", photoUrl: null, workLabel: null };
+  }
   try {
     const note = sessionStorage.getItem(DRAFT_NOTE_KEY) ?? "";
+    const photoUrl = sessionStorage.getItem(DRAFT_PHOTO_KEY);
+    const workLabel = sessionStorage.getItem(DRAFT_WORK_KEY);
     sessionStorage.removeItem(DRAFT_NOTE_KEY);
-    return note;
+    sessionStorage.removeItem(DRAFT_PHOTO_KEY);
+    sessionStorage.removeItem(DRAFT_WORK_KEY);
+    return {
+      note,
+      photoUrl: photoUrl?.trim() || null,
+      workLabel: workLabel?.trim() || null,
+    };
   } catch {
-    return "";
+    return { note: "", photoUrl: null, workLabel: null };
   }
+}
+
+/** @deprecated use writeReviewDraft */
+export function writeReviewDraftNote(note: string) {
+  writeReviewDraft({ note });
+}
+
+/** @deprecated use takeReviewDraft */
+export function takeReviewDraftNote(): string {
+  return takeReviewDraft().note;
 }
 
 /** Survives task rows disappearing after confirm-done. */
 export function ReviewOfferBanner() {
+  const data = useData();
   const { t } = useI18n();
   const router = useRouter();
+  const fileRef = useRef<HTMLInputElement>(null);
   const [offer, setOffer] = useState<StoredReviewOffer | null>(null);
   const [jobNote, setJobNote] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const sync = () => {
       const next = readAnyStoredReviewOffer();
       setOffer(next);
       setJobNote(next?.jobNote ?? "");
+      setPhotoUrl(next?.photoUrl ?? null);
+      setError(null);
     };
     sync();
     window.addEventListener(REVIEW_OFFER_EVENT, sync);
@@ -154,13 +204,75 @@ export function ReviewOfferBanner() {
             placeholder={t("tasks.reviewOfferJobNotePlaceholder")}
           />
         </div>
+        <div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              e.target.value = "";
+              if (!file) return;
+              setBusy(true);
+              setError(null);
+              void data
+                .uploadChatAttachment(file)
+                .then((url) => {
+                  if (!url) throw new Error(t("common.error"));
+                  setPhotoUrl(url);
+                })
+                .catch((err: unknown) =>
+                  setError(
+                    err instanceof Error ? err.message : t("common.error"),
+                  ),
+                )
+                .finally(() => setBusy(false));
+            }}
+          />
+          {photoUrl ? (
+            <div className="flex items-center gap-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={photoUrl}
+                alt=""
+                className="size-14 rounded-lg object-cover"
+              />
+              <button
+                type="button"
+                className="text-xs font-semibold text-danger"
+                onClick={() => setPhotoUrl(null)}
+              >
+                {t("common.remove")}
+              </button>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="w-full"
+              disabled={busy}
+              onClick={() => fileRef.current?.click()}
+            >
+              <Camera className="size-4" />
+              {busy ? t("common.loading") : t("tasks.reviewOfferAddPhoto")}
+            </Button>
+          )}
+        </div>
+        {error ? <p className="text-xs text-danger">{error}</p> : null}
         <div className="flex gap-2">
           <Button
             size="sm"
             className="flex-1"
+            disabled={busy}
             onClick={() => {
               const href = offer.href;
-              writeReviewDraftNote(jobNote);
+              writeReviewDraft({
+                note: jobNote,
+                photoUrl,
+                workLabel: offer.workLabel,
+              });
               clearStoredReviewOffer(offer.taskId);
               router.push(href);
             }}
@@ -171,6 +283,7 @@ export function ReviewOfferBanner() {
           <Button
             size="sm"
             variant="ghost"
+            disabled={busy}
             onClick={() => clearStoredReviewOffer(offer.taskId)}
           >
             {t("tasks.reviewOfferNo")}

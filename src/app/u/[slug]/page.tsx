@@ -308,8 +308,21 @@ function PublicProfilePageInner({
                           {weekLabel(e.week_key, locale)}
                         </span>
                       </div>
+                      {e.work_label ? (
+                        <p className="mt-1 text-xs font-semibold text-muted">
+                          {e.work_label}
+                        </p>
+                      ) : null}
                       {e.note ? (
                         <p className="mt-1 text-sm text-ink">{e.note}</p>
+                      ) : null}
+                      {e.photo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={e.photo_url}
+                          alt=""
+                          className="mt-2 max-h-48 w-full rounded-xl object-cover"
+                        />
                       ) : null}
                     </li>
                   ))}

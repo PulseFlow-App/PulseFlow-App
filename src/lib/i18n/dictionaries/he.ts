@@ -252,6 +252,7 @@ const he: Dictionary = {
   "tasks.reviewOfferOptional": "Optional — you can skip.",
   "tasks.reviewOfferJobNote": "Note about this job (optional)",
   "tasks.reviewOfferJobNotePlaceholder": "How did this job or task go?",
+  "tasks.reviewOfferAddPhoto": "Add result photo",
   "jobs.titleStaff": "העבודות שלי",
   "jobs.titleOwner": "הזמנות",
   "jobs.subtitleStaff": "חלונות עבודה לפי וילה - לא צ׳ק־אין אורחים",

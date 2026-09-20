@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Camera } from "lucide-react";
 import { StarsPicker } from "@/components/endorsements/stars";
 import { Button } from "@/components/ui/button";
 import { Label, Textarea } from "@/components/ui/input";
@@ -10,10 +11,7 @@ import { DataProvider } from "@/lib/data/data-provider";
 import { useData } from "@/lib/data/use-app-data";
 import { weekKey } from "@/lib/endorsements";
 import { canCastEndorsement } from "@/lib/roles";
-import {
-  takeReviewDraftNote,
-  writeStoredReviewOffer,
-} from "@/components/tasks/review-offer-banner";
+import { takeReviewDraft } from "@/components/tasks/review-offer-banner";
 import { useI18n } from "@/lib/i18n/provider";
 
 /** Inline weekly review form on a public profile (`?review=1`). */
@@ -38,8 +36,12 @@ function PublicProfileReviewFormInner({
   const data = useData();
   const { t } = useI18n();
   const router = useRouter();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const draft = useMemo(() => takeReviewDraft(), []);
   const [stars, setStars] = useState<1 | 2 | 3 | 4 | 5>(5);
-  const [note, setNote] = useState(() => takeReviewDraftNote());
+  const [note, setNote] = useState(draft.note);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(draft.photoUrl);
+  const [workLabel] = useState<string | null>(draft.workLabel);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -96,6 +98,9 @@ function PublicProfileReviewFormInner({
           {t("contacts.reviewTitle", { name: toName })}
         </h2>
         <p className="mt-0.5 text-sm text-muted">{t("contacts.reviewHint")}</p>
+        {workLabel ? (
+          <p className="mt-1 text-xs font-semibold text-ink">{workLabel}</p>
+        ) : null}
         <p className="mt-1 text-xs text-muted">{t("tasks.reviewOfferOptional")}</p>
       </div>
       {alreadyDone || ok ? (
@@ -119,6 +124,61 @@ function PublicProfileReviewFormInner({
               placeholder={t("tasks.reviewOfferJobNotePlaceholder")}
             />
           </div>
+          <div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                e.target.value = "";
+                if (!file) return;
+                setSaving(true);
+                setError(null);
+                void data
+                  .uploadChatAttachment(file)
+                  .then((url) => {
+                    if (!url) throw new Error(t("common.error"));
+                    setPhotoUrl(url);
+                  })
+                  .catch((err: unknown) =>
+                    setError(
+                      err instanceof Error ? err.message : t("common.error"),
+                    ),
+                  )
+                  .finally(() => setSaving(false));
+              }}
+            />
+            {photoUrl ? (
+              <div className="flex items-center gap-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photoUrl}
+                  alt=""
+                  className="size-16 rounded-lg object-cover"
+                />
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-danger"
+                  onClick={() => setPhotoUrl(null)}
+                >
+                  {t("common.remove")}
+                </button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={saving}
+                onClick={() => fileRef.current?.click()}
+              >
+                <Camera className="size-4" />
+                {t("tasks.reviewOfferAddPhoto")}
+              </Button>
+            )}
+          </div>
         </>
       )}
       {error ? <p className="text-sm text-danger">{error}</p> : null}
@@ -131,7 +191,10 @@ function PublicProfileReviewFormInner({
               setSaving(true);
               setError(null);
               void data
-                .castEndorsement(toProfileId, stars, note)
+                .castEndorsement(toProfileId, stars, note, {
+                  photoUrl,
+                  workLabel,
+                })
                 .then(() => {
                   setOk(t("contacts.reviewSaved"));
                   window.setTimeout(() => router.back(), 600);

@@ -152,13 +152,23 @@ export function canViewServiceOrder(
   return false;
 }
 
-/** Job chat lines (service_order_id set) follow the linked order’s visibility. */
+/** Job chat lines (service_order_id set) follow the linked order’s visibility.
+ *  Messages with audience_profile_ids are limited to that list. */
 export function canViewServiceOrderMessage(
   actor: { id: string; role: UserRole },
-  message: { service_order_id: string | null },
+  message: {
+    service_order_id: string | null;
+    audience_profile_ids?: string[] | null;
+  },
   orders: Pick<ServiceOrder, "id" | "staff_profile_id" | "ordered_by">[],
   orgKind?: "personal" | "company" | null,
 ) {
+  if (
+    Array.isArray(message.audience_profile_ids) &&
+    message.audience_profile_ids.length > 0
+  ) {
+    return message.audience_profile_ids.includes(actor.id);
+  }
   if (!message.service_order_id) return true;
   const order = orders.find((o) => o.id === message.service_order_id);
   if (!order) return false;

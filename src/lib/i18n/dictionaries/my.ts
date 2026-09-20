@@ -254,6 +254,7 @@ const my: Dictionary = {
   "tasks.reviewOfferOptional": "Optional — you can skip.",
   "tasks.reviewOfferJobNote": "Note about this job (optional)",
   "tasks.reviewOfferJobNotePlaceholder": "How did this job or task go?",
+  "tasks.reviewOfferAddPhoto": "Add result photo",
   "jobs.titleStaff": "ကျွန်ုပ်၏အလုပ်များ",
   "jobs.titleOwner": "ဘွတ်ကင်များ",
   "jobs.subtitleStaff": "ဗီလာအလိုက် အလုပ်ချိန် - ဧည့်သည် check-in မဟုတ်",

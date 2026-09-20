@@ -254,6 +254,7 @@ const ru: Dictionary = {
   "tasks.reviewOfferOptional": "Optional — you can skip.",
   "tasks.reviewOfferJobNote": "Note about this job (optional)",
   "tasks.reviewOfferJobNotePlaceholder": "How did this job or task go?",
+  "tasks.reviewOfferAddPhoto": "Add result photo",
   "jobs.titleStaff": "Мои работы",
   "jobs.titleOwner": "Заказы",
   "jobs.subtitleStaff": "Окна работы по виллам - не заезд гостей",

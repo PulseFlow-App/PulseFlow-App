@@ -1157,6 +1157,8 @@ export const demoEndorsements: Endorsement[] = [
     stars: 5,
     week_key: priorWeekKey(3),
     note: "Handled turnovers smoothly.",
+    photo_url: null,
+    work_label: null,
     created_at: daysAgo(21) + "T10:00:00.000Z",
   },
   {
@@ -1167,6 +1169,8 @@ export const demoEndorsements: Endorsement[] = [
     stars: 4,
     week_key: priorWeekKey(2),
     note: null,
+    photo_url: null,
+    work_label: null,
     created_at: daysAgo(14) + "T10:00:00.000Z",
   },
   {
@@ -1177,6 +1181,8 @@ export const demoEndorsements: Endorsement[] = [
     stars: 5,
     week_key: priorWeekKey(1),
     note: "Great guest communication.",
+    photo_url: null,
+    work_label: null,
     created_at: daysAgo(7) + "T10:00:00.000Z",
   },
   {
@@ -1187,6 +1193,8 @@ export const demoEndorsements: Endorsement[] = [
     stars: 4,
     week_key: priorWeekKey(2),
     note: null,
+    photo_url: null,
+    work_label: null,
     created_at: daysAgo(14) + "T11:00:00.000Z",
   },
   {
@@ -1197,6 +1205,8 @@ export const demoEndorsements: Endorsement[] = [
     stars: 5,
     week_key: priorWeekKey(1),
     note: "Spotless Palm Villa.",
+    photo_url: null,
+    work_label: null,
     created_at: daysAgo(7) + "T11:00:00.000Z",
   },
   {
@@ -1207,6 +1217,8 @@ export const demoEndorsements: Endorsement[] = [
     stars: 5,
     week_key: priorWeekKey(2),
     note: "Reliable across properties.",
+    photo_url: null,
+    work_label: null,
     created_at: daysAgo(14) + "T12:00:00.000Z",
   },
   {
@@ -1217,6 +1229,8 @@ export const demoEndorsements: Endorsement[] = [
     stars: 4,
     week_key: priorWeekKey(1),
     note: null,
+    photo_url: null,
+    work_label: null,
     created_at: daysAgo(7) + "T12:00:00.000Z",
   },
 ];

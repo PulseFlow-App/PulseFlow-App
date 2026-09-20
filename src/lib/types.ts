@@ -80,6 +80,10 @@ export type Endorsement = {
   stars: 1 | 2 | 3 | 4 | 5;
   week_key: string;
   note: string | null;
+  /** Optional result photo from a job/task review. */
+  photo_url: string | null;
+  /** Job/task label this review refers to. */
+  work_label: string | null;
   created_at: string;
 };
 
@@ -309,6 +313,8 @@ export type Message = {
   service_order_id: string | null;
   channel: MessageChannel;
   attachment_url: string | null;
+  /** When set, only these profiles see the message. Null/absent = whole org. */
+  audience_profile_ids?: string[] | null;
 };
 
 export type TaskWithRelations = Task & {

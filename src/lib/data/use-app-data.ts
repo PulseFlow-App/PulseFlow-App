@@ -319,6 +319,7 @@ function useDemoData(): AppData {
         ...m,
         channel: m.channel ?? "general",
         attachment_url: m.attachment_url ?? null,
+        audience_profile_ids: m.audience_profile_ids ?? null,
         sender: orgProfiles.find((p) => p.id === m.sender_id) ?? null,
       }));
   }, [store.messages, store.orgs, profile, orgProfiles, allOrgOrders]);
@@ -1133,6 +1134,7 @@ function useDemoData(): AppData {
             service_order_id: null,
             channel,
             attachment_url: attachmentUrl,
+            audience_profile_ids: null,
           },
         ],
       }));
@@ -1222,10 +1224,10 @@ function useDemoData(): AppData {
       if (!profile) throw new Error("Not signed in.");
       demoSetVillaAssignees(profile, villaId, profileIds);
     },
-    castEndorsement: async (toProfileId, stars, note) => {
+    castEndorsement: async (toProfileId, stars, note, options) => {
       assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
-      demoCastEndorsement(profile, toProfileId, stars, note);
+      demoCastEndorsement(profile, toProfileId, stars, note, options);
     },
     sendSupportMessage: async (body, stayId, options) => {
       assertDemoWritable();

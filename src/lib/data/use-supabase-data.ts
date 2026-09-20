@@ -536,11 +536,18 @@ export function useSupabaseData(enabled: boolean): AppData {
         ...m,
         channel: m.channel ?? "general",
         attachment_url: m.attachment_url ?? null,
+        audience_profile_ids: m.audience_profile_ids ?? null,
       })),
     );
     setInvites((invitesRes.data as Invite[]) ?? []);
     setVillaAssignments((assignRes.data as VillaAssignment[]) ?? []);
-    setEndorsements((endorsementsRes.data as Endorsement[]) ?? []);
+    setEndorsements(
+      ((endorsementsRes.data as Endorsement[]) ?? []).map((e) => ({
+        ...e,
+        photo_url: e.photo_url ?? null,
+        work_label: e.work_label ?? null,
+      })),
+    );
     setNotifications(
       ((notificationsRes.data as AppNotification[]) ?? []).map((n) => ({
         ...n,
@@ -2387,11 +2394,14 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       await refresh();
     },
-    castEndorsement: async (toProfileId, stars, note) => {
+    castEndorsement: async (toProfileId, stars, note, options) => {
       if (!profile) throw new Error("Not signed in.");
       requireCurrentOrgWrite();
       const supabase = createClient();
       const week_key = weekKey();
+      const photoUrl = options?.photoUrl?.trim() || null;
+      const workLabel = options?.workLabel?.trim() || null;
+      const noteText = note?.trim() || null;
       const { error } = await supabase.from("endorsements").upsert(
         {
           org_id: profile.org_id,
@@ -2399,11 +2409,37 @@ export function useSupabaseData(enabled: boolean): AppData {
           to_profile_id: toProfileId,
           stars,
           week_key,
-          note: note?.trim() || null,
+          note: noteText,
+          photo_url: photoUrl,
+          work_label: workLabel,
         },
         { onConflict: "org_id,from_profile_id,to_profile_id,week_key" },
       );
       if (error) throw error;
+
+      const target = profiles.find((p) => p.id === toProfileId);
+      const mention = target?.full_name?.trim().split(/\s+/)[0] || "teammate";
+      const chatLines = [
+        `⭐ ${profile.full_name} reviewed @${mention} · ${stars}★`,
+      ];
+      if (workLabel) chatLines.push(`Job: ${workLabel}`);
+      if (noteText) chatLines.push(`Note: ${noteText}`);
+      const audience = [
+        ...new Set([
+          toProfileId,
+          profile.id,
+          ...ownerManagerIds(profiles, profile.org_id),
+        ]),
+      ];
+      await supabase.from("messages").insert({
+        org_id: profile.org_id,
+        sender_id: profile.id,
+        body: chatLines.join("\n"),
+        channel: photoUrl ? "photo" : "request",
+        attachment_url: photoUrl,
+        audience_profile_ids: audience,
+      });
+
       if (toProfileId !== profile.id) {
         await insertNotifications(supabase, [
           toInsertRow(
@@ -2413,7 +2449,7 @@ export function useSupabaseData(enabled: boolean): AppData {
               fromName: profile.full_name,
               toProfileId,
               stars,
-              note,
+              note: noteText,
               weekKey: week_key,
             }),
           ),

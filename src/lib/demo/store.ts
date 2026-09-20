@@ -36,6 +36,7 @@ import type {
   DemoAccount,
   Endorsement,
   Invite,
+  Message,
   Organization,
   OrgMembership,
   Profile,
@@ -56,7 +57,7 @@ import {
   isChatBadgeNotification,
   ownerManagerIds,
 } from "@/lib/notifications";
-import { buildOrderChatBody, canCancelServiceOrder, canAgreeServiceOrder, canRevokeServiceOrderAgreement, canReopenServiceOrder, formatOrderAtWhen, formatOrderMeta, formatOrderWhen, parseCancelJobCommand, resolveCancelJobTarget } from "@/lib/service-orders";
+import { buildOrderChatBody, canCancelServiceOrder, canAgreeServiceOrder, canRevokeServiceOrderAgreement, canReopenServiceOrder, formatOrderAtWhen, formatOrderMeta, formatOrderWhen, mentionLabel, parseCancelJobCommand, resolveCancelJobTarget } from "@/lib/service-orders";
 import { capitalizeLabel } from "@/lib/format-label";
 import { dateDrivenVillaPatch } from "@/lib/villas/status-from-dates";
 import { normalizeVillaRow } from "@/lib/villas/property-details";
@@ -278,6 +279,7 @@ function normalizeStore(store: DemoStore): DemoStore {
       service_order_id: m.service_order_id ?? null,
       channel: m.channel ?? "general",
       attachment_url: m.attachment_url ?? null,
+      audience_profile_ids: m.audience_profile_ids ?? null,
     })),
     notifications: [
       ...fresh.notifications,
@@ -788,6 +790,7 @@ export function demoCastEndorsement(
   toProfileId: string,
   stars: 1 | 2 | 3 | 4 | 5,
   note?: string,
+  options?: { photoUrl?: string | null; workLabel?: string | null },
 ): Endorsement {
   if (actor.role !== "owner" && actor.role !== "manager") {
     throw new Error("Only owners and managers can cast weekly endorsements.");
@@ -809,6 +812,11 @@ export function demoCastEndorsement(
     throw new Error("You already endorsed this person this week.");
   }
 
+  const photoUrl = options?.photoUrl?.trim() || null;
+  const workLabel = options?.workLabel?.trim() || null;
+  const noteText = note?.trim() || null;
+  const now = new Date().toISOString();
+
   const endorsement: Endorsement = {
     id: crypto.randomUUID(),
     org_id: actor.org_id,
@@ -816,13 +824,40 @@ export function demoCastEndorsement(
     to_profile_id: toProfileId,
     stars,
     week_key: key,
-    note: note?.trim() || null,
-    created_at: new Date().toISOString(),
+    note: noteText,
+    photo_url: photoUrl,
+    work_label: workLabel,
+    created_at: now,
+  };
+
+  const chatLines = [
+    `⭐ ${actor.full_name} reviewed ${mentionLabel(target.full_name)} · ${stars}★`,
+  ];
+  if (workLabel) chatLines.push(`Job: ${workLabel}`);
+  if (noteText) chatLines.push(`Note: ${noteText}`);
+  const audience = [
+    ...new Set([
+      toProfileId,
+      actor.id,
+      ...ownerManagerIds(store.profiles, actor.org_id),
+    ]),
+  ];
+  const chatMsg = {
+    id: crypto.randomUUID(),
+    org_id: actor.org_id,
+    sender_id: actor.id,
+    body: chatLines.join("\n"),
+    created_at: now,
+    service_order_id: null as string | null,
+    channel: (photoUrl ? "photo" : "request") as Message["channel"],
+    attachment_url: photoUrl,
+    audience_profile_ids: audience,
   };
 
   updateDemoStore((s) => ({
     ...s,
     endorsements: [endorsement, ...s.endorsements],
+    messages: [...s.messages, chatMsg],
   }));
 
   demoPushNotifications([
@@ -832,7 +867,7 @@ export function demoCastEndorsement(
       fromName: actor.full_name,
       toProfileId,
       stars,
-      note,
+      note: noteText,
       weekKey: key,
     }),
   ]);

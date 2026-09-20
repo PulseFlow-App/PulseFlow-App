@@ -288,6 +288,7 @@ const ar: Dictionary = {
   "tasks.reviewOfferOptional": "Optional — you can skip.",
   "tasks.reviewOfferJobNote": "Note about this job (optional)",
   "tasks.reviewOfferJobNotePlaceholder": "How did this job or task go?",
+  "tasks.reviewOfferAddPhoto": "Add result photo",
   "jobs.titleStaff": "مهماتي",
   "jobs.titleOwner": "الحجوزات",
   "jobs.subtitleStaff": "نوافذ العمل حسب العقار - وليس أوقات تسجيل وصول الضيف",

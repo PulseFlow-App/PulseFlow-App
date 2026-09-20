@@ -265,7 +265,7 @@ export function buildEndorsementReceivedNotification(input: {
     kind: "endorsement",
     title: "New endorsement",
     body,
-    href: "/endorsements",
+    href: "/messages?channel=request",
     entity_id: input.toProfileId,
     audience_profile_ids: [input.toProfileId],
     dedupe_key: `endorsement_received:${input.org_id}:${input.fromProfileId}:${input.toProfileId}:${input.weekKey}`,

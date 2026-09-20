@@ -308,6 +308,7 @@ const en = {
   "tasks.reviewOfferJobNote": "Note about this job (optional)",
   "tasks.reviewOfferJobNotePlaceholder":
     "How did this job or task go?",
+  "tasks.reviewOfferAddPhoto": "Add result photo",
 
   "jobs.titleStaff": "My jobs",
   "jobs.titleOwner": "Bookings",

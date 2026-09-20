@@ -254,6 +254,7 @@ const it: Dictionary = {
   "tasks.reviewOfferOptional": "Optional — you can skip.",
   "tasks.reviewOfferJobNote": "Note about this job (optional)",
   "tasks.reviewOfferJobNotePlaceholder": "How did this job or task go?",
+  "tasks.reviewOfferAddPhoto": "Add result photo",
   "jobs.titleStaff": "I miei lavori",
   "jobs.titleOwner": "Prenotazioni",
   "jobs.subtitleStaff": "Fasce orarie per property - non check-in ospiti",
