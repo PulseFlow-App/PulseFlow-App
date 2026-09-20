@@ -741,6 +741,8 @@ export function useSupabaseData(enabled: boolean): AppData {
       "notifications",
       "support_messages",
       "guest_briefings",
+      "tasks",
+      "bills",
     ] as const;
 
     let channel = supabase.channel(topic);
@@ -766,6 +768,24 @@ export function useSupabaseData(enabled: boolean): AppData {
       void supabase.removeChannel(channel);
     };
   }, [enabled, profile?.org_id, realtimeOrgKey]);
+
+  useEffect(() => {
+    if (!enabled || !profile?.org_id) return;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void refreshRef.current();
+      }
+    };
+    const onFocus = () => {
+      void refreshRef.current();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [enabled, profile?.org_id]);
 
   const companyEntitled = useMemo(
     () => isCompanyEntitled(organization),
