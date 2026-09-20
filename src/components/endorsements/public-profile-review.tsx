@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { StarsPicker } from "@/components/endorsements/stars";
 import { Button } from "@/components/ui/button";
 import { Label, Textarea } from "@/components/ui/input";
@@ -32,6 +33,7 @@ function PublicProfileReviewFormInner({
 }) {
   const data = useData();
   const { t } = useI18n();
+  const router = useRouter();
   const [stars, setStars] = useState<1 | 2 | 3 | 4 | 5>(5);
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +58,13 @@ function PublicProfileReviewFormInner({
     );
   }, [data.endorsements, data.profile, toProfileId, currentWeek]);
 
-  if (!data.ready) return null;
+  if (!data.ready) {
+    return (
+      <div className="rounded-2xl border border-primary/20 bg-primary-soft/60 p-4 text-sm text-muted">
+        {t("common.loading")}
+      </div>
+    );
+  }
 
   if (!data.profile) {
     return (
@@ -69,7 +77,13 @@ function PublicProfileReviewFormInner({
     );
   }
 
-  if (!canReview) return null;
+  if (!canReview) {
+    return (
+      <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3 text-sm text-muted">
+        {t("publicProfile.reviewNotAllowed")}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3 rounded-2xl border border-primary/20 bg-primary-soft/60 p-4">
@@ -78,6 +92,7 @@ function PublicProfileReviewFormInner({
           {t("contacts.reviewTitle", { name: toName })}
         </h2>
         <p className="mt-0.5 text-sm text-muted">{t("contacts.reviewHint")}</p>
+        <p className="mt-1 text-xs text-muted">{t("tasks.reviewOfferOptional")}</p>
       </div>
       {alreadyDone || ok ? (
         <p className="text-sm font-semibold text-secondary">
@@ -85,7 +100,12 @@ function PublicProfileReviewFormInner({
         </p>
       ) : (
         <>
-          <StarsPicker value={stars} onChange={setStars} />
+          <div>
+            <Label>{t("contacts.reviewStars")}</Label>
+            <div className="mt-1">
+              <StarsPicker value={stars} onChange={setStars} />
+            </div>
+          </div>
           <div>
             <Label>{t("contacts.reviewNote")}</Label>
             <Textarea
@@ -99,25 +119,39 @@ function PublicProfileReviewFormInner({
       )}
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       {!alreadyDone && !ok ? (
-        <Button
-          className="w-full"
-          disabled={saving}
-          onClick={() => {
-            setSaving(true);
-            setError(null);
-            void data
-              .castEndorsement(toProfileId, stars, note)
-              .then(() => setOk(t("contacts.reviewSaved")))
-              .catch((e: unknown) =>
-                setError(e instanceof Error ? e.message : t("common.error")),
-              )
-              .finally(() => setSaving(false));
-          }}
-        >
-          {saving
-            ? t("common.loading")
-            : t("contacts.reviewSubmit", { stars })}
-        </Button>
+        <div className="flex flex-col gap-2">
+          <Button
+            className="w-full"
+            disabled={saving}
+            onClick={() => {
+              setSaving(true);
+              setError(null);
+              void data
+                .castEndorsement(toProfileId, stars, note)
+                .then(() => {
+                  setOk(t("contacts.reviewSaved"));
+                  window.setTimeout(() => router.back(), 600);
+                })
+                .catch((e: unknown) =>
+                  setError(e instanceof Error ? e.message : t("common.error")),
+                )
+                .finally(() => setSaving(false));
+            }}
+          >
+            {saving
+              ? t("common.loading")
+              : t("contacts.reviewSubmit", { stars })}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            disabled={saving}
+            onClick={() => router.back()}
+          >
+            {t("tasks.reviewOfferNo")}
+          </Button>
+        </div>
       ) : null}
     </div>
   );

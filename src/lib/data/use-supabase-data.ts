@@ -1472,13 +1472,32 @@ export function useSupabaseData(enabled: boolean): AppData {
         .eq("id", orderId);
       if (error) throw error;
       if (order.task_id) {
-        await supabase
-          .from("tasks")
-          .update({
-            status: "done",
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", order.task_id);
+        const needsOwnerConfirm =
+          profile.id !== order.ordered_by &&
+          (profile.role === "cleaner" ||
+            profile.role === "staff" ||
+            profile.role === "manager");
+        if (needsOwnerConfirm) {
+          await supabase
+            .from("tasks")
+            .update({
+              status: "pending_verify",
+              completed_at: null,
+              verify_notes: null,
+              verify_photo_url: null,
+              verify_submitted_by: profile.id,
+              verify_submitted_at: new Date().toISOString(),
+            })
+            .eq("id", order.task_id);
+        } else {
+          await supabase
+            .from("tasks")
+            .update({
+              status: "done",
+              completed_at: new Date().toISOString(),
+            })
+            .eq("id", order.task_id);
+        }
       }
 
       const location = order.location_label ?? "location";
@@ -1501,7 +1520,7 @@ export function useSupabaseData(enabled: boolean): AppData {
             kind: "appointment",
             title: `${profile.full_name} completed a job`,
             body: formatOrderMeta(order.service_type, location, when),
-            href: "/jobs",
+            href: "/tasks",
             entity_id: orderId,
             audience_profile_ids: audience,
           },

@@ -2,13 +2,15 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Star, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label, Select } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { AgreeButton } from "@/components/jobs/agree-button";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
+import { writeStoredReviewOffer } from "@/components/tasks/review-offer-banner";
 import { useData } from "@/lib/data/use-app-data";
 import {
   canCancelServiceOrder,
@@ -20,12 +22,15 @@ import {
 import {
   isStaffApp,
   canBookServices,
+  canCastEndorsement,
   taskAssignableProfiles,
 } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { TaskRow } from "@/components/tasks/task-row";
+import { reviewOfferHref } from "@/lib/tasks/review-offer";
+import { weekKey } from "@/lib/endorsements";
 import type { MessageKey } from "@/lib/i18n";
 
 function CancelOrderButton({ orderId }: { orderId: string }) {
@@ -162,10 +167,29 @@ function ReopenOrderPanel({ orderId }: { orderId: string }) {
 export default function JobsPage() {
   const data = useData();
   const { t } = useI18n();
+  const router = useRouter();
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
   const booker = data.profile
     ? canBookServices(data.profile.role, data.orgKind)
     : false;
+  const canReviewPeople = data.profile
+    ? canCastEndorsement(data.profile.role, data.orgKind)
+    : false;
+  const currentWeek = weekKey();
+
+  const reviewedThisWeek = useMemo(() => {
+    if (!data.profile) return new Set<string>();
+    return new Set(
+      data.endorsements
+        .filter(
+          (e) =>
+            e.org_id === data.profile!.org_id &&
+            e.from_profile_id === data.profile!.id &&
+            e.week_key === currentWeek,
+        )
+        .map((e) => e.to_profile_id),
+    );
+  }, [data.endorsements, data.profile, currentWeek]);
 
   const villaPhotoById = useMemo(() => {
     const map = new Map<string, string | null>();
@@ -185,14 +209,28 @@ export default function JobsPage() {
           (!o.staff_profile_id && o.status === "pending_ack")
         );
       }
-      return o.status !== "done";
+      if (o.status === "done") {
+        return Boolean(
+          canReviewPeople &&
+            o.staff_profile_id &&
+            o.staff_profile_id !== data.profile!.id &&
+            !reviewedThisWeek.has(o.staff_profile_id),
+        );
+      }
+      return true;
     });
     return [...list].sort((a, b) => {
       const da = `${a.scheduled_date ?? ""}${a.time_start ?? ""}`;
       const db = `${b.scheduled_date ?? ""}${b.time_start ?? ""}`;
       return da.localeCompare(db);
     });
-  }, [data.serviceOrders, data.profile, staff]);
+  }, [
+    data.serviceOrders,
+    data.profile,
+    staff,
+    canReviewPeople,
+    reviewedThisWeek,
+  ]);
 
   const myTasks = useMemo(() => {
     if (!data.profile) return [];
@@ -317,6 +355,42 @@ export default function JobsPage() {
                       onClick={() => void data.completeServiceOrder(order.id)}
                     >
                       {t("jobs.markDone")}
+                    </Button>
+                  ) : null}
+                  {!staff &&
+                  canReviewPeople &&
+                  order.status === "done" &&
+                  order.staff_profile_id &&
+                  order.staff_profile_id !== data.profile?.id &&
+                  !reviewedThisWeek.has(order.staff_profile_id) ? (
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        const doer =
+                          data.profiles.find(
+                            (p) => p.id === order.staff_profile_id,
+                          ) ??
+                          data.allProfiles.find(
+                            (p) => p.id === order.staff_profile_id,
+                          );
+                        const href = reviewOfferHref(
+                          doer,
+                          order.staff_profile_id!,
+                        );
+                        writeStoredReviewOffer(order.id, {
+                          name:
+                            doer?.full_name?.trim() ||
+                            staffName ||
+                            t("tasks.reviewOfferSomeone"),
+                          href,
+                        });
+                        router.push(href);
+                      }}
+                    >
+                      <Star className="size-4" />
+                      {t("contacts.review")}
+                      {staffName ? ` · ${staffName}` : ""}
                     </Button>
                   ) : null}
                   {!staff && canCancel ? (

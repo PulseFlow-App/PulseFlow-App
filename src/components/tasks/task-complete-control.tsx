@@ -61,6 +61,7 @@ export function TaskCompleteControl({
     window.setTimeout(() => setFlash(false), 700);
   };
 
+  /** Optional review on the person who did the work — stars + optional note. */
   const openReviewForDoer = (doerId: string | null | undefined) => {
     if (
       !shouldOfferDoerReview({
@@ -79,8 +80,8 @@ export function TaskCompleteControl({
       name: doer?.full_name?.trim() || t("tasks.reviewOfferSomeone"),
       href,
     });
-    // Let the tick flash, then open the review page.
-    window.setTimeout(() => router.push(href), 350);
+    // Navigate right away so the review page opens even if this row unmounts.
+    router.push(href);
     return true;
   };
 
@@ -114,60 +115,65 @@ export function TaskCompleteControl({
   };
 
   const tick = (
-    <button
-      type="button"
-      className={cn(
-        "relative mt-0.5 size-5 shrink-0 rounded-full border-2 border-secondary transition",
-        task.status === "done" && "border-0 bg-secondary text-white",
-        task.status === "pending_verify" && "border-warning bg-warning/20",
-        flash && "scale-125 border-0 bg-secondary text-white shadow-[0_0_0_6px_rgba(45,122,94,0.25)]",
-        busy && "opacity-60",
-      )}
-      aria-label={
-        task.status === "done"
-          ? t("tasks.reopen")
-          : task.status === "pending_verify"
-            ? t("tasks.verifyApprove")
-            : t("tasks.markDone")
-      }
-      disabled={
-        busy ||
-        (task.status === "done" && !canReopen) ||
-        (task.status === "pending_verify" && !canApprove)
-      }
-      onClick={() => {
-        if (task.status === "done") {
-          if (!canReopen) return;
-          void run(() => data.setTaskStatus(task.id, "open"));
-          return;
+    <span className="relative mt-0.5 inline-flex size-5 shrink-0 items-center justify-center">
+      <button
+        type="button"
+        className={cn(
+          "relative size-5 rounded-full border-2 border-secondary transition",
+          task.status === "done" && "border-0 bg-secondary text-white",
+          task.status === "pending_verify" && "border-warning bg-warning/20",
+          flash &&
+            "border-0 bg-secondary text-white ring-4 ring-secondary/25",
+          busy && "opacity-60",
+        )}
+        aria-label={
+          task.status === "done"
+            ? t("tasks.reopen")
+            : task.status === "pending_verify"
+              ? t("tasks.verifyApprove")
+              : t("tasks.markDone")
         }
-        if (task.status === "pending_verify") {
-          if (!canApprove) return;
-          void run(() => approveAndMaybeReview());
-          return;
+        disabled={
+          busy ||
+          (task.status === "done" && !canReopen) ||
+          (task.status === "pending_verify" && !canApprove)
         }
-        if (direct) {
-          void run(async () => {
-            await data.setTaskStatus(task.id, "done");
-            celebrate();
-          });
-          return;
-        }
-        if (canSubmit) setExpanded(true);
-      }}
-    >
-      {(task.status === "done" || flash) && (
-        <Check className="absolute inset-0 m-auto size-3" strokeWidth={3} />
-      )}
-    </button>
+        onClick={() => {
+          if (task.status === "done") {
+            if (!canReopen) return;
+            void run(() => data.setTaskStatus(task.id, "open"));
+            return;
+          }
+          if (task.status === "pending_verify") {
+            if (!canApprove) return;
+            void run(() => approveAndMaybeReview());
+            return;
+          }
+          if (direct) {
+            void run(async () => {
+              const doerId = task.assigned_to;
+              await data.setTaskStatus(task.id, "done");
+              celebrate();
+              openReviewForDoer(doerId);
+            });
+            return;
+          }
+          if (canSubmit) setExpanded(true);
+        }}
+      >
+        {(task.status === "done" || flash) && (
+          <Check className="absolute inset-0 m-auto size-3" strokeWidth={3} />
+        )}
+      </button>
+    </span>
   );
 
   return (
-    <div className="min-w-0 flex-1 space-y-2">
-      <div className="flex items-start gap-3">
+    <div className="min-w-0 flex-1 space-y-2 overflow-hidden">
+      <div className="flex min-w-0 items-start gap-3">
         {tick}
         <div className="min-w-0 flex-1">{meta}</div>
-        {trailing}
+        {trailing ? <div className="shrink-0">{trailing}</div> : null}
       </div>
 
       {flash && task.status !== "pending_verify" ? (

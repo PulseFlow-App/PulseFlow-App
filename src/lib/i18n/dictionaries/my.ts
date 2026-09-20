@@ -251,6 +251,7 @@ const my: Dictionary = {
   "tasks.reviewOfferYes": "Leave a review",
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
+  "tasks.reviewOfferOptional": "Optional — you can skip.",
   "jobs.titleStaff": "ကျွန်ုပ်၏အလုပ်များ",
   "jobs.titleOwner": "ဘွတ်ကင်များ",
   "jobs.subtitleStaff": "ဗီလာအလိုက် အလုပ်ချိန် - ဧည့်သည် check-in မဟုတ်",
@@ -306,6 +307,7 @@ const my: Dictionary = {
   "contacts.review": "Review",
   "contacts.reviewTitle": "Review {name}",
   "contacts.reviewHint": "Weekly stars for their public reputation. One review per person per week.",
+  "contacts.reviewStars": "Stars",
   "contacts.reviewNote": "Note (optional)",
   "contacts.reviewNotePlaceholder": "What stood out?",
   "contacts.reviewSubmit": "Submit {stars}-star review",
@@ -1128,6 +1130,7 @@ const my: Dictionary = {
   "publicProfile.tasksOpen": "Open tasks",
   "publicProfile.back": "Back",
   "publicProfile.reviewSignIn": "Sign in to leave a review.",
+  "publicProfile.reviewNotAllowed": "Only owners and managers can leave weekly reviews in a company workspace.",
 
   "brand.name": "Pulse Flow",
   "settings.translateContent": "အဖွဲ့အကြောင်းအရာ ဘာသာပြန်ရန်",

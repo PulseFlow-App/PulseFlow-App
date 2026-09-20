@@ -251,6 +251,7 @@ const ru: Dictionary = {
   "tasks.reviewOfferYes": "Leave a review",
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
+  "tasks.reviewOfferOptional": "Optional — you can skip.",
   "jobs.titleStaff": "Мои работы",
   "jobs.titleOwner": "Заказы",
   "jobs.subtitleStaff": "Окна работы по виллам - не заезд гостей",
@@ -306,6 +307,7 @@ const ru: Dictionary = {
   "contacts.review": "Отзыв",
   "contacts.reviewTitle": "Review {name}",
   "contacts.reviewHint": "Weekly stars for their public reputation. One review per person per week.",
+  "contacts.reviewStars": "Stars",
   "contacts.reviewNote": "Note (optional)",
   "contacts.reviewNotePlaceholder": "What stood out?",
   "contacts.reviewSubmit": "Отправить {stars} ★",
@@ -1129,6 +1131,7 @@ const ru: Dictionary = {
   "publicProfile.tasksOpen": "Открытых задач",
   "publicProfile.back": "Назад",
   "publicProfile.reviewSignIn": "Sign in to leave a review.",
+  "publicProfile.reviewNotAllowed": "Only owners and managers can leave weekly reviews in a company workspace.",
 
   "brand.name": "Pulse Flow",
   "settings.translateContent": "Переводить контент команды",

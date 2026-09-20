@@ -45,10 +45,9 @@ export function TaskRow({
               <div className="min-w-0 flex-1 space-y-0.5">
                 <p
                   className={cn(
-                    "font-semibold text-ink",
+                    "font-semibold text-ink break-words",
                     doneStyle && "text-sm line-through opacity-70",
-                    !expanded && "truncate",
-                    expanded && "whitespace-normal break-words",
+                    !expanded && "line-clamp-2",
                   )}
                 >
                   <LocalizedText text={task.title} />

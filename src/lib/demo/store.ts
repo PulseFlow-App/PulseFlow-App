@@ -1163,15 +1163,31 @@ export function demoCompleteServiceOrder(actor: Profile, orderId: string) {
     serviceOrders: s.serviceOrders.map((o) =>
       o.id === orderId ? { ...o, status: "done" as const } : o,
     ),
-    tasks: s.tasks.map((t) =>
-      t.id === order.task_id
-        ? {
-            ...t,
-            status: "done" as const,
-            completed_at: now,
-          }
-        : t,
-    ),
+    tasks: s.tasks.map((t) => {
+      if (t.id !== order.task_id) return t;
+      // Staff finishing a booked job → owner/manager confirms, then optional review.
+      const needsOwnerConfirm =
+        actor.id !== order.ordered_by &&
+        (actor.role === "cleaner" ||
+          actor.role === "staff" ||
+          actor.role === "manager");
+      if (needsOwnerConfirm) {
+        return {
+          ...t,
+          status: "pending_verify" as const,
+          completed_at: null,
+          verify_notes: null,
+          verify_photo_url: null,
+          verify_submitted_by: actor.id,
+          verify_submitted_at: now,
+        };
+      }
+      return {
+        ...t,
+        status: "done" as const,
+        completed_at: now,
+      };
+    }),
     messages: [...s.messages, doneMsg],
     notifications: [
       ...(audience.length
@@ -1185,7 +1201,7 @@ export function demoCompleteServiceOrder(actor: Profile, orderId: string) {
                 order.location_label ?? "location",
                 formatOrderWhen(order),
               ),
-              href: "/jobs",
+              href: "/tasks",
               entity_id: orderId,
               audience_profile_ids: audience,
             }),

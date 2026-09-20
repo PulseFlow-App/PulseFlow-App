@@ -76,6 +76,7 @@ const ar: Dictionary = {
   "publicProfile.tasksOpen": "Open tasks",
   "publicProfile.back": "Back",
   "publicProfile.reviewSignIn": "Sign in to leave a review.",
+  "publicProfile.reviewNotAllowed": "Only owners and managers can leave weekly reviews in a company workspace.",
 
   "brand.name": "Pulse Flow",
   "brand.tagline": "نبض عمليات التأجير الخاصة بك",
@@ -284,6 +285,7 @@ const ar: Dictionary = {
   "tasks.reviewOfferYes": "Leave a review",
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
+  "tasks.reviewOfferOptional": "Optional — you can skip.",
   "jobs.titleStaff": "مهماتي",
   "jobs.titleOwner": "الحجوزات",
   "jobs.subtitleStaff": "نوافذ العمل حسب العقار - وليس أوقات تسجيل وصول الضيف",
@@ -339,6 +341,7 @@ const ar: Dictionary = {
   "contacts.review": "المراجعة",
   "contacts.reviewTitle": "مراجعة {name}",
   "contacts.reviewHint": "النجوم الأسبوعية لسمعتهم العامة. مراجعة واحدة لكل شخص في الأسبوع.",
+  "contacts.reviewStars": "Stars",
   "contacts.reviewNote": "Note (optional)",
   "contacts.reviewNotePlaceholder": "What stood out?",
   "contacts.reviewSubmit": "Submit {stars}-star review",

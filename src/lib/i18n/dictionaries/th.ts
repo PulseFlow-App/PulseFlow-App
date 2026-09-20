@@ -250,6 +250,7 @@ const th: Dictionary = {
   "tasks.reviewOfferYes": "Leave a review",
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
+  "tasks.reviewOfferOptional": "Optional — you can skip.",
   "jobs.titleStaff": "งานของฉัน",
   "jobs.titleOwner": "การจองบริการ",
   "jobs.subtitleStaff": "ช่วงเวลาทำงานตามวิลล่า - ไม่ใช่เวลาเช็คอินแขก",
@@ -305,6 +306,7 @@ const th: Dictionary = {
   "contacts.review": "รีวิว",
   "contacts.reviewTitle": "Review {name}",
   "contacts.reviewHint": "Weekly stars for their public reputation. One review per person per week.",
+  "contacts.reviewStars": "Stars",
   "contacts.reviewNote": "Note (optional)",
   "contacts.reviewNotePlaceholder": "What stood out?",
   "contacts.reviewSubmit": "ส่งรีวิว {stars} ดาว",
@@ -1127,6 +1129,7 @@ const th: Dictionary = {
   "publicProfile.tasksOpen": "Open tasks",
   "publicProfile.back": "Back",
   "publicProfile.reviewSignIn": "Sign in to leave a review.",
+  "publicProfile.reviewNotAllowed": "Only owners and managers can leave weekly reviews in a company workspace.",
 
   "brand.name": "Pulse Flow",
   "settings.translateContent": "แปลเนื้อหาของทีม",

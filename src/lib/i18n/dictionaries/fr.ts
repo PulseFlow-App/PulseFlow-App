@@ -254,6 +254,7 @@ const fr: Dictionary = {
   "tasks.reviewOfferYes": "Leave a review",
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
+  "tasks.reviewOfferOptional": "Optional — you can skip.",
   "jobs.titleStaff": "Mes missions",
   "jobs.titleOwner": "Réservations",
   "jobs.subtitleStaff": "Créneaux par property - pas les arrivées clients",
@@ -309,6 +310,7 @@ const fr: Dictionary = {
   "contacts.review": "Avis",
   "contacts.reviewTitle": "Commentaire {name}",
   "contacts.reviewHint": "Les stars de la semaine pour leur réputation publique. Un avis par personne et par semaine.",
+  "contacts.reviewStars": "Stars",
   "contacts.reviewNote": "Note (facultative)",
   "contacts.reviewNotePlaceholder": "Qu'est-ce qui vous a le plus marqué ?",
   "contacts.reviewSubmit": "Envoyer {stars} étoiles",
@@ -1131,6 +1133,7 @@ const fr: Dictionary = {
   "publicProfile.tasksOpen": "Open tasks",
   "publicProfile.back": "Back",
   "publicProfile.reviewSignIn": "Sign in to leave a review.",
+  "publicProfile.reviewNotAllowed": "Only owners and managers can leave weekly reviews in a company workspace.",
 
   "brand.name": "Pulse Flow",
   "settings.translateContent": "Traduire le contenu de l'équipe",

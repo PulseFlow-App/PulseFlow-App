@@ -249,6 +249,7 @@ const he: Dictionary = {
   "tasks.reviewOfferYes": "Leave a review",
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
+  "tasks.reviewOfferOptional": "Optional — you can skip.",
   "jobs.titleStaff": "העבודות שלי",
   "jobs.titleOwner": "הזמנות",
   "jobs.subtitleStaff": "חלונות עבודה לפי וילה - לא צ׳ק־אין אורחים",
@@ -304,6 +305,7 @@ const he: Dictionary = {
   "contacts.review": "ביקורת",
   "contacts.reviewTitle": "Review {name}",
   "contacts.reviewHint": "Weekly stars for their public reputation. One review per person per week.",
+  "contacts.reviewStars": "Stars",
   "contacts.reviewNote": "Note (optional)",
   "contacts.reviewNotePlaceholder": "What stood out?",
   "contacts.reviewSubmit": "שלח ביקורת {stars} כוכבים",
@@ -1126,6 +1128,7 @@ const he: Dictionary = {
   "publicProfile.tasksOpen": "Open tasks",
   "publicProfile.back": "Back",
   "publicProfile.reviewSignIn": "Sign in to leave a review.",
+  "publicProfile.reviewNotAllowed": "Only owners and managers can leave weekly reviews in a company workspace.",
 
   "brand.name": "Pulse Flow",
   "settings.translateContent": "תרגום תוכן הצוות",
