@@ -108,8 +108,8 @@ export const heLocalePatch: Partial<Dictionary> = {
   "demo.sys.villaFallback": "וילה",
 
   "demo.orderChat.header": "📋 הזמנת שירות עבור {name}",
-  "demo.orderChat.assignedLine": "{mention} שובץ ל־{job}. נקרא ואושר?",
-  "demo.orderChat.openLine": "עבודה: {job}. נקרא ואושר?",
+  "demo.orderChat.assignedLine": "{mention} שובץ ל־{job}.",
+  "demo.orderChat.openLine": "עבודה: {job}.",
   "demo.sys.cancelledMsg": "בוטל – {service} ב־{location} ({when})",
   "demo.sys.declinedMsg": "נדחה – {service} ב־{location} ({when})",
   "demo.sys.revokeMsg": "↩️ ההסכמה בוטלה – {service} ב־{location} ({when})",

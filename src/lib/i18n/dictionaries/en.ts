@@ -276,6 +276,8 @@ const en = {
     "One photo of what to do. More photos can go in chat after they agree.",
   "tasks.addPhoto": "Add photo",
   "tasks.hasPhoto": "Has photo",
+  "tasks.noNotes": "No notes on this task.",
+  "tasks.closedFlash": "Done ✓",
   "tasks.open": "Open",
   "tasks.done": "Done",
   "tasks.noOpen": "No open tasks",
@@ -318,7 +320,10 @@ const en = {
   "jobs.tipStaff":
     "Guest check-in times live with the owner - you only need your work window.",
   "jobs.agreed": "You agreed to this job",
+  "jobs.agreedBy": "Agreed by {name}",
   "jobs.readAgreed": "Read and agreed",
+  "jobs.readAgreedAsk": "Read and agreed?",
+  "jobs.awaitingAgreement": "Waiting for them to agree",
   "jobs.decline": "Decline job",
   "jobs.cancelAgreement": "Cancel agreement",
   "jobs.cancelAgreementHint":
@@ -762,8 +767,8 @@ const en = {
 
   "demo.orderChat.header": "📋 Service order for {name}",
   "demo.orderChat.assignedLine":
-    "{mention} was assigned to {job}. Read and agreed?",
-  "demo.orderChat.openLine": "Job: {job}. Read and agreed?",
+    "{mention} was assigned to {job}.",
+  "demo.orderChat.openLine": "Job: {job}.",
   "demo.orderChat.what": "What: {serviceType}",
   "demo.orderChat.where": "Where: {location}",
   "demo.orderChat.when": "When: {when}",
@@ -798,6 +803,7 @@ const en = {
     "Link a Pulse Flow user to Order in-app; call others",
   "contacts.whatsapp": "WhatsApp",
   "contacts.line": "LINE",
+  "contacts.telegram": "Telegram",
 
   "endorsements.title": "Endorsements",
   "endorsements.subtitle": "weekly reputation",

@@ -22,6 +22,7 @@ import {
   extraTasks,
   extraVillaAssignments,
 } from "./seed-enrichment";
+import { normalizeContactRow } from "@/lib/contacts/messengers";
 import {
   denseBills,
   denseGuestCharges,
@@ -55,7 +56,7 @@ import {
   isChatBadgeNotification,
   ownerManagerIds,
 } from "@/lib/notifications";
-import { buildOrderChatBody, canCancelServiceOrder, canAgreeServiceOrder, canRevokeServiceOrderAgreement, canReopenServiceOrder, formatOrderWhen, parseCancelJobCommand, resolveCancelJobTarget } from "@/lib/service-orders";
+import { buildOrderChatBody, canCancelServiceOrder, canAgreeServiceOrder, canRevokeServiceOrderAgreement, canReopenServiceOrder, formatOrderAtWhen, formatOrderMeta, formatOrderWhen, parseCancelJobCommand, resolveCancelJobTarget } from "@/lib/service-orders";
 import { capitalizeLabel } from "@/lib/format-label";
 import { dateDrivenVillaPatch } from "@/lib/villas/status-from-dates";
 import { normalizeVillaRow } from "@/lib/villas/property-details";
@@ -266,7 +267,8 @@ function normalizeStore(store: DemoStore): DemoStore {
       ...c,
       linked_profile_id: c.linked_profile_id ?? null,
       notes: plainDash(c.notes) ?? null,
-    })),
+      messengers: c.messengers ?? [],
+    })).map((c) => normalizeContactRow(c)),
     messages: [
       ...fresh.messages,
       ...store.messages.filter((m) => !seedMsgIds.has(m.id)),
@@ -1013,7 +1015,7 @@ export function demoCreateServiceOrder(
       scheduledDate,
       input.time_start ?? null,
       input.time_end ?? null,
-    ) ?? "Soon";
+    ) ?? "";
   const now = new Date().toISOString();
 
   const order: ServiceOrder = {
@@ -1091,7 +1093,7 @@ export function demoCreateServiceOrder(
         org_id: actor.org_id,
         kind: "appointment",
         title: `New job: ${order.service_type}`,
-        body: `${location} · ${when} - tap Read & agreed`,
+        body: `${formatOrderMeta(location, when)} - tap Read & agreed`,
         href: "/messages?channel=request",
         entity_id: orderId,
         audience_profile_ids: [contact.linked_profile_id!],
@@ -1143,9 +1145,10 @@ export function demoCompleteServiceOrder(actor: Profile, orderId: string) {
     id: crypto.randomUUID(),
     org_id: order.org_id,
     sender_id: actor.id,
-    body: `✅ Done - ${order.service_type} at ${
-      order.location_label ?? "location"
-    } (${formatOrderWhen(order)})`,
+    body: `✅ Done - ${order.service_type} ${formatOrderAtWhen(
+      order.location_label ?? "location",
+      order,
+    )}`,
     created_at: now,
     service_order_id: orderId,
     channel: "request" as const,
@@ -1177,9 +1180,11 @@ export function demoCompleteServiceOrder(actor: Profile, orderId: string) {
               org_id: order.org_id,
               kind: "appointment",
               title: `${actor.full_name} completed a job`,
-              body: `${order.service_type} · ${
-                order.location_label ?? "location"
-              } · ${formatOrderWhen(order)}`,
+              body: formatOrderMeta(
+                order.service_type,
+                order.location_label ?? "location",
+                formatOrderWhen(order),
+              ),
               href: "/jobs",
               entity_id: orderId,
               audience_profile_ids: audience,
@@ -1207,9 +1212,10 @@ export function demoAgreeServiceOrder(actor: Profile, orderId: string) {
     id: crypto.randomUUID(),
     org_id: order.org_id,
     sender_id: actor.id,
-    body: `✅ Read and agreed - ${order.service_type} at ${
-      order.location_label ?? "location"
-    } (${formatOrderWhen(order)})`,
+    body: `✅ Read and agreed - ${order.service_type} ${formatOrderAtWhen(
+      order.location_label ?? "location",
+      order,
+    )}`,
     created_at: now,
     service_order_id: orderId,
     channel: "request" as const,
@@ -1239,7 +1245,10 @@ export function demoAgreeServiceOrder(actor: Profile, orderId: string) {
               org_id: order.org_id,
               kind: "appointment",
               title: `${actor.full_name} agreed`,
-              body: `${order.service_type} · ${formatOrderWhen(order)}`,
+              body: formatOrderMeta(
+                order.service_type,
+                formatOrderWhen(order),
+              ),
               href: "/jobs",
               entity_id: orderId,
               audience_profile_ids: [order.ordered_by],
@@ -1270,7 +1279,7 @@ export function demoRevokeServiceOrderAgreement(actor: Profile, orderId: string)
     );
   }
   const now = new Date().toISOString();
-  const when = formatOrderWhen(order);
+  const atWhen = formatOrderAtWhen(order.location_label ?? "location", order);
   updateDemoStore((s) => ({
     ...s,
     serviceOrders: s.serviceOrders.map((o) =>
@@ -1284,9 +1293,7 @@ export function demoRevokeServiceOrderAgreement(actor: Profile, orderId: string)
         id: crypto.randomUUID(),
         org_id: order.org_id,
         sender_id: actor.id,
-        body: `↩️ Agreement cancelled - ${order.service_type} at ${
-          order.location_label ?? "location"
-        } (${when})`,
+        body: `↩️ Agreement cancelled - ${order.service_type} ${atWhen}`,
         created_at: now,
         service_order_id: orderId,
         channel: "request" as const,
@@ -1320,17 +1327,14 @@ export function demoCancelServiceOrder(
   const declined =
     order.staff_profile_id === actor.id && order.status === "pending_ack";
   const now = new Date().toISOString();
+  const atWhen = formatOrderAtWhen(order.location_label ?? "location", order);
   const chatMsg = {
     id: crypto.randomUUID(),
     org_id: order.org_id,
     sender_id: actor.id,
     body: declined
-      ? `Declined - ${order.service_type} at ${
-          order.location_label ?? "location"
-        } (${formatOrderWhen(order)})`
-      : `Cancelled - ${order.service_type} at ${
-          order.location_label ?? "location"
-        } (${formatOrderWhen(order)})`,
+      ? `Declined - ${order.service_type} ${atWhen}`
+      : `Cancelled - ${order.service_type} ${atWhen}`,
     created_at: now,
     service_order_id: orderId,
     channel: "request" as const,
@@ -1368,9 +1372,11 @@ export function demoCancelServiceOrder(
               org_id: order.org_id,
               kind: "appointment",
               title: declined ? "Job declined" : "Job cancelled",
-              body: `${order.service_type} · ${
-                order.location_label ?? "location"
-              } · ${formatOrderWhen(order)}`,
+              body: formatOrderMeta(
+                order.service_type,
+                order.location_label ?? "location",
+                formatOrderWhen(order),
+              ),
               href: "/jobs",
               entity_id: orderId,
               audience_profile_ids: uniqueAudience,

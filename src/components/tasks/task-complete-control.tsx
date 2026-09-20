@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Camera, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
@@ -32,12 +33,14 @@ export function TaskCompleteControl({
 }) {
   const data = useData();
   const { t } = useI18n();
+  const router = useRouter();
   const profile = data.profile;
   const fileRef = useRef<HTMLInputElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [notes, setNotes] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [flash, setFlash] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!profile) return null;
@@ -53,7 +56,12 @@ export function TaskCompleteControl({
     data.profiles.find((p) => p.id === id) ??
     data.allProfiles.find((p) => p.id === id);
 
-  const offerReviewForDoer = (doerId: string | null | undefined) => {
+  const celebrate = () => {
+    setFlash(true);
+    window.setTimeout(() => setFlash(false), 700);
+  };
+
+  const openReviewForDoer = (doerId: string | null | undefined) => {
     if (
       !shouldOfferDoerReview({
         actorRole: profile.role,
@@ -63,16 +71,28 @@ export function TaskCompleteControl({
       }) ||
       !doerId
     ) {
-      return;
+      return false;
     }
     const doer = findProfile(doerId);
+    const href = reviewOfferHref(doer, doerId);
     writeStoredReviewOffer(task.id, {
       name: doer?.full_name?.trim() || t("tasks.reviewOfferSomeone"),
-      href: reviewOfferHref(doer, doerId),
+      href,
     });
+    // Let the tick flash, then open the review page.
+    window.setTimeout(() => router.push(href), 350);
+    return true;
+  };
+
+  const approveAndMaybeReview = async () => {
+    const doerId = task.verify_submitted_by ?? task.assigned_to ?? null;
+    await data.approveTaskVerify(task.id);
+    celebrate();
+    openReviewForDoer(doerId);
   };
 
   const run = async (fn: () => Promise<void>) => {
+    if (busy) return;
     setBusy(true);
     setError(null);
     try {
@@ -97,21 +117,23 @@ export function TaskCompleteControl({
     <button
       type="button"
       className={cn(
-        "mt-0.5 size-5 shrink-0 rounded-full border-2 border-secondary",
-        task.status === "done" && "border-0 bg-secondary",
+        "relative mt-0.5 size-5 shrink-0 rounded-full border-2 border-secondary transition",
+        task.status === "done" && "border-0 bg-secondary text-white",
         task.status === "pending_verify" && "border-warning bg-warning/20",
+        flash && "scale-125 border-0 bg-secondary text-white shadow-[0_0_0_6px_rgba(45,122,94,0.25)]",
+        busy && "opacity-60",
       )}
       aria-label={
         task.status === "done"
           ? t("tasks.reopen")
           : task.status === "pending_verify"
-            ? t("tasks.verifyPending")
+            ? t("tasks.verifyApprove")
             : t("tasks.markDone")
       }
       disabled={
         busy ||
         (task.status === "done" && !canReopen) ||
-        (task.status === "pending_verify" && !canApprove && !canSubmit)
+        (task.status === "pending_verify" && !canApprove)
       }
       onClick={() => {
         if (task.status === "done") {
@@ -119,14 +141,25 @@ export function TaskCompleteControl({
           void run(() => data.setTaskStatus(task.id, "open"));
           return;
         }
-        if (task.status === "pending_verify") return;
+        if (task.status === "pending_verify") {
+          if (!canApprove) return;
+          void run(() => approveAndMaybeReview());
+          return;
+        }
         if (direct) {
-          void run(() => data.setTaskStatus(task.id, "done"));
+          void run(async () => {
+            await data.setTaskStatus(task.id, "done");
+            celebrate();
+          });
           return;
         }
         if (canSubmit) setExpanded(true);
       }}
-    />
+    >
+      {(task.status === "done" || flash) && (
+        <Check className="absolute inset-0 m-auto size-3" strokeWidth={3} />
+      )}
+    </button>
   );
 
   return (
@@ -136,6 +169,12 @@ export function TaskCompleteControl({
         <div className="min-w-0 flex-1">{meta}</div>
         {trailing}
       </div>
+
+      {flash && task.status !== "pending_verify" ? (
+        <p className="ml-8 text-xs font-semibold text-secondary">
+          {t("tasks.closedFlash")}
+        </p>
+      ) : null}
 
       {task.status === "pending_verify" ? (
         <div className="ml-8 space-y-2 rounded-2xl bg-warning/10 px-3 py-2">
@@ -161,17 +200,10 @@ export function TaskCompleteControl({
                 size="sm"
                 className="flex-1"
                 disabled={busy}
-                onClick={() =>
-                  void run(async () => {
-                    const doerId =
-                      task.verify_submitted_by ?? task.assigned_to ?? null;
-                    await data.approveTaskVerify(task.id);
-                    offerReviewForDoer(doerId);
-                  })
-                }
+                onClick={() => void run(() => approveAndMaybeReview())}
               >
                 <Check className="size-4" />
-                {t("tasks.verifyApprove")}
+                {busy ? t("common.saving") : t("tasks.verifyApprove")}
               </Button>
               <Button
                 size="sm"

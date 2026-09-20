@@ -108,8 +108,8 @@ export const arLocalePatch: Partial<Dictionary> = {
   "demo.sys.villaFallback": "فيلا",
 
   "demo.orderChat.header": "📋 طلب خدمة لـ {name}",
-  "demo.orderChat.assignedLine": "{mention} تم تعيينه لـ {job}. قرأت ووافقت؟",
-  "demo.orderChat.openLine": "مهمة: {job}. قرأت ووافقت؟",
+  "demo.orderChat.assignedLine": "{mention} تم تعيينه لـ {job}.",
+  "demo.orderChat.openLine": "مهمة: {job}.",
   "demo.sys.cancelledMsg": "أُلغي – {service} في {location} ({when})",
   "demo.sys.declinedMsg": "رُفض – {service} في {location} ({when})",
   "demo.sys.revokeMsg": "↩️ أُلغي الاتفاق – {service} في {location} ({when})",

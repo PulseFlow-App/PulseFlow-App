@@ -128,8 +128,8 @@ export const deLocalePatch: Partial<Dictionary> = {
   "demo.sys.villaFallback": "Property",
 
   "demo.orderChat.header": "📋 Serviceauftrag für {name}",
-  "demo.orderChat.assignedLine": "{mention} wurde für {job} eingeteilt. Gelesen und zugestimmt?",
-  "demo.orderChat.openLine": "Auftrag: {job}. Gelesen und zugestimmt?",
+  "demo.orderChat.assignedLine": "{mention} wurde für {job} eingeteilt.",
+  "demo.orderChat.openLine": "Auftrag: {job}.",
   "demo.sys.cancelledMsg": "Storniert – {service} bei {location} ({when})",
   "demo.sys.declinedMsg": "Abgelehnt – {service} bei {location} ({when})",
   "demo.sys.revokeMsg": "↩️ Zustimmung zurückgenommen – {service} bei {location} ({when})",

@@ -40,14 +40,35 @@ export function orderReachabilityLabel(order: ServiceOrder, t?: TFn) {
   return orderStatusLabel(order.status, t);
 }
 
-export function formatOrderWhen(order: ServiceOrder) {
+export function formatOrderWhen(
+  order: Pick<ServiceOrder, "scheduled_date" | "time_start" | "time_end">,
+) {
   return (
     formatWorkWindow(
       order.scheduled_date,
       order.time_start,
       order.time_end,
-    ) ?? "Soon"
+    ) ?? ""
   );
+}
+
+/** "at Location (when)" suffix for status chat lines — omits empty when / Soon. */
+export function formatOrderAtWhen(
+  location: string,
+  order: Pick<ServiceOrder, "scheduled_date" | "time_start" | "time_end">,
+) {
+  const when = formatOrderWhen(order);
+  return when ? `at ${location} (${when})` : `at ${location}`;
+}
+
+/** Join location · when without trailing separators when undated. */
+export function formatOrderMeta(
+  ...parts: Array<string | null | undefined>
+) {
+  return parts
+    .map((p) => (p ?? "").trim())
+    .filter(Boolean)
+    .join(" · ");
 }
 
 /** Scheduled start as Date (local). Missing time → start of scheduled_date. */
@@ -82,28 +103,30 @@ export function mentionLabel(fullName: string) {
 
 /**
  * Team-chat copy for a job on Questions/Feedback.
- * Assigned: "@Nok was assigned to Deep clean · Palm · today 09:00. Read and agreed?"
- * Open: "Job: Deep clean · Palm · today 09:00. Read and agreed?"
+ * "Read and agreed" is a separate button under the message — not in this text.
+ * Assigned: "@Nok was assigned to Deep clean · Palm · today 09:00."
+ * Open: "Job: Deep clean · Palm · today 09:00."
+ * Undated jobs omit the when segment.
  */
 export function buildOrderChatBody(input: {
   assigneeName?: string | null;
   serviceType: string;
   location: string;
-  when: string;
+  when?: string | null;
   details?: string | null;
   orderedBy?: string;
 }) {
   const jobLine = [input.serviceType, input.location, input.when]
-    .map((p) => p.trim())
+    .map((p) => (p ?? "").trim())
     .filter(Boolean)
     .join(" · ");
   const lines: string[] = [];
   if (input.assigneeName?.trim()) {
     lines.push(
-      `${mentionLabel(input.assigneeName)} was assigned to ${jobLine}. Read and agreed?`,
+      `${mentionLabel(input.assigneeName)} was assigned to ${jobLine}.`,
     );
   } else {
-    lines.push(`Job: ${jobLine}. Read and agreed?`);
+    lines.push(`Job: ${jobLine}.`);
   }
   if (input.details?.trim()) lines.push(`Details: ${input.details.trim()}`);
   if (input.orderedBy?.trim()) lines.push(`From: ${input.orderedBy.trim()}`);

@@ -425,7 +425,8 @@ export default function VillaDetailPage({
             ) : null}
             {villaJobs.map((o) => (
               <p key={o.id} className="text-sm font-semibold text-ink">
-                <LocalizedText text={o.service_type} /> · {formatOrderWhen(o)}
+                <LocalizedText text={o.service_type} />
+                {formatOrderWhen(o) ? ` · ${formatOrderWhen(o)}` : ""}
               </p>
             ))}
             {villaTasks.map((t) => (

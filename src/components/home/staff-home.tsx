@@ -9,7 +9,7 @@ import { AgreeButton } from "@/components/jobs/agree-button";
 import { HeroCard } from "@/components/home/hero-card";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import type { AppData } from "@/lib/data/use-app-data";
-import { formatOrderWhen } from "@/lib/service-orders";
+import { formatOrderMeta, formatOrderWhen } from "@/lib/service-orders";
 import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
@@ -95,7 +95,7 @@ export function StaffHome({ data }: { data: AppData }) {
                     <LocalizedText text={order.service_type} />
                   </p>
                   <p className="text-sm text-muted">
-                    {order.location_label} · {formatOrderWhen(order)}
+                    {formatOrderMeta(order.location_label, formatOrderWhen(order))}
                   </p>
                   <AgreeButton orderId={order.id} className="mt-3" />
                 </div>
@@ -125,7 +125,7 @@ export function StaffHome({ data }: { data: AppData }) {
                   <LocalizedText text={order.service_type} />
                 </p>
                 <p className="text-xs text-muted">
-                  {order.location_label} · {formatOrderWhen(order)}
+                  {formatOrderMeta(order.location_label, formatOrderWhen(order))}
                 </p>
               </div>
               <span

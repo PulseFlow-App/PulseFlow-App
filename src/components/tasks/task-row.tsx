@@ -3,14 +3,13 @@
 import { useState } from "react";
 import { ChevronDown, ImageIcon } from "lucide-react";
 import { TaskCompleteControl } from "@/components/tasks/task-complete-control";
-import { TaskAssigneeMeta } from "@/components/tasks/task-assignee-meta";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { formatWorkWindow } from "@/lib/notifications";
 import { formatShortDate, cn } from "@/lib/utils";
 import type { TaskWithRelations } from "@/lib/types";
 import { useI18n } from "@/lib/i18n/provider";
 
-/** Compact task row with expand for full notes + example photo. */
+/** Compact task row — tap the body to expand notes, photo, and details. */
 export function TaskRow({
   task,
   trailing,
@@ -24,11 +23,12 @@ export function TaskRow({
 }) {
   const { t } = useI18n();
   const [expanded, setExpanded] = useState(false);
-  const hasDetails = Boolean(task.notes?.trim() || task.photo_url);
   const schedule =
     formatWorkWindow(task.due_date, task.time_start, task.time_end) ??
     (task.due_date ? formatShortDate(task.due_date) : null);
   const villaLabel = task.villa?.name ?? t("common.general");
+  const hasNotes = Boolean(task.notes?.trim());
+  const hasPhoto = Boolean(task.photo_url);
 
   return (
     <div className="space-y-2">
@@ -37,90 +37,103 @@ export function TaskRow({
         meta={
           <button
             type="button"
-            className={cn(
-              "w-full min-w-0 text-left",
-              hasDetails && "cursor-pointer",
-            )}
-            disabled={!hasDetails}
-            aria-expanded={hasDetails ? expanded : undefined}
-            onClick={() => {
-              if (hasDetails) setExpanded((v) => !v);
-            }}
+            className="w-full min-w-0 text-left"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((v) => !v)}
           >
             <div className="flex items-start gap-2">
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 space-y-0.5">
                 <p
                   className={cn(
                     "font-semibold text-ink",
-                    doneStyle
-                      ? "truncate text-sm line-through opacity-70"
-                      : "truncate",
+                    doneStyle && "text-sm line-through opacity-70",
+                    !expanded && "truncate",
+                    expanded && "whitespace-normal break-words",
                   )}
                 >
                   <LocalizedText text={task.title} />
                 </p>
                 {!doneStyle ? (
-                  showAssignee ? (
-                    <TaskAssigneeMeta
-                      task={task}
-                      villaLabel={villaLabel}
-                      schedule={schedule}
-                    />
-                  ) : (
-                    <p className="truncate text-xs text-muted">
-                      {villaLabel}
-                      {schedule ? ` · ${schedule}` : ""}
-                    </p>
-                  )
-                ) : null}
-                {!expanded && task.notes ? (
-                  <p className="mt-0.5 line-clamp-2 text-xs text-muted">
-                    <LocalizedText text={task.notes} />
+                  <p className="truncate text-xs text-muted">
+                    {villaLabel}
+                    {schedule ? ` · ${schedule}` : ""}
+                    {showAssignee && task.assignee
+                      ? ` · ${task.assignee.full_name}`
+                      : ""}
                   </p>
                 ) : null}
-                {!expanded && task.photo_url && !task.notes ? (
-                  <p className="mt-0.5 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                {!expanded && hasNotes ? (
+                  <p className="line-clamp-1 text-xs text-muted">
+                    <LocalizedText text={task.notes!} />
+                  </p>
+                ) : null}
+                {!expanded && hasPhoto ? (
+                  <p className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
                     <ImageIcon className="size-3.5" />
                     {t("tasks.hasPhoto")}
                   </p>
                 ) : null}
               </div>
-              {hasDetails ? (
-                <ChevronDown
-                  className={cn(
-                    "mt-0.5 size-4 shrink-0 text-muted transition",
-                    expanded && "rotate-180",
-                  )}
-                />
-              ) : null}
+              <ChevronDown
+                className={cn(
+                  "mt-0.5 size-4 shrink-0 text-muted transition-transform",
+                  expanded && "rotate-180",
+                )}
+              />
             </div>
           </button>
         }
         trailing={trailing}
       />
 
-      {expanded && hasDetails ? (
-        <div className="ml-8 space-y-2 rounded-2xl bg-[#F7F5F1] px-3 py-2.5">
-          {task.notes ? (
+      {expanded ? (
+        <div className="ml-8 space-y-3 rounded-2xl border border-black/5 bg-[#F7F5F1] px-3 py-3">
+          <div className="grid gap-2 text-sm">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
-                {t("common.notes")}
+                {t("tasks.villa")}
               </p>
-              <p className="mt-1 whitespace-pre-wrap text-sm text-ink">
-                <LocalizedText text={task.notes} />
-              </p>
+              <p className="text-ink">{villaLabel}</p>
             </div>
-          ) : null}
-          {task.photo_url ? (
+            {schedule ? (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+                  {t("tasks.day")}
+                </p>
+                <p className="text-ink">{schedule}</p>
+              </div>
+            ) : null}
+            {showAssignee && task.assignee ? (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+                  {t("tasks.assignee")}
+                </p>
+                <p className="text-ink">{task.assignee.full_name}</p>
+              </div>
+            ) : null}
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+              {t("common.notes")}
+            </p>
+            {hasNotes ? (
+              <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-ink">
+                <LocalizedText text={task.notes!} />
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-muted">{t("tasks.noNotes")}</p>
+            )}
+          </div>
+          {hasPhoto ? (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
                 {t("tasks.examplePhoto")}
               </p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={task.photo_url}
+                src={task.photo_url!}
                 alt=""
-                className="mt-1 max-h-56 w-full rounded-xl object-cover"
+                className="mt-1 max-h-72 w-full rounded-xl object-cover"
               />
             </div>
           ) : null}

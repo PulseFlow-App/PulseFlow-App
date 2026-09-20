@@ -11,6 +11,7 @@ import {
   Trash2,
   CalendarPlus,
   Star,
+  X,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,10 +29,16 @@ import {
   isGuestApp,
   isStaffApp,
 } from "@/lib/roles";
-import { cn, lineDeepLink, phoneToWaMe } from "@/lib/utils";
-import type { Contact } from "@/lib/types";
+import { cn, lineDeepLink, phoneToWaMe, telegramDeepLink } from "@/lib/utils";
+import type { Contact, ContactMessenger } from "@/lib/types";
 import { capitalizeLabel } from "@/lib/format-label";
-import type { Messenger } from "@/lib/design-tokens";
+import type { ContactMessengerKind } from "@/lib/design-tokens";
+import {
+  CONTACT_MESSENGER_KINDS,
+  contactMessengers,
+  messengerNeedsHandle,
+  syncContactMessengerFields,
+} from "@/lib/contacts/messengers";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 
@@ -323,30 +330,50 @@ export default function ContactsPage() {
                         <Phone className="size-4" /> Call
                       </a>
                     ) : null}
-                    {!isPersonal &&
-                    contact.messenger === "whatsapp" &&
-                    contact.phone ? (
-                      <a
-                        href={phoneToWaMe(contact.phone)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-[#F7F5F1] px-3 py-2 text-sm font-semibold text-ink"
-                      >
-                        <MessageCircle className="size-4" /> WhatsApp
-                      </a>
-                    ) : null}
-                    {!isPersonal &&
-                    contact.messenger === "line" &&
-                    contact.messenger_handle ? (
-                      <a
-                        href={lineDeepLink(contact.messenger_handle)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-[#F7F5F1] px-3 py-2 text-sm font-semibold text-ink"
-                      >
-                        <MessageCircle className="size-4" /> LINE
-                      </a>
-                    ) : null}
+                    {!isPersonal
+                      ? contactMessengers(contact).map((m) => {
+                          if (m.kind === "whatsapp" && contact.phone) {
+                            return (
+                              <a
+                                key={m.kind}
+                                href={phoneToWaMe(contact.phone)}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-[#F7F5F1] px-3 py-2 text-sm font-semibold text-ink"
+                              >
+                                <MessageCircle className="size-4" /> WhatsApp
+                              </a>
+                            );
+                          }
+                          if (m.kind === "line" && m.handle) {
+                            return (
+                              <a
+                                key={m.kind}
+                                href={lineDeepLink(m.handle)}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-[#F7F5F1] px-3 py-2 text-sm font-semibold text-ink"
+                              >
+                                <MessageCircle className="size-4" /> LINE
+                              </a>
+                            );
+                          }
+                          if (m.kind === "telegram" && m.handle) {
+                            return (
+                              <a
+                                key={m.kind}
+                                href={telegramDeepLink(m.handle)}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-[#F7F5F1] px-3 py-2 text-sm font-semibold text-ink"
+                              >
+                                <MessageCircle className="size-4" /> Telegram
+                              </a>
+                            );
+                          }
+                          return null;
+                        })
+                      : null}
                   </div>
                 </Card>
               );
@@ -504,12 +531,7 @@ function OrderForm({
         </div>
       ) : null}
       <div>
-        <Label>
-          When (date){" "}
-          <span className="font-normal text-muted">
-            ({t("common.optional")} · {t("common.soon")})
-          </span>
-        </Label>
+        <Label>When (date)</Label>
         <Input
           type="date"
           value={date}
@@ -518,12 +540,7 @@ function OrderForm({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label>
-            {t("common.from")}{" "}
-            <span className="font-normal text-muted">
-              ({t("common.optional")})
-            </span>
-          </Label>
+          <Label>{t("common.from")}</Label>
           <Input
             type="time"
             value={timeStart}
@@ -531,12 +548,7 @@ function OrderForm({
           />
         </div>
         <div>
-          <Label>
-            {t("common.until")}{" "}
-            <span className="font-normal text-muted">
-              ({t("common.optional")})
-            </span>
-          </Label>
+          <Label>{t("common.until")}</Label>
           <Input
             type="time"
             value={timeEnd}
@@ -593,6 +605,12 @@ function OrderForm({
   );
 }
 
+function messengerLabel(kind: ContactMessengerKind) {
+  if (kind === "whatsapp") return "WhatsApp";
+  if (kind === "line") return "LINE";
+  return "Telegram";
+}
+
 function ContactForm({
   initial,
   linkableProfiles,
@@ -609,17 +627,68 @@ function ContactForm({
   const [name, setName] = useState(initial?.name ?? "");
   const [role, setRole] = useState(initial?.role ?? "cleaning");
   const [phone, setPhone] = useState(initial?.phone ?? "");
-  const [messenger, setMessenger] = useState<Messenger>(
-    initial?.messenger ?? "whatsapp",
+  const [messengers, setMessengers] = useState<ContactMessenger[]>(() =>
+    initial ? contactMessengers(initial) : [],
   );
-  const [handle, setHandle] = useState(initial?.messenger_handle ?? "");
+  const [draftKind, setDraftKind] = useState<ContactMessengerKind | "">("");
+  const [draftHandle, setDraftHandle] = useState("");
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [linkedId, setLinkedId] = useState(initial?.linked_profile_id ?? "");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const availableKinds = CONTACT_MESSENGER_KINDS.filter(
+    (k) => !messengers.some((m) => m.kind === k),
+  );
+
+  function addMessenger() {
+    if (!draftKind) return;
+    if (messengerNeedsHandle(draftKind) && !draftHandle.trim()) {
+      setError(
+        draftKind === "telegram"
+          ? "Telegram needs a username."
+          : "LINE needs an ID.",
+      );
+      return;
+    }
+    setError(null);
+    setMessengers((prev) => [
+      ...prev,
+      {
+        kind: draftKind,
+        handle: messengerNeedsHandle(draftKind)
+          ? draftHandle.trim() || null
+          : null,
+      },
+    ]);
+    setDraftKind("");
+    setDraftHandle("");
+  }
+
   return (
     <Card className="space-y-3 p-4">
+      {allowAppLink ? (
+        <div>
+          <Label>PulseFlow user (for in-app booking)</Label>
+          <Select
+            value={linkedId}
+            onChange={(e) => {
+              const nextId = e.target.value;
+              setLinkedId(nextId);
+              if (!nextId) return;
+              const picked = linkableProfiles.find((p) => p.id === nextId);
+              if (picked) setName(picked.full_name);
+            }}
+          >
+            <option value="">Not on app - phone only</option>
+            {linkableProfiles.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.full_name}
+              </option>
+            ))}
+          </Select>
+        </div>
+      ) : null}
       <div>
         <Label>Name</Label>
         <Input value={name} onChange={(e) => setName(e.target.value)} />
@@ -635,40 +704,102 @@ function ContactForm({
           <option value="other">other</option>
         </Select>
       </div>
-      {allowAppLink ? (
-        <div>
-          <Label>PulseFlow user (for in-app booking)</Label>
-          <Select value={linkedId} onChange={(e) => setLinkedId(e.target.value)}>
-            <option value="">Not on app - phone only</option>
-            {linkableProfiles.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.full_name}
-              </option>
-            ))}
-          </Select>
-        </div>
-      ) : null}
       <div>
         <Label>Phone</Label>
         <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
       </div>
       {allowAppLink ? (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label>Messenger</Label>
-            <Select
-              value={messenger}
-              onChange={(e) => setMessenger(e.target.value as Messenger)}
-            >
-              <option value="whatsapp">WhatsApp</option>
-              <option value="line">LINE</option>
-              <option value="none">None</option>
-            </Select>
-          </div>
-          <div>
-            <Label>Handle</Label>
-            <Input value={handle} onChange={(e) => setHandle(e.target.value)} />
-          </div>
+        <div className="space-y-2">
+          <Label>Messengers</Label>
+          {messengers.length > 0 ? (
+            <ul className="space-y-1.5">
+              {messengers.map((m) => (
+                <li
+                  key={m.kind}
+                  className="flex items-center justify-between gap-2 rounded-xl bg-[#F7F5F1] px-3 py-2 text-sm"
+                >
+                  <span className="font-semibold text-ink">
+                    {messengerLabel(m.kind)}
+                    {m.handle ? (
+                      <span className="font-normal text-muted">
+                        {" "}
+                        · @{m.handle.replace(/^@/, "")}
+                      </span>
+                    ) : null}
+                  </span>
+                  <button
+                    type="button"
+                    className="rounded-lg p-1 text-muted hover:bg-white hover:text-danger"
+                    aria-label={`Remove ${messengerLabel(m.kind)}`}
+                    onClick={() =>
+                      setMessengers((prev) =>
+                        prev.filter((x) => x.kind !== m.kind),
+                      )
+                    }
+                  >
+                    <X className="size-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-muted">No messengers yet — add one below.</p>
+          )}
+          {availableKinds.length > 0 ? (
+            <div className="space-y-2 rounded-xl border border-black/5 p-3">
+              <Select
+                value={draftKind}
+                onChange={(e) => {
+                  const next = e.target.value as ContactMessengerKind | "";
+                  setDraftKind(next);
+                  setDraftHandle("");
+                  setError(null);
+                }}
+              >
+                <option value="">Add messenger…</option>
+                {availableKinds.map((k) => (
+                  <option key={k} value={k}>
+                    {messengerLabel(k)}
+                  </option>
+                ))}
+              </Select>
+              {draftKind === "telegram" ? (
+                <div>
+                  <Label>Telegram username</Label>
+                  <Input
+                    value={draftHandle}
+                    placeholder="@username"
+                    onChange={(e) => setDraftHandle(e.target.value)}
+                  />
+                </div>
+              ) : null}
+              {draftKind === "line" ? (
+                <div>
+                  <Label>LINE ID</Label>
+                  <Input
+                    value={draftHandle}
+                    placeholder="line.id"
+                    onChange={(e) => setDraftHandle(e.target.value)}
+                  />
+                </div>
+              ) : null}
+              {draftKind === "whatsapp" ? (
+                <p className="text-xs text-muted">
+                  WhatsApp uses the phone number above.
+                </p>
+              ) : null}
+              {draftKind ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={addMessenger}
+                >
+                  <Plus className="size-4" /> Add {messengerLabel(draftKind)}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
       <div>
@@ -692,13 +823,23 @@ function ContactForm({
               setError("Name is required.");
               return;
             }
+            if (
+              allowAppLink &&
+              messengers.some((m) => m.kind === "whatsapp") &&
+              !phone.trim()
+            ) {
+              setError("Add a phone number for WhatsApp.");
+              return;
+            }
             setSaving(true);
+            const synced = allowAppLink
+              ? syncContactMessengerFields(messengers)
+              : syncContactMessengerFields([]);
             void onSave({
               name: name.trim(),
               role,
               phone: phone || null,
-              messenger: allowAppLink ? messenger : "none",
-              messenger_handle: allowAppLink ? handle || null : null,
+              ...synced,
               notes: notes || null,
               linked_profile_id: allowAppLink ? linkedId || null : null,
             }).finally(() => setSaving(false));
@@ -710,3 +851,4 @@ function ContactForm({
     </Card>
   );
 }
+

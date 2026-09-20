@@ -49,7 +49,8 @@ export const BILL_CATEGORIES: BillCategory[] = [
   "other",
 ];
 
-export type Messenger = "whatsapp" | "line" | "none";
+export type Messenger = "whatsapp" | "line" | "telegram" | "none";
+export type ContactMessengerKind = "whatsapp" | "line" | "telegram";
 export type UserRole = "owner" | "manager" | "cleaner" | "staff" | "guest";
 export type OrgKind = "personal" | "company";
 

@@ -82,6 +82,8 @@ import {
 } from "@/lib/tasks/verify";
 import {
   formatOrderWhen,
+  formatOrderAtWhen,
+  formatOrderMeta,
   canCancelServiceOrder,
   canAgreeServiceOrder,
   canRevokeServiceOrderAgreement,
@@ -100,6 +102,7 @@ import {
 import { capitalizeLabel } from "@/lib/format-label";
 import { normalizeVillaRow, omitVillaDetails, pickVillaDetails, isMissingVillaDetailsColumn } from "@/lib/villas/property-details";
 import { isTransientPhotoUrl } from "@/lib/villas/prepare-photo";
+import { normalizeContactRow } from "@/lib/contacts/messengers";
 
 const scheduleSyncedOrgs = new Set<string>();
 
@@ -513,7 +516,9 @@ export function useSupabaseData(enabled: boolean): AppData {
     setProfiles(Array.from(byId.values()));
     setAllProfiles(loadedAll.map(normalizeProfile));
     setVillas(asVillas(villasRes.data));
-    setContacts((contactsRes.data as Contact[]) ?? []);
+    setContacts(
+      ((contactsRes.data as Contact[]) ?? []).map((c) => normalizeContactRow(c)),
+    );
     setTasks(
       ((tasksRes.data as Task[]) ?? []).map((t) => ({
         ...t,
@@ -1055,7 +1060,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           scheduledDate,
           input.time_start ?? null,
           input.time_end ?? null,
-        ) ?? "Soon";
+        ) ?? "";
 
       const { data: order, error } = await supabase
         .from("service_orders")
@@ -1204,7 +1209,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       await supabase.from("messages").insert({
         org_id: order.org_id,
         sender_id: profile.id,
-        body: `✅ Read and agreed - ${order.service_type} at ${location} (${when})`,
+        body: `✅ Read and agreed - ${order.service_type} ${formatOrderAtWhen(location, order)}`,
         service_order_id: orderId,
         channel: "request",
       });
@@ -1215,7 +1220,7 @@ export function useSupabaseData(enabled: boolean): AppData {
             org_id: profile.org_id,
             kind: "appointment",
             title: `${profile.full_name} agreed`,
-            body: `${order.service_type} · ${formatOrderWhen(order)}`,
+            body: formatOrderMeta(order.service_type, when),
             href: "/messages?channel=request",
             entity_id: orderId,
             audience_profile_ids: [order.ordered_by],
@@ -1253,7 +1258,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       await supabase.from("messages").insert({
         org_id: order.org_id,
         sender_id: profile.id,
-        body: `↩️ Agreement cancelled - ${order.service_type} at ${location} (${when})`,
+        body: `↩️ Agreement cancelled - ${order.service_type} ${formatOrderAtWhen(location, order)}`,
         service_order_id: orderId,
         channel: "request",
       });
@@ -1263,7 +1268,7 @@ export function useSupabaseData(enabled: boolean): AppData {
             org_id: order.org_id,
             kind: "appointment",
             title: `${profile.full_name} cancelled agreement`,
-            body: `${order.service_type} · ${when}`,
+            body: formatOrderMeta(order.service_type, when),
             href: "/messages?channel=request",
             entity_id: orderId,
             audience_profile_ids: [order.ordered_by],
@@ -1323,8 +1328,8 @@ export function useSupabaseData(enabled: boolean): AppData {
         org_id: order.org_id,
         sender_id: profile.id,
         body: declined
-          ? `Declined - ${order.service_type} at ${location} (${when})`
-          : `Cancelled - ${order.service_type} at ${location} (${when})`,
+          ? `Declined - ${order.service_type} ${formatOrderAtWhen(location, order)}`
+          : `Cancelled - ${order.service_type} ${formatOrderAtWhen(location, order)}`,
         service_order_id: orderId,
         channel: "request",
       });
@@ -1344,7 +1349,7 @@ export function useSupabaseData(enabled: boolean): AppData {
               org_id: order.org_id,
               kind: "appointment",
               title: declined ? "Job declined" : "Job cancelled",
-              body: `${order.service_type} · ${location} · ${when}`,
+              body: formatOrderMeta(order.service_type, location, when),
               href: "/jobs",
               entity_id: orderId,
               audience_profile_ids: uniqueAudience,
@@ -1481,7 +1486,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       await supabase.from("messages").insert({
         org_id: order.org_id,
         sender_id: profile.id,
-        body: `✅ Done - ${order.service_type} at ${location} (${when})`,
+        body: `✅ Done - ${order.service_type} ${formatOrderAtWhen(location, order)}`,
         service_order_id: orderId,
         channel: "request",
       });
@@ -1495,7 +1500,7 @@ export function useSupabaseData(enabled: boolean): AppData {
             org_id: order.org_id,
             kind: "appointment",
             title: `${profile.full_name} completed a job`,
-            body: `${order.service_type} · ${location} · ${when}`,
+            body: formatOrderMeta(order.service_type, location, when),
             href: "/jobs",
             entity_id: orderId,
             audience_profile_ids: audience,
@@ -1659,7 +1664,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           scheduledDate,
           input.time_start ?? null,
           input.time_end ?? null,
-        ) ?? "Soon";
+        ) ?? "";
       const assignee = assigneeId
         ? profiles.find((p) => p.id === assigneeId)
         : null;
@@ -1765,23 +1770,36 @@ export function useSupabaseData(enabled: boolean): AppData {
           "Submit this task for verification — owners mark done directly.",
         );
       }
+      const completed_at =
+        status === "done" ? new Date().toISOString() : null;
+      const verifyClear = status === "open" ? clearTaskVerifyFields() : {};
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === id
+            ? { ...t, status, completed_at, ...verifyClear }
+            : t,
+        ),
+      );
       const supabase = createClient();
       const { error } = await supabase
         .from("tasks")
         .update({
           status,
-          completed_at: status === "done" ? new Date().toISOString() : null,
-          ...(status === "open" ? clearTaskVerifyFields() : {}),
+          completed_at,
+          ...verifyClear,
         })
         .eq("id", id);
-      if (error) throw error;
+      if (error) {
+        await refresh();
+        throw error;
+      }
       if (
         task &&
         status === "done" &&
         task.assigned_to === profile.id &&
         task.created_by !== profile.id
       ) {
-        await insertNotifications(supabase, [
+        void insertNotifications(supabase, [
           toInsertRow(
             makeNotification({
               org_id: task.org_id,
@@ -1793,9 +1811,10 @@ export function useSupabaseData(enabled: boolean): AppData {
               audience_profile_ids: [task.created_by],
             }),
           ),
-        ]);
+        ]).then(() => void refresh());
+        return;
       }
-      await refresh();
+      void refresh();
     },
     submitTaskForVerify: async (id, input) => {
       if (!profile) throw new Error("Not signed in.");
@@ -1806,24 +1825,32 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!task) throw new Error("Task not found.");
       requireOrgWrite(task.org_id);
       if (task.status === "done") throw new Error("Task already done.");
+      const now = new Date().toISOString();
+      const verifyPatch = {
+        status: "pending_verify" as const,
+        completed_at: null as string | null,
+        verify_notes: input?.notes?.trim() || null,
+        verify_photo_url: input?.photo_url ?? null,
+        verify_submitted_by: profile.id,
+        verify_submitted_at: now,
+      };
+      setTasks((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, ...verifyPatch } : t)),
+      );
       const supabase = createClient();
       const { error } = await supabase
         .from("tasks")
-        .update({
-          status: "pending_verify",
-          completed_at: null,
-          verify_notes: input?.notes?.trim() || null,
-          verify_photo_url: input?.photo_url ?? null,
-          verify_submitted_by: profile.id,
-          verify_submitted_at: new Date().toISOString(),
-        })
+        .update(verifyPatch)
         .eq("id", id);
-      if (error) throw error;
+      if (error) {
+        await refresh();
+        throw error;
+      }
       const audience = ownerManagerIds(profiles, task.org_id).filter(
         (pid) => pid !== profile.id,
       );
       if (audience.length) {
-        await insertNotifications(supabase, [
+        void insertNotifications(supabase, [
           toInsertRow(
             makeNotification({
               org_id: task.org_id,
@@ -1835,9 +1862,10 @@ export function useSupabaseData(enabled: boolean): AppData {
               audience_profile_ids: audience,
             }),
           ),
-        ]);
+        ]).then(() => void refresh());
+        return;
       }
-      await refresh();
+      void refresh();
     },
     approveTaskVerify: async (id) => {
       if (!profile) throw new Error("Not signed in.");
@@ -1849,17 +1877,28 @@ export function useSupabaseData(enabled: boolean): AppData {
       ) {
         throw new Error("You cannot approve this verification.");
       }
+      const completed_at = new Date().toISOString();
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === id
+            ? { ...t, status: "done" as const, completed_at }
+            : t,
+        ),
+      );
       const supabase = createClient();
       const { error } = await supabase
         .from("tasks")
         .update({
           status: "done",
-          completed_at: new Date().toISOString(),
+          completed_at,
         })
         .eq("id", id);
-      if (error) throw error;
+      if (error) {
+        await refresh();
+        throw error;
+      }
       if (task.verify_submitted_by && task.verify_submitted_by !== profile.id) {
-        await insertNotifications(supabase, [
+        void insertNotifications(supabase, [
           toInsertRow(
             makeNotification({
               org_id: task.org_id,
@@ -1871,9 +1910,10 @@ export function useSupabaseData(enabled: boolean): AppData {
               audience_profile_ids: [task.verify_submitted_by],
             }),
           ),
-        ]);
+        ]).then(() => void refresh());
+        return;
       }
-      await refresh();
+      void refresh();
     },
     rejectTaskVerify: async (id) => {
       if (!profile) throw new Error("Not signed in.");
@@ -1886,18 +1926,34 @@ export function useSupabaseData(enabled: boolean): AppData {
         throw new Error("You cannot reject this verification.");
       }
       const submitter = task.verify_submitted_by;
+      const cleared = clearTaskVerifyFields();
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === id
+            ? {
+                ...t,
+                status: "open" as const,
+                completed_at: null,
+                ...cleared,
+              }
+            : t,
+        ),
+      );
       const supabase = createClient();
       const { error } = await supabase
         .from("tasks")
         .update({
           status: "open",
           completed_at: null,
-          ...clearTaskVerifyFields(),
+          ...cleared,
         })
         .eq("id", id);
-      if (error) throw error;
+      if (error) {
+        await refresh();
+        throw error;
+      }
       if (submitter && submitter !== profile.id) {
-        await insertNotifications(supabase, [
+        void insertNotifications(supabase, [
           toInsertRow(
             makeNotification({
               org_id: task.org_id,
@@ -1909,9 +1965,10 @@ export function useSupabaseData(enabled: boolean): AppData {
               audience_profile_ids: [submitter],
             }),
           ),
-        ]);
+        ]).then(() => void refresh());
+        return;
       }
-      await refresh();
+      void refresh();
     },
     deleteTask: async (id) => {
       const task = tasks.find((t) => t.id === id);
@@ -2073,7 +2130,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         await supabase.from("messages").insert({
           org_id: target.org_id,
           sender_id: profile.id,
-          body: `Cancelled - ${target.service_type} at ${location} (${when})`,
+          body: `Cancelled - ${target.service_type} ${formatOrderAtWhen(location, target)}`,
           service_order_id: target.id,
           channel: "request",
         });
@@ -2087,7 +2144,7 @@ export function useSupabaseData(enabled: boolean): AppData {
                 org_id: target.org_id,
                 kind: "appointment",
                 title: "Job cancelled",
-                body: `${target.service_type} · ${location} · ${when}`,
+                body: formatOrderMeta(target.service_type, location, when),
                 href: "/jobs",
                 entity_id: target.id,
                 audience_profile_ids: [...new Set(audience)],

@@ -226,6 +226,8 @@ const ru: Dictionary = {
   "tasks.examplePhotoHint": "One photo of what to do. More photos can go in chat after they agree.",
   "tasks.addPhoto": "Add photo",
   "tasks.hasPhoto": "Has photo",
+  "tasks.noNotes": "No notes on this task.",
+  "tasks.closedFlash": "Done ✓",
   "tasks.open": "Открытые",
   "tasks.done": "Готовые",
   "tasks.noOpen": "Нет открытых задач",
@@ -265,7 +267,10 @@ const ru: Dictionary = {
   "jobs.tipOwner": "Совет: Контакты → Заказать по имени.",
   "jobs.tipStaff": "Время заезда у владельца - вам нужно окно работы.",
   "jobs.agreed": "Вы согласились с этой работой",
+  "jobs.agreedBy": "Согласовано: {name}",
   "jobs.readAgreed": "Прочитано и согласен",
+  "jobs.readAgreedAsk": "Прочитано и согласен?",
+  "jobs.awaitingAgreement": "Ждём их согласия",
   "jobs.cancelAgreement": "Cancel agreement",
   "jobs.cancelAgreementHint":
     "Undo if you tapped by mistake. Available until 24 hours before the job.",
@@ -597,8 +602,8 @@ const ru: Dictionary = {
   "demo.orderChat.details": "Детали: {details}",
   "demo.orderChat.from": "От: {name}",
   "demo.orderChat.assignedLine":
-    "{mention} was assigned to {job}. Read and agreed?",
-  "demo.orderChat.openLine": "Job: {job}. Read and agreed?",
+    "{mention} was assigned to {job}.",
+  "demo.orderChat.openLine": "Job: {job}.",
   "demo.orderChat.header": "📋 Заказ для {name}",
   "demo.orderChat.staffHint":
     "Сотрудник: откройте заказ и нажмите “Read and agreed”, чтобы подтвердить получение",
@@ -657,6 +662,7 @@ const ru: Dictionary = {
   "contacts.subtitleCompany": "Привяжите пользователя Pulse Flow для заказа в приложении; остальным звоните",
   "contacts.whatsapp": "WhatsApp",
   "contacts.line": "LINE",
+  "contacts.telegram": "Telegram",
   "endorsements.title": "Оценки",
   "endorsements.subtitle": "еженедельная репутация",
   "endorsements.board": "Доска",

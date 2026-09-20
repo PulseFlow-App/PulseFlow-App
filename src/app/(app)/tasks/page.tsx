@@ -213,12 +213,7 @@ export default function TasksPage() {
               </Select>
             </div>
             <div>
-              <Label>
-                {t("tasks.day")}{" "}
-                <span className="font-normal text-muted">
-                  ({t("common.optional")} · {t("common.soon")})
-                </span>
-              </Label>
+              <Label>{t("tasks.day")}</Label>
               <Input
                 type="date"
                 value={dueDate}
@@ -228,12 +223,7 @@ export default function TasksPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>
-                {t("common.from")}{" "}
-                <span className="font-normal text-muted">
-                  ({t("common.optional")})
-                </span>
-              </Label>
+              <Label>{t("common.from")}</Label>
               <Input
                 type="time"
                 value={timeStart}
@@ -241,12 +231,7 @@ export default function TasksPage() {
               />
             </div>
             <div>
-              <Label>
-                {t("common.until")}{" "}
-                <span className="font-normal text-muted">
-                  ({t("common.optional")})
-                </span>
-              </Label>
+              <Label>{t("common.until")}</Label>
               <Input
                 type="time"
                 value={timeEnd}

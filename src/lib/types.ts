@@ -2,6 +2,7 @@ import type {
   BillCategory,
   BillStatus,
   CleaningStatus,
+  ContactMessengerKind,
   Messenger,
   OrgKind,
   TaskPriority,
@@ -172,14 +173,24 @@ export type VillaListItem = Villa & {
   orgLabel: string;
 };
 
+export type ContactMessenger = {
+  kind: ContactMessengerKind;
+  /** Username / ID — used for Telegram (and LINE deep links). */
+  handle: string | null;
+};
+
 export type Contact = {
   id: string;
   org_id: string;
   name: string;
   role: string;
   phone: string | null;
+  /** @deprecated Prefer `messengers` — kept for older rows / sync. */
   messenger: Messenger;
+  /** @deprecated Prefer `messengers` — kept for older rows / sync. */
   messenger_handle: string | null;
+  /** One or more chat apps (WhatsApp, LINE, Telegram). */
+  messengers: ContactMessenger[];
   notes: string | null;
   /** When set, bookings notify this PulseFlow user for Read & agreed. */
   linked_profile_id: string | null;

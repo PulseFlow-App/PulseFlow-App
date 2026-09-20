@@ -5,13 +5,25 @@ import Link from "next/link";
 import { StarsPicker } from "@/components/endorsements/stars";
 import { Button } from "@/components/ui/button";
 import { Label, Textarea } from "@/components/ui/input";
+import { DataProvider } from "@/lib/data/data-provider";
 import { useData } from "@/lib/data/use-app-data";
 import { weekKey } from "@/lib/endorsements";
 import { canCastEndorsement } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 
 /** Inline weekly review form on a public profile (`?review=1`). */
-export function PublicProfileReviewForm({
+export function PublicProfileReviewForm(props: {
+  toProfileId: string;
+  toName: string;
+}) {
+  return (
+    <DataProvider>
+      <PublicProfileReviewFormInner {...props} />
+    </DataProvider>
+  );
+}
+
+function PublicProfileReviewFormInner({
   toProfileId,
   toName,
 }: {

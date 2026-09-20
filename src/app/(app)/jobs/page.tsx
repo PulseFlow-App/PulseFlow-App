@@ -295,9 +295,11 @@ export default function JobsPage() {
                       {t(`order.status.${order.status}` as MessageKey)}
                     </span>
                   </div>
-                  <p className="text-sm font-semibold text-ink">
-                    {formatOrderWhen(order)}
-                  </p>
+                  {formatOrderWhen(order) ? (
+                    <p className="text-sm font-semibold text-ink">
+                      {formatOrderWhen(order)}
+                    </p>
+                  ) : null}
                   {order.details ? (
                     <p className="text-sm text-muted">{order.details}</p>
                   ) : null}

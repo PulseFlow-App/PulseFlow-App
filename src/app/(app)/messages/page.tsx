@@ -41,7 +41,6 @@ import {
   resolveTeamChatChannel,
   unreadTeamChatCountByChannel,
 } from "@/lib/message-channels";
-import { canAgreeServiceOrder } from "@/lib/service-orders";
 import { teamChatCommandSuggestions } from "@/lib/team-chat-commands";
 
 const CHANNELS: {
@@ -361,9 +360,10 @@ function MessagesPageInner() {
                 const showAgreeUi =
                   order &&
                   data.profile &&
-                  (canAgreeServiceOrder(data.profile, order) ||
+                  (order.status === "pending_ack" ||
                     (order.status === "agreed" &&
-                      order.staff_profile_id === data.profile.id));
+                      (order.staff_profile_id === data.profile.id ||
+                        order.ordered_by === data.profile.id)));
                 return (
                   <div
                     key={msg.id}

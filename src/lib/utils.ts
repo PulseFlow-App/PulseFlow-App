@@ -82,6 +82,11 @@ export function lineDeepLink(handle: string) {
   return `https://line.me/R/ti/p/~${clean}`;
 }
 
+export function telegramDeepLink(handle: string) {
+  const clean = handle.replace(/^@/, "").trim();
+  return `https://t.me/${clean}`;
+}
+
 export function weekDayRange(days = 5) {
   const today = startOfDay(new Date());
   return Array.from({ length: days }, (_, i) => subDays(today, days - 1 - i));

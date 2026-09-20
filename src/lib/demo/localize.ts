@@ -133,7 +133,7 @@ function localizeOrderChatBody(text: string, t: TFn): string {
   const out: string[] = [];
   for (const line of lines) {
     const assignedLine = line.match(
-      /^(@\S+) was assigned to (.+)\. Read and agreed\?$/,
+      /^(@\S+) was assigned to (.+?)\.(?: Read and agreed\?)?$/,
     );
     if (assignedLine) {
       out.push(
@@ -144,7 +144,7 @@ function localizeOrderChatBody(text: string, t: TFn): string {
       );
       continue;
     }
-    const openLine = line.match(/^Job: (.+)\. Read and agreed\?$/);
+    const openLine = line.match(/^Job: (.+?)\.(?: Read and agreed\?)?$/);
     if (openLine) {
       out.push(
         t("demo.orderChat.openLine", {
@@ -213,11 +213,11 @@ function localizeStatusJobMsg(
   t: TFn,
 ): string {
   const patterns: Record<typeof kind, RegExp> = {
-    done: /^✅ Done - (.+) at (.+) \((.+)\)$/,
-    agreed: /^✅ Read and agreed - (.+) at (.+) \((.+)\)$/,
-    cancelled: /^Cancelled - (.+) at (.+) \((.+)\)$/,
-    declined: /^Declined - (.+) at (.+) \((.+)\)$/,
-    revoke: /^↩️ Agreement cancelled - (.+) at (.+) \((.+)\)$/,
+    done: /^✅ Done - (.+) at (.+?)(?: \((.+)\))?$/,
+    agreed: /^✅ Read and agreed - (.+) at (.+?)(?: \((.+)\))?$/,
+    cancelled: /^Cancelled - (.+) at (.+?)(?: \((.+)\))?$/,
+    declined: /^Declined - (.+) at (.+?)(?: \((.+)\))?$/,
+    revoke: /^↩️ Agreement cancelled - (.+) at (.+?)(?: \((.+)\))?$/,
   };
   const keys: Record<typeof kind, MessageKey> = {
     done: "demo.sys.doneMsg",
@@ -230,11 +230,13 @@ function localizeStatusJobMsg(
   if (!m) return replaceKnownPhrases(text, t);
   const location =
     m[2] === "location" ? t("demo.sys.locationFallback") : m[2]!;
-  return t(keys[kind], {
+  const when = (m[3] ?? "").trim();
+  const localized = t(keys[kind], {
     service: localizeDemoText(m[1]!, t),
     location,
-    when: replaceKnownPhrases(m[3]!, t),
+    when: when ? replaceKnownPhrases(when, t) : "",
   });
+  return when ? localized : localized.replace(/\s*\(\s*\)/g, "");
 }
 
 /** Team-chat job system copy stored in English — localize as a whole message. */
@@ -242,8 +244,8 @@ export function isJobSystemChatBody(text: string): boolean {
   if (!text) return false;
   const first = (text.split("\n")[0] ?? text).trim();
   return (
-    /^@\S+ was assigned to .+\. Read and agreed\?$/.test(first) ||
-    /^Job: .+\. Read and agreed\?$/.test(first) ||
+    /^@\S+ was assigned to .+\.(?: Read and agreed\?)?$/.test(first) ||
+    /^Job: .+\.(?: Read and agreed\?)?$/.test(first) ||
     first.startsWith("📋 Service order for ") ||
     first.startsWith("✅ Read and agreed - ") ||
     first.startsWith("✅ Done - ") ||

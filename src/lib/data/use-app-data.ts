@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { useIsDemoMode } from "@/lib/demo/use-is-demo-mode";
 import { assertDemoWritable } from "@/lib/demo/guard";
 import { useSupabaseData } from "@/lib/data/use-supabase-data";
@@ -690,7 +698,7 @@ function useDemoData(): AppData {
           scheduledDate,
           input.time_start ?? null,
           input.time_end ?? null,
-        ) ?? "Soon";
+        ) ?? "";
       const now = new Date().toISOString();
       const notes = input.notes?.trim() || null;
       const photoUrl = input.photo_url?.trim() || null;
@@ -2064,7 +2072,20 @@ function useDemoData(): AppData {
   };
 }
 
+const AppDataContext = createContext<AppData | null>(null);
+
+export { AppDataContext };
+
 export function useData(): AppData {
+  const ctx = useContext(AppDataContext);
+  if (!ctx) {
+    throw new Error("useData must be used within DataProvider");
+  }
+  return ctx;
+}
+
+/** Internal: shared by DataProvider only. */
+export function useAppDataStore(): AppData {
   const demo = useIsDemoMode();
   const demoData = useDemoData();
   const supabaseData = useSupabaseData(!demo);
