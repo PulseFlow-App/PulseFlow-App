@@ -743,7 +743,7 @@ function ContactForm({
               ))}
             </ul>
           ) : (
-            <p className="text-xs text-muted">No messengers yet — add one below.</p>
+            <p className="text-xs text-muted">Add contacts below</p>
           )}
           {availableKinds.length > 0 ? (
             <div className="space-y-2 rounded-xl border border-black/5 p-3">
@@ -756,7 +756,7 @@ function ContactForm({
                   setError(null);
                 }}
               >
-                <option value="">Add messenger…</option>
+                <option value="">Add contact…</option>
                 {availableKinds.map((k) => (
                   <option key={k} value={k}>
                     {messengerLabel(k)}

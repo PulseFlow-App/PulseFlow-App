@@ -167,138 +167,162 @@ function PublicProfilePageInner({
     .slice(0, 8);
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-lg bg-sand px-4 py-8 font-sans">
-      <PublicProfileBack label={t("publicProfile.back")} />
-      <div className="mb-6 flex items-center gap-3">
-        <PulseMark className="size-10" />
-        <div>
-          <p className="text-lg font-bold text-ink">{brand.name}</p>
-          <p className="text-xs text-muted">{t("publicProfile.subtitle")}</p>
+    <div className="flex h-dvh w-full flex-col overflow-hidden bg-sand font-sans">
+      <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain">
+        <div className="mx-auto w-full max-w-lg px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))]">
+          <PublicProfileBack label={t("publicProfile.back")} />
+          <div className="mb-6 flex items-center gap-3">
+            <PulseMark className="size-10 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-lg font-bold text-ink">{brand.name}</p>
+              <p className="text-xs text-muted">{t("publicProfile.subtitle")}</p>
+            </div>
+          </div>
+
+          <Card className="space-y-4 overflow-hidden p-5">
+            <div>
+              <h1 className="text-2xl font-bold text-ink">
+                {data.profile.full_name}
+              </h1>
+              <p className="text-sm text-muted">
+                {labelRole(t, data.profile.role)}
+                {data.profile.job_title ? ` · ${data.profile.job_title}` : ""}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-muted">
+                {t("publicProfile.contactsPrivate")}
+              </p>
+              {data.profile.job_search_visible
+                ? (() => {
+                    const place = formatTalentPlace(data.profile);
+                    return place ? (
+                      <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-secondary-dark">
+                        <MapPin className="size-3.5 shrink-0" />
+                        {place}
+                      </p>
+                    ) : null;
+                  })()
+                : null}
+            </div>
+
+            <div className="min-w-0 overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-primary to-primary-dark p-4 text-white sm:p-5">
+              <p className="text-sm text-white/85">
+                {t("publicProfile.reputation")}
+              </p>
+              <p className="mt-1 text-4xl font-bold tabular-nums">
+                {ratingSummary.voteCount > 0
+                  ? ratingSummary.average.toFixed(1)
+                  : "-"}
+              </p>
+              <div className="mt-2 max-w-full">
+                <StarsDisplay
+                  value={ratingSummary.average}
+                  size="md"
+                  tone="onDark"
+                />
+              </div>
+              <p className="mt-3 text-sm leading-snug text-white/90">
+                {t("publicProfile.starsLine", {
+                  stars: ratingSummary.totalStars,
+                  votes: ratingSummary.voteCount,
+                })}
+              </p>
+            </div>
+
+            {showReview ? (
+              <PublicProfileReviewForm
+                toProfileId={data.profile.id}
+                toName={data.profile.full_name}
+              />
+            ) : null}
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl bg-[#F7F5F1] p-3">
+                <p className="text-xs font-semibold uppercase text-muted">
+                  {t("publicProfile.tasksDone")}
+                </p>
+                <p className="mt-1 text-2xl font-bold text-ink">
+                  {data.tasksDone}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-[#F7F5F1] p-3">
+                <p className="text-xs font-semibold uppercase text-muted">
+                  {t("publicProfile.tasksOpen")}
+                </p>
+                <p className="mt-1 text-2xl font-bold text-ink">
+                  {data.tasksOpen}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                Companies
+              </p>
+              {companies.length === 0 ? (
+                <p className="mt-1 text-sm text-muted">
+                  No company registrations yet.
+                </p>
+              ) : (
+                <ul className="mt-2 space-y-2">
+                  {companies.map((org) => {
+                    const orgRating = summarizeRatings(
+                      data.endorsements.filter((e) => e.org_id === org.id),
+                      data.profile.id,
+                    );
+                    return (
+                      <li
+                        key={org.id}
+                        className="flex min-w-0 items-center justify-between gap-2 rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm"
+                      >
+                        <span className="min-w-0 truncate font-semibold text-ink">
+                          {org.name}
+                        </span>
+                        <StarsDisplay
+                          value={orgRating.average}
+                          size="sm"
+                          showValue
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                {t("talent.reviewsSection")}
+              </p>
+              {recent.length === 0 ? (
+                <p className="mt-2 text-sm text-muted">No votes yet.</p>
+              ) : (
+                <ul className="mt-2 space-y-2">
+                  {recent.map((e) => (
+                    <li
+                      key={e.id}
+                      className="rounded-2xl border border-black/5 px-3 py-2.5"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <StarsDisplay value={e.stars} size="sm" />
+                        <span className="shrink-0 text-[11px] text-muted">
+                          {weekLabel(e.week_key, locale)}
+                        </span>
+                      </div>
+                      {e.note ? (
+                        <p className="mt-1 text-sm text-ink">{e.note}</p>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </Card>
+
+          <p className="mt-6 text-center text-xs text-muted">
+            Built with {brand.name} - {brand.tagline}
+          </p>
         </div>
       </div>
-
-      <Card className="space-y-4 p-5">
-        <div>
-          <h1 className="text-2xl font-bold text-ink">
-            {data.profile.full_name}
-          </h1>
-          <p className="text-sm text-muted">
-            {labelRole(t, data.profile.role)}
-            {data.profile.job_title ? ` · ${data.profile.job_title}` : ""}
-          </p>
-          <p className="mt-2 text-xs leading-relaxed text-muted">
-            {t("publicProfile.contactsPrivate")}
-          </p>
-          {data.profile.job_search_visible
-            ? (() => {
-                const place = formatTalentPlace(data.profile);
-                return place ? (
-                  <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-secondary-dark">
-                    <MapPin className="size-3.5" />
-                    {place}
-                  </p>
-                ) : null;
-              })()
-            : null}
-        </div>
-
-        <div className="rounded-[1.5rem] bg-gradient-to-br from-primary to-primary-dark p-5 text-white">
-          <p className="text-sm text-white/85">{t("publicProfile.reputation")}</p>
-          <p className="mt-1 text-4xl font-bold">
-            {ratingSummary.voteCount > 0 ? ratingSummary.average.toFixed(1) : "-"}
-          </p>
-          <div className="mt-2">
-            <StarsDisplay value={ratingSummary.average} size="lg" />
-          </div>
-          <p className="mt-3 text-sm text-white/90">
-            {t("publicProfile.starsLine", {
-              stars: ratingSummary.totalStars,
-              votes: ratingSummary.voteCount,
-            })}
-          </p>
-        </div>
-
-        {showReview ? (
-          <PublicProfileReviewForm
-            toProfileId={data.profile.id}
-            toName={data.profile.full_name}
-          />
-        ) : null}
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-[#F7F5F1] p-3">
-            <p className="text-xs font-semibold uppercase text-muted">
-              {t("publicProfile.tasksDone")}
-            </p>
-            <p className="mt-1 text-2xl font-bold text-ink">{data.tasksDone}</p>
-          </div>
-          <div className="rounded-2xl bg-[#F7F5F1] p-3">
-            <p className="text-xs font-semibold uppercase text-muted">
-              {t("publicProfile.tasksOpen")}
-            </p>
-            <p className="mt-1 text-2xl font-bold text-ink">{data.tasksOpen}</p>
-          </div>
-        </div>
-
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Companies
-          </p>
-          {companies.length === 0 ? (
-            <p className="mt-1 text-sm text-muted">No company registrations yet.</p>
-          ) : (
-            <ul className="mt-2 space-y-2">
-              {companies.map((org) => {
-                const orgRating = summarizeRatings(
-                  data.endorsements.filter((e) => e.org_id === org.id),
-                  data.profile.id,
-                );
-                return (
-                  <li
-                    key={org.id}
-                    className="flex items-center justify-between rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm"
-                  >
-                    <span className="font-semibold text-ink">{org.name}</span>
-                    <StarsDisplay value={orgRating.average} size="sm" showValue />
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {t("talent.reviewsSection")}
-          </p>
-          {recent.length === 0 ? (
-            <p className="mt-2 text-sm text-muted">No votes yet.</p>
-          ) : (
-            <ul className="mt-2 space-y-2">
-              {recent.map((e) => (
-                <li
-                  key={e.id}
-                  className="rounded-2xl border border-black/5 px-3 py-2.5"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <StarsDisplay value={e.stars} size="sm" />
-                    <span className="text-[11px] text-muted">
-                      {weekLabel(e.week_key, locale)}
-                    </span>
-                  </div>
-                  {e.note ? (
-                    <p className="mt-1 text-sm text-ink">{e.note}</p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </Card>
-
-      <p className="mt-6 text-center text-xs text-muted">
-        Built with {brand.name} - {brand.tagline}
-      </p>
     </div>
   );
 }

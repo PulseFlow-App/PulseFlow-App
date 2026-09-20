@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Camera, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
@@ -33,7 +32,6 @@ export function TaskCompleteControl({
 }) {
   const data = useData();
   const { t } = useI18n();
-  const router = useRouter();
   const profile = data.profile;
   const fileRef = useRef<HTMLInputElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -61,7 +59,7 @@ export function TaskCompleteControl({
     window.setTimeout(() => setFlash(false), 700);
   };
 
-  /** Optional review on the person who did the work — stars + optional note. */
+  /** Offer optional review — banner waits for Yes / Not now before opening profile. */
   const openReviewForDoer = (doerId: string | null | undefined) => {
     if (
       !shouldOfferDoerReview({
@@ -80,8 +78,6 @@ export function TaskCompleteControl({
       name: doer?.full_name?.trim() || t("tasks.reviewOfferSomeone"),
       href,
     });
-    // Navigate right away so the review page opens even if this row unmounts.
-    router.push(href);
     return true;
   };
 
