@@ -15,6 +15,7 @@ import type { TaskPriority } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { TaskAssigneeMeta } from "@/components/tasks/task-assignee-meta";
+import { TaskCompleteControl } from "@/components/tasks/task-complete-control";
 import type { MessageKey } from "@/lib/i18n";
 
 type Filter = "all" | "mine" | "urgent";
@@ -58,7 +59,9 @@ export default function TasksPage() {
   }, [data.tasks, data.profile?.id, filter]);
 
   const open = filtered.filter((t) => t.status === "open");
+  const pendingVerify = filtered.filter((t) => t.status === "pending_verify");
   const done = filtered.filter((t) => t.status === "done");
+  const openCount = open.length + pendingVerify.length;
 
   if (!data.ready) return <LoadingState />;
 
@@ -107,7 +110,7 @@ export default function TasksPage() {
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h1 className="type-title">{t("tasks.title")}</h1>
-          <p className="type-meta mt-1">{t("tasks.openCount", { count: open.length })}</p>
+          <p className="type-meta mt-1">{t("tasks.openCount", { count: openCount })}</p>
         </div>
         <Button
           size="xs"
@@ -238,54 +241,99 @@ export default function TasksPage() {
 
       <section className="space-y-2">
         <h2 className="text-sm font-semibold text-muted">{t("tasks.open")}</h2>
-        {open.length === 0 ? (
+        {open.length === 0 && pendingVerify.length === 0 ? (
           <EmptyState title={t("tasks.noOpen")} description={t("tasks.noOpenHint")} />
         ) : (
-          open.map((task) => (
-            <Card key={task.id} className="flex items-center gap-3 p-3">
-              <button
-                type="button"
-                className="size-5 rounded-full border-2 border-secondary"
-                aria-label="Mark done"
-                onClick={() => void data.setTaskStatus(task.id, "done")}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-ink">
-                  <LocalizedText text={task.title} />
-                </p>
-                <TaskAssigneeMeta
+          <>
+            {pendingVerify.map((task) => (
+              <Card key={task.id} className="p-3">
+                <TaskCompleteControl
                   task={task}
-                  villaLabel={task.villa?.name ?? t("common.general")}
-                  schedule={
-                    formatWorkWindow(
-                      task.due_date,
-                      task.time_start,
-                      task.time_end,
-                    ) ??
-                    (task.due_date ? formatShortDate(task.due_date) : null)
+                  meta={
+                    <>
+                      <p className="truncate font-semibold text-ink">
+                        <LocalizedText text={task.title} />
+                      </p>
+                      <TaskAssigneeMeta
+                        task={task}
+                        villaLabel={task.villa?.name ?? t("common.general")}
+                        schedule={
+                          formatWorkWindow(
+                            task.due_date,
+                            task.time_start,
+                            task.time_end,
+                          ) ??
+                          (task.due_date
+                            ? formatShortDate(task.due_date)
+                            : null)
+                        }
+                      />
+                    </>
+                  }
+                  trailing={
+                    <button
+                      type="button"
+                      className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+                      aria-label={t("common.delete")}
+                      onClick={() => void removeTask(task.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
                   }
                 />
-                {task.notes ? (
-                  <p className="mt-0.5 line-clamp-2 text-xs text-muted">
-                    <LocalizedText text={task.notes} />
-                  </p>
-                ) : null}
-              </div>
-              {task.priority === "urgent" ? (
-                <span className="text-[10px] font-bold uppercase text-danger">
-                  {t("tasks.urgent")}
-                </span>
-              ) : null}
-              <button
-                type="button"
-                className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
-                aria-label={t("common.delete")}
-                onClick={() => void removeTask(task.id)}
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </Card>
-          ))
+              </Card>
+            ))}
+            {open.map((task) => (
+              <Card key={task.id} className="p-3">
+                <TaskCompleteControl
+                  task={task}
+                  meta={
+                    <>
+                      <p className="truncate font-semibold text-ink">
+                        <LocalizedText text={task.title} />
+                      </p>
+                      <TaskAssigneeMeta
+                        task={task}
+                        villaLabel={task.villa?.name ?? t("common.general")}
+                        schedule={
+                          formatWorkWindow(
+                            task.due_date,
+                            task.time_start,
+                            task.time_end,
+                          ) ??
+                          (task.due_date
+                            ? formatShortDate(task.due_date)
+                            : null)
+                        }
+                      />
+                      {task.notes ? (
+                        <p className="mt-0.5 line-clamp-2 text-xs text-muted">
+                          <LocalizedText text={task.notes} />
+                        </p>
+                      ) : null}
+                    </>
+                  }
+                  trailing={
+                    <>
+                      {task.priority === "urgent" ? (
+                        <span className="text-[10px] font-bold uppercase text-danger">
+                          {t("tasks.urgent")}
+                        </span>
+                      ) : null}
+                      <button
+                        type="button"
+                        className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+                        aria-label={t("common.delete")}
+                        onClick={() => void removeTask(task.id)}
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </>
+                  }
+                />
+              </Card>
+            ))}
+          </>
         )}
       </section>
 
@@ -295,29 +343,25 @@ export default function TasksPage() {
           <p className="text-sm text-muted">{t("tasks.noDone")}</p>
         ) : (
           done.map((task) => (
-            <Card
-              key={task.id}
-              className="flex items-center gap-3 p-3 opacity-70"
-            >
-              <button
-                type="button"
-                className="size-5 rounded-full bg-secondary"
-                aria-label="Reopen"
-                onClick={() => void data.setTaskStatus(task.id, "open")}
+            <Card key={task.id} className="p-3 opacity-70">
+              <TaskCompleteControl
+                task={task}
+                meta={
+                  <p className="truncate text-sm font-semibold line-through text-ink">
+                    <LocalizedText text={task.title} />
+                  </p>
+                }
+                trailing={
+                  <button
+                    type="button"
+                    className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+                    aria-label={t("common.delete")}
+                    onClick={() => void removeTask(task.id)}
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                }
               />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold line-through text-ink">
-                  <LocalizedText text={task.title} />
-                </p>
-              </div>
-              <button
-                type="button"
-                className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
-                aria-label={t("common.delete")}
-                onClick={() => void removeTask(task.id)}
-              >
-                <Trash2 className="size-4" />
-              </button>
             </Card>
           ))
         )}

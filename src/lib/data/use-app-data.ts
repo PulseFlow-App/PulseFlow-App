@@ -56,6 +56,12 @@ import { canBookServices,
   isTaskAssignableRole,
   personalVillasOnly,
 } from "@/lib/roles";
+import {
+  canApproveTaskVerify,
+  canCompleteTaskDirectly,
+  canSubmitTaskVerify,
+  clearTaskVerifyFields,
+} from "@/lib/tasks/verify";
 import { isConfirmedStayStatus, pickConfirmedStay, canUseSupportStay } from "@/lib/guest/confirmed-stay";
 import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
 import { closeAcceptedStayDateRequests } from "@/lib/guest/stay-date-request";
@@ -740,6 +746,10 @@ function useDemoData(): AppData {
             created_at: now,
             completed_at: null,
             service_order_id: orderId,
+            verify_notes: null,
+            verify_photo_url: null,
+            verify_submitted_by: null,
+            verify_submitted_at: null,
           },
           ...s.tasks,
         ],
@@ -776,7 +786,14 @@ function useDemoData(): AppData {
     },
     setTaskStatus: async (id, status) => {
       assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
       const task = store.tasks.find((t) => t.id === id);
+      if (!task) throw new Error("Task not found.");
+      if (status === "done" && !canCompleteTaskDirectly(profile.role)) {
+        throw new Error(
+          "Submit this task for verification — owners mark done directly.",
+        );
+      }
       updateDemoStore((s) => ({
         ...s,
         tasks: s.tasks.map((t) =>
@@ -786,14 +803,13 @@ function useDemoData(): AppData {
                 status,
                 completed_at:
                   status === "done" ? new Date().toISOString() : null,
+                ...(status === "open" ? clearTaskVerifyFields() : {}),
               }
             : t,
         ),
       }));
       if (
-        task &&
         status === "done" &&
-        profile &&
         task.assigned_to === profile.id &&
         task.created_by !== profile.id
       ) {
@@ -806,6 +822,132 @@ function useDemoData(): AppData {
             href: "/tasks",
             entity_id: task.id,
             audience_profile_ids: [task.created_by],
+          }),
+        ]);
+      }
+    },
+    submitTaskForVerify: async (id, input) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      if (!canSubmitTaskVerify(profile.role)) {
+        throw new Error("Only managers and staff submit tasks for verification.");
+      }
+      const task = store.tasks.find((t) => t.id === id);
+      if (!task || task.status === "done") {
+        throw new Error("Task not found or already done.");
+      }
+      const now = new Date().toISOString();
+      updateDemoStore((s) => ({
+        ...s,
+        tasks: s.tasks.map((t) =>
+          t.id === id
+            ? {
+                ...t,
+                status: "pending_verify" as const,
+                completed_at: null,
+                verify_notes: input?.notes?.trim() || null,
+                verify_photo_url: input?.photo_url ?? null,
+                verify_submitted_by: profile.id,
+                verify_submitted_at: now,
+              }
+            : t,
+        ),
+      }));
+      const audience = ownerManagerIds(store.profiles, task.org_id).filter(
+        (pid) => pid !== profile.id,
+      );
+      if (audience.length) {
+        demoPushNotifications([
+          makeNotification({
+            org_id: task.org_id,
+            kind: "task_completed",
+            title: "Task ready to verify",
+            body: `${profile.full_name} · ${task.title}`,
+            href: "/tasks",
+            entity_id: task.id,
+            audience_profile_ids: audience,
+          }),
+        ]);
+      }
+    },
+    approveTaskVerify: async (id) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      const task = store.tasks.find((t) => t.id === id);
+      if (!task) throw new Error("Task not found.");
+      if (
+        !canApproveTaskVerify(
+          profile,
+          task,
+          store.orgs.find((o) => o.id === profile.org_id)?.kind ?? null,
+        )
+      ) {
+        throw new Error("You cannot approve this verification.");
+      }
+      updateDemoStore((s) => ({
+        ...s,
+        tasks: s.tasks.map((t) =>
+          t.id === id
+            ? {
+                ...t,
+                status: "done" as const,
+                completed_at: new Date().toISOString(),
+              }
+            : t,
+        ),
+      }));
+      if (task.verify_submitted_by && task.verify_submitted_by !== profile.id) {
+        demoPushNotifications([
+          makeNotification({
+            org_id: task.org_id,
+            kind: "task_completed",
+            title: "Task verified",
+            body: task.title,
+            href: "/tasks",
+            entity_id: task.id,
+            audience_profile_ids: [task.verify_submitted_by],
+          }),
+        ]);
+      }
+    },
+    rejectTaskVerify: async (id) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      const task = store.tasks.find((t) => t.id === id);
+      if (!task) throw new Error("Task not found.");
+      if (
+        !canApproveTaskVerify(
+          profile,
+          task,
+          store.orgs.find((o) => o.id === profile.org_id)?.kind ?? null,
+        )
+      ) {
+        throw new Error("You cannot reject this verification.");
+      }
+      const submitter = task.verify_submitted_by;
+      updateDemoStore((s) => ({
+        ...s,
+        tasks: s.tasks.map((t) =>
+          t.id === id
+            ? {
+                ...t,
+                status: "open" as const,
+                completed_at: null,
+                ...clearTaskVerifyFields(),
+              }
+            : t,
+        ),
+      }));
+      if (submitter && submitter !== profile.id) {
+        demoPushNotifications([
+          makeNotification({
+            org_id: task.org_id,
+            kind: "task_assigned",
+            title: "Verification declined",
+            body: task.title,
+            href: "/tasks",
+            entity_id: task.id,
+            audience_profile_ids: [submitter],
           }),
         ]);
       }

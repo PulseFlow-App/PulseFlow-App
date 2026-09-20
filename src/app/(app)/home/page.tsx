@@ -35,8 +35,15 @@ export default function HomePage() {
   const attentionCount = counts.turnover + counts.maintenance;
   const urgent = useMemo(() => {
     return data.tasks
-      .filter((task) => task.status === "open" && task.priority === "urgent")
+      .filter(
+        (task) =>
+          task.priority === "urgent" &&
+          (task.status === "open" || task.status === "pending_verify"),
+      )
       .sort((a, b) => {
+        if (a.status !== b.status) {
+          return a.status === "pending_verify" ? -1 : 1;
+        }
         if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
         if (a.due_date) return -1;
         if (b.due_date) return 1;
@@ -73,7 +80,6 @@ export default function HomePage() {
             <StatGrid counts={counts} />
             <UrgentTasks
               tasks={urgent}
-              onClose={async (id) => data.setTaskStatus(id, "done")}
               onDelete={async (id) => data.deleteTask(id)}
             />
           </Col>

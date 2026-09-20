@@ -15,6 +15,7 @@ import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
+import { TaskCompleteControl } from "@/components/tasks/task-complete-control";
 
 export function StaffHome({ data }: { data: AppData }) {
   const { t } = useI18n();
@@ -48,7 +49,7 @@ export function StaffHome({ data }: { data: AppData }) {
     () =>
       data.tasks.filter(
         (t) =>
-          t.status === "open" &&
+          t.status !== "done" &&
           t.assigned_to === data.profile?.id &&
           (!t.due_date || t.due_date <= today),
       ),
@@ -144,43 +145,44 @@ export function StaffHome({ data }: { data: AppData }) {
         {todayTasks
           .filter((t) => !t.service_order_id)
           .map((task) => (
-            <Card key={task.id} className="flex items-center gap-3 p-3">
-              <button
-                type="button"
-                className="size-5 rounded-full border-2 border-secondary"
-                aria-label="Mark done"
-                onClick={() => void data.setTaskStatus(task.id, "done")}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-ink">
-                  <LocalizedText text={task.title} />
-                </p>
-                <p className="text-xs text-muted">
-                  {task.villa?.name ?? t("common.general")}
-                  {formatWorkWindow(
-                    task.due_date,
-                    task.time_start,
-                    task.time_end,
-                  )
-                    ? ` · ${formatWorkWindow(
+            <Card key={task.id} className="p-3">
+              <TaskCompleteControl
+                task={task}
+                meta={
+                  <>
+                    <p className="truncate font-semibold text-ink">
+                      <LocalizedText text={task.title} />
+                    </p>
+                    <p className="text-xs text-muted">
+                      {task.villa?.name ?? t("common.general")}
+                      {formatWorkWindow(
                         task.due_date,
                         task.time_start,
                         task.time_end,
-                      )}`
-                    : ""}
-                </p>
-              </div>
-              <button
-                type="button"
-                className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
-                aria-label={t("common.delete")}
-                onClick={() => {
-                  if (!window.confirm(t("tasks.deleteConfirm"))) return;
-                  void data.deleteTask(task.id);
-                }}
-              >
-                <Trash2 className="size-4" />
-              </button>
+                      )
+                        ? ` · ${formatWorkWindow(
+                            task.due_date,
+                            task.time_start,
+                            task.time_end,
+                          )}`
+                        : ""}
+                    </p>
+                  </>
+                }
+                trailing={
+                  <button
+                    type="button"
+                    className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+                    aria-label={t("common.delete")}
+                    onClick={() => {
+                      if (!window.confirm(t("tasks.deleteConfirm"))) return;
+                      void data.deleteTask(task.id);
+                    }}
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                }
+              />
             </Card>
           ))}
       </section>

@@ -1060,6 +1060,10 @@ export function demoCreateServiceOrder(
         created_at: order.created_at,
         completed_at: null,
         service_order_id: orderId,
+        verify_notes: null,
+        verify_photo_url: null,
+        verify_submitted_by: null,
+        verify_submitted_at: null,
       },
       ...s.tasks,
     ];

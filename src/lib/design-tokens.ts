@@ -24,7 +24,7 @@ export const colors = {
 export type VillaStatus = "available" | "occupied" | "turnover" | "maintenance";
 export type CleaningStatus = "not_needed" | "in_progress" | "done";
 export type TaskPriority = "normal" | "urgent";
-export type TaskStatus = "open" | "done";
+export type TaskStatus = "open" | "pending_verify" | "done";
 export type BillStatus = "pending" | "paid";
 export type BillCategory =
   | "cleaning"

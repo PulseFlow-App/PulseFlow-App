@@ -75,6 +75,12 @@ import { resolveSupportDepositAction } from "@/lib/guest/handle-support-deposit"
 import { resolveSupportCancelAction } from "@/lib/guest/handle-support-cancel";
 import { resolveSupportRefundAction } from "@/lib/guest/handle-support-refund";
 import {
+  canApproveTaskVerify,
+  canCompleteTaskDirectly,
+  canSubmitTaskVerify,
+  clearTaskVerifyFields,
+} from "@/lib/tasks/verify";
+import {
   formatOrderWhen,
   canCancelServiceOrder,
   canAgreeServiceOrder,
@@ -248,6 +254,9 @@ export function useSupabaseData(enabled: boolean): AppData {
     updateProfileName: async () => undefined,
     createTask: async () => undefined,
     setTaskStatus: async () => undefined,
+    submitTaskForVerify: async () => undefined,
+    approveTaskVerify: async () => undefined,
+    rejectTaskVerify: async () => undefined,
     deleteTask: async () => undefined,
     createContact: async () => undefined,
     updateContact: async () => undefined,
@@ -509,6 +518,10 @@ export function useSupabaseData(enabled: boolean): AppData {
       ((tasksRes.data as Task[]) ?? []).map((t) => ({
         ...t,
         notes: t.notes ?? null,
+        verify_notes: t.verify_notes ?? null,
+        verify_photo_url: t.verify_photo_url ?? null,
+        verify_submitted_by: t.verify_submitted_by ?? null,
+        verify_submitted_at: t.verify_submitted_at ?? null,
       })),
     );
     setBills((billsRes.data as Bill[]) ?? []);
@@ -1740,21 +1753,27 @@ export function useSupabaseData(enabled: boolean): AppData {
       await refresh();
     },
     setTaskStatus: async (id, status) => {
+      if (!profile) throw new Error("Not signed in.");
       const task = tasks.find((t) => t.id === id);
       if (task) requireOrgWrite(task.org_id);
+      if (status === "done" && !canCompleteTaskDirectly(profile.role)) {
+        throw new Error(
+          "Submit this task for verification — owners mark done directly.",
+        );
+      }
       const supabase = createClient();
       const { error } = await supabase
         .from("tasks")
         .update({
           status,
           completed_at: status === "done" ? new Date().toISOString() : null,
+          ...(status === "open" ? clearTaskVerifyFields() : {}),
         })
         .eq("id", id);
       if (error) throw error;
       if (
         task &&
         status === "done" &&
-        profile &&
         task.assigned_to === profile.id &&
         task.created_by !== profile.id
       ) {
@@ -1768,6 +1787,122 @@ export function useSupabaseData(enabled: boolean): AppData {
               href: "/tasks",
               entity_id: task.id,
               audience_profile_ids: [task.created_by],
+            }),
+          ),
+        ]);
+      }
+      await refresh();
+    },
+    submitTaskForVerify: async (id, input) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (!canSubmitTaskVerify(profile.role)) {
+        throw new Error("Only managers and staff submit tasks for verification.");
+      }
+      const task = tasks.find((t) => t.id === id);
+      if (!task) throw new Error("Task not found.");
+      requireOrgWrite(task.org_id);
+      if (task.status === "done") throw new Error("Task already done.");
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          status: "pending_verify",
+          completed_at: null,
+          verify_notes: input?.notes?.trim() || null,
+          verify_photo_url: input?.photo_url ?? null,
+          verify_submitted_by: profile.id,
+          verify_submitted_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+      if (error) throw error;
+      const audience = ownerManagerIds(profiles, task.org_id).filter(
+        (pid) => pid !== profile.id,
+      );
+      if (audience.length) {
+        await insertNotifications(supabase, [
+          toInsertRow(
+            makeNotification({
+              org_id: task.org_id,
+              kind: "task_completed",
+              title: "Task ready to verify",
+              body: `${profile.full_name} · ${task.title}`,
+              href: "/tasks",
+              entity_id: task.id,
+              audience_profile_ids: audience,
+            }),
+          ),
+        ]);
+      }
+      await refresh();
+    },
+    approveTaskVerify: async (id) => {
+      if (!profile) throw new Error("Not signed in.");
+      const task = tasks.find((t) => t.id === id);
+      if (!task) throw new Error("Task not found.");
+      requireOrgWrite(task.org_id);
+      if (
+        !canApproveTaskVerify(profile, task, organization?.kind ?? null)
+      ) {
+        throw new Error("You cannot approve this verification.");
+      }
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          status: "done",
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+      if (error) throw error;
+      if (task.verify_submitted_by && task.verify_submitted_by !== profile.id) {
+        await insertNotifications(supabase, [
+          toInsertRow(
+            makeNotification({
+              org_id: task.org_id,
+              kind: "task_completed",
+              title: "Task verified",
+              body: task.title,
+              href: "/tasks",
+              entity_id: task.id,
+              audience_profile_ids: [task.verify_submitted_by],
+            }),
+          ),
+        ]);
+      }
+      await refresh();
+    },
+    rejectTaskVerify: async (id) => {
+      if (!profile) throw new Error("Not signed in.");
+      const task = tasks.find((t) => t.id === id);
+      if (!task) throw new Error("Task not found.");
+      requireOrgWrite(task.org_id);
+      if (
+        !canApproveTaskVerify(profile, task, organization?.kind ?? null)
+      ) {
+        throw new Error("You cannot reject this verification.");
+      }
+      const submitter = task.verify_submitted_by;
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          status: "open",
+          completed_at: null,
+          ...clearTaskVerifyFields(),
+        })
+        .eq("id", id);
+      if (error) throw error;
+      if (submitter && submitter !== profile.id) {
+        await insertNotifications(supabase, [
+          toInsertRow(
+            makeNotification({
+              org_id: task.org_id,
+              kind: "task_assigned",
+              title: "Verification declined",
+              body: task.title,
+              href: "/tasks",
+              entity_id: task.id,
+              audience_profile_ids: [submitter],
             }),
           ),
         ]);

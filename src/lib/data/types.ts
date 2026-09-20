@@ -167,6 +167,15 @@ export type AppData = {
     notes?: string | null;
   }) => Promise<void>;
   setTaskStatus: (id: string, status: TaskStatus) => Promise<void>;
+  /** Manager/staff: request completion with optional notes + photo. */
+  submitTaskForVerify: (
+    id: string,
+    input?: { notes?: string | null; photo_url?: string | null },
+  ) => Promise<void>;
+  /** Owner/manager: approve a pending verification → done. */
+  approveTaskVerify: (id: string) => Promise<void>;
+  /** Owner/manager: send a verification back to open. */
+  rejectTaskVerify: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   createContact: (input: Omit<Contact, "id" | "org_id">) => Promise<void>;
   updateContact: (

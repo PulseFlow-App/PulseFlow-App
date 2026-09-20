@@ -230,6 +230,11 @@ export type Task = {
   created_at: string;
   completed_at: string | null;
   service_order_id: string | null;
+  /** Proof notes when staff/manager requests completion verify. */
+  verify_notes: string | null;
+  verify_photo_url: string | null;
+  verify_submitted_by: string | null;
+  verify_submitted_at: string | null;
 };
 
 export type Bill = {

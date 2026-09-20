@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { TaskAssigneeMeta } from "@/components/tasks/task-assignee-meta";
+import { TaskCompleteControl } from "@/components/tasks/task-complete-control";
 import type { MessageKey } from "@/lib/i18n";
 
 function CancelOrderButton({ orderId }: { orderId: string }) {
@@ -198,7 +199,7 @@ export default function JobsPage() {
   const myTasks = useMemo(() => {
     if (!data.profile) return [];
     return data.tasks.filter((task) => {
-      if (task.status !== "open") return false;
+      if (task.status === "done") return false;
       if (staff) return task.assigned_to === data.profile!.id;
       return true;
     });
@@ -345,44 +346,47 @@ export default function JobsPage() {
               task.time_end,
             );
             return (
-              <Card key={task.id} className="flex items-center gap-3 p-3">
-                <button
-                  type="button"
-                  className="size-5 rounded-full border-2 border-secondary"
-                  aria-label="Mark done"
-                  onClick={() => void data.setTaskStatus(task.id, "done")}
+              <Card key={task.id} className="p-3">
+                <TaskCompleteControl
+                  task={task}
+                  meta={
+                    <>
+                      <p className="truncate font-semibold text-ink">
+                        <LocalizedText text={task.title} />
+                      </p>
+                      <TaskAssigneeMeta
+                        task={task}
+                        villaLabel={task.villa?.name ?? t("common.general")}
+                        schedule={workWindow}
+                      />
+                      {task.notes ? (
+                        <p className="mt-0.5 line-clamp-2 text-xs text-muted">
+                          <LocalizedText text={task.notes} />
+                        </p>
+                      ) : null}
+                    </>
+                  }
+                  trailing={
+                    <>
+                      {task.priority === "urgent" ? (
+                        <span className="text-[10px] font-bold uppercase text-danger">
+                          Urgent
+                        </span>
+                      ) : null}
+                      <button
+                        type="button"
+                        className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+                        aria-label={t("common.delete")}
+                        onClick={() => {
+                          if (!window.confirm(t("tasks.deleteConfirm"))) return;
+                          void data.deleteTask(task.id);
+                        }}
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </>
+                  }
                 />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-ink">
-                    <LocalizedText text={task.title} />
-                  </p>
-                  <TaskAssigneeMeta
-                    task={task}
-                    villaLabel={task.villa?.name ?? t("common.general")}
-                    schedule={workWindow}
-                  />
-                  {task.notes ? (
-                    <p className="mt-0.5 line-clamp-2 text-xs text-muted">
-                      <LocalizedText text={task.notes} />
-                    </p>
-                  ) : null}
-                </div>
-                {task.priority === "urgent" ? (
-                  <span className="text-[10px] font-bold uppercase text-danger">
-                    Urgent
-                  </span>
-                ) : null}
-                <button
-                  type="button"
-                  className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
-                  aria-label={t("common.delete")}
-                  onClick={() => {
-                    if (!window.confirm(t("tasks.deleteConfirm"))) return;
-                    void data.deleteTask(task.id);
-                  }}
-                >
-                  <Trash2 className="size-4" />
-                </button>
               </Card>
             );
           })
