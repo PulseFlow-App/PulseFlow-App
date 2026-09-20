@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Star, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -167,7 +166,6 @@ function ReopenOrderPanel({ orderId }: { orderId: string }) {
 export default function JobsPage() {
   const data = useData();
   const { t } = useI18n();
-  const router = useRouter();
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
   const booker = data.profile
     ? canBookServices(data.profile.role, data.orgKind)
@@ -384,6 +382,7 @@ export default function JobsPage() {
                             staffName ||
                             t("tasks.reviewOfferSomeone"),
                           href,
+                          toProfileId: order.staff_profile_id!,
                           workLabel: [
                             order.service_type,
                             order.location_label,
@@ -391,7 +390,6 @@ export default function JobsPage() {
                             .filter(Boolean)
                             .join(" · "),
                         });
-                        router.push(href);
                       }}
                     >
                       <Star className="size-4" />

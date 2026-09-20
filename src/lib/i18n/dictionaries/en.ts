@@ -300,8 +300,9 @@ const en = {
   "tasks.awaitingVerify": "To verify",
   "tasks.reviewOfferTitle": "Review {name}?",
   "tasks.reviewOfferHint":
-    "They finished this job. Leave a weekly review on their profile.",
+    "They finished this job. Stars, an optional note, and a result photo.",
   "tasks.reviewOfferYes": "Leave a review",
+  "tasks.reviewOfferSubmit": "Submit",
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
   "tasks.reviewOfferOptional": "Optional — you can skip.",

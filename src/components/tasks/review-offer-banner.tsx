@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Camera, Star } from "lucide-react";
+import { Camera } from "lucide-react";
+import { StarsPicker } from "@/components/endorsements/stars";
 import { Button } from "@/components/ui/button";
 import { Label, Textarea } from "@/components/ui/input";
 import { useData } from "@/lib/data/use-app-data";
@@ -18,6 +18,7 @@ export type StoredReviewOffer = {
   taskId: string;
   name: string;
   href: string;
+  toProfileId: string;
   /** Task title or job type shown as context. */
   workLabel?: string;
   /** Draft note about this job/task (optional). */
@@ -41,15 +42,17 @@ export function readAnyStoredReviewOffer(): StoredReviewOffer | null {
       const parsed = JSON.parse(raw) as {
         name?: string;
         href?: string;
+        toProfileId?: string;
         workLabel?: string;
         jobNote?: string;
         photoUrl?: string;
       };
-      if (!parsed?.href || !parsed?.name) continue;
+      if (!parsed?.href || !parsed?.name || !parsed?.toProfileId) continue;
       return {
         taskId: key.slice(STORAGE_PREFIX.length),
         name: parsed.name,
         href: parsed.href,
+        toProfileId: parsed.toProfileId,
         workLabel: parsed.workLabel?.trim() || undefined,
         jobNote: parsed.jobNote ?? "",
         photoUrl: parsed.photoUrl ?? undefined,
@@ -66,6 +69,7 @@ export function writeStoredReviewOffer(
   offer: {
     name: string;
     href: string;
+    toProfileId: string;
     workLabel?: string | null;
     jobNote?: string | null;
     photoUrl?: string | null;
@@ -77,6 +81,7 @@ export function writeStoredReviewOffer(
       JSON.stringify({
         name: offer.name,
         href: offer.href,
+        toProfileId: offer.toProfileId,
         workLabel: offer.workLabel?.trim() || undefined,
         jobNote: offer.jobNote ?? "",
         photoUrl: offer.photoUrl?.trim() || undefined,
@@ -157,13 +162,14 @@ export function takeReviewDraftNote(): string {
 export function ReviewOfferBanner() {
   const data = useData();
   const { t } = useI18n();
-  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [offer, setOffer] = useState<StoredReviewOffer | null>(null);
+  const [stars, setStars] = useState<1 | 2 | 3 | 4 | 5>(5);
   const [jobNote, setJobNote] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
     const sync = () => {
@@ -171,7 +177,9 @@ export function ReviewOfferBanner() {
       setOffer(next);
       setJobNote(next?.jobNote ?? "");
       setPhotoUrl(next?.photoUrl ?? null);
+      setStars(5);
       setError(null);
+      setDone(false);
     };
     sync();
     window.addEventListener(REVIEW_OFFER_EVENT, sync);
@@ -184,16 +192,38 @@ export function ReviewOfferBanner() {
 
   if (!offer) return null;
 
+  if (done) {
+    return (
+      <div className="pointer-events-none fixed inset-x-0 bottom-[max(5.5rem,calc(4.5rem+env(safe-area-inset-bottom)))] z-40 px-3 md:bottom-6">
+        <div className="pointer-events-auto mx-auto max-w-lg rounded-2xl border border-secondary/30 bg-card p-3 text-center text-sm font-semibold text-secondary shadow-lg">
+          {t("contacts.reviewSaved")}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-[max(5.5rem,calc(4.5rem+env(safe-area-inset-bottom)))] z-40 px-3 md:bottom-6">
-      <div className="pointer-events-auto mx-auto max-w-lg space-y-2 rounded-2xl border border-primary/20 bg-card p-3 shadow-lg">
-        <p className="text-sm font-semibold text-ink">
-          {t("tasks.reviewOfferTitle", { name: offer.name })}
-        </p>
-        <p className="text-xs text-muted">{t("tasks.reviewOfferHint")}</p>
-        {offer.workLabel ? (
-          <p className="text-xs font-semibold text-ink">{offer.workLabel}</p>
-        ) : null}
+      <div className="pointer-events-auto mx-auto max-w-lg space-y-2.5 rounded-2xl border border-primary/20 bg-card p-3 shadow-lg">
+        <div>
+          <p className="text-sm font-semibold text-ink">
+            {t("tasks.reviewOfferTitle", { name: offer.name })}
+          </p>
+          <p className="text-xs text-muted">{t("tasks.reviewOfferHint")}</p>
+          {offer.workLabel ? (
+            <p className="mt-1 text-xs font-semibold text-ink">
+              {offer.workLabel}
+            </p>
+          ) : null}
+        </div>
+
+        <div>
+          <Label className="text-xs">{t("contacts.reviewStars")}</Label>
+          <div className="mt-0.5">
+            <StarsPicker value={stars} onChange={setStars} />
+          </div>
+        </div>
+
         <div>
           <Label className="text-xs">{t("tasks.reviewOfferJobNote")}</Label>
           <Textarea
@@ -204,6 +234,7 @@ export function ReviewOfferBanner() {
             placeholder={t("tasks.reviewOfferJobNotePlaceholder")}
           />
         </div>
+
         <div>
           <input
             ref={fileRef}
@@ -236,7 +267,7 @@ export function ReviewOfferBanner() {
               <img
                 src={photoUrl}
                 alt=""
-                className="size-14 rounded-lg object-cover"
+                className="size-12 rounded-lg object-cover"
               />
               <button
                 type="button"
@@ -249,39 +280,50 @@ export function ReviewOfferBanner() {
           ) : (
             <Button
               type="button"
-              size="sm"
+              size="xs"
               variant="ghost"
               className="w-full"
               disabled={busy}
               onClick={() => fileRef.current?.click()}
             >
-              <Camera className="size-4" />
+              <Camera className="size-3.5" />
               {busy ? t("common.loading") : t("tasks.reviewOfferAddPhoto")}
             </Button>
           )}
         </div>
+
         {error ? <p className="text-xs text-danger">{error}</p> : null}
+
         <div className="flex gap-2">
           <Button
-            size="sm"
+            size="xs"
             className="flex-1"
             disabled={busy}
             onClick={() => {
-              const href = offer.href;
-              writeReviewDraft({
-                note: jobNote,
-                photoUrl,
-                workLabel: offer.workLabel,
-              });
-              clearStoredReviewOffer(offer.taskId);
-              router.push(href);
+              setBusy(true);
+              setError(null);
+              void data
+                .castEndorsement(offer.toProfileId, stars, jobNote, {
+                  photoUrl,
+                  workLabel: offer.workLabel ?? null,
+                })
+                .then(() => {
+                  clearStoredReviewOffer(offer.taskId);
+                  setDone(true);
+                  window.setTimeout(() => setDone(false), 2200);
+                })
+                .catch((err: unknown) =>
+                  setError(
+                    err instanceof Error ? err.message : t("common.error"),
+                  ),
+                )
+                .finally(() => setBusy(false));
             }}
           >
-            <Star className="size-4" />
-            {t("tasks.reviewOfferYes")}
+            {busy ? t("common.loading") : t("tasks.reviewOfferSubmit")}
           </Button>
           <Button
-            size="sm"
+            size="xs"
             variant="ghost"
             disabled={busy}
             onClick={() => clearStoredReviewOffer(offer.taskId)}

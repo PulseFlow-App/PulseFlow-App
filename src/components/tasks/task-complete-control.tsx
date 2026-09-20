@@ -60,7 +60,7 @@ export function TaskCompleteControl({
     window.setTimeout(() => setFlash(false), 700);
   };
 
-  /** Offer optional review — banner waits for Yes / Not now before opening profile. */
+  /** Offer optional review in the bottom banner (stars / note / photo / Submit). */
   const openReviewForDoer = (doerId: string | null | undefined) => {
     if (
       !shouldOfferDoerReview({
@@ -84,6 +84,7 @@ export function TaskCompleteControl({
     writeStoredReviewOffer(task.id, {
       name: doer?.full_name?.trim() || t("tasks.reviewOfferSomeone"),
       href,
+      toProfileId: doerId,
       workLabel,
     });
     return true;
