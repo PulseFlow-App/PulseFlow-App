@@ -10,7 +10,6 @@ import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { AgreeButton } from "@/components/jobs/agree-button";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { useData } from "@/lib/data/use-app-data";
-import { formatWorkWindow } from "@/lib/notifications";
 import {
   canCancelServiceOrder,
   canAgreeServiceOrder,
@@ -26,8 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
-import { TaskAssigneeMeta } from "@/components/tasks/task-assignee-meta";
-import { TaskCompleteControl } from "@/components/tasks/task-complete-control";
+import { TaskRow } from "@/components/tasks/task-row";
 import type { MessageKey } from "@/lib/i18n";
 
 function CancelOrderButton({ orderId }: { orderId: string }) {
@@ -190,8 +188,8 @@ export default function JobsPage() {
       return o.status !== "done";
     });
     return [...list].sort((a, b) => {
-      const da = `${a.scheduled_date}${a.time_start ?? ""}`;
-      const db = `${b.scheduled_date}${b.time_start ?? ""}`;
+      const da = `${a.scheduled_date ?? ""}${a.time_start ?? ""}`;
+      const db = `${b.scheduled_date ?? ""}${b.time_start ?? ""}`;
       return da.localeCompare(db);
     });
   }, [data.serviceOrders, data.profile, staff]);
@@ -339,38 +337,15 @@ export default function JobsPage() {
         {myTasks.length === 0 ? (
           <p className="text-sm text-muted">{t("jobs.noOpenTasks")}</p>
         ) : (
-          myTasks.map((task) => {
-            const workWindow = formatWorkWindow(
-              task.due_date,
-              task.time_start,
-              task.time_end,
-            );
-            return (
+          myTasks.map((task) => (
               <Card key={task.id} className="p-3">
-                <TaskCompleteControl
+                <TaskRow
                   task={task}
-                  meta={
-                    <>
-                      <p className="truncate font-semibold text-ink">
-                        <LocalizedText text={task.title} />
-                      </p>
-                      <TaskAssigneeMeta
-                        task={task}
-                        villaLabel={task.villa?.name ?? t("common.general")}
-                        schedule={workWindow}
-                      />
-                      {task.notes ? (
-                        <p className="mt-0.5 line-clamp-2 text-xs text-muted">
-                          <LocalizedText text={task.notes} />
-                        </p>
-                      ) : null}
-                    </>
-                  }
                   trailing={
                     <>
                       {task.priority === "urgent" ? (
                         <span className="text-[10px] font-bold uppercase text-danger">
-                          Urgent
+                          {t("tasks.urgent")}
                         </span>
                       ) : null}
                       <button
@@ -388,8 +363,7 @@ export default function JobsPage() {
                   }
                 />
               </Card>
-            );
-          })
+            ))
         )}
       </section>
 

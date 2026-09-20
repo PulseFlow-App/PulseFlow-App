@@ -1,13 +1,14 @@
 "use client";
 
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StarsDisplay } from "@/components/endorsements/stars";
+import { PublicProfileReviewForm } from "@/components/endorsements/public-profile-review";
 import { getPublicProfileBySlug } from "@/lib/demo/store";
 import { isDemoMode } from "@/lib/supabase/client";
 import {
@@ -65,8 +66,28 @@ export default function PublicProfilePage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-dvh items-center justify-center bg-sand font-sans text-sm text-muted">
+          Loading…
+        </div>
+      }
+    >
+      <PublicProfilePageInner params={params} />
+    </Suspense>
+  );
+}
+
+function PublicProfilePageInner({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = use(params);
   const { t, locale } = useI18n();
+  const searchParams = useSearchParams();
+  const showReview = searchParams.get("review") === "1";
   const [data, setData] = useState<PublicData | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -196,6 +217,13 @@ export default function PublicProfilePage({
             })}
           </p>
         </div>
+
+        {showReview ? (
+          <PublicProfileReviewForm
+            toProfileId={data.profile.id}
+            toName={data.profile.full_name}
+          />
+        ) : null}
 
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-[#F7F5F1] p-3">

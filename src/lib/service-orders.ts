@@ -46,22 +46,32 @@ export function formatOrderWhen(order: ServiceOrder) {
       order.scheduled_date,
       order.time_start,
       order.time_end,
-    ) ?? order.scheduled_date
+    ) ?? "Soon"
   );
 }
 
 /** Scheduled start as Date (local). Missing time → start of scheduled_date. */
-export function orderScheduledStart(order: Pick<ServiceOrder, "scheduled_date" | "time_start">) {
+export function orderScheduledStart(
+  order: Pick<ServiceOrder, "scheduled_date" | "time_start">,
+) {
+  if (!order.scheduled_date) return null;
   const time = (order.time_start || "00:00").slice(0, 5);
   return new Date(`${order.scheduled_date}T${time}:00`);
 }
 
-export function hoursUntilOrderStart(order: Pick<ServiceOrder, "scheduled_date" | "time_start">) {
-  return (orderScheduledStart(order).getTime() - Date.now()) / MS_PER_HOUR;
+export function hoursUntilOrderStart(
+  order: Pick<ServiceOrder, "scheduled_date" | "time_start">,
+) {
+  const start = orderScheduledStart(order);
+  if (!start) return Number.POSITIVE_INFINITY;
+  return (start.getTime() - Date.now()) / MS_PER_HOUR;
 }
 
 /** True when the job is still more than 24h away (UI cancel/revoke allowed). */
-export function canUseJobUiCancel(order: Pick<ServiceOrder, "scheduled_date" | "time_start">) {
+export function canUseJobUiCancel(
+  order: Pick<ServiceOrder, "scheduled_date" | "time_start">,
+) {
+  if (!order.scheduled_date) return true;
   return hoursUntilOrderStart(order) > JOB_UI_CANCEL_HOURS_BEFORE;
 }
 
@@ -227,8 +237,8 @@ export function resolveCancelJobTarget(
   }
   if (!pool.length) return null;
   return [...pool].sort((a, b) => {
-    const da = `${a.scheduled_date}${a.time_start ?? ""}`;
-    const db = `${b.scheduled_date}${b.time_start ?? ""}`;
+    const da = `${a.scheduled_date ?? ""}${a.time_start ?? ""}`;
+    const db = `${b.scheduled_date ?? ""}${b.time_start ?? ""}`;
     return da.localeCompare(db);
   })[0]!;
 }

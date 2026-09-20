@@ -6,6 +6,7 @@ import { AppHeader } from "./app-header";
 import { BottomNav, SideNav } from "./bottom-nav";
 import { OfflineBanner } from "@/components/ui/empty-state";
 import { TrialBanner } from "@/components/billing/billing-card";
+import { ReviewOfferBanner } from "@/components/tasks/review-offer-banner";
 import { useData } from "@/lib/data/use-app-data";
 import { useIsDemoMode } from "@/lib/demo/use-is-demo-mode";
 import { useI18n } from "@/lib/i18n/provider";
@@ -84,6 +85,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <BottomNav />
+        <ReviewOfferBanner />
       </div>
     </div>
   );

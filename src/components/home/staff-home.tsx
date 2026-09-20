@@ -9,13 +9,12 @@ import { AgreeButton } from "@/components/jobs/agree-button";
 import { HeroCard } from "@/components/home/hero-card";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import type { AppData } from "@/lib/data/use-app-data";
-import { formatWorkWindow } from "@/lib/notifications";
 import { formatOrderWhen } from "@/lib/service-orders";
 import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
-import { TaskCompleteControl } from "@/components/tasks/task-complete-control";
+import { TaskRow } from "@/components/tasks/task-row";
 
 export function StaffHome({ data }: { data: AppData }) {
   const { t } = useI18n();
@@ -36,7 +35,7 @@ export function StaffHome({ data }: { data: AppData }) {
         (o) =>
           (o.staff_profile_id === data.profile?.id ||
             (!o.staff_profile_id && o.status === "pending_ack")) &&
-          o.scheduled_date <= today &&
+          (!o.scheduled_date || o.scheduled_date <= today) &&
           o.status !== "cancelled" &&
           o.status !== "done",
       ),
@@ -146,29 +145,9 @@ export function StaffHome({ data }: { data: AppData }) {
           .filter((t) => !t.service_order_id)
           .map((task) => (
             <Card key={task.id} className="p-3">
-              <TaskCompleteControl
+              <TaskRow
                 task={task}
-                meta={
-                  <>
-                    <p className="truncate font-semibold text-ink">
-                      <LocalizedText text={task.title} />
-                    </p>
-                    <p className="text-xs text-muted">
-                      {task.villa?.name ?? t("common.general")}
-                      {formatWorkWindow(
-                        task.due_date,
-                        task.time_start,
-                        task.time_end,
-                      )
-                        ? ` · ${formatWorkWindow(
-                            task.due_date,
-                            task.time_start,
-                            task.time_end,
-                          )}`
-                        : ""}
-                    </p>
-                  </>
-                }
+                showAssignee={false}
                 trailing={
                   <button
                     type="button"

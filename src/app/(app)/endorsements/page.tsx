@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Copy, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,8 +20,17 @@ import { useI18n } from "@/lib/i18n/provider";
 import { labelRole } from "@/lib/i18n/labels";
 
 export default function EndorsementsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <EndorsementsPageInner />
+    </Suspense>
+  );
+}
+
+function EndorsementsPageInner() {
   const data = useData();
   const { t, locale } = useI18n();
+  const searchParams = useSearchParams();
   const currentWeek = weekKey();
   const canVote = data.profile
     ? canCastEndorsement(data.profile.role, data.orgKind)
@@ -45,6 +55,16 @@ export default function EndorsementsPage() {
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const to = searchParams.get("to")?.trim();
+    if (!to) return;
+    if (teammates.some((p) => p.id === to)) {
+      setSelectedId(to);
+      setOk(null);
+      setError(null);
+    }
+  }, [searchParams, teammates]);
 
   if (!data.ready || !data.profile) return <LoadingState />;
 

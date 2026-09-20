@@ -202,7 +202,7 @@ export type ServiceOrder = {
   location_label: string | null;
   service_type: string;
   details: string | null;
-  scheduled_date: string;
+  scheduled_date: string | null;
   time_start: string | null;
   time_end: string | null;
   status: ServiceOrderStatus;
@@ -219,6 +219,8 @@ export type Task = {
   title: string;
   /** Optional free-text notes from the creator. */
   notes: string | null;
+  /** Optional example photo showing what needs doing. */
+  photo_url: string | null;
   priority: TaskPriority;
   assigned_to: string | null;
   status: TaskStatus;

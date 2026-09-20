@@ -518,6 +518,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       ((tasksRes.data as Task[]) ?? []).map((t) => ({
         ...t,
         notes: t.notes ?? null,
+        photo_url: t.photo_url ?? null,
         verify_notes: t.verify_notes ?? null,
         verify_photo_url: t.verify_photo_url ?? null,
         verify_submitted_by: t.verify_submitted_by ?? null,
@@ -1048,12 +1049,13 @@ export function useSupabaseData(enabled: boolean): AppData {
       const location =
         villa?.name ?? input.location_label?.trim() ?? "Location TBC";
       const serviceType = capitalizeLabel(input.service_type);
+      const scheduledDate = input.scheduled_date?.trim() || null;
       const when =
         formatWorkWindow(
-          input.scheduled_date,
+          scheduledDate,
           input.time_start ?? null,
           input.time_end ?? null,
-        ) ?? input.scheduled_date;
+        ) ?? "Soon";
 
       const { data: order, error } = await supabase
         .from("service_orders")
@@ -1066,7 +1068,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           location_label: location,
           service_type: serviceType,
           details: input.details?.trim() || null,
-          scheduled_date: input.scheduled_date,
+          scheduled_date: scheduledDate,
           time_start: input.time_start || null,
           time_end: input.time_end || null,
           status: "pending_ack",
@@ -1087,7 +1089,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           priority: "normal",
           assigned_to: contact.linked_profile_id,
           status: "open",
-          due_date: input.scheduled_date,
+          due_date: scheduledDate,
           time_start: input.time_start || null,
           time_end: input.time_end || null,
           created_by: profile.id,
@@ -1651,18 +1653,18 @@ export function useSupabaseData(enabled: boolean): AppData {
         ? villas.find((v) => v.id === input.villa_id)
         : null;
       const location = villa?.name ?? "General";
-      const scheduledDate =
-        input.due_date || new Date().toISOString().slice(0, 10);
+      const scheduledDate = input.due_date?.trim() || null;
       const when =
         formatWorkWindow(
           scheduledDate,
           input.time_start ?? null,
           input.time_end ?? null,
-        ) ?? scheduledDate;
+        ) ?? "Soon";
       const assignee = assigneeId
         ? profiles.find((p) => p.id === assigneeId)
         : null;
       const notes = input.notes?.trim() || null;
+      const photoUrl = input.photo_url?.trim() || null;
 
       const { data: order, error: orderError } = await supabase
         .from("service_orders")
@@ -1702,6 +1704,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           body: chatBody,
           service_order_id: order.id,
           channel: "request",
+          attachment_url: photoUrl,
         })
         .select("id")
         .single();
@@ -1714,10 +1717,11 @@ export function useSupabaseData(enabled: boolean): AppData {
           status: "open",
           title,
           notes,
+          photo_url: photoUrl,
           villa_id: input.villa_id,
           priority: input.priority,
           assigned_to: assigneeId,
-          due_date: input.due_date,
+          due_date: scheduledDate,
           time_start: input.time_start ?? null,
           time_end: input.time_end ?? null,
           service_order_id: order.id,

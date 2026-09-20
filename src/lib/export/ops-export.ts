@@ -190,7 +190,7 @@ export function serviceOrdersToCsv(orders: ServiceOrder[]): string {
       o.location_label ?? "",
       formatOrderWhen(o),
       o.status,
-      o.scheduled_date,
+      o.scheduled_date ?? "",
     ]),
   ];
   return rowsToCsv(rows);

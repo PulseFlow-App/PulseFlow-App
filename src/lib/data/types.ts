@@ -73,7 +73,7 @@ export type AppData = {
     location_label?: string | null;
     service_type: string;
     details?: string | null;
-    scheduled_date: string;
+    scheduled_date?: string | null;
     time_start?: string | null;
     time_end?: string | null;
   }) => Promise<ServiceOrder>;
@@ -165,6 +165,7 @@ export type AppData = {
     time_start?: string | null;
     time_end?: string | null;
     notes?: string | null;
+    photo_url?: string | null;
   }) => Promise<void>;
   setTaskStatus: (id: string, status: TaskStatus) => Promise<void>;
   /** Manager/staff: request completion with optional notes + photo. */

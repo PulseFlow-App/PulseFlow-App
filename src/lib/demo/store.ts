@@ -245,6 +245,8 @@ function normalizeStore(store: DemoStore): DemoStore {
     ].map((t) => ({
       ...t,
       title: plainDash(t.title) ?? t.title,
+      notes: t.notes ?? null,
+      photo_url: t.photo_url ?? null,
       time_start: t.time_start ?? null,
       time_end: t.time_end ?? null,
       service_order_id: t.service_order_id ?? null,
@@ -972,7 +974,7 @@ export function demoCreateServiceOrder(
     location_label?: string | null;
     service_type: string;
     details?: string | null;
-    scheduled_date: string;
+    scheduled_date?: string | null;
     time_start?: string | null;
     time_end?: string | null;
     require_ack?: boolean;
@@ -1005,12 +1007,13 @@ export function demoCreateServiceOrder(
   const orderId = crypto.randomUUID();
   const taskId = crypto.randomUUID();
   const msgId = crypto.randomUUID();
+  const scheduledDate = input.scheduled_date?.trim() || null;
   const when =
     formatWorkWindow(
-      input.scheduled_date,
+      scheduledDate,
       input.time_start ?? null,
       input.time_end ?? null,
-    ) ?? input.scheduled_date;
+    ) ?? "Soon";
   const now = new Date().toISOString();
 
   const order: ServiceOrder = {
@@ -1023,7 +1026,7 @@ export function demoCreateServiceOrder(
     location_label: location,
     service_type: serviceType,
     details: input.details?.trim() || null,
-    scheduled_date: input.scheduled_date,
+    scheduled_date: scheduledDate,
     time_start: input.time_start || null,
     time_end: input.time_end || null,
     status: "pending_ack",
@@ -1050,6 +1053,7 @@ export function demoCreateServiceOrder(
         villa_id: order.villa_id,
         title: `${order.service_type} - ${location}`,
         notes: order.details,
+        photo_url: null,
         priority: "normal" as const,
         assigned_to: contact.linked_profile_id,
         status: "open" as const,

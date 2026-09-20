@@ -363,6 +363,7 @@ export function buildScheduleAlerts(input: {
 
   for (const order of input.orders ?? []) {
     if (order.status === "cancelled" || order.status === "done") continue;
+    if (!order.scheduled_date) continue;
     const diff = differenceInCalendarDays(
       startOfDay(parseISO(order.scheduled_date)),
       today,

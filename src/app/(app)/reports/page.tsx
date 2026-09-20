@@ -160,7 +160,8 @@ export default function ReportsPage() {
       ),
       pendingBills: data.bills.filter((b) => b.status === "pending"),
       upcomingOrders: data.serviceOrders.filter((o) => {
-        if (o.status === "done") return false;
+        if (o.status === "done" || o.status === "cancelled") return false;
+        if (!o.scheduled_date) return true;
         const when = new Date(o.scheduled_date);
         return when >= weekStart && when < weekEnd;
       }),

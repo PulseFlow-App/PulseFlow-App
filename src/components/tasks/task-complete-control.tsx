@@ -11,6 +11,11 @@ import {
   canCompleteTaskDirectly,
   canSubmitTaskVerify,
 } from "@/lib/tasks/verify";
+import {
+  reviewOfferHref,
+  shouldOfferDoerReview,
+} from "@/lib/tasks/review-offer";
+import { writeStoredReviewOffer } from "@/components/tasks/review-offer-banner";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { cn } from "@/lib/utils";
@@ -43,6 +48,29 @@ export function TaskCompleteControl({
   const canReopen =
     task.status === "done" &&
     (direct || profile.role === "manager");
+
+  const findProfile = (id: string) =>
+    data.profiles.find((p) => p.id === id) ??
+    data.allProfiles.find((p) => p.id === id);
+
+  const offerReviewForDoer = (doerId: string | null | undefined) => {
+    if (
+      !shouldOfferDoerReview({
+        actorRole: profile.role,
+        orgKind: data.orgKind,
+        doerId,
+        actorId: profile.id,
+      }) ||
+      !doerId
+    ) {
+      return;
+    }
+    const doer = findProfile(doerId);
+    writeStoredReviewOffer(task.id, {
+      name: doer?.full_name?.trim() || t("tasks.reviewOfferSomeone"),
+      href: reviewOfferHref(doer, doerId),
+    });
+  };
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -133,7 +161,14 @@ export function TaskCompleteControl({
                 size="sm"
                 className="flex-1"
                 disabled={busy}
-                onClick={() => void run(() => data.approveTaskVerify(task.id))}
+                onClick={() =>
+                  void run(async () => {
+                    const doerId =
+                      task.verify_submitted_by ?? task.assigned_to ?? null;
+                    await data.approveTaskVerify(task.id);
+                    offerReviewForDoer(doerId);
+                  })
+                }
               >
                 <Check className="size-4" />
                 {t("tasks.verifyApprove")}

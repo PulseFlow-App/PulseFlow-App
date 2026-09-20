@@ -449,7 +449,7 @@ function OrderForm({
     location_label?: string | null;
     service_type: string;
     details?: string | null;
-    scheduled_date: string;
+    scheduled_date?: string | null;
     time_start?: string | null;
     time_end?: string | null;
   }) => Promise<void>;
@@ -461,9 +461,9 @@ function OrderForm({
   );
   const [villaId, setVillaId] = useState(villas[0]?.id ?? "");
   const [locationLabel, setLocationLabel] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [timeStart, setTimeStart] = useState("09:00");
-  const [timeEnd, setTimeEnd] = useState("12:00");
+  const [date, setDate] = useState("");
+  const [timeStart, setTimeStart] = useState("");
+  const [timeEnd, setTimeEnd] = useState("");
   const [details, setDetails] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -504,7 +504,12 @@ function OrderForm({
         </div>
       ) : null}
       <div>
-        <Label>When (date)</Label>
+        <Label>
+          When (date){" "}
+          <span className="font-normal text-muted">
+            ({t("common.optional")} · {t("common.soon")})
+          </span>
+        </Label>
         <Input
           type="date"
           value={date}
@@ -513,7 +518,12 @@ function OrderForm({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label>From</Label>
+          <Label>
+            {t("common.from")}{" "}
+            <span className="font-normal text-muted">
+              ({t("common.optional")})
+            </span>
+          </Label>
           <Input
             type="time"
             value={timeStart}
@@ -521,7 +531,12 @@ function OrderForm({
           />
         </div>
         <div>
-          <Label>Until</Label>
+          <Label>
+            {t("common.until")}{" "}
+            <span className="font-normal text-muted">
+              ({t("common.optional")})
+            </span>
+          </Label>
           <Input
             type="time"
             value={timeEnd}
@@ -547,8 +562,8 @@ function OrderForm({
           className="flex-1"
           disabled={saving}
           onClick={() => {
-            if (!serviceType.trim() || !date) {
-              setError("Service and date are required.");
+            if (!serviceType.trim()) {
+              setError("Service is required.");
               return;
             }
             if (!villaId && !locationLabel.trim()) {
@@ -561,7 +576,7 @@ function OrderForm({
               location_label: locationLabel.trim() || null,
               service_type: capitalizeLabel(serviceType),
               details: details.trim() || null,
-              scheduled_date: date,
+              scheduled_date: date || null,
               time_start: timeStart || null,
               time_end: timeEnd || null,
             })

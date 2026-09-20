@@ -684,16 +684,16 @@ function useDemoData(): AppData {
         ? store.villas.find((v) => v.id === input.villa_id)
         : null;
       const location = villa?.name ?? "General";
-      const scheduledDate =
-        input.due_date || new Date().toISOString().slice(0, 10);
+      const scheduledDate = input.due_date?.trim() || null;
       const when =
         formatWorkWindow(
           scheduledDate,
           input.time_start ?? null,
           input.time_end ?? null,
-        ) ?? scheduledDate;
+        ) ?? "Soon";
       const now = new Date().toISOString();
       const notes = input.notes?.trim() || null;
+      const photoUrl = input.photo_url?.trim() || null;
       const assigneeName = assigneeId
         ? store.profiles.find((p) => p.id === assigneeId)?.full_name ?? null
         : null;
@@ -735,10 +735,11 @@ function useDemoData(): AppData {
             org_id: profile.org_id,
             title,
             notes,
+            photo_url: photoUrl,
             villa_id: input.villa_id,
             priority: input.priority,
             assigned_to: assigneeId,
-            due_date: input.due_date,
+            due_date: scheduledDate,
             time_start: input.time_start ?? null,
             time_end: input.time_end ?? null,
             status: "open" as const,
@@ -763,7 +764,7 @@ function useDemoData(): AppData {
             created_at: now,
             service_order_id: orderId,
             channel: "request" as const,
-            attachment_url: null,
+            attachment_url: photoUrl,
           },
         ],
       }));

@@ -17,6 +17,7 @@ const en = {
   "common.copied": "Copied",
   "common.submit": "Submit",
   "common.optional": "optional",
+  "common.soon": "soon",
   "common.general": "General",
   "common.call": "Call",
   "common.from": "From",
@@ -73,6 +74,7 @@ const en = {
   "publicProfile.tasksDone": "Tasks done",
   "publicProfile.tasksOpen": "Open tasks",
   "publicProfile.back": "Back",
+  "publicProfile.reviewSignIn": "Sign in to leave a review.",
 
 
   "brand.name": "Pulse Flow",
@@ -259,6 +261,7 @@ const en = {
   "tasks.filter.mine": "mine",
   "tasks.filter.urgent": "urgent",
   "tasks.titleField": "Title",
+  "tasks.titlePlaceholder": "e.g. Fix pool pump leak",
   "tasks.villa": "Property",
   "tasks.priority": "Priority",
   "tasks.priority.normal": "Normal",
@@ -268,6 +271,11 @@ const en = {
   "tasks.unassigned": "Unassigned",
   "tasks.create": "Create task",
   "tasks.notesPlaceholder": "Gate code, keys, or anything the assignee should know",
+  "tasks.examplePhoto": "Example photo",
+  "tasks.examplePhotoHint":
+    "One photo of what to do. More photos can go in chat after they agree.",
+  "tasks.addPhoto": "Add photo",
+  "tasks.hasPhoto": "Has photo",
   "tasks.open": "Open",
   "tasks.done": "Done",
   "tasks.noOpen": "No open tasks",
@@ -286,6 +294,12 @@ const en = {
   "tasks.verifyApprove": "Confirm done",
   "tasks.verifyReject": "Send back",
   "tasks.awaitingVerify": "To verify",
+  "tasks.reviewOfferTitle": "Review {name}?",
+  "tasks.reviewOfferHint":
+    "They finished this job. Leave a weekly review on their profile.",
+  "tasks.reviewOfferYes": "Leave a review",
+  "tasks.reviewOfferNo": "Not now",
+  "tasks.reviewOfferSomeone": "this teammate",
 
   "jobs.titleStaff": "My jobs",
   "jobs.titleOwner": "Bookings",

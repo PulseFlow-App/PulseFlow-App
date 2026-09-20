@@ -1,21 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import { Camera, Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
-import { formatWorkWindow } from "@/lib/notifications";
 import { isGuestApp, isStaffApp, taskAssignableProfiles } from "@/lib/roles";
-import { formatShortDate, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { TaskPriority } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
-import { LocalizedText } from "@/components/i18n/localized-text";
-import { TaskAssigneeMeta } from "@/components/tasks/task-assignee-meta";
-import { TaskCompleteControl } from "@/components/tasks/task-complete-control";
+import { TaskRow } from "@/components/tasks/task-row";
 import type { MessageKey } from "@/lib/i18n";
 
 type Filter = "all" | "mine" | "urgent";
@@ -24,6 +21,7 @@ export default function TasksPage() {
   const data = useData();
   const { t } = useI18n();
   const router = useRouter();
+  const fileRef = useRef<HTMLInputElement>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
@@ -34,6 +32,8 @@ export default function TasksPage() {
   const [timeStart, setTimeStart] = useState("");
   const [timeEnd, setTimeEnd] = useState("");
   const [notes, setNotes] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const assignees = useMemo(
@@ -65,6 +65,34 @@ export default function TasksPage() {
 
   if (!data.ready) return <LoadingState />;
 
+  const resetForm = () => {
+    setTitle("");
+    setVillaId("");
+    setPriority("normal");
+    setAssignee("");
+    setDueDate("");
+    setTimeStart("");
+    setTimeEnd("");
+    setNotes("");
+    setPhotoUrl(null);
+    setShowForm(false);
+  };
+
+  const onPickPhoto = async (file: File | null) => {
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const url = await data.uploadChatAttachment(file);
+      if (!url) throw new Error(t("common.error"));
+      setPhotoUrl(url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const create = async () => {
     setError(null);
     if (!title.trim()) {
@@ -81,16 +109,9 @@ export default function TasksPage() {
         time_start: timeStart || null,
         time_end: timeEnd || null,
         notes: notes.trim() || null,
+        photo_url: photoUrl,
       });
-      setTitle("");
-      setVillaId("");
-      setPriority("normal");
-      setAssignee("");
-      setDueDate("");
-      setTimeStart("");
-      setTimeEnd("");
-      setNotes("");
-      setShowForm(false);
+      resetForm();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create task.");
     }
@@ -104,6 +125,17 @@ export default function TasksPage() {
       setError(e instanceof Error ? e.message : t("common.error"));
     }
   };
+
+  const deleteTrailing = (taskId: string) => (
+    <button
+      type="button"
+      className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+      aria-label={t("common.delete")}
+      onClick={() => void removeTask(taskId)}
+    >
+      <Trash2 className="size-4" />
+    </button>
+  );
 
   return (
     <div className="space-y-4 animate-rise">
@@ -149,11 +181,18 @@ export default function TasksPage() {
         <Card className="space-y-3 p-4">
           <div>
             <Label>{t("tasks.titleField")}</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t("tasks.titlePlaceholder")}
+            />
           </div>
           <div>
             <Label>{t("tasks.villa")}</Label>
-            <Select value={villaId} onChange={(e) => setVillaId(e.target.value)}>
+            <Select
+              value={villaId}
+              onChange={(e) => setVillaId(e.target.value)}
+            >
               <option value="">{t("common.general")}</option>
               {data.villas.map((v) => (
                 <option key={v.id} value={v.id}>
@@ -174,7 +213,12 @@ export default function TasksPage() {
               </Select>
             </div>
             <div>
-              <Label>{t("tasks.day")}</Label>
+              <Label>
+                {t("tasks.day")}{" "}
+                <span className="font-normal text-muted">
+                  ({t("common.optional")} · {t("common.soon")})
+                </span>
+              </Label>
               <Input
                 type="date"
                 value={dueDate}
@@ -184,7 +228,12 @@ export default function TasksPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>{t("common.from")}</Label>
+              <Label>
+                {t("common.from")}{" "}
+                <span className="font-normal text-muted">
+                  ({t("common.optional")})
+                </span>
+              </Label>
               <Input
                 type="time"
                 value={timeStart}
@@ -192,7 +241,12 @@ export default function TasksPage() {
               />
             </div>
             <div>
-              <Label>{t("common.until")}</Label>
+              <Label>
+                {t("common.until")}{" "}
+                <span className="font-normal text-muted">
+                  ({t("common.optional")})
+                </span>
+              </Label>
               <Input
                 type="time"
                 value={timeEnd}
@@ -228,6 +282,50 @@ export default function TasksPage() {
               placeholder={t("tasks.notesPlaceholder")}
             />
           </div>
+          <div>
+            <Label>
+              {t("tasks.examplePhoto")}{" "}
+              <span className="font-normal text-muted">
+                ({t("common.optional")})
+              </span>
+            </Label>
+            <p className="mb-2 text-xs text-muted">{t("tasks.examplePhotoHint")}</p>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => void onPickPhoto(e.target.files?.[0] ?? null)}
+            />
+            {photoUrl ? (
+              <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photoUrl}
+                  alt=""
+                  className="size-16 rounded-xl object-cover"
+                />
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-danger"
+                  onClick={() => setPhotoUrl(null)}
+                >
+                  {t("common.remove")}
+                </button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+              >
+                <Camera className="size-4" />
+                {uploading ? t("common.saving") : t("tasks.addPhoto")}
+              </Button>
+            )}
+          </div>
           {error ? <p className="text-sm text-danger">{error}</p> : null}
           <Button className="w-full" onClick={() => void create()}>
             {t("tasks.create")}
@@ -247,72 +345,13 @@ export default function TasksPage() {
           <>
             {pendingVerify.map((task) => (
               <Card key={task.id} className="p-3">
-                <TaskCompleteControl
-                  task={task}
-                  meta={
-                    <>
-                      <p className="truncate font-semibold text-ink">
-                        <LocalizedText text={task.title} />
-                      </p>
-                      <TaskAssigneeMeta
-                        task={task}
-                        villaLabel={task.villa?.name ?? t("common.general")}
-                        schedule={
-                          formatWorkWindow(
-                            task.due_date,
-                            task.time_start,
-                            task.time_end,
-                          ) ??
-                          (task.due_date
-                            ? formatShortDate(task.due_date)
-                            : null)
-                        }
-                      />
-                    </>
-                  }
-                  trailing={
-                    <button
-                      type="button"
-                      className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
-                      aria-label={t("common.delete")}
-                      onClick={() => void removeTask(task.id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
-                  }
-                />
+                <TaskRow task={task} trailing={deleteTrailing(task.id)} />
               </Card>
             ))}
             {open.map((task) => (
               <Card key={task.id} className="p-3">
-                <TaskCompleteControl
+                <TaskRow
                   task={task}
-                  meta={
-                    <>
-                      <p className="truncate font-semibold text-ink">
-                        <LocalizedText text={task.title} />
-                      </p>
-                      <TaskAssigneeMeta
-                        task={task}
-                        villaLabel={task.villa?.name ?? t("common.general")}
-                        schedule={
-                          formatWorkWindow(
-                            task.due_date,
-                            task.time_start,
-                            task.time_end,
-                          ) ??
-                          (task.due_date
-                            ? formatShortDate(task.due_date)
-                            : null)
-                        }
-                      />
-                      {task.notes ? (
-                        <p className="mt-0.5 line-clamp-2 text-xs text-muted">
-                          <LocalizedText text={task.notes} />
-                        </p>
-                      ) : null}
-                    </>
-                  }
                   trailing={
                     <>
                       {task.priority === "urgent" ? (
@@ -320,14 +359,7 @@ export default function TasksPage() {
                           {t("tasks.urgent")}
                         </span>
                       ) : null}
-                      <button
-                        type="button"
-                        className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
-                        aria-label={t("common.delete")}
-                        onClick={() => void removeTask(task.id)}
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
+                      {deleteTrailing(task.id)}
                     </>
                   }
                 />
@@ -343,24 +375,11 @@ export default function TasksPage() {
           <p className="text-sm text-muted">{t("tasks.noDone")}</p>
         ) : (
           done.map((task) => (
-            <Card key={task.id} className="p-3 opacity-70">
-              <TaskCompleteControl
+            <Card key={task.id} className="p-3">
+              <TaskRow
                 task={task}
-                meta={
-                  <p className="truncate text-sm font-semibold line-through text-ink">
-                    <LocalizedText text={task.title} />
-                  </p>
-                }
-                trailing={
-                  <button
-                    type="button"
-                    className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
-                    aria-label={t("common.delete")}
-                    onClick={() => void removeTask(task.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                }
+                doneStyle
+                trailing={deleteTrailing(task.id)}
               />
             </Card>
           ))
