@@ -163,7 +163,7 @@ export function StayQuoteCard({
       ) : null}
       {onConfirm && onDecline ? (
         <div className="flex flex-wrap gap-2 pt-1">
-          <Button type="button" disabled={busy} onClick={onConfirm}>
+          <Button type="button" busy={busy} onClick={onConfirm}>
             {t("guest.quoteConfirm")}
           </Button>
           <Button type="button" variant="ghost" disabled={busy} onClick={onDecline}>

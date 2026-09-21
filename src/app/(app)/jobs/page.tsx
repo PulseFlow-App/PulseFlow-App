@@ -44,7 +44,7 @@ function CancelOrderButton({ orderId }: { orderId: string }) {
         size="sm"
         variant="ghost"
         className="w-full"
-        disabled={busy}
+        busy={busy}
         onClick={() => {
           setBusy(true);
           setError(null);
@@ -95,7 +95,7 @@ function ReopenOrderPanel({ orderId }: { orderId: string }) {
             size="sm"
             variant="secondary"
             className="flex-1"
-            disabled={busy}
+            busy={busy}
             onClick={() => {
               setBusy(true);
               setError(null);
@@ -141,7 +141,7 @@ function ReopenOrderPanel({ orderId }: { orderId: string }) {
         <Button
           size="sm"
           className="flex-1"
-          disabled={busy}
+          busy={busy}
           onClick={() => {
             setBusy(true);
             setError(null);

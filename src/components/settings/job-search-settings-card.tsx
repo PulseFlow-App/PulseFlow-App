@@ -243,7 +243,7 @@ export function JobSearchSettingsCard() {
         />
       </div>
 
-      <Button className="w-full" disabled={saving} onClick={() => void save()}>
+      <Button className="w-full" busy={saving} onClick={() => void save()}>
         {saving ? t("common.loading") : t("talent.settingsSave")}
       </Button>
 

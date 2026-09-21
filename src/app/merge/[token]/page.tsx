@@ -172,7 +172,7 @@ export default function MergeProfilePage({
           <Button
             className="w-full"
             size="lg"
-            disabled={saving}
+            busy={saving}
             onClick={() => void confirm()}
           >
             {saving ? t("guest.mergeConfirming") : t("guest.mergeConfirm")}

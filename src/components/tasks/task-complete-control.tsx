@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Camera, Check, X } from "lucide-react";
+import { Camera, Check, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { useData } from "@/lib/data/use-app-data";
@@ -166,9 +166,15 @@ export function TaskCompleteControl({
           if (canSubmit) setExpanded(true);
         }}
       >
-        {(task.status === "done" || flash) && (
+        {(task.status === "done" || flash) && !busy ? (
           <Check className="absolute inset-0 m-auto size-3" strokeWidth={3} />
-        )}
+        ) : null}
+        {busy ? (
+          <Loader2
+            className="absolute inset-0 m-auto size-3 animate-spin text-secondary"
+            strokeWidth={3}
+          />
+        ) : null}
       </button>
     </span>
   );
@@ -210,10 +216,10 @@ export function TaskCompleteControl({
               <Button
                 size="sm"
                 className="flex-1"
-                disabled={busy}
+                busy={busy}
                 onClick={() => void run(() => approveAndMaybeReview())}
               >
-                <Check className="size-4" />
+                {!busy ? <Check className="size-4" /> : null}
                 {busy ? t("common.saving") : t("tasks.verifyApprove")}
               </Button>
               <Button
@@ -282,7 +288,7 @@ export function TaskCompleteControl({
             <Button
               size="sm"
               className="flex-1"
-              disabled={busy}
+              busy={busy}
               onClick={() =>
                 void run(async () => {
                   await data.submitTaskForVerify(task.id, {

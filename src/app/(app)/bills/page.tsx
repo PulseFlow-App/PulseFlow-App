@@ -392,7 +392,7 @@ export default function BillsPage() {
           {error ? <p className="text-sm text-danger">{error}</p> : null}
           <Button
             className="w-full"
-            disabled={saving}
+            busy={saving}
             onClick={() => void submit()}
           >
             {saving ? t("bills.submitting") : t("bills.submit")}

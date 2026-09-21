@@ -76,9 +76,9 @@ export function ConfirmDialog({
             variant={confirmVariant}
             className="w-full"
             onClick={onConfirm}
-            disabled={busy}
+            busy={busy}
           >
-            {confirmLabel ?? t("common.confirm")}
+            {busy ? t("common.saving") : (confirmLabel ?? t("common.confirm"))}
           </Button>
           <Button
             type="button"

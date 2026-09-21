@@ -502,7 +502,7 @@ export default function VillaDetailPage({
 
         <Button
           onClick={() => void save()}
-          disabled={saving || deleting}
+          busy={saving || deleting}
           className="w-full"
         >
           {saving || photo.photoBusy

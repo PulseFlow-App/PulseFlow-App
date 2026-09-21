@@ -117,7 +117,7 @@ export function BillingSettingsCard({
             <Button
               variant="secondary"
               className="w-full"
-              disabled={busy}
+              busy={busy}
               onClick={() => void openPortal()}
             >
               {busy ? t("billing.opening") : t("billing.manage")}
@@ -125,7 +125,7 @@ export function BillingSettingsCard({
           ) : (
             <Button
               className="w-full"
-              disabled={busy}
+              busy={busy}
               onClick={() => void startCheckout()}
             >
               {busy ? t("billing.redirecting") : t("billing.subscribe")}
@@ -134,7 +134,7 @@ export function BillingSettingsCard({
           {!demo && !entitled ? (
             <Button
               className="w-full"
-              disabled={busy}
+              busy={busy}
               onClick={() => void startCheckout()}
             >
               {t("billing.restore")}

@@ -34,6 +34,7 @@ export default function TasksPage() {
   const [notes, setNotes] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const assignees = useMemo(
@@ -99,6 +100,7 @@ export default function TasksPage() {
       setError("Title is required.");
       return;
     }
+    setSaving(true);
     try {
       await data.createTask({
         title: title.trim(),
@@ -114,6 +116,8 @@ export default function TasksPage() {
       resetForm();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create task.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -312,8 +316,8 @@ export default function TasksPage() {
             )}
           </div>
           {error ? <p className="text-sm text-danger">{error}</p> : null}
-          <Button className="w-full" onClick={() => void create()}>
-            {t("tasks.create")}
+          <Button className="w-full" busy={saving} onClick={() => void create()}>
+            {saving ? t("common.saving") : t("tasks.create")}
           </Button>
         </Card>
       ) : null}

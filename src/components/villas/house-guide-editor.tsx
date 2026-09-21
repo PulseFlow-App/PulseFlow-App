@@ -128,7 +128,7 @@ export function HouseGuideEditor({ villaId }: { villaId: string }) {
       {saved ? (
         <p className="text-sm font-semibold text-secondary">{t("common.saved")}</p>
       ) : null}
-      <Button type="button" disabled={saving} onClick={() => void save()}>
+      <Button type="button" busy={saving} onClick={() => void save()}>
         {saving ? `${t("guest.guideSave")}…` : t("guest.guideSave")}
       </Button>
     </Card>

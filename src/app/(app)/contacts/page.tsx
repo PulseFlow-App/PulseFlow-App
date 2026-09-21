@@ -438,7 +438,7 @@ function ReviewForm({
         {!alreadyDone ? (
           <Button
             className="flex-1"
-            disabled={saving}
+            busy={saving}
             onClick={() => {
               setSaving(true);
               setError(null);
@@ -572,7 +572,7 @@ function OrderForm({
         </Button>
         <Button
           className="flex-1"
-          disabled={saving}
+          busy={saving}
           onClick={() => {
             if (!serviceType.trim()) {
               setError("Service is required.");
@@ -817,7 +817,7 @@ function ContactForm({
         </Button>
         <Button
           className="flex-1"
-          disabled={saving}
+          busy={saving}
           onClick={() => {
             if (!name.trim()) {
               setError("Name is required.");

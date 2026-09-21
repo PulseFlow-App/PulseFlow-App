@@ -298,7 +298,7 @@ export function ReviewOfferBanner() {
           <Button
             size="xs"
             className="flex-1"
-            disabled={busy}
+            busy={busy}
             onClick={() => {
               setBusy(true);
               setError(null);

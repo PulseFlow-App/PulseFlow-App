@@ -106,32 +106,35 @@ export default function RegisterPage() {
       if (isDemoMode()) {
         throw new Error(DEMO_READ_ONLY_MESSAGE);
       }
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName,
-          email,
-          phone,
+      const { withActionBusy } = await import("@/lib/ui/action-busy");
+      await withActionBusy(async () => {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName,
+            email,
+            phone,
+            password,
+            orgName: workspaceName,
+            kind: useKind,
+            role,
+            referredBy: referralCode,
+            acquisitionSource,
+          }),
+        });
+        const payload = (await res.json()) as { error?: string };
+        if (!res.ok) {
+          throw new Error(payload.error ?? "Could not register.");
+        }
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
           password,
-          orgName: workspaceName,
-          kind: useKind,
-          role,
-          referredBy: referralCode,
-          acquisitionSource,
-        }),
+        });
+        if (signInError) throw signInError;
       });
-      const payload = (await res.json()) as { error?: string };
-      if (!res.ok) {
-        throw new Error(payload.error ?? "Could not register.");
-      }
-      const { createClient } = await import("@/lib/supabase/client");
-      const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password,
-      });
-      if (signInError) throw signInError;
       router.replace("/setup-passkey");
       router.refresh();
     } catch (e) {
@@ -279,7 +282,7 @@ export default function RegisterPage() {
                 </Button>
                 <Button
                   className="flex-1"
-                  disabled={saving}
+                  busy={saving}
                   onClick={() => void submit()}
                 >
                   {saving ? "Creating…" : "Create account"}

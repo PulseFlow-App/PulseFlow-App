@@ -259,7 +259,7 @@ export function GuestVillasBrowse({
             ) : accepted ? (
               <Button
                 type="button"
-                disabled={quoteBusy}
+                busy={quoteBusy}
                 onClick={() => void confirmQuote(accepted.id)}
               >
                 {t("guest.quoteConfirm")}

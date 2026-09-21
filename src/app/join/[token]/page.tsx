@@ -310,7 +310,7 @@ export default function JoinPage({
             <Button
               className="w-full"
               size="lg"
-              disabled={saving}
+              busy={saving}
               onClick={() => void acceptWithSession()}
             >
               {saving ? t("join.addingToAccount") : t("join.addToAccount")}
@@ -388,7 +388,7 @@ export default function JoinPage({
           <Button
             className="w-full"
             size="lg"
-            disabled={saving}
+            busy={saving}
             onClick={() => void accept()}
           >
             {saving

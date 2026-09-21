@@ -186,7 +186,7 @@ function PublicProfileReviewFormInner({
         <div className="flex flex-col gap-2">
           <Button
             className="w-full"
-            disabled={saving}
+            busy={saving}
             onClick={() => {
               setSaving(true);
               setError(null);

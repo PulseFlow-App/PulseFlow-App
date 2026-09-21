@@ -54,7 +54,7 @@ export function AgreeButton({
           <Button
             className="w-full"
             variant="ghost"
-            disabled={busy}
+            busy={busy}
             onClick={() => {
               setBusy(true);
               setError(null);
@@ -66,7 +66,7 @@ export function AgreeButton({
                 .finally(() => setBusy(false));
             }}
           >
-            <Undo2 className="size-4" />
+            {!busy ? <Undo2 className="size-4" /> : null}
             {busy ? t("jobs.saving") : t("jobs.cancelAgreement")}
           </Button>
         ) : !canUseJobUiCancel(order) ? (
@@ -99,7 +99,7 @@ export function AgreeButton({
         {error ? <p className="text-sm text-danger">{error}</p> : null}
         <Button
           className="w-full"
-          disabled={busy}
+          busy={busy}
           onClick={() => {
             setBusy(true);
             setError(null);
@@ -111,14 +111,14 @@ export function AgreeButton({
               .finally(() => setBusy(false));
           }}
         >
-          <Check className="size-4" />
+          {!busy ? <Check className="size-4" /> : null}
           {busy ? t("jobs.saving") : t("jobs.readAgreedAsk")}
         </Button>
         {canDecline && order.staff_profile_id === data.profile.id ? (
           <Button
             className="w-full"
             variant="ghost"
-            disabled={busy}
+            busy={busy}
             onClick={() => {
               setBusy(true);
               setError(null);
@@ -130,7 +130,7 @@ export function AgreeButton({
                 .finally(() => setBusy(false));
             }}
           >
-            {t("jobs.decline")}
+            {busy ? t("jobs.saving") : t("jobs.decline")}
           </Button>
         ) : null}
       </div>

@@ -266,7 +266,7 @@ export default function VillasPage() {
             </Button>
             <Button
               className="flex-1"
-              disabled={saving}
+              busy={saving}
               onClick={() => {
                 if (!name.trim()) {
                   setError("Name is required.");

@@ -1,14 +1,20 @@
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "xs" | "sm" | "md" | "lg";
+  /** Shows spinner and disables the control while work is in flight. */
+  busy?: boolean;
 };
 
 export function Button({
   className,
   variant = "primary",
   size = "md",
+  busy = false,
+  disabled,
+  children,
   ...props
 }: Props) {
   return (
@@ -28,9 +34,22 @@ export function Button({
         variant === "ghost" &&
           "border border-[var(--color-border)] bg-card text-ink hover:bg-sand-deep",
         variant === "danger" && "bg-danger text-white",
+        busy && "pointer-events-none",
         className,
       )}
+      aria-busy={busy || undefined}
+      disabled={disabled || busy}
       {...props}
-    />
+    >
+      {busy ? (
+        <Loader2
+          className={cn(
+            "shrink-0 animate-spin",
+            size === "xs" ? "size-3.5" : "size-4",
+          )}
+        />
+      ) : null}
+      {children}
+    </button>
   );
 }
