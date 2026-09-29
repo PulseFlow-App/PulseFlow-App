@@ -9,26 +9,54 @@ import type {
   Villa,
   VillaAssignment,
 } from "@/lib/types";
+import type { UserRole } from "@/lib/design-tokens";
 import { formatMoney, formatShortDate } from "@/lib/utils";
 import { capitalizeLabel } from "@/lib/format-label";
 import { weekKey } from "@/lib/endorsements";
 
+/**
+ * Guests stay on the stay loop only:
+ * - `guest_update` aimed at them (briefings, deposit, dates, cancel, …)
+ * - Support chat pings (`message` with href `/messages`, no team channel)
+ * Ops kinds (tasks, jobs, team chat, bills, …) never appear for guests.
+ * Owners/managers keep seeing guest-related alerts aimed at them as before.
+ */
 export function notificationVisibleTo(
-  n: AppNotification,
+  n: Pick<AppNotification, "kind" | "audience_profile_ids" | "href">,
   profileId: string,
+  role?: UserRole | null,
 ): boolean {
+  const inAudience = (ids: string[] | null | undefined) =>
+    Boolean(ids?.includes(profileId));
+
+  if (role === "guest") {
+    if (!inAudience(n.audience_profile_ids)) return false;
+    if (n.kind === "guest_update") return true;
+    // Support thread only — team chat uses /messages?channel=…
+    if (n.kind === "message" && n.href === "/messages") return true;
+    return false;
+  }
   if (!n.audience_profile_ids) return true;
   return n.audience_profile_ids.includes(profileId);
+}
+
+/** Stay-loop kinds guests may receive (inbox + push). */
+export function isGuestFacingNotification(
+  n: Pick<AppNotification, "kind" | "href">,
+): boolean {
+  if (n.kind === "guest_update") return true;
+  return n.kind === "message" && n.href === "/messages";
 }
 
 export function unreadNotifications(
   notifications: AppNotification[],
   profileId: string,
   _orgId?: string,
+  role?: UserRole | null,
 ) {
   return notifications.filter(
     (n) =>
-      notificationVisibleTo(n, profileId) &&
+      notificationVisibleTo(n, profileId, role) &&
       !(n.read_by ?? []).includes(profileId),
   );
 }
@@ -66,6 +94,13 @@ export function makeNotification(input: {
 
 export function orgMemberIds(profiles: Profile[], orgId: string) {
   return profiles.filter((p) => p.org_id === orgId).map((p) => p.id);
+}
+
+/** Company ops audience — never includes stay guests. */
+export function orgOpsMemberIds(profiles: Profile[], orgId: string) {
+  return profiles
+    .filter((p) => p.org_id === orgId && p.role !== "guest")
+    .map((p) => p.id);
 }
 
 export function ownerManagerIds(profiles: Profile[], orgId: string) {

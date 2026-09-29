@@ -946,21 +946,24 @@ export function demoMarkAllNotificationsRead(
   orgId: string,
   kind?: AppNotification["kind"],
 ) {
-  updateDemoStore((s) => ({
-    ...s,
-    notifications: (s.notifications ?? []).map((n) => {
-      const readBy = n.read_by ?? [];
-      const visible =
-        n.org_id === orgId && notificationVisibleTo(n, profileId);
-      const kindOk =
-        !kind ||
-        n.kind === kind ||
-        (kind === "message" && isChatBadgeNotification(n));
-      return visible && kindOk && !readBy.includes(profileId)
-        ? { ...n, read_by: [...readBy, profileId] }
-        : { ...n, read_by: readBy };
-    }),
-  }));
+  updateDemoStore((s) => {
+    const role = s.profiles.find((p) => p.id === profileId)?.role ?? null;
+    return {
+      ...s,
+      notifications: (s.notifications ?? []).map((n) => {
+        const readBy = n.read_by ?? [];
+        const visible =
+          n.org_id === orgId && notificationVisibleTo(n, profileId, role);
+        const kindOk =
+          !kind ||
+          n.kind === kind ||
+          (kind === "message" && isChatBadgeNotification(n));
+        return visible && kindOk && !readBy.includes(profileId)
+          ? { ...n, read_by: [...readBy, profileId] }
+          : { ...n, read_by: readBy };
+      }),
+    };
+  });
 }
 
 /** Once per page-load: upcoming check-ins/outs + bill due windows + date-driven status. */

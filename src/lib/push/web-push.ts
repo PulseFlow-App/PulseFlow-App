@@ -5,6 +5,7 @@ import {
   isPushCategoryEnabled,
   normalizePushPrefs,
 } from "@/lib/push/categories";
+import { isGuestFacingNotification } from "@/lib/notifications";
 
 export type PushPayload = {
   title: string;
@@ -114,17 +115,30 @@ export async function sendWebPush(payload: PushPayload) {
 
   const { data: prefRows, error: prefError } = await admin
     .from("profiles")
-    .select("id, push_prefs")
+    .select("id, role, push_prefs")
     .in("id", profileIds);
 
   let filteredIds = profileIds;
   if (!prefError && prefRows) {
     filteredIds = (
-      prefRows as { id: string; push_prefs?: unknown }[]
+      prefRows as { id: string; role?: string; push_prefs?: unknown }[]
     )
-      .filter((row) =>
-        isPushCategoryEnabled(normalizePushPrefs(row.push_prefs), payload.kind),
-      )
+      .filter((row) => {
+        // Guests: stay/support only — never ops/team kinds.
+        if (
+          row.role === "guest" &&
+          !isGuestFacingNotification({
+            kind: payload.kind ?? "message",
+            href: payload.href ?? null,
+          })
+        ) {
+          return false;
+        }
+        return isPushCategoryEnabled(
+          normalizePushPrefs(row.push_prefs),
+          payload.kind,
+        );
+      })
       .map((row) => row.id);
   }
 

@@ -57,7 +57,7 @@ import {
   isChatBadgeNotification,
   makeNotification,
   notificationVisibleTo,
-  orgMemberIds,
+  orgOpsMemberIds,
   ownerManagerIds,
   toInsertRow,
   unreadNotifications,
@@ -856,7 +856,7 @@ export function useSupabaseData(enabled: boolean): AppData {
   const visibleNotifications = profile
     ? notifications
         .filter((n) => {
-          if (!notificationVisibleTo(n, profile.id)) return false;
+          if (!notificationVisibleTo(n, profile.id, profile.role)) return false;
           if (n.kind === "appointment" && n.entity_id) {
             const order = serviceOrders.find((o) => o.id === n.entity_id);
             if (
@@ -879,6 +879,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         visibleNotifications,
         profile.id,
         profile.org_id,
+        profile.role,
       ).length
     : 0;
   const unreadMessageCount = profile
@@ -886,6 +887,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         visibleNotifications,
         profile.id,
         profile.org_id,
+        profile.role,
       ).filter(isChatBadgeNotification).length
     : 0;
 
@@ -1464,7 +1466,7 @@ export function useSupabaseData(enabled: boolean): AppData {
 
       const audience = assigneeId
         ? [assigneeId]
-        : orgMemberIds(profiles, order.org_id).filter((id) => id !== profile.id);
+        : orgOpsMemberIds(profiles, order.org_id).filter((id) => id !== profile.id);
       await insertNotifications(supabase, [
         {
           org_id: order.org_id,
@@ -1791,7 +1793,7 @@ export function useSupabaseData(enabled: boolean): AppData {
 
       const audience = assigneeId
         ? [assigneeId]
-        : orgMemberIds(profiles, profile.org_id).filter(
+        : orgOpsMemberIds(profiles, profile.org_id).filter(
             (id) => id !== profile.id,
           );
       await insertNotifications(supabase, [
@@ -2220,7 +2222,9 @@ export function useSupabaseData(enabled: boolean): AppData {
       const { mentionedProfileIds, hasEveryoneMention } = await import(
         "@/lib/mentions"
       );
-      const orgProfiles = profiles.filter((p) => p.org_id === profile.org_id);
+      const orgProfiles = profiles.filter(
+        (p) => p.org_id === profile.org_id && p.role !== "guest",
+      );
       const mentioned = mentionedProfileIds(body, orgProfiles).filter(
         (id) => id !== profile.id,
       );
@@ -2717,13 +2721,14 @@ export function useSupabaseData(enabled: boolean): AppData {
         profile.id === stay.guest_profile_id
           ? ownerManagerIds(profiles, stay.org_id)
           : [stay.guest_profile_id];
+      const toGuest = profile.id !== stay.guest_profile_id;
       await insertNotifications(
         supabase,
         [
           makeNotification({
             org_id: stay.org_id,
-            kind: "message",
-            title: "Support message",
+            kind: toGuest ? "guest_update" : "message",
+            title: toGuest ? "Message from your host" : "Support message",
             body: (text || "Photo attached").slice(0, 120),
             href: "/messages",
             entity_id: stay.id,

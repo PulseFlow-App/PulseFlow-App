@@ -76,7 +76,7 @@ import { closeAcceptedStayDateRequests } from "@/lib/guest/stay-date-request";
 import {
   makeNotification,
   notificationVisibleTo,
-  orgMemberIds,
+  orgOpsMemberIds,
   ownerManagerIds,
   buildVillaDateNotifications,
   villaOpsAudience,
@@ -336,7 +336,7 @@ function useDemoData(): AppData {
     return [...(store.notifications ?? [])]
       .filter((n) => {
         if (n.org_id !== profile.org_id) return false;
-        if (!notificationVisibleTo(n, profile.id)) return false;
+        if (!notificationVisibleTo(n, profile.id, profile.role)) return false;
         if (n.kind === "appointment" && n.entity_id) {
           const order = (store.serviceOrders ?? []).find(
             (o) => o.id === n.entity_id,
@@ -360,6 +360,7 @@ function useDemoData(): AppData {
       notifications,
       profile.id,
       profile.org_id,
+      profile.role,
     ).length;
   }, [notifications, profile]);
 
@@ -369,6 +370,7 @@ function useDemoData(): AppData {
       notifications,
       profile.id,
       profile.org_id,
+      profile.role,
     ).filter(isChatBadgeNotification).length;
   }, [notifications, profile]);
 
@@ -779,7 +781,7 @@ function useDemoData(): AppData {
       }));
       const audience = assigneeId
         ? [assigneeId]
-        : orgMemberIds(store.profiles, profile.org_id).filter(
+        : orgOpsMemberIds(store.profiles, profile.org_id).filter(
             (id) => id !== profile.id,
           );
       demoPushNotifications([
@@ -1142,12 +1144,12 @@ function useDemoData(): AppData {
         "@/lib/mentions"
       );
       const orgProfiles = store.profiles.filter(
-        (p) => p.org_id === profile.org_id,
+        (p) => p.org_id === profile.org_id && p.role !== "guest",
       );
       const mentioned = mentionedProfileIds(body, orgProfiles).filter(
         (id) => id !== profile.id,
       );
-      const others = orgMemberIds(store.profiles, profile.org_id).filter(
+      const others = orgOpsMemberIds(store.profiles, profile.org_id).filter(
         (id) => id !== profile.id,
       );
       const alerts: ReturnType<typeof makeNotification>[] = [];
@@ -1390,11 +1392,12 @@ function useDemoData(): AppData {
         profile.id === stay.guest_profile_id
           ? ownerManagerIds(store.profiles, stay.org_id)
           : [stay.guest_profile_id];
+      const toGuest = profile.id !== stay.guest_profile_id;
       demoPushNotifications([
         makeNotification({
           org_id: stay.org_id,
-          kind: "message",
-          title: "Support message",
+          kind: toGuest ? "guest_update" : "message",
+          title: toGuest ? "Message from your host" : "Support message",
           body: (text || "Receipt attached").slice(0, 120),
           href: "/messages",
           entity_id: stay.id,
