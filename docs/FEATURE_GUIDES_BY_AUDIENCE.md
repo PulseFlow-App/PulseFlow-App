@@ -53,6 +53,7 @@ Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll chec
 - **Reports / exports** - CSV (bills, tasks, villas, jobs, occupancy), printable weekly ops, handoff snapshots  
 - **Talent directory** - browse opted-in field talent by skills / place / map  
 - **Endorsements + leaderboard** - weekly stars for the team  
+- **Connect your agent** - Settings connection key so Cursor (or another MCP client) can list/create tasks and list jobs in this workspace (no database key shared; revocable)  
 
 ### Company control
 
@@ -69,7 +70,7 @@ Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll chec
 
 ### Same as owner (ops)
 
-Home, villas (edit), house guides, tasks, contacts + Order, jobs, bills finance, team chat, Guests panel (deposit + briefings), date requests accept/decline, talent browse, endorsements, reports when company is entitled, invite staff / guests / anyone, referral progress, Face ID, push, rename own display name.
+Home, villas (edit), house guides, tasks, contacts + Order, jobs, bills finance, team chat, Guests panel (deposit + briefings), date requests accept/decline, talent browse, endorsements, **Connect your agent**, reports when company is entitled, invite staff / guests / anyone, referral progress, Face ID, push, rename own display name.
 
 ### Different from owner
 

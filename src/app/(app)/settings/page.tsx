@@ -14,6 +14,7 @@ import { DisplayCurrencySelect } from "@/components/billing/display-currency-sel
 import { BillingSettingsCard } from "@/components/billing/billing-card";
 import { PasskeySettingsCard } from "@/components/auth/passkey-settings-card";
 import { JobSearchSettingsCard } from "@/components/settings/job-search-settings-card";
+import { McpSettingsCard } from "@/components/settings/mcp-settings-card";
 import { PushSettingsCard } from "@/components/settings/push-settings-card";
 import { TranslateContentSettingsCard } from "@/components/settings/translate-content-settings-card";
 import type { MessageKey } from "@/lib/i18n";
@@ -260,6 +261,7 @@ export default function SettingsPage() {
 
       <PasskeySettingsCard hideHint={isGuest} />
       <PushSettingsCard />
+      <McpSettingsCard />
 
       {profile.role !== "owner" ? (
         <div id="talent-profile" className="scroll-mt-4">
