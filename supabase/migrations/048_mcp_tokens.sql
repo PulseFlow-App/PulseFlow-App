@@ -7,7 +7,16 @@ create table if not exists public.mcp_tokens (
   label text not null default 'Cursor',
   token_prefix text not null,
   token_hash text not null unique,
-  scopes text[] not null default array['me:read', 'tasks:read', 'tasks:write', 'jobs:read']::text[],
+  scopes text[] not null default array[
+    'me:read',
+    'tasks:read',
+    'tasks:write',
+    'jobs:read',
+    'jobs:write',
+    'villas:read',
+    'team:read',
+    'bills:read'
+  ]::text[],
   created_at timestamptz not null default now(),
   last_used_at timestamptz,
   revoked_at timestamptz

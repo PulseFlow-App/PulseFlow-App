@@ -61,7 +61,7 @@ function textResult(data: unknown) {
 
 const server = new McpServer({
   name: "pulse",
-  version: "0.1.0",
+  version: "0.2.0",
 });
 
 server.tool("pulse_whoami", "Show the Pulse profile and org this token acts as.", {}, async () => {
@@ -70,26 +70,53 @@ server.tool("pulse_whoami", "Show the Pulse profile and org this token acts as."
 });
 
 server.tool(
+  "pulse_list_team",
+  "List teammates (owners, managers, staff) — use ids to assign tasks/jobs.",
+  {},
+  async () => textResult(await api("/api/mcp/team")),
+);
+
+server.tool(
+  "pulse_list_villas",
+  "List properties. Optional status: available | occupied | turnover | maintenance.",
+  {
+    status: z
+      .enum(["available", "occupied", "turnover", "maintenance"])
+      .optional(),
+    limit: z.number().int().min(1).max(100).optional(),
+  },
+  async ({ status, limit }) =>
+    textResult(
+      await api("/api/mcp/villas", {
+        query: {
+          status,
+          limit: limit != null ? String(limit) : undefined,
+        },
+      }),
+    ),
+);
+
+server.tool(
   "pulse_list_tasks",
-  "List tasks in the token org. Optional status: open | pending_verify | done.",
+  "List tasks. Optional status: open | pending_verify | done.",
   {
     status: z.enum(["open", "pending_verify", "done"]).optional(),
     limit: z.number().int().min(1).max(100).optional(),
   },
-  async ({ status, limit }) => {
-    const data = await api("/api/mcp/tasks", {
-      query: {
-        status,
-        limit: limit != null ? String(limit) : undefined,
-      },
-    });
-    return textResult(data);
-  },
+  async ({ status, limit }) =>
+    textResult(
+      await api("/api/mcp/tasks", {
+        query: {
+          status,
+          limit: limit != null ? String(limit) : undefined,
+        },
+      }),
+    ),
 );
 
 server.tool(
   "pulse_create_task",
-  "Create an open task in the token org.",
+  "Create an open task. Use pulse_list_team / pulse_list_villas for ids.",
   {
     title: z.string().min(1).max(200),
     villa_id: z.string().uuid().nullable().optional(),
@@ -98,33 +125,90 @@ server.tool(
     due_date: z.string().nullable().optional(),
     notes: z.string().max(2000).nullable().optional(),
   },
-  async (input) => {
-    const data = await api("/api/mcp/tasks", {
-      method: "POST",
-      body: JSON.stringify(input),
-    });
-    return textResult(data);
+  async (input) =>
+    textResult(
+      await api("/api/mcp/tasks", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+    ),
+);
+
+server.tool(
+  "pulse_update_task_status",
+  "Set a task status to open, pending_verify, or done.",
+  {
+    task_id: z.string().uuid(),
+    status: z.enum(["open", "pending_verify", "done"]),
   },
+  async ({ task_id, status }) =>
+    textResult(
+      await api(`/api/mcp/tasks/${task_id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      }),
+    ),
 );
 
 server.tool(
   "pulse_list_jobs",
-  "List service orders (jobs). Optional status: pending_ack | agreed | done | cancelled.",
+  "List service orders. Optional status: pending_ack | agreed | done | cancelled.",
   {
     status: z
       .enum(["pending_ack", "agreed", "done", "cancelled"])
       .optional(),
     limit: z.number().int().min(1).max(100).optional(),
   },
-  async ({ status, limit }) => {
-    const data = await api("/api/mcp/jobs", {
-      query: {
-        status,
-        limit: limit != null ? String(limit) : undefined,
-      },
-    });
-    return textResult(data);
+  async ({ status, limit }) =>
+    textResult(
+      await api("/api/mcp/jobs", {
+        query: {
+          status,
+          limit: limit != null ? String(limit) : undefined,
+        },
+      }),
+    ),
+);
+
+server.tool(
+  "pulse_create_job",
+  "Book a job for a teammate (creates order + task + request chat). Need staff_profile_id from pulse_list_team (or contact_id).",
+  {
+    service_type: z.string().min(1).max(120),
+    staff_profile_id: z.string().uuid().optional(),
+    contact_id: z.string().uuid().optional(),
+    villa_id: z.string().uuid().nullable().optional(),
+    location_label: z.string().max(200).nullable().optional(),
+    details: z.string().max(2000).nullable().optional(),
+    scheduled_date: z.string().nullable().optional(),
+    time_start: z.string().nullable().optional(),
+    time_end: z.string().nullable().optional(),
   },
+  async (input) =>
+    textResult(
+      await api("/api/mcp/jobs", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+    ),
+);
+
+server.tool(
+  "pulse_list_bills",
+  "List bills. Optional status: pending | paid.",
+  {
+    status: z.enum(["pending", "paid"]).optional(),
+    limit: z.number().int().min(1).max(100).optional(),
+  },
+  async ({ status, limit }) =>
+    textResult(
+      await api("/api/mcp/bills", {
+        query: {
+          status,
+          limit: limit != null ? String(limit) : undefined,
+        },
+      }),
+    ),
 );
 
 const transport = new StdioServerTransport();

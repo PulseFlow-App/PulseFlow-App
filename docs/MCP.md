@@ -12,6 +12,8 @@ Run `048_mcp_tokens.sql` on your Supabase project (CLI or SQL editor).
 2. Open **Settings → Connect your agent**
 3. Create a connection key and **copy it once** (`pfmcp_…`)
 
+Legacy keys minted with the original default scopes automatically unlock the new tools below.
+
 ## 3. Install the agent bridge
 
 ```bash
@@ -44,12 +46,17 @@ Restart Cursor → enable **pulse** in MCP settings.
 
 ## What the agent can do
 
-| Tool | Access | Notes |
+| Tool | Scope | Notes |
 |------|--------|--------|
-| `pulse_whoami` | Profile | Who this key acts as |
-| `pulse_list_tasks` | Read tasks | Filter by status |
-| `pulse_create_task` | Write tasks | Creates open tasks |
-| `pulse_list_jobs` | Read jobs | Service orders |
+| `pulse_whoami` | `me:read` | Who this key acts as |
+| `pulse_list_team` | `team:read` | Teammates for assignees |
+| `pulse_list_villas` | `villas:read` | Properties + status / dates |
+| `pulse_list_tasks` | `tasks:read` | Filter by status |
+| `pulse_create_task` | `tasks:write` | Create open tasks |
+| `pulse_update_task_status` | `tasks:write` | `open` / `pending_verify` / `done` |
+| `pulse_list_jobs` | `jobs:read` | Service orders |
+| `pulse_create_job` | `jobs:write` | Book teammate + task + request chat |
+| `pulse_list_bills` | `bills:read` | Pending / paid bills |
 
 ## Safety
 
@@ -57,4 +64,4 @@ Restart Cursor → enable **pulse** in MCP settings.
 - Disconnect anytime in Settings.
 - Key is bound to your **current workspace** and your profile.
 - Only owners/managers can connect agents.
-- No push, billing, or review tools in v1.
+- No Stripe, push blast, or delete-villa tools.

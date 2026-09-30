@@ -5,6 +5,10 @@ export const MCP_SCOPES = [
   "tasks:read",
   "tasks:write",
   "jobs:read",
+  "jobs:write",
+  "villas:read",
+  "team:read",
+  "bills:read",
 ] as const;
 
 export type McpScope = (typeof MCP_SCOPES)[number];
@@ -20,7 +24,18 @@ export function normalizeMcpScopes(raw: unknown): McpScope[] {
   const out = raw.filter(
     (s): s is McpScope => typeof s === "string" && isMcpScope(s),
   );
-  return out.length ? [...new Set(out)] : [...DEFAULT_MCP_SCOPES];
+  if (!out.length) return [...DEFAULT_MCP_SCOPES];
+  // Tokens minted with the original default set unlock new default scopes too.
+  const legacyDefault = [
+    "me:read",
+    "tasks:read",
+    "tasks:write",
+    "jobs:read",
+  ] as const;
+  if (legacyDefault.every((s) => out.includes(s))) {
+    return [...DEFAULT_MCP_SCOPES];
+  }
+  return [...new Set(out)];
 }
 
 export function canManageMcpTokens(role: UserRole) {

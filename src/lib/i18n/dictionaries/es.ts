@@ -526,7 +526,7 @@ const es: Dictionary = {
   "settings.mcpHowStep4": "Restart Cursor and enable the pulse MCP server.",
   "settings.mcpHowCopyConfig": "Copy config",
   "settings.mcpHowToolsLabel": "What it can do:",
-  "settings.mcpHowTools": "pulse_whoami, pulse_list_tasks, pulse_create_task, pulse_list_jobs.",
+  "settings.mcpHowTools": "pulse_whoami, pulse_list_team, pulse_list_villas, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills.",
   "settings.inviteError": "No se pudo crear la invitación.",
   "settings.saveError": "No se pudo guardar.",
   "billing.title": "Facturación",

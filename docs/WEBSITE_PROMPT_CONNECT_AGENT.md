@@ -1,76 +1,152 @@
-# Prompt: add “Connect your agent” to the marketing website
+# Prompt for marketing site agent — “Connect your agent” landing block
 
-Copy everything below the line into the agent / designer working on **www.pulseflow.site** (pulseflow-site).
+Paste everything below into the marketing / website agent for **www.pulseflow.site**.
 
 ---
 
-## Task
+## Goal
 
-Add a new **feature explanation** block for Pulse’s AI agent connection (“Connect your agent”). Place it on the marketing homepage among the product features — after **One language for the whole team** (or as a fifth card under “Everything you need for work” if that layout fits better). Also add a short mention on the **Owners** and **Managers** role pages. Do **not** put it on the Guests page. Do **not** sell it as a separate product or paid add-on.
+Write and ship a **landing-page feature section** about Pulse’s **Connect your agent** capability, including:
 
-Follow existing site voice, layout patterns, and i18n key style (`f*_title` / feature cards). Ship EN first; leave RU/TH hooks if the site already uses parallel dictionaries.
+1. A clear marketing paragraph (headline + short body + bullets)
+2. A **preview** on the page (fake agent chat / tool-call UI) so visitors see what it feels like
+3. Optional small code/config snippet (mcp.json) for people who will wire Cursor
 
-## What the feature is (product truth)
+Do **not** put this in the hero. Place it after “One language for the whole team” (or as its own section before Plans). Owners + Managers role pages get a short cross-link line; Guests page stays unchanged.
 
-- For **owners and managers** who want Cursor (or another MCP-compatible AI agent) to work **inside their Pulse workspace**.
-- In the app: **Settings → Connect your agent** → create a **connection key** (shown once) → paste into the agent app.
-- The agent talks only to Pulse HTTP APIs with that key. **No database / service-role key** is shared with the agent.
-- Key is bound to the user’s **current workspace** and profile; they can **Disconnect** anytime.
-- v1 agent capabilities: see who it is (`pulse_whoami`), list/create **tasks**, list **jobs** (service orders).
-- Not for staff/guests. Not push, billing, or reviews in v1.
+Match existing Pulse site voice: concrete, ops-first, no purple “AI magic” clichés.
 
-## Positioning (use this angle)
+---
 
-**Lead with outcome, not “MCP”.**  
-Headline idea: *Connect your AI agent to the ops workspace* / *Let your agent see the real work*.
+## Product truth (use only this)
 
-Supporting idea in one sentence:  
-Managers and owners can let Cursor (or similar) read and update live tasks and jobs in Pulse — safely, with a connection key from Settings.
+**Who:** Owners and managers only (not staff, not guests).
 
-Avoid: jargon-first (“MCP server”, “stdio”, “Supabase”), “API platform”, developer-only tone.  
-OK as a quiet secondary line: “Works with Cursor and other MCP clients.”
+**How:** In the live app → **Settings → Connect your agent** → create a **connection key** (shown once) → paste into Cursor (or another MCP client). Disconnect anytime.
 
-## Suggested homepage copy (EN)
+**Safety:** The agent never gets the database key. It only calls Pulse APIs with that personal connection key, scoped to the user’s current company workspace.
 
-**Title:** Connect your agent  
-**Subtitle:** Give Cursor (or another AI agent) a live window into this workspace — tasks and jobs — without sharing your database.
+**What the agent can do today (full list — show these in the preview):**
 
-**Bullets (pick 3):**
-- Create a connection key in Settings — shown once, revocable anytime  
-- Agent stays inside your company workspace (owners & managers only)  
-- List and create tasks; see open jobs — same truth the team sees in the app  
+| Capability | Agent tool name (ok in preview chrome) |
+|------------|----------------------------------------|
+| Who am I / which workspace | `pulse_whoami` |
+| List teammates (for assignees) | `pulse_list_team` |
+| List properties + status / check-in–out | `pulse_list_villas` |
+| List tasks (open / pending verify / done) | `pulse_list_tasks` |
+| Create a task | `pulse_create_task` |
+| Update task status | `pulse_update_task_status` |
+| List jobs (service orders) | `pulse_list_jobs` |
+| Create a job for a teammate | `pulse_create_job` |
+| List bills (pending / paid) | `pulse_list_bills` |
 
-**CTA (optional):** Open the app → Settings → Connect your agent  
-(Link to `https://app.pulseflow.site/settings` if you use app deep links; otherwise “Available in the app under Settings.”)
+**Not available (do not claim):** delete properties, Stripe/billing, push blasts, guest account actions, endorsements.
 
-**Do not** paste full `mcp.json` / `npm install` on the marketing homepage. That setup belongs in-app under the collapsed **How to connect an agent** section (already built). Website = why it matters; app = how to wire it.
+---
 
-## Role pages
+## Copy brief (write EN first)
 
-**Owners:** One short paragraph — “Connect an AI agent to your company workspace to ask about open tasks and jobs without opening another spreadsheet.”  
-**Managers:** Same idea, day-to-day ops angle — “Hand an agent the live task list so status checks don’t eat the shift.”  
-**Staff / Guests:** Skip.
+**Tone:** Same as the rest of the landing — short sentences, property-ops language.
 
-## Design constraints (from Pulse brand / site rules)
+**Suggested structure:**
 
-- Match existing feature-section composition (one job per section: one title, one short support line, short bullets).
-- No purple-on-white / indigo AI cliché look; stay on Pulse’s sand / primary / secondary system.
-- No “AI magic” glow cards or floating badges on hero media.
-- Do not put this in the first viewport / hero. It is a secondary feature explanation, not the main product pitch.
-- Prefer one clear visual idea if art is needed: phone Settings “Connect your agent” + Cursor-style agent side-by-side — not abstract neural nets.
+- **Title:** Connect your agent  
+- **One-liner:** Let Cursor (or another AI agent) work inside your live Pulse workspace — tasks, jobs, villas, and bills — without handing over your database.  
+- **3–5 bullets** covering: connection key from Settings; read team / villas / tasks / jobs / bills; create tasks & jobs; update task status; revoke anytime.  
+- **CTA line:** Available in the app under Settings → Connect your agent.
+
+You may refine wording, but keep capability claims accurate.
+
+---
+
+## Preview on the website (required)
+
+Add an interactive or animated **preview panel** that looks like a short agent session. This is mock UI for marketing — it does **not** call production APIs.
+
+### Suggested preview script (use as the demo flow)
+
+User asks:
+
+> What’s open today, and create an urgent task for Mai to restock Coral before check-in.
+
+Agent “runs” tools (show as chips or code-like lines):
+
+1. `pulse_list_villas` → Coral · occupied · check-out tomorrow  
+2. `pulse_list_team` → Mai (cleaner)  
+3. `pulse_list_tasks` → 2 open  
+4. `pulse_create_task` → “Restock Coral before check-in” · urgent · assigned Mai  
+
+Agent reply:
+
+> Coral is occupied with checkout tomorrow. I created an urgent task for Mai: Restock Coral before check-in.
+
+Optional second beat (tap / auto-advance):
+
+> Mark that task done when she’s finished.  
+> → `pulse_update_task_status` → done
+
+### Implementation hint for the site codebase
+
+Use a small client component with scripted steps (typewriter or stepped reveal). Example shape you can adapt:
+
+```tsx
+const DEMO_STEPS = [
+  { role: "user", text: "What’s open today, and create an urgent task for Mai to restock Coral before check-in." },
+  { role: "tool", text: "pulse_list_villas → Coral · occupied · check-out tomorrow" },
+  { role: "tool", text: "pulse_list_team → Mai (cleaner)" },
+  { role: "tool", text: "pulse_create_task → Restock Coral before check-in · urgent · Mai" },
+  { role: "agent", text: "Coral is occupied with checkout tomorrow. I created an urgent task for Mai: Restock Coral before check-in." },
+];
+```
+
+Play on scroll-into-view or a “Replay” button. Keep it readable on mobile (stacked chat, not a wide IDE mock).
+
+### Optional config teaser (collapsed)
+
+Under the preview, a disclosure **“How to connect”** with this snippet (path placeholder OK):
+
+```json
+{
+  "mcpServers": {
+    "pulse": {
+      "command": "npx",
+      "args": ["tsx", "/path/to/mcp/src/index.ts"],
+      "env": {
+        "PULSE_BASE_URL": "https://app.pulseflow.site",
+        "PULSE_MCP_TOKEN": "pfmcp_…"
+      }
+    }
+  }
+}
+```
+
+Note: full install steps live in the app Settings → How to connect an agent. Landing page = why + preview; app = wire-up.
+
+---
+
+## Design constraints
+
+- One section, one job: explain agent connection + show preview  
+- No hero takeover; no floating AI badges on hero media  
+- Stay on Pulse colors (sand / primary / secondary) — avoid purple neon “AI” look  
+- Title should say **Connect your agent**, not “MCP”  
+- “MCP” / “Cursor” may appear once as supporting detail  
+
+---
 
 ## Acceptance checklist
 
-- [ ] Homepage has a readable feature block with user-friendly name (not “MCP”)
-- [ ] Copy says owners/managers + connection key + tasks/jobs
-- [ ] Safety line: no database key shared; disconnect anytime
-- [ ] Owners + Managers pages mention it briefly
-- [ ] Guests page unchanged
-- [ ] No full install/`mcp.json` dump on marketing pages
-- [ ] EN copy shipped; other locales either translated or clearly falling back without broken keys
+- [ ] Landing section with accurate full capability list (or demo that implies them without lying)
+- [ ] Preview panel with tool-call style demo (scripted, not live API)
+- [ ] Safety line: connection key, no database key, disconnect anytime
+- [ ] Owners/Managers pages mention it; Guests unchanged
+- [ ] Optional collapsed mcp.json teaser
+- [ ] EN copy shipped; other locales don’t break keys
 
-## Out of scope
+---
 
-- Implementing the in-app Settings card (already done in the app repo)
-- Publishing service-role credentials or public MCP endpoints without the personal key model
-- Claiming the agent can do bills, chat, push, or endorsements yet
+## Deliverable back to me
+
+1. Final EN headline + paragraph + bullets  
+2. Screenshot or description of the preview component  
+3. Where it sits on the homepage  
