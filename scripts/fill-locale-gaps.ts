@@ -1,7 +1,7 @@
 /**
  * Fills dictionary gaps where a locale still mirrors English.
  * Run: npx tsx scripts/fill-locale-gaps.ts [locale...]
- * Example: npx tsx scripts/fill-locale-gaps.ts de fr es it th he my ru
+ * Example: npx tsx scripts/fill-locale-gaps.ts de fr es it th he my ru ar tr
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -15,6 +15,7 @@ import it from "../src/lib/i18n/dictionaries/it";
 import he from "../src/lib/i18n/dictionaries/he";
 import ru from "../src/lib/i18n/dictionaries/ru";
 import ar from "../src/lib/i18n/dictionaries/ar";
+import tr from "../src/lib/i18n/dictionaries/tr";
 import type { Dictionary } from "../src/lib/i18n/dictionaries/en";
 import type { Locale } from "../src/lib/i18n/types";
 import { translateUserContent } from "../src/lib/translate/server";
@@ -29,6 +30,7 @@ const LOCALES: Record<Exclude<Locale, "en">, Dictionary> = {
   he,
   ru,
   ar,
+  tr,
 };
 
 const BRAND_LATIN = "Pulse Flow";

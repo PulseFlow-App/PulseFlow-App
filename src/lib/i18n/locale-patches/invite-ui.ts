@@ -465,4 +465,55 @@ export const inviteUiPatches: Record<
       "Не удалось отправить письмо в этой среде. Подтвердите по этой ссылке:",
     "guest.mergeOpenLink": "Добавить эту компанию",
   },
+  tr: {
+    "guest.joinTitle": "Misafir olarak davet edildiniz",
+    "guest.joinHint":
+      "Yeni misiniz? Hesap oluşturun. Pulse Flow’da başka bir şirketle zaten var mısınız? Aynı e-postayı kullanın — bu ev sahibini aynı profile ekleriz.",
+    "guest.joinContinue": "Devam",
+    "join.staffTitle": "Ekibe davet edildiniz",
+    "join.staffHint":
+      "Yeni misiniz? Bilgilerinizi doldurun. Başka bir şirkette zaten var mısınız? İkisini de tek girişte tutmak için aynı e-postayı kullanın.",
+    "join.accountNote":
+      "Bir profil birden fazla şirkete ait olabilir. İlk şirketinizi asla değiştirmez — yenisini ekleriz.",
+    "join.passwordLabel": "Şifre",
+    "join.passwordConfirm": "Şifreyi onayla",
+    "join.signedInHint":
+      "{email} olarak giriş yaptınız. {org} şirketini bu hesaba ekleyin — her iki şirketi de korursunuz.",
+    "join.addToAccount": "Bu şirketi hesabıma ekle",
+    "join.addingToAccount": "Ekleniyor…",
+    "join.orNewAccount": "Veya aşağıda başka bir e-posta oluşturun / kullanın.",
+    "join.loading": "Davet yükleniyor…",
+    "join.unavailableTitle": "Davet kullanılamıyor",
+    "join.unavailableHint":
+      "Bu bağlantı geçersiz veya zaten kullanılmış. Sahibinizden veya yöneticinizden yeni bir davet isteyin.",
+    "join.backToSignIn": "Girişe dön",
+    "join.jobTitle": "Unvan",
+    "join.fullName": "Ad soyad",
+    "join.phoneOptional": "Telefon (isteğe bağlı)",
+    "join.joining": "Katılıyor…",
+    "join.accept": "Daveti kabul et ve katıl",
+    "join.nameEmailRequired": "Ad ve e-posta gerekli.",
+    "join.passwordMin": "Şifre en az 6 karakter olmalı.",
+    "join.passwordMismatch": "Şifreler eşleşmiyor.",
+    "join.couldNotJoin": "Katılım başarısız oldu.",
+    "join.thisOrganization": "bu kuruluş",
+    "join.thisCompany": "bu şirket",
+    "guest.mergeTitle": "Bu şirketi hesabınıza ekleyin",
+    "guest.mergeHint":
+      "{org} bu e-postayı ({email}) davet etti. Mülklerini mevcut profilinize eklemek için şifrenizi girin. Her iki şirket tek girişte kalır.",
+    "guest.mergePassword": "Şifreniz",
+    "guest.mergeNeedPassword": "Onay için şifrenizi girin.",
+    "guest.mergeConfirm": "Şirketi ekle",
+    "guest.mergeConfirming": "Ekleniyor…",
+    "guest.mergeInvalidTitle": "Bağlantı kullanılamıyor",
+    "guest.mergeInvalid": "Bu bağlantı geçersiz veya zaten kullanılmış.",
+    "guest.mergeUnavailable":
+      "Şirketi bu yolla eklemek demo modunda kullanılamaz.",
+    "guest.mergeEmailTitle": "E-postanızı kontrol edin",
+    "guest.mergeEmailHint":
+      "{email} için bir profil zaten var. {org} eklemek için bir bağlantı gönderdik. Açın ve şifrenizi girin. Yok sayarsanız hiçbir şey değişmez.",
+    "guest.mergeEmailFallback":
+      "Bu ortamda e-posta gönderilemedi. Bu bağlantıyla onaylayın:",
+    "guest.mergeOpenLink": "Bu şirketi ekle",
+  },
 };

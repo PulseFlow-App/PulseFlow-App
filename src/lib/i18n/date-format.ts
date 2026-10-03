@@ -9,6 +9,7 @@ import {
   ru,
   th,
   arSA,
+  tr,
 } from "date-fns/locale";
 import type { Locale } from "./types";
 
@@ -25,6 +26,7 @@ const DATE_FNS_LOCALES: Partial<
   ru,
   ar: arSA,
   my: enUS,
+  tr,
 };
 
 export function getDateFnsLocale(locale: Locale) {
@@ -46,7 +48,7 @@ export function formatShortDateLocalized(
 /** Calendar / form display — avoid US «MMM d, yyyy» in RU. */
 export function formatLongDateLocalized(date: Date, locale: Locale) {
   const pattern =
-    locale === "ru" || locale === "de" || locale === "th"
+    locale === "ru" || locale === "de" || locale === "th" || locale === "tr"
       ? "d MMMM yyyy"
       : "MMM d, yyyy";
   return format(date, pattern, { locale: getDateFnsLocale(locale) });

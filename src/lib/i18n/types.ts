@@ -9,6 +9,7 @@ export const LOCALES = [
   "he",
   "ar",
   "ru",
+  "tr",
 ] as const;
 
 export type Locale = (typeof LOCALES)[number];
@@ -27,6 +28,7 @@ export const LOCALE_META: Record<
   he: { label: "Hebrew", native: "עברית", dir: "rtl" },
   ar: { label: "Arabic", native: "العربية", dir: "rtl" },
   ru: { label: "Russian", native: "Русский", dir: "ltr" },
+  tr: { label: "Turkish", native: "Türkçe", dir: "ltr" },
 };
 
 export const LOCALE_STORAGE_KEY = "pulseflow_locale";

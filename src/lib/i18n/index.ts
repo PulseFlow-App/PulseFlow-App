@@ -8,6 +8,7 @@ import it from "./dictionaries/it";
 import he from "./dictionaries/he";
 import ar from "./dictionaries/ar";
 import ru from "./dictionaries/ru";
+import tr from "./dictionaries/tr";
 import {
   LOCALES,
   LOCALE_META,
@@ -30,6 +31,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
   he,
   ar,
   ru,
+  tr,
 };
 
 export function isLocale(value: string | null | undefined): value is Locale {

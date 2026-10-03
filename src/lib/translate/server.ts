@@ -12,6 +12,7 @@ const MYMEMORY_LANG: Record<Locale, string> = {
   he: "he",
   ar: "ar",
   ru: "ru",
+  tr: "tr",
 };
 
 async function translateWithGoogle(

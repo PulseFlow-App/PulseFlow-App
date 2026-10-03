@@ -14,6 +14,7 @@ import it from "../src/lib/i18n/dictionaries/it";
 import he from "../src/lib/i18n/dictionaries/he";
 import ru from "../src/lib/i18n/dictionaries/ru";
 import ar from "../src/lib/i18n/dictionaries/ar";
+import tr from "../src/lib/i18n/dictionaries/tr";
 import type { Dictionary } from "../src/lib/i18n/dictionaries/en";
 import type { Locale } from "../src/lib/i18n/types";
 import { translateUserContent } from "../src/lib/translate/server";
@@ -28,6 +29,7 @@ const LOCALES: Record<Exclude<Locale, "en">, Dictionary> = {
   he,
   ru,
   ar,
+  tr,
 };
 
 const HOME_KEYS = [

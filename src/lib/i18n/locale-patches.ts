@@ -9,6 +9,7 @@ import { thLocalePatch } from "./locale-patches/th";
 import { frLocalePatch } from "./locale-patches/fr";
 import { ruLocalePatch } from "./locale-patches/ru";
 import { arLocalePatch } from "./locale-patches/ar";
+import { trLocalePatch } from "./locale-patches/tr";
 import { inviteUiPatches } from "./locale-patches/invite-ui";
 
 function mergePatches(
@@ -186,4 +187,5 @@ export const localePatches: Partial<
   fr: mergePatches(frLocalePatch, inviteUiPatches.fr),
   ru: mergePatches(ruLocalePatch, inviteUiPatches.ru),
   ar: mergePatches(arLocalePatch, arUiPatch, inviteUiPatches.ar),
+  tr: mergePatches(trLocalePatch, inviteUiPatches.tr),
 } satisfies Partial<Record<Locale, Partial<Dictionary>>>;

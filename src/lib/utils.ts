@@ -68,7 +68,9 @@ export function formatDisplayDate(
   const loc = activeUiLocale(locale);
   const d = typeof date === "string" ? parseISO(date) : date;
   const ruSafe =
-    loc === "ru" || loc === "de" ? pattern.replace("MMM d, yyyy", "d MMM yyyy") : pattern;
+    loc === "ru" || loc === "de" || loc === "tr"
+      ? pattern.replace("MMM d, yyyy", "d MMM yyyy")
+      : pattern;
   return format(d, ruSafe, { locale: getDateFnsLocale(loc) });
 }
 
