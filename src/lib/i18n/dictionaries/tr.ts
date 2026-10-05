@@ -559,7 +559,7 @@ const tr: Dictionary = {
   "settings.mcpHowNpx": "pulse kapalı kalır ve günlük npx: not found veya spawn npx ENOENT derse nodejs.org’dan Node 20+ kurun, sonra Cursor Settings → MCP içinde Pulse’u yeniden yükleyin.",
   "settings.mcpHowCopyConfig": "Yapılandırmayı kopyala",
   "settings.mcpHowToolsLabel": "Ne yapabilir:",
-  "settings.mcpHowTools": "pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills.",
+  "settings.mcpHowTools": "pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills, pulse_get_property_instructions, pulse_set_property_instructions, pulse_assign_property.",
   "settings.inviteError": "Davet oluşturulamadı.",
   "settings.saveError": "Kaydedilemedi.",
   "settings.translateContent": "Ekip içeriğini çevirin",

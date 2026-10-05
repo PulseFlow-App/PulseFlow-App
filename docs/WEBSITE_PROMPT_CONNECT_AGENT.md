@@ -33,13 +33,16 @@ Match existing Pulse site voice: concrete, ops-first, no purple “AI magic” c
 | Who am I / which workspace | `pulse_whoami` |
 | List teammates (for assignees) | `pulse_list_team` |
 | List properties + status / check-in–out | `pulse_list_villas` |
-| Add a property from a name, attached photos, a voice note, or written details | `pulse_create_villa` |
+| Add a property: name, photo, and location link, then the questionnaire. No web lookup. Create once | `pulse_create_villa` |
 | List tasks (open / pending verify / done) | `pulse_list_tasks` |
 | Create a task | `pulse_create_task` |
 | Update task status | `pulse_update_task_status` |
 | List jobs (service orders) | `pulse_list_jobs` |
 | Create a job for a teammate | `pulse_create_job` |
 | List bills (pending / paid) | `pulse_list_bills` |
+| Read guest house instructions | `pulse_get_property_instructions` |
+| Set guest house instructions | `pulse_set_property_instructions` |
+| Assign a cleaner or staff member to a property | `pulse_assign_property` |
 
 **Not available (do not claim):** delete properties, Stripe/billing, push blasts, guest account actions, endorsements.
 
@@ -160,7 +163,7 @@ Show **two OS tabs** (default to visitor OS if known): Mac / Linux and Windows.
 
 **Footer note:** If pulse stays off and the log says Node.js could not be found or spawn npx ENOENT, install Node 20+ from nodejs.org, then reload the server / restart the client.
 
-**What it can do:** pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills.
+**What it can do:** pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills, pulse_get_property_instructions, pulse_set_property_instructions, pulse_assign_property.
 
 ---
 

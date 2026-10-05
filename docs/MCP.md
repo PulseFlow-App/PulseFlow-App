@@ -77,13 +77,16 @@ If the log says `npx: not found` or `spawn npx ENOENT`, install Node 20+ from no
 | `pulse_whoami` | `me:read` | Who this key acts as |
 | `pulse_list_team` | `team:read` | Teammates for assignees |
 | `pulse_list_villas` | `villas:read` | Properties + status / dates |
-| `pulse_create_villa` | `villas:write` | Add a property from a name, attached photos, a voice note, or written details. Look up a maps link only for what the user did not already give. |
+| `pulse_create_villa` | `villas:write` | Add a property once. Ask name, photo, and location link first, then bedrooms, bathrooms, size, guests, air conditioning, parking, view, and optional extras. Leave an unmarked extra unset. Keep a size range as a range. Do not search the internet. A listing cannot be edited after it is created. |
 | `pulse_list_tasks` | `tasks:read` | Filter by status |
 | `pulse_create_task` | `tasks:write` | Create open tasks |
 | `pulse_update_task_status` | `tasks:write` | `open` / `pending_verify` / `done` |
 | `pulse_list_jobs` | `jobs:read` | Service orders |
 | `pulse_create_job` | `jobs:write` | Book teammate + task + request chat |
 | `pulse_list_bills` | `bills:read` | Pending / paid bills |
+| `pulse_get_property_instructions` | `villas:read` | Guest-facing house guide: Wi-Fi, gate, bins, quiet hours, checkout, extra notes |
+| `pulse_set_property_instructions` | `villas:write` | Set that house guide. Guests see it on their booking. Send only fields to change. |
+| `pulse_assign_property` | `villas:write` | Assign a cleaner or staff teammate to a property. Other assignees stay. |
 
 ## Safety
 

@@ -538,7 +538,7 @@ const fr: Dictionary = {
   "settings.mcpHowNpx": "If pulse stays off and the log says npx: not found or spawn npx ENOENT, install Node 20+ from nodejs.org, then reload Pulse in Cursor Settings → MCP.",
   "settings.mcpHowCopyConfig": "Copy config",
   "settings.mcpHowToolsLabel": "What it can do:",
-  "settings.mcpHowTools": "pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills.",
+  "settings.mcpHowTools": "pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills, pulse_get_property_instructions, pulse_set_property_instructions, pulse_assign_property.",
   "settings.inviteError": "Impossible de créer l’invitation.",
   "settings.saveError": "Impossible d’enregistrer.",
   "billing.title": "Facturation",

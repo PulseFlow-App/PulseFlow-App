@@ -101,7 +101,7 @@ server.tool(
 
 server.tool(
   "pulse_create_villa",
-  "Add a property. Accept a name, photos the user attaches, a voice recording, or written notes — any mix. Transcribe a voice note yourself and pass the words as details; do not ask them to type it instead. Pass each attached photo as photos[].data_base64 (raw base64 of a JPEG, PNG, or WebP, no data: prefix). Their facts and photos win. If the name is a real place, look up only what they did not already give: location_url, area, and a photo URL when they attached none. Do not invent a place or a photo.",
+  "Add a property once. Ask only three things first, with no intro: name, photo, and location link. Then ask this questionnaire. Do not create until both steps are done. Bedrooms: 1, 2, 3, 4, 5, 6 or more. Bathrooms: 1, 2, 3, 4, 5 or more. Size: under 150 m², 150–300, 300–500, over 500, not sure — keep a range as text in details and do not set sq_m. Guests: 2, 4, 6, 8, 10, 12 or more. Air conditioning: all rooms (aircon=full), some rooms (partial), none. Parking: private, street, none. View: sea, jungle, pool, garden, mountain. Also true (any of): garden (has_garden), Wi-Fi (has_wifi), pet friendly (pet_friendly), full kitchen (kitchen=full), standalone house (setting=standalone). Leave an extra unset when they do not mark it: omit the field, do not send false. The photo they give goes on the listing as photos[].data_base64 (raw base64 JPEG, PNG, or WebP, no data: prefix). The location link they give is location_url. Do not search the internet for a name, photo, or place, and do not invent one. A voice note can answer these questions: transcribe it yourself and use those words. Pulse cannot edit a listing after it is created.",
   {
     name: z.string().min(1).max(200),
     location_url: z.string().url().max(2000).nullable().optional(),
@@ -236,6 +236,52 @@ server.tool(
       await api("/api/mcp/jobs", {
         method: "POST",
         body: JSON.stringify(input),
+      }),
+    ),
+);
+
+server.tool(
+  "pulse_get_property_instructions",
+  "Read the guest-facing house guide for a property (Wi-Fi, gate, bins, quiet hours, checkout, extra notes).",
+  { villa_id: z.string().uuid() },
+  async ({ villa_id }) =>
+    textResult(await api(`/api/mcp/villas/${villa_id}/instructions`)),
+);
+
+server.tool(
+  "pulse_set_property_instructions",
+  "Set guest-facing house instructions for a property. Guests see these on their booking. Send only the fields to change. Empty string clears a field.",
+  {
+    villa_id: z.string().uuid(),
+    wifi_ssid: z.string().max(200).nullable().optional(),
+    wifi_password: z.string().max(200).nullable().optional(),
+    gate_code: z.string().max(120).nullable().optional(),
+    bins_notes: z.string().max(2000).nullable().optional(),
+    quiet_hours: z.string().max(500).nullable().optional(),
+    checkout_checklist: z.string().max(4000).nullable().optional(),
+    extra_notes: z.string().max(4000).nullable().optional(),
+  },
+  async ({ villa_id, ...fields }) =>
+    textResult(
+      await api(`/api/mcp/villas/${villa_id}/instructions`, {
+        method: "PUT",
+        body: JSON.stringify(fields),
+      }),
+    ),
+);
+
+server.tool(
+  "pulse_assign_property",
+  "Assign a cleaner or staff teammate to a property. profile_id comes from pulse_list_team. Other assignees stay.",
+  {
+    villa_id: z.string().uuid(),
+    profile_id: z.string().uuid(),
+  },
+  async ({ villa_id, profile_id }) =>
+    textResult(
+      await api(`/api/mcp/villas/${villa_id}/assign`, {
+        method: "POST",
+        body: JSON.stringify({ profile_id }),
       }),
     ),
 );

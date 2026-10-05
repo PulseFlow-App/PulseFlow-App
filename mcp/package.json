@@ -1,6 +1,6 @@
 {
   "name": "@pulseflow/mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Pulse Flow agent bridge. Talks to Pulse with a personal connection key — never the database key.",
   "license": "MIT",
   "type": "module",
