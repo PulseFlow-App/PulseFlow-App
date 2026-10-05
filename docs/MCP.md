@@ -29,7 +29,7 @@ You need [Node.js](https://nodejs.org) **20+** so `npx` can run.
 
 ### Mac / Linux
 
-Uses `/bin/bash` with a launcher that finds Node (Homebrew, official installer, Herd, nvm, fnm, Volta, or asdf), then runs `npx -y @pulseflow/mcp`. Paste as-is — do not swap in a Herd or nvm path.
+Uses `/bin/bash` with a launcher that finds a Node that also has `npx` (Homebrew, official installer, Herd, nvm, fnm, Volta, or asdf), skips Cursor’s node, and runs that `npx` by its full path. Paste as-is — do not swap in a Herd or nvm path.
 
 ```json
 {
@@ -38,7 +38,7 @@ Uses `/bin/bash` with a launcher that finds Node (Homebrew, official installer, 
       "command": "/bin/bash",
       "args": [
         "-c",
-        "pick() { local root=\"$1\" best=\"\" best_ver=\"\" d name ver top; [ -d \"$root\" ] || return 1; for d in \"$root\"/*; do [ -x \"$d/bin/node\" ] || continue; name=\"${d##*/}\"; ver=\"${name#v}\"; if [ -z \"$best\" ]; then best=\"$d/bin/node\"; best_ver=\"$ver\"; continue; fi; top=\"$(printf '%s\\n%s\\n' \"$best_ver\" \"$ver\" | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1)\"; if [ \"$top\" = \"$ver\" ]; then best=\"$d/bin/node\"; best_ver=\"$ver\"; fi; done; [ -n \"$best\" ] || return 1; printf '%s\\n' \"$best\"; }; node_bin=\"\"; if command -v node >/dev/null 2>&1; then node_bin=\"$(command -v node)\"; fi; if [ -z \"$node_bin\" ]; then for c in /opt/homebrew/bin/node /usr/local/bin/node \"$HOME/.volta/bin/node\" \"$HOME/.local/bin/node\"; do if [ -x \"$c\" ]; then node_bin=\"$c\"; break; fi; done; fi; if [ -z \"$node_bin\" ]; then node_bin=\"$(pick \"$HOME/Library/Application Support/Herd/config/nvm/versions/node\" || true)\"; fi; if [ -z \"$node_bin\" ]; then node_bin=\"$(pick \"${NVM_DIR:-$HOME/.nvm}/versions/node\" || true)\"; fi; if [ -z \"$node_bin\" ]; then for c in \"$HOME/Library/Application Support/fnm/aliases/default/bin/node\" \"$HOME/.local/share/fnm/aliases/default/bin/node\" \"$HOME/.fnm/aliases/default/bin/node\"; do if [ -x \"$c\" ]; then node_bin=\"$c\"; break; fi; done; fi; if [ -z \"$node_bin\" ] && [ -d \"$HOME/.asdf/installs/nodejs\" ]; then node_bin=\"$(pick \"$HOME/.asdf/installs/nodejs\" || true)\"; fi; if [ -z \"$node_bin\" ]; then echo \"Pulse MCP could not find Node.js. Install Node 20 or newer, then reload this server.\" >&2; exit 1; fi; export PATH=\"$(dirname \"$node_bin\"):/usr/bin:/bin:/usr/sbin:/sbin\"; exec npx -y @pulseflow/mcp"
+        "has_npx() { [ -n \"${1:-}\" ] && [ -x \"$1\" ] && [ -x \"$(dirname \"$1\")/npx\" ]; }\nchoose() { if [ -z \"$node_bin\" ] && has_npx \"$1\"; then node_bin=\"$1\"; fi; }\npick_latest() {\n  local root=\"$1\" best=\"\" best_ver=\"\" d name ver top\n  [ -d \"$root\" ] || return 0\n  for d in \"$root\"/*; do\n    [ -x \"$d/bin/node\" ] && [ -x \"$d/bin/npx\" ] || continue\n    name=\"${d##*/}\"\n    ver=\"${name#v}\"\n    if [ -z \"$best\" ]; then best=\"$d/bin/node\"; best_ver=\"$ver\"; continue; fi\n    top=$(printf '%s\\n%s\\n' \"$best_ver\" \"$ver\" | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1)\n    if [ \"$top\" = \"$ver\" ]; then best=\"$d/bin/node\"; best_ver=\"$ver\"; fi\n  done\n  [ -n \"$best\" ] && choose \"$best\"\n}\nnode_bin=\"\"\nif command -v node >/dev/null 2>&1; then choose \"$(command -v node)\"; fi\nchoose /opt/homebrew/bin/node\nchoose /usr/local/bin/node\nchoose \"$HOME/.volta/bin/node\"\nchoose \"$HOME/.local/bin/node\"\npick_latest \"$HOME/Library/Application Support/Herd/config/nvm/versions/node\"\npick_latest \"${NVM_DIR:-$HOME/.nvm}/versions/node\"\nchoose \"$HOME/Library/Application Support/fnm/aliases/default/bin/node\"\nchoose \"$HOME/.local/share/fnm/aliases/default/bin/node\"\nchoose \"$HOME/.fnm/aliases/default/bin/node\"\nif [ -d \"$HOME/.asdf/installs/nodejs\" ]; then pick_latest \"$HOME/.asdf/installs/nodejs\"; fi\nif [ -z \"$node_bin\" ]; then echo \"Pulse MCP could not find Node.js with npx. Install Node 20 or newer, then reload this server.\" >&2; exit 1; fi\nbin_dir=$(dirname \"$node_bin\")\nexport PATH=\"$bin_dir:/usr/bin:/bin:/usr/sbin:/sbin\"\nexec \"$bin_dir/npx\" -y @pulseflow/mcp\n"
       ],
       "env": {
         "PULSE_MCP_TOKEN": "pfmcp_…"
@@ -50,7 +50,7 @@ Uses `/bin/bash` with a launcher that finds Node (Homebrew, official installer, 
 
 ### Windows
 
-Cursor on Windows already sees `npx`. Keep the short snippet (`/bin/bash` is not used):
+Keep the short `npx` snippet. `/bin/bash` is not on Windows, and Cursor there already sees `npx`:
 
 ```json
 {
@@ -68,7 +68,7 @@ Cursor on Windows already sees `npx`. Keep the short snippet (`/bin/bash` is not
 
 `PULSE_BASE_URL` defaults to `https://app.pulseflow.site`. For local app development add `"PULSE_BASE_URL": "http://localhost:3000"`.
 
-If the log says Node could not be found or `spawn npx ENOENT`, install Node 20+, then reload the server / restart the client.
+If the log says Node.js with npx could not be found, `npx: not found`, or `spawn npx ENOENT`, install Node 20+ from nodejs.org, then reload Pulse in **Cursor Settings → MCP**.
 
 ## What the agent can do
 
