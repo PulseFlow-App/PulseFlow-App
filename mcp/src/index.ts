@@ -98,13 +98,19 @@ server.tool(
 
 server.tool(
   "pulse_create_villa",
-  "Add a property. The user may give only a name. Before calling, look that name up as a real place and pass what you find: location_url (required maps link), area, a short description, and photo_url (a direct JPEG, PNG, or WebP of the exterior, not a webpage). Do not invent a place or a photo. If you cannot find it on a map, do not call this tool.",
+  "Add a property. Accept a name, photos the user attaches, a voice recording, or written notes — any mix. Transcribe a voice note yourself and pass the words as details; do not ask them to type it instead. Pass each attached photo as photos[].data_base64 (raw base64 of a JPEG, PNG, or WebP, no data: prefix). Their facts and photos win. If the name is a real place, look up only what they did not already give: location_url, area, and a photo URL when they attached none. Do not invent a place or a photo.",
   {
     name: z.string().min(1).max(200),
-    location_url: z.string().url().max(2000),
+    location_url: z.string().url().max(2000).nullable().optional(),
     area: z.string().max(200).nullable().optional(),
     description: z.string().max(2000).nullable().optional(),
+    details: z.string().max(2000).nullable().optional(),
     photo_url: z.string().url().max(2000).nullable().optional(),
+    photo_urls: z.array(z.string().url().max(2000)).max(6).optional(),
+    photos: z
+      .array(z.object({ data_base64: z.string().min(32).max(6_000_000) }))
+      .max(6)
+      .optional(),
     status: z.enum(["available", "occupied", "turnover", "maintenance"]).optional(),
     property_type: z
       .enum(["villa", "bungalow", "house", "apartment", "studio", "office", "other"])

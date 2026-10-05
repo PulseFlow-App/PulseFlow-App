@@ -49,9 +49,20 @@ const optionalUrl = z.string().trim().url().max(2000).nullable().optional();
 const createSchema = z.object({
   name: z.string().trim().min(1).max(200),
   area: z.string().trim().max(200).nullable().optional(),
-  location_url: z.string().trim().url().max(2000),
+  location_url: z.string().trim().url().max(2000).nullable().optional(),
   description: optionalText,
+  /** Typed notes, or a transcript of a voice recording. */
+  details: optionalText,
   photo_url: optionalUrl,
+  photo_urls: z.array(z.string().trim().url().max(2000)).max(6).optional(),
+  photos: z
+    .array(
+      z.object({
+        data_base64: z.string().min(32).max(6_000_000),
+      }),
+    )
+    .max(6)
+    .optional(),
   status: z.enum(["available", "occupied", "turnover", "maintenance"]).optional(),
   property_type: z
     .enum(["villa", "bungalow", "house", "apartment", "studio", "office", "other"])
@@ -106,6 +117,32 @@ function sniffImage(buf: Buffer) {
   return null;
 }
 
+function photoBuffer(buf: Buffer) {
+  if (buf.length < 32 || buf.length > 4_000_000) {
+    throw new Error("Photo must be under 4 MB.");
+  }
+  const type = sniffImage(buf);
+  if (!type) throw new Error("Photo must be a JPEG, PNG, or WebP.");
+  const ext = type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg";
+  return { buf, type, ext };
+}
+
+async function storeVillaPhotoBuffer(
+  admin: ReturnType<typeof createAdminClient>,
+  orgId: string,
+  profileId: string,
+  buf: Buffer,
+) {
+  const photo = photoBuffer(buf);
+  const path = `${orgId}/${profileId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${photo.ext}`;
+  const { error } = await admin.storage.from("villas").upload(path, photo.buf, {
+    contentType: photo.type,
+    upsert: false,
+  });
+  if (error) throw new Error(error.message);
+  return admin.storage.from("villas").getPublicUrl(path).data.publicUrl;
+}
+
 /** Copy a public photo into villa storage so the listing does not depend on a hotlink. */
 async function storeVillaPhoto(
   admin: ReturnType<typeof createAdminClient>,
@@ -119,20 +156,12 @@ async function storeVillaPhoto(
     headers: { Accept: "image/*" },
   });
   if (!remote.ok) throw new Error(`Photo download failed (${remote.status}).`);
-  const buf = Buffer.from(await remote.arrayBuffer());
-  if (buf.length < 32 || buf.length > 4_000_000) {
-    throw new Error("Photo must be under 4 MB.");
-  }
-  const type = sniffImage(buf);
-  if (!type) throw new Error("Photo must be a JPEG, PNG, or WebP.");
-  const ext = type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg";
-  const path = `${orgId}/${profileId}/${Date.now()}-property.${ext}`;
-  const { error } = await admin.storage.from("villas").upload(path, buf, {
-    contentType: type,
-    upsert: false,
-  });
-  if (error) throw new Error(error.message);
-  return admin.storage.from("villas").getPublicUrl(path).data.publicUrl;
+  return storeVillaPhotoBuffer(
+    admin,
+    orgId,
+    profileId,
+    Buffer.from(await remote.arrayBuffer()),
+  );
 }
 
 /** Create a property in the token's org. */
@@ -148,23 +177,41 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient();
-  let photoUrl: string | null = null;
-  let photoWarning: string | null = null;
-  if (body.photo_url) {
+  const savedPhotos: string[] = [];
+  const photoWarnings: string[] = [];
+
+  const remember = async (save: () => Promise<string>) => {
     try {
-      photoUrl = await storeVillaPhoto(admin, auth.orgId, auth.profileId, body.photo_url);
+      savedPhotos.push(await save());
     } catch (e) {
-      photoWarning = e instanceof Error ? e.message : "Could not save the photo.";
+      photoWarnings.push(e instanceof Error ? e.message : "Could not save a photo.");
     }
+  };
+
+  for (const photo of body.photos ?? []) {
+    const raw = photo.data_base64
+      .replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, "")
+      .replace(/\s/g, "");
+    await remember(() =>
+      storeVillaPhotoBuffer(admin, auth.orgId, auth.profileId, Buffer.from(raw, "base64")),
+    );
   }
+  for (const url of body.photo_urls ?? []) {
+    await remember(() => storeVillaPhoto(admin, auth.orgId, auth.profileId, url));
+  }
+  if (body.photo_url) {
+    await remember(() => storeVillaPhoto(admin, auth.orgId, auth.profileId, body.photo_url!));
+  }
+
+  const written = [body.description?.trim(), body.details?.trim()].filter(Boolean).join("\n\n");
 
   const row: Record<string, unknown> = {
     org_id: auth.orgId,
     name: body.name,
     area: body.area?.trim() || null,
-    location_url: body.location_url,
-    description: body.description?.trim() || null,
-    photo_url: photoUrl,
+    location_url: body.location_url?.trim() || null,
+    description: written || null,
+    photo_url: savedPhotos[0] ?? null,
     status: body.status ?? "available",
     created_by: auth.profileId,
   };
@@ -197,5 +244,9 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({ villa: data, photo_warning: photoWarning });
+  return NextResponse.json({
+    villa: data,
+    photo_urls: savedPhotos,
+    photo_warnings: photoWarnings,
+  });
 }

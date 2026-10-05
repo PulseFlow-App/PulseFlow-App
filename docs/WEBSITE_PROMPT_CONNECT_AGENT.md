@@ -33,7 +33,7 @@ Match existing Pulse site voice: concrete, ops-first, no purple “AI magic” c
 | Who am I / which workspace | `pulse_whoami` |
 | List teammates (for assignees) | `pulse_list_team` |
 | List properties + status / check-in–out | `pulse_list_villas` |
-| Add a property from a place name (agent looks up the map and a photo first) | `pulse_create_villa` |
+| Add a property from a name, attached photos, a voice note, or written details | `pulse_create_villa` |
 | List tasks (open / pending verify / done) | `pulse_list_tasks` |
 | Create a task | `pulse_create_task` |
 | Update task status | `pulse_update_task_status` |
