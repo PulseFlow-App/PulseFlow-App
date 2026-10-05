@@ -10,7 +10,7 @@ Write and ship a **landing-page feature section** about Pulse’s **Connect your
 
 1. A clear marketing paragraph (headline + short body + bullets)
 2. A **preview** on the page (fake agent chat / tool-call UI) so visitors see what it feels like
-3. Optional small code/config snippet (mcp.json) for people who will wire Cursor
+3. Optional small code/config snippet (mcp.json) for Cursor, Claude, or another AI agent
 
 Do **not** put this in the hero. Place it after “One language for the whole team” (or as its own section before Plans). Owners + Managers role pages get a short cross-link line; Guests page stays unchanged.
 
@@ -22,7 +22,7 @@ Match existing Pulse site voice: concrete, ops-first, no purple “AI magic” c
 
 **Who:** Owners and managers only (not staff, not guests).
 
-**How:** In the live app → **Settings → Connect your agent** → create a **connection key** (shown once) → paste into Cursor (or another MCP client). Disconnect anytime.
+**How:** In the live app → **Settings → Connect your agent** → create a **connection key** (shown once) → paste into your client: Cursor, Claude, or another AI agent. Disconnect anytime.
 
 **Safety:** The agent never gets the database key. It only calls Pulse APIs with that personal connection key, scoped to the user’s current company workspace.
 
@@ -51,7 +51,7 @@ Match existing Pulse site voice: concrete, ops-first, no purple “AI magic” c
 **Suggested structure:**
 
 - **Title:** Connect your agent  
-- **One-liner:** Let Cursor (or another AI agent) work inside your live Pulse workspace — tasks, jobs, villas, and bills — without handing over your database.  
+- **One-liner:** Let Cursor, Claude, or another AI agent work inside your live Pulse workspace — tasks, jobs, villas, and bills — without handing over your database.  
 - **3–5 bullets** covering: connection key from Settings; read team / villas / tasks / jobs / bills; create tasks & jobs; update task status; revoke anytime.  
 - **CTA line:** Available in the app under Settings → Connect your agent.
 
@@ -105,7 +105,7 @@ Play on scroll-into-view or a “Replay” button. Keep it readable on mobile (s
 
 Show these steps in full. The config block is visible, with a copy button. Title of this block: **Copy this MCP config**. The page title stays **Connect your agent**.
 
-**Intro line:** In the app, open Settings → Connect your agent, create a connection key, then press Copy config. Your key is filled in. Paste that block into Cursor. You only change the path.
+**Intro line:** In the app, open Settings → Connect your agent, create a connection key, then press Copy config. Your key is filled in. Paste that block into your client: Cursor, Claude, or another AI agent. You only change the path.
 
 **The block to show:**
 
@@ -126,12 +126,12 @@ Show these steps in full. The config block is visible, with a copy button. Title
 
 **Steps under the block:**
 
-1. In Cursor, press `Cmd+Shift+P` on Mac or `Ctrl+Shift+P` on Windows. Type `MCP: Open User Configuration` and press Enter. That opens `mcp.json`. Paste the block. If other servers are already listed, paste only the `pulse` entry inside `mcpServers`.
+1. Open your client's MCP config and paste the block. Cursor: `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows) → `MCP: Open User Configuration` (`~/.cursor/mcp.json`). Claude Desktop: `claude_desktop_config.json`. Another AI agent: that app's `mcp.json`. If other servers are already listed, paste only the `pulse` entry inside `mcpServers`.
 2. Replace `/ABSOLUTE/PATH/TO/mcp/src/index.ts` with the full path to that file on your computer. In Terminal, open the Pulse project folder and run `cd mcp && npm install` once.
-3. Save `mcp.json`. Open Cursor Settings → MCP and turn **pulse** on.
-4. Open the chat panel and set the mode to **Agent**, not Ask. Start a new Agent chat and ask: “Who am I in Pulse, and list my villas.”
+3. Save the file. Turn **pulse** on in your client (in Cursor: Settings → MCP).
+4. Open a new chat in your client. In Cursor, set the mode to **Agent**, not Ask. Ask: “Who am I in Pulse, and list my villas.”
 
-**One-line fix, under the steps:** If pulse stays off and the log says `spawn npx ENOENT`, Cursor cannot find `npx`. In Terminal run `which node`. Put that full path in `command` instead of `npx`, and set `args` to the full paths of `mcp/node_modules/tsx/dist/cli.mjs` and `mcp/src/index.ts`.
+**One-line fix, under the steps:** If pulse stays off and the log says `spawn npx ENOENT`, your client cannot find `npx`. In Terminal run `which node`. Put that full path in `command` instead of `npx`, and set `args` to the full paths of `mcp/node_modules/tsx/dist/cli.mjs` and `mcp/src/index.ts`.
 
 ---
 
@@ -141,7 +141,7 @@ Show these steps in full. The config block is visible, with a copy button. Title
 - No hero takeover; no floating AI badges on hero media  
 - Stay on Pulse colors (sand / primary / secondary) — avoid purple neon “AI” look  
 - Title should say **Connect your agent**, not “MCP”  
-- “MCP” / “Cursor” may appear once as supporting detail  
+- “MCP” may appear as supporting detail. Name the client as Cursor, Claude, or another AI agent — not Cursor alone.  
 
 ---
 
@@ -151,7 +151,7 @@ Show these steps in full. The config block is visible, with a copy button. Title
 - [ ] Preview panel with tool-call style demo (scripted, not live API)
 - [ ] Safety line: connection key, no database key, disconnect anytime
 - [ ] Owners/Managers pages mention it; Guests unchanged
-- [ ] Visible MCP config block with a copy button, plus the four Cursor steps under it
+- [ ] Visible MCP config block with a copy button, plus steps for Cursor, Claude, or another AI agent
 - [ ] EN copy shipped; other locales don’t break keys
 
 ---

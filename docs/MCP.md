@@ -25,12 +25,12 @@ npm install
 
 In the app, **Settings → Connect your agent** shows the config block. Create a key, then press **Copy config** so the key is already inside. Paste that block. Do not type the key into the file path.
 
-Cursor, on the user’s own computer:
+Paste it into your client: Cursor, Claude, or another AI agent.
 
-1. `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows) → **MCP: Open User Configuration**. That opens `~/.cursor/mcp.json`.
+1. Open that client's MCP config. Cursor: `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows) → **MCP: Open User Configuration** (`~/.cursor/mcp.json`). Claude Desktop: `claude_desktop_config.json`. Another agent: that app's `mcp.json`.
 2. Paste the block. Replace `/ABSOLUTE/PATH/TO/mcp/src/index.ts` with the full path to `mcp/src/index.ts` on that computer.
-3. Save. **Cursor Settings → MCP** → turn **pulse** on.
-4. Open the chat panel, set the mode to **Agent** (not Ask), and start a new Agent chat. Ask: “Who am I in Pulse, and list my villas.”
+3. Save. Turn **pulse** on (in Cursor: **Settings → MCP**).
+4. Open a new chat in that client. In Cursor, use **Agent**, not Ask. Ask: “Who am I in Pulse, and list my villas.”
 
 ```json
 {
@@ -49,7 +49,7 @@ Cursor, on the user’s own computer:
 
 For local dev, use `"PULSE_BASE_URL": "http://localhost:3000"`.
 
-If the log says `spawn npx ENOENT`, Cursor cannot find `npx`. In Terminal run `which node`. Put that full path in `command` instead of `npx`, and set `args` to the full paths of `mcp/node_modules/tsx/dist/cli.mjs` and `mcp/src/index.ts`.
+If the log says `spawn npx ENOENT`, your client cannot find `npx`. In Terminal run `which node`. Put that full path in `command` instead of `npx`, and set `args` to the full paths of `mcp/node_modules/tsx/dist/cli.mjs` and `mcp/src/index.ts`.
 
 ## What the agent can do
 
