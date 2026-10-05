@@ -9,6 +9,7 @@ import { useData } from "@/lib/data/use-app-data";
 import { canManageMcpTokens } from "@/lib/mcp/scopes";
 import { useI18n } from "@/lib/i18n/provider";
 import { isDemoMode } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 type TokenRow = {
   id: string;
@@ -19,17 +20,37 @@ type TokenRow = {
   last_used_at: string | null;
 };
 
-const MCP_CONFIG_SNIPPET = `{
-  "mcpServers": {
-    "pulse": {
-      "command": "npx",
-      "args": ["-y", "@pulseflow/mcp"],
-      "env": {
-        "PULSE_MCP_TOKEN": "pfmcp_…"
-      }
-    }
-  }
-}`;
+type McpPlatform = "mac" | "windows";
+
+/**
+ * Finds Node (PATH, Homebrew, official installer, Herd, nvm, fnm, Volta, asdf)
+ * then runs `npx -y @pulseflow/mcp`. Paste as-is — do not substitute a Herd/nvm path.
+ */
+const MCP_NODE_LAUNCHER =
+  'pick() { local root="$1" best="" best_ver="" d name ver top; [ -d "$root" ] || return 1; for d in "$root"/*; do [ -x "$d/bin/node" ] || continue; name="${d##*/}"; ver="${name#v}"; if [ -z "$best" ]; then best="$d/bin/node"; best_ver="$ver"; continue; fi; top="$(printf \'%s\\n%s\\n\' "$best_ver" "$ver" | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1)"; if [ "$top" = "$ver" ]; then best="$d/bin/node"; best_ver="$ver"; fi; done; [ -n "$best" ] || return 1; printf \'%s\\n\' "$best"; }; node_bin=""; if command -v node >/dev/null 2>&1; then node_bin="$(command -v node)"; fi; if [ -z "$node_bin" ]; then for c in /opt/homebrew/bin/node /usr/local/bin/node "$HOME/.volta/bin/node" "$HOME/.local/bin/node"; do if [ -x "$c" ]; then node_bin="$c"; break; fi; done; fi; if [ -z "$node_bin" ]; then node_bin="$(pick "$HOME/Library/Application Support/Herd/config/nvm/versions/node" || true)"; fi; if [ -z "$node_bin" ]; then node_bin="$(pick "${NVM_DIR:-$HOME/.nvm}/versions/node" || true)"; fi; if [ -z "$node_bin" ]; then for c in "$HOME/Library/Application Support/fnm/aliases/default/bin/node" "$HOME/.local/share/fnm/aliases/default/bin/node" "$HOME/.fnm/aliases/default/bin/node"; do if [ -x "$c" ]; then node_bin="$c"; break; fi; done; fi; if [ -z "$node_bin" ] && [ -d "$HOME/.asdf/installs/nodejs" ]; then node_bin="$(pick "$HOME/.asdf/installs/nodejs" || true)"; fi; if [ -z "$node_bin" ]; then echo "Pulse MCP could not find Node.js. Install Node 20 or newer, then reload this server." >&2; exit 1; fi; export PATH="$(dirname "$node_bin"):/usr/bin:/bin:/usr/sbin:/sbin"; exec npx -y @pulseflow/mcp';
+
+function detectMcpPlatform(): McpPlatform {
+  if (typeof navigator === "undefined") return "mac";
+  return /Win/i.test(navigator.platform) || /Windows/i.test(navigator.userAgent)
+    ? "windows"
+    : "mac";
+}
+
+function buildMcpConfigSnippet(platform: McpPlatform, token: string): string {
+  const pulse =
+    platform === "windows"
+      ? {
+          command: "npx",
+          args: ["-y", "@pulseflow/mcp"],
+          env: { PULSE_MCP_TOKEN: token },
+        }
+      : {
+          command: "/bin/bash",
+          args: ["-c", MCP_NODE_LAUNCHER],
+          env: { PULSE_MCP_TOKEN: token },
+        };
+  return `${JSON.stringify({ mcpServers: { pulse } }, null, 2)}\n`;
+}
 
 export function McpSettingsCard() {
   const { t } = useI18n();
@@ -42,12 +63,17 @@ export function McpSettingsCard() {
   const [freshToken, setFreshToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [snippetCopied, setSnippetCopied] = useState(false);
+  const [platform, setPlatform] = useState<McpPlatform>("mac");
 
   const allowed = role ? canManageMcpTokens(role) : false;
 
+  useEffect(() => {
+    setPlatform(detectMcpPlatform());
+  }, []);
+
   const configSnippet = useMemo(
-    () => MCP_CONFIG_SNIPPET.replace("pfmcp_…", freshToken ?? "pfmcp_…"),
-    [freshToken],
+    () => buildMcpConfigSnippet(platform, freshToken ?? "pfmcp_…"),
+    [platform, freshToken],
   );
 
   const load = useCallback(async () => {
@@ -197,9 +223,43 @@ export function McpSettingsCard() {
       <div className="space-y-2 rounded-2xl border border-primary/25 bg-primary-soft/30 p-3">
         <p className="text-sm font-bold text-ink">{t("settings.mcpConfigTitle")}</p>
         <p className="text-sm text-muted">{t("settings.mcpConfigHint")}</p>
-        <pre className="overflow-x-auto rounded-xl bg-card px-3 py-2 text-[11px] leading-relaxed text-ink">
+        <div className="flex gap-1 rounded-xl bg-card/80 p-1">
+          {(
+            [
+              ["mac", "settings.mcpConfigPlatform.mac"],
+              ["windows", "settings.mcpConfigPlatform.windows"],
+            ] as const
+          ).map(([id, key]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => {
+                setPlatform(id);
+                setSnippetCopied(false);
+              }}
+              className={cn(
+                "flex-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition",
+                platform === id
+                  ? "bg-primary text-white"
+                  : "text-muted hover:text-ink",
+              )}
+            >
+              {t(key)}
+            </button>
+          ))}
+        </div>
+        <pre className="max-h-64 overflow-auto rounded-xl bg-card px-3 py-2 text-[11px] leading-relaxed text-ink">
           {configSnippet}
         </pre>
+        {platform === "mac" ? (
+          <p className="text-xs leading-relaxed text-muted">
+            {t("settings.mcpConfigLauncherNote")}
+          </p>
+        ) : (
+          <p className="text-xs leading-relaxed text-muted">
+            {t("settings.mcpConfigWindowsNote")}
+          </p>
+        )}
         <Button type="button" size="sm" onClick={() => void copySnippet()}>
           <Copy className="size-4" />
           {snippetCopied ? t("settings.mcpCopied") : t("settings.mcpHowCopyConfig")}

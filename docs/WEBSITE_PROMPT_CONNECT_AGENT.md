@@ -114,7 +114,28 @@ Match the live app Settings guide. No clone, ZIP, absolute path, or `cd mcp` ste
 
 **Config hint:** This block is the whole connection. Create a key above first, then press Copy config so your key is already inside. You do not download Pulse — npx fetches the agent bridge.
 
-**The block to show** (key filled after they create one in the app; marketing can use `pfmcp_…`):
+Show **two OS tabs** (default to visitor OS if known): Mac / Linux and Windows.
+
+**Mac / Linux block** (key filled after they create one in the app; marketing can use `pfmcp_…`). Paste as-is. The long string finds Node, then runs `npx -y @pulseflow/mcp`. Do not swap in a Herd or nvm path.
+
+```json
+{
+  "mcpServers": {
+    "pulse": {
+      "command": "/bin/bash",
+      "args": [
+        "-c",
+        "pick() { local root=\"$1\" best=\"\" best_ver=\"\" d name ver top; [ -d \"$root\" ] || return 1; for d in \"$root\"/*; do [ -x \"$d/bin/node\" ] || continue; name=\"${d##*/}\"; ver=\"${name#v}\"; if [ -z \"$best\" ]; then best=\"$d/bin/node\"; best_ver=\"$ver\"; continue; fi; top=\"$(printf '%s\\n%s\\n' \"$best_ver\" \"$ver\" | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1)\"; if [ \"$top\" = \"$ver\" ]; then best=\"$d/bin/node\"; best_ver=\"$ver\"; fi; done; [ -n \"$best\" ] || return 1; printf '%s\\n' \"$best\"; }; node_bin=\"\"; if command -v node >/dev/null 2>&1; then node_bin=\"$(command -v node)\"; fi; if [ -z \"$node_bin\" ]; then for c in /opt/homebrew/bin/node /usr/local/bin/node \"$HOME/.volta/bin/node\" \"$HOME/.local/bin/node\"; do if [ -x \"$c\" ]; then node_bin=\"$c\"; break; fi; done; fi; if [ -z \"$node_bin\" ]; then node_bin=\"$(pick \"$HOME/Library/Application Support/Herd/config/nvm/versions/node\" || true)\"; fi; if [ -z \"$node_bin\" ]; then node_bin=\"$(pick \"${NVM_DIR:-$HOME/.nvm}/versions/node\" || true)\"; fi; if [ -z \"$node_bin\" ]; then for c in \"$HOME/Library/Application Support/fnm/aliases/default/bin/node\" \"$HOME/.local/share/fnm/aliases/default/bin/node\" \"$HOME/.fnm/aliases/default/bin/node\"; do if [ -x \"$c\" ]; then node_bin=\"$c\"; break; fi; done; fi; if [ -z \"$node_bin\" ] && [ -d \"$HOME/.asdf/installs/nodejs\" ]; then node_bin=\"$(pick \"$HOME/.asdf/installs/nodejs\" || true)\"; fi; if [ -z \"$node_bin\" ]; then echo \"Pulse MCP could not find Node.js. Install Node 20 or newer, then reload this server.\" >&2; exit 1; fi; export PATH=\"$(dirname \"$node_bin\"):/usr/bin:/bin:/usr/sbin:/sbin\"; exec npx -y @pulseflow/mcp"
+      ],
+      "env": {
+        "PULSE_MCP_TOKEN": "pfmcp_…"
+      }
+    }
+  }
+}
+```
+
+**Windows block** (keep short `npx` — `/bin/bash` is not on Windows; Cursor already sees `npx`):
 
 ```json
 {
@@ -133,11 +154,11 @@ Match the live app Settings guide. No clone, ZIP, absolute path, or `cd mcp` ste
 **Where to paste it** (steps only — no intro sentence, no Terminal install block):
 
 1. Open your client's MCP config and paste the block. Cursor: Cmd+Shift+P on Mac or Ctrl+Shift+P on Windows, then MCP: Open User Configuration (`~/.cursor/mcp.json`). Claude Desktop: `claude_desktop_config.json`. Another AI agent: that app's `mcp.json`. If other servers are already listed, paste only the `pulse` entry inside `mcpServers`.
-2. Paste the block as it is. Do not replace a file path and do not clone Pulse. You need Node.js (nodejs.org) so npx can run.
+2. Paste the block as it is for your OS tab. Do not replace paths and do not clone Pulse. You need Node.js 20+ (nodejs.org).
 3. Save the file. Turn the pulse server on in your client (in Cursor: Settings → MCP). It should list Pulse tools.
 4. Open a new chat in your client. In Cursor, set the mode to Agent, not Ask. Ask: Who am I in Pulse, and list my villas.
 
-**Footer note:** If pulse stays off and the log says spawn npx ENOENT, install Node.js from nodejs.org, then restart the client.
+**Footer note:** If pulse stays off and the log says Node.js could not be found or spawn npx ENOENT, install Node 20+ from nodejs.org, then reload the server / restart the client.
 
 **What it can do:** pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills.
 
