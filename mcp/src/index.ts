@@ -97,6 +97,44 @@ server.tool(
 );
 
 server.tool(
+  "pulse_create_villa",
+  "Add a property. The user may give only a name. Before calling, look that name up as a real place and pass what you find: location_url (required maps link), area, a short description, and photo_url (a direct JPEG, PNG, or WebP of the exterior, not a webpage). Do not invent a place or a photo. If you cannot find it on a map, do not call this tool.",
+  {
+    name: z.string().min(1).max(200),
+    location_url: z.string().url().max(2000),
+    area: z.string().max(200).nullable().optional(),
+    description: z.string().max(2000).nullable().optional(),
+    photo_url: z.string().url().max(2000).nullable().optional(),
+    status: z.enum(["available", "occupied", "turnover", "maintenance"]).optional(),
+    property_type: z
+      .enum(["villa", "bungalow", "house", "apartment", "studio", "office", "other"])
+      .nullable()
+      .optional(),
+    sq_m: z.number().positive().max(100000).nullable().optional(),
+    bedrooms: z.number().int().min(0).max(100).nullable().optional(),
+    bathrooms: z.number().min(0).max(100).nullable().optional(),
+    max_guests: z.number().int().min(1).max(500).nullable().optional(),
+    floors: z.number().int().min(1).max(100).nullable().optional(),
+    has_pool: z.boolean().nullable().optional(),
+    has_garden: z.boolean().nullable().optional(),
+    pet_friendly: z.boolean().nullable().optional(),
+    has_wifi: z.boolean().nullable().optional(),
+    setting: z.enum(["community", "standalone"]).nullable().optional(),
+    parking: z.enum(["none", "street", "private"]).nullable().optional(),
+    kitchen: z.enum(["none", "basic", "full"]).nullable().optional(),
+    aircon: z.enum(["none", "partial", "full"]).nullable().optional(),
+    view: z.enum(["sea", "jungle", "pool", "garden", "mountain"]).nullable().optional(),
+  },
+  async (input) =>
+    textResult(
+      await api("/api/mcp/villas", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+    ),
+);
+
+server.tool(
   "pulse_list_tasks",
   "List tasks. Optional status: open | pending_verify | done.",
   {

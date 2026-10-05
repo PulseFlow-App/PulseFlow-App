@@ -531,7 +531,7 @@ const my: Dictionary = {
   "settings.mcpHowNpx": "If pulse stays off and the log says spawn npx ENOENT, your client cannot find npx. In Terminal run which node. Put that full path in command instead of npx, and set args to the full paths of mcp/node_modules/tsx/dist/cli.mjs and mcp/src/index.ts.",
   "settings.mcpHowCopyConfig": "Copy config",
   "settings.mcpHowToolsLabel": "What it can do:",
-  "settings.mcpHowTools": "pulse_whoami, pulse_list_team, pulse_list_villas, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills.",
+  "settings.mcpHowTools": "pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills.",
   "settings.inviteError": "ဖိတ်ကြားမှု ဖန်တီးမရပါ။",
   "settings.saveError": "သိမ်းမရပါ။",
   "billing.title": "Billing",

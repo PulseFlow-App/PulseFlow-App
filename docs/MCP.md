@@ -58,6 +58,7 @@ If the log says `spawn npx ENOENT`, your client cannot find `npx`. In Terminal r
 | `pulse_whoami` | `me:read` | Who this key acts as |
 | `pulse_list_team` | `team:read` | Teammates for assignees |
 | `pulse_list_villas` | `villas:read` | Properties + status / dates |
+| `pulse_create_villa` | `villas:write` | Add a property. Look the name up on a map first, then pass the maps link, area, description, and a photo URL. |
 | `pulse_list_tasks` | `tasks:read` | Filter by status |
 | `pulse_create_task` | `tasks:write` | Create open tasks |
 | `pulse_update_task_status` | `tasks:write` | `open` / `pending_verify` / `done` |

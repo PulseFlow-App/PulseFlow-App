@@ -555,7 +555,7 @@ const tr: Dictionary = {
   "settings.mcpHowNpx": "pulse kapalı kalır ve günlük spawn npx ENOENT derse istemciniz npx'i bulamıyordur. Terminal'de which node çalıştırın. Bu tam yolu command alanına npx yerine yazın ve args alanına mcp/node_modules/tsx/dist/cli.mjs ile mcp/src/index.ts dosyalarının tam yollarını koyun.",
   "settings.mcpHowCopyConfig": "Yapılandırmayı kopyala",
   "settings.mcpHowToolsLabel": "Ne yapabilir:",
-  "settings.mcpHowTools": "pulse_whoami, pulse_list_team, pulse_list_villas, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills.",
+  "settings.mcpHowTools": "pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills.",
   "settings.inviteError": "Davet oluşturulamadı.",
   "settings.saveError": "Kaydedilemedi.",
   "settings.translateContent": "Ekip içeriğini çevirin",
