@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown, Copy, KeyRound, Trash2 } from "lucide-react";
+import { Copy, KeyRound, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
@@ -9,7 +9,6 @@ import { useData } from "@/lib/data/use-app-data";
 import { canManageMcpTokens } from "@/lib/mcp/scopes";
 import { useI18n } from "@/lib/i18n/provider";
 import { isDemoMode } from "@/lib/supabase/client";
-import { cn } from "@/lib/utils";
 
 type TokenRow = {
   id: string;
@@ -43,7 +42,6 @@ export function McpSettingsCard() {
   const [error, setError] = useState<string | null>(null);
   const [freshToken, setFreshToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [howOpen, setHowOpen] = useState(false);
   const [snippetCopied, setSnippetCopied] = useState(false);
 
   const allowed = role ? canManageMcpTokens(role) : false;
@@ -54,8 +52,12 @@ export function McpSettingsCard() {
   }, []);
 
   const configSnippet = useMemo(
-    () => MCP_CONFIG_SNIPPET.replace("__BASE__", baseUrl),
-    [baseUrl],
+    () =>
+      MCP_CONFIG_SNIPPET.replace("__BASE__", baseUrl).replace(
+        "pfmcp_…",
+        freshToken ?? "pfmcp_…",
+      ),
+    [baseUrl, freshToken],
   );
 
   const load = useCallback(async () => {
@@ -202,6 +204,18 @@ export function McpSettingsCard() {
         </div>
       ) : null}
 
+      <div className="space-y-2 rounded-2xl border border-primary/25 bg-primary-soft/30 p-3">
+        <p className="text-sm font-bold text-ink">{t("settings.mcpConfigTitle")}</p>
+        <p className="text-sm text-muted">{t("settings.mcpConfigHint")}</p>
+        <pre className="overflow-x-auto rounded-xl bg-card px-3 py-2 text-[11px] leading-relaxed text-ink">
+          {configSnippet}
+        </pre>
+        <Button type="button" size="sm" onClick={() => void copySnippet()}>
+          <Copy className="size-4" />
+          {snippetCopied ? t("settings.mcpCopied") : t("settings.mcpHowCopyConfig")}
+        </Button>
+      </div>
+
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       {tokens.length ? (
@@ -235,64 +249,26 @@ export function McpSettingsCard() {
         <p className="type-meta">{t("settings.mcpEmpty")}</p>
       )}
 
-      <div className="border-t border-[var(--color-border)] pt-3">
-        <button
-          type="button"
-          className="flex w-full items-center justify-between gap-2 text-left"
-          onClick={() => setHowOpen((v) => !v)}
-          aria-expanded={howOpen}
-        >
-          <span className="text-sm font-bold text-ink">
-            {t("settings.mcpHowTitle")}
-          </span>
-          <ChevronDown
-            className={cn(
-              "size-4 shrink-0 text-muted transition",
-              howOpen && "rotate-180",
-            )}
-          />
-        </button>
-        {howOpen ? (
-          <div className="mt-3 space-y-3 text-sm text-muted">
-            {t("settings.mcpHowIntro") ? (
-              <p>{t("settings.mcpHowIntro")}</p>
-            ) : null}
-            <ol className="list-decimal space-y-2 pl-4 text-ink">
-              <li>{t("settings.mcpHowStep1")}</li>
-              <li>
-                {t("settings.mcpHowStep2")}
-                <pre className="mt-1.5 overflow-x-auto rounded-xl bg-[#F7F5F1] px-3 py-2 text-xs text-ink">
-                  cd mcp && npm install
-                </pre>
-              </li>
-              <li>
-                {t("settings.mcpHowStep3")}
-                <pre className="mt-1.5 overflow-x-auto rounded-xl bg-[#F7F5F1] px-3 py-2 text-[11px] leading-relaxed text-ink">
-                  {configSnippet}
-                </pre>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="ghost"
-                  className="mt-1.5"
-                  onClick={() => void copySnippet()}
-                >
-                  <Copy className="size-3.5" />
-                  {snippetCopied
-                    ? t("settings.mcpCopied")
-                    : t("settings.mcpHowCopyConfig")}
-                </Button>
-              </li>
-              <li>{t("settings.mcpHowStep4")}</li>
-            </ol>
-            <p>
-              <span className="font-semibold text-ink">
-                {t("settings.mcpHowToolsLabel")}
-              </span>{" "}
-              {t("settings.mcpHowTools")}
-            </p>
-          </div>
-        ) : null}
+      <div className="space-y-3 border-t border-[var(--color-border)] pt-3 text-sm text-muted">
+        <p className="text-sm font-bold text-ink">{t("settings.mcpHowTitle")}</p>
+        <ol className="list-decimal space-y-2 pl-4 text-ink">
+          <li>{t("settings.mcpHowStep1")}</li>
+          <li>
+            {t("settings.mcpHowStep2")}
+            <pre className="mt-1.5 overflow-x-auto rounded-xl bg-[#F7F5F1] px-3 py-2 text-xs text-ink">
+              cd mcp && npm install
+            </pre>
+          </li>
+          <li>{t("settings.mcpHowStep3")}</li>
+          <li>{t("settings.mcpHowStep4")}</li>
+        </ol>
+        <p className="text-xs leading-relaxed">{t("settings.mcpHowNpx")}</p>
+        <p>
+          <span className="font-semibold text-ink">
+            {t("settings.mcpHowToolsLabel")}
+          </span>{" "}
+          {t("settings.mcpHowTools")}
+        </p>
       </div>
     </Card>
   );

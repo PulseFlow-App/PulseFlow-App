@@ -15,6 +15,9 @@ const PUBLIC_PREFIXES = [
   "/api/invites",
   "/api/public",
   "/api/billing/webhook",
+  // Agent calls use a pfmcp_ connection key, not a browser session.
+  // Route handlers check that key (or, for /api/mcp/tokens, the signed-in user).
+  "/api/mcp",
 ];
 
 function isPublicPath(pathname: string) {

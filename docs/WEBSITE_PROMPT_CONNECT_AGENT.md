@@ -101,16 +101,20 @@ const DEMO_STEPS = [
 
 Play on scroll-into-view or a “Replay” button. Keep it readable on mobile (stacked chat, not a wide IDE mock).
 
-### Optional config teaser (collapsed)
+### How to connect (required, under the preview)
 
-Under the preview, a disclosure **“How to connect”** with this snippet (path placeholder OK):
+Show these steps in full. The config block is visible, with a copy button. Title of this block: **Copy this MCP config**. The page title stays **Connect your agent**.
+
+**Intro line:** In the app, open Settings → Connect your agent, create a connection key, then press Copy config. Your key is filled in. Paste that block into Cursor. You only change the path.
+
+**The block to show:**
 
 ```json
 {
   "mcpServers": {
     "pulse": {
       "command": "npx",
-      "args": ["tsx", "/path/to/mcp/src/index.ts"],
+      "args": ["tsx", "/ABSOLUTE/PATH/TO/mcp/src/index.ts"],
       "env": {
         "PULSE_BASE_URL": "https://app.pulseflow.site",
         "PULSE_MCP_TOKEN": "pfmcp_…"
@@ -120,7 +124,14 @@ Under the preview, a disclosure **“How to connect”** with this snippet (path
 }
 ```
 
-Note: full install steps live in the app Settings → How to connect an agent. Landing page = why + preview; app = wire-up.
+**Steps under the block:**
+
+1. In Cursor, press `Cmd+Shift+P` on Mac or `Ctrl+Shift+P` on Windows. Type `MCP: Open User Configuration` and press Enter. That opens `mcp.json`. Paste the block. If other servers are already listed, paste only the `pulse` entry inside `mcpServers`.
+2. Replace `/ABSOLUTE/PATH/TO/mcp/src/index.ts` with the full path to that file on your computer. In Terminal, open the Pulse project folder and run `cd mcp && npm install` once.
+3. Save `mcp.json`. Open Cursor Settings → MCP and turn **pulse** on.
+4. Open the chat panel and set the mode to **Agent**, not Ask. Start a new Agent chat and ask: “Who am I in Pulse, and list my villas.”
+
+**One-line fix, under the steps:** If pulse stays off and the log says `spawn npx ENOENT`, Cursor cannot find `npx`. In Terminal run `which node`. Put that full path in `command` instead of `npx`, and set `args` to the full paths of `mcp/node_modules/tsx/dist/cli.mjs` and `mcp/src/index.ts`.
 
 ---
 
@@ -140,7 +151,7 @@ Note: full install steps live in the app Settings → How to connect an agent. L
 - [ ] Preview panel with tool-call style demo (scripted, not live API)
 - [ ] Safety line: connection key, no database key, disconnect anytime
 - [ ] Owners/Managers pages mention it; Guests unchanged
-- [ ] Optional collapsed mcp.json teaser
+- [ ] Visible MCP config block with a copy button, plus the four Cursor steps under it
 - [ ] EN copy shipped; other locales don’t break keys
 
 ---
