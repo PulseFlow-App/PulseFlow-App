@@ -614,10 +614,10 @@ const en = {
   "settings.mcpConfigTitle": "Copy this MCP config",
   "settings.mcpConfigHint":
     "This block is the whole connection. Create a key above first, then press Copy config so your key is already inside. You do not download Pulse — npx fetches the agent bridge.",
-  "settings.mcpConfigPlatform.mac": "Mac / Linux",
+  "settings.mcpConfigPlatform.mac": "Mac",
   "settings.mcpConfigPlatform.windows": "Windows",
   "settings.mcpConfigLauncherNote":
-    "Paste that as-is. The long string is the launcher: it finds a Node that also has npx (Homebrew, the official installer, Herd, nvm, fnm, Volta, or asdf) and runs that npx by its full path. Cursor’s node is skipped. Do not swap in a Herd or nvm path.",
+    "Paste as-is. /bin/zsh loads your shell so npx is on PATH (Homebrew included).",
   "settings.mcpConfigWindowsNote":
     "Windows keeps the short npx snippet. /bin/bash is not on Windows, and Cursor there already sees npx.",
   "settings.mcpHowTitle": "Where to paste it",
@@ -625,13 +625,13 @@ const en = {
   "settings.mcpHowStep1":
     "Open your client's MCP config and paste the block. Cursor: Cmd+Shift+P on Mac or Ctrl+Shift+P on Windows, then MCP: Open User Configuration (~/.cursor/mcp.json). Claude Desktop: claude_desktop_config.json. Another AI agent: that app's mcp.json. If other servers are already listed, paste only the pulse entry inside mcpServers.",
   "settings.mcpHowStep2":
-    "Paste the block as it is for your OS tab (Mac / Linux or Windows). Do not replace paths and do not clone Pulse. You need Node.js 20+ (nodejs.org).",
+    "Paste the block as it is for your OS tab (Mac or Windows). Do not replace paths and do not clone Pulse. You need Node.js 20+ (nodejs.org).",
   "settings.mcpHowStep3":
     "Save the file. Turn the pulse server on in your client (in Cursor: Settings → MCP). It should list Pulse tools.",
   "settings.mcpHowStep4":
     "Open a new chat in your client. In Cursor, set the mode to Agent, not Ask. Ask: Who am I in Pulse, and list my villas.",
   "settings.mcpHowNpx":
-    "If pulse stays off and the log says Node.js with npx could not be found, npx: not found, or spawn npx ENOENT, install Node 20+ from nodejs.org, then reload Pulse in Cursor Settings → MCP.",
+    "If pulse stays off and the log says npx: not found or spawn npx ENOENT, install Node 20+ from nodejs.org, then reload Pulse in Cursor Settings → MCP.",
   "settings.mcpHowCopyConfig": "Copy config",
   "settings.mcpHowToolsLabel": "What it can do:",
   "settings.mcpHowTools":
