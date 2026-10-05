@@ -104,20 +104,25 @@ Play on scroll-into-view or a “Replay” button. Keep it readable on mobile (s
 
 ### How to connect (required, under the preview)
 
-Show these steps in full. The config block is visible, with a copy button. Title of this block: **Copy this MCP config**. The page title stays **Connect your agent**.
+Match the live app Settings guide. No clone, ZIP, absolute path, or `cd mcp` steps — `npx` fetches `@pulseflow/mcp`.
 
-**Intro line:** In the app, open Settings → Connect your agent, create a connection key, then press Copy config. Your key is filled in. Paste that block into your client: Cursor, Claude, or another AI agent. You only change the path.
+**Section title:** Connect your agent  
 
-**The block to show:**
+**Hint under the title:** Let Cursor, Claude (or another AI agent) read and update tasks and jobs in this workspace. Create a connection key, then paste it into your agent app.
+
+**Config block title:** Copy this MCP config  
+
+**Config hint:** This block is the whole connection. Create a key above first, then press Copy config so your key is already inside. You do not download Pulse — npx fetches the agent bridge.
+
+**The block to show** (key filled after they create one in the app; marketing can use `pfmcp_…`):
 
 ```json
 {
   "mcpServers": {
     "pulse": {
       "command": "npx",
-      "args": ["tsx", "/ABSOLUTE/PATH/TO/mcp/src/index.ts"],
+      "args": ["-y", "@pulseflow/mcp"],
       "env": {
-        "PULSE_BASE_URL": "https://app.pulseflow.site",
         "PULSE_MCP_TOKEN": "pfmcp_…"
       }
     }
@@ -125,14 +130,16 @@ Show these steps in full. The config block is visible, with a copy button. Title
 }
 ```
 
-**Steps under the block:**
+**Where to paste it** (steps only — no intro sentence, no Terminal install block):
 
-1. Open your client's MCP config and paste the block. Cursor: `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows) → `MCP: Open User Configuration` (`~/.cursor/mcp.json`). Claude Desktop: `claude_desktop_config.json`. Another AI agent: that app's `mcp.json`. If other servers are already listed, paste only the `pulse` entry inside `mcpServers`.
-2. Replace `/ABSOLUTE/PATH/TO/mcp/src/index.ts` with the full path to that file on your computer. In Terminal, open the Pulse project folder and run `cd mcp && npm install` once.
-3. Save the file. Turn **pulse** on in your client (in Cursor: Settings → MCP).
-4. Open a new chat in your client. In Cursor, set the mode to **Agent**, not Ask. Ask: “Who am I in Pulse, and list my villas.”
+1. Open your client's MCP config and paste the block. Cursor: Cmd+Shift+P on Mac or Ctrl+Shift+P on Windows, then MCP: Open User Configuration (`~/.cursor/mcp.json`). Claude Desktop: `claude_desktop_config.json`. Another AI agent: that app's `mcp.json`. If other servers are already listed, paste only the `pulse` entry inside `mcpServers`.
+2. Paste the block as it is. Do not replace a file path and do not clone Pulse. You need Node.js (nodejs.org) so npx can run.
+3. Save the file. Turn the pulse server on in your client (in Cursor: Settings → MCP). It should list Pulse tools.
+4. Open a new chat in your client. In Cursor, set the mode to Agent, not Ask. Ask: Who am I in Pulse, and list my villas.
 
-**One-line fix, under the steps:** If pulse stays off and the log says `spawn npx ENOENT`, your client cannot find `npx`. In Terminal run `which node`. Put that full path in `command` instead of `npx`, and set `args` to the full paths of `mcp/node_modules/tsx/dist/cli.mjs` and `mcp/src/index.ts`.
+**Footer note:** If pulse stays off and the log says spawn npx ENOENT, install Node.js from nodejs.org, then restart the client.
+
+**What it can do:** pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills.
 
 ---
 

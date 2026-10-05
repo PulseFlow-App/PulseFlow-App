@@ -1,22 +1,25 @@
-#!/usr/bin/env npx tsx
 /**
  * Pulse MCP — talks only to Pulse HTTP APIs with a personal token.
  * Never needs SUPABASE_SERVICE_ROLE_KEY.
  *
  * Env:
- *   PULSE_BASE_URL  e.g. https://pulseflow.site  (no trailing slash)
  *   PULSE_MCP_TOKEN  connection key from Settings → Connect your agent (pfmcp_…)
+ *   PULSE_BASE_URL   optional, defaults to https://app.pulseflow.site
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-const baseUrl = (process.env.PULSE_BASE_URL ?? "").replace(/\/$/, "");
+const DEFAULT_BASE_URL = "https://app.pulseflow.site";
+const baseUrl = (process.env.PULSE_BASE_URL || DEFAULT_BASE_URL).replace(
+  /\/$/,
+  "",
+);
 const token = process.env.PULSE_MCP_TOKEN ?? "";
 
-if (!baseUrl || !token) {
+if (!token) {
   console.error(
-    "Set PULSE_BASE_URL and PULSE_MCP_TOKEN (from Pulse Settings → Connect your agent).",
+    "Set PULSE_MCP_TOKEN (from Pulse Settings → Connect your agent).",
   );
   process.exit(1);
 }

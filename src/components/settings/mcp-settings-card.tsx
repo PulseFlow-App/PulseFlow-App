@@ -23,9 +23,8 @@ const MCP_CONFIG_SNIPPET = `{
   "mcpServers": {
     "pulse": {
       "command": "npx",
-      "args": ["tsx", "/ABSOLUTE/PATH/TO/mcp/src/index.ts"],
+      "args": ["-y", "@pulseflow/mcp"],
       "env": {
-        "PULSE_BASE_URL": "__BASE__",
         "PULSE_MCP_TOKEN": "pfmcp_…"
       }
     }
@@ -46,18 +45,9 @@ export function McpSettingsCard() {
 
   const allowed = role ? canManageMcpTokens(role) : false;
 
-  const baseUrl = useMemo(() => {
-    if (typeof window === "undefined") return "https://pulseflow.site";
-    return window.location.origin.replace(/\/$/, "");
-  }, []);
-
   const configSnippet = useMemo(
-    () =>
-      MCP_CONFIG_SNIPPET.replace("__BASE__", baseUrl).replace(
-        "pfmcp_…",
-        freshToken ?? "pfmcp_…",
-      ),
-    [baseUrl, freshToken],
+    () => MCP_CONFIG_SNIPPET.replace("pfmcp_…", freshToken ?? "pfmcp_…"),
+    [freshToken],
   );
 
   const load = useCallback(async () => {
@@ -253,12 +243,7 @@ export function McpSettingsCard() {
         <p className="text-sm font-bold text-ink">{t("settings.mcpHowTitle")}</p>
         <ol className="list-decimal space-y-2 pl-4 text-ink">
           <li>{t("settings.mcpHowStep1")}</li>
-          <li>
-            {t("settings.mcpHowStep2")}
-            <pre className="mt-1.5 overflow-x-auto rounded-xl bg-[#F7F5F1] px-3 py-2 text-xs text-ink">
-              cd mcp && npm install
-            </pre>
-          </li>
+          <li>{t("settings.mcpHowStep2")}</li>
           <li>{t("settings.mcpHowStep3")}</li>
           <li>{t("settings.mcpHowStep4")}</li>
         </ol>

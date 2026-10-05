@@ -53,7 +53,7 @@ Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll chec
 - **Reports / exports** - CSV (bills, tasks, villas, jobs, occupancy), printable weekly ops, handoff snapshots  
 - **Talent directory** - browse opted-in field talent by skills / place / map  
 - **Endorsements + leaderboard** - weekly stars for the team  
-- **Connect your agent** - Settings connection key so Cursor, Claude (or another AI agent / MCP client) can list/create tasks and jobs in this workspace (no database key shared; revocable)  
+- **Connect your agent** - Settings connection key + `npx @pulseflow/mcp` config so Cursor, Claude (or another AI agent) can list/create villas, tasks, and jobs in this workspace (no database key or local clone; revocable)  
 
 ### Company control
 

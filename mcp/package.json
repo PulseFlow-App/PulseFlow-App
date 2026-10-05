@@ -1,15 +1,41 @@
 {
   "name": "@pulseflow/mcp",
   "version": "0.1.0",
-  "private": true,
+  "description": "Pulse Flow agent bridge. Talks to Pulse with a personal connection key — never the database key.",
+  "license": "MIT",
   "type": "module",
   "bin": {
-    "pulse-mcp": "./src/index.ts"
+    "pulse-mcp": "./bin/pulse-mcp.js"
   },
+  "files": [
+    "bin",
+    "dist",
+    "README.md"
+  ],
   "scripts": {
-    "start": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node bin/pulse-mcp.js",
+    "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit"
   },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PulseFlow-App/PulseFlow-App.git",
+    "directory": "mcp"
+  },
+  "homepage": "https://www.pulseflow.site/#connect-agent",
+  "bugs": {
+    "url": "https://github.com/PulseFlow-App/PulseFlow-App/issues"
+  },
+  "keywords": [
+    "pulseflow",
+    "mcp",
+    "cursor",
+    "claude"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
     "zod": "^3.24.2"

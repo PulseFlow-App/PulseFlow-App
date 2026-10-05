@@ -2,6 +2,8 @@
 
 Safer setup: the agent never gets your database key. It only calls Pulse with a **connection key** you create in the app.
 
+Users do **not** download or fork the Pulse app. `npx @pulseflow/mcp` fetches the public agent bridge from npm.
+
 ## 1. Apply migration
 
 Run `048_mcp_tokens.sql` on your Supabase project (CLI or SQL editor).
@@ -14,32 +16,24 @@ Run `048_mcp_tokens.sql` on your Supabase project (CLI or SQL editor).
 
 Legacy keys minted with the original default scopes automatically unlock the new tools below.
 
-## 3. Install the agent bridge
+## 3. Agent client config
 
-```bash
-cd mcp
-npm install
-```
+In the app, **Settings → Connect your agent** shows the config block. Create a key, then press **Copy config** so the key is already inside. Paste that block as it is.
 
-## 4. Agent client config
-
-In the app, **Settings → Connect your agent** shows the config block. Create a key, then press **Copy config** so the key is already inside. Paste that block. Do not type the key into the file path.
-
-Paste it into your client: Cursor, Claude, or another AI agent.
+You need [Node.js](https://nodejs.org) 18+ so `npx` exists. Paste the block as it is — no local repo path.
 
 1. Open that client's MCP config. Cursor: `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows) → **MCP: Open User Configuration** (`~/.cursor/mcp.json`). Claude Desktop: `claude_desktop_config.json`. Another agent: that app's `mcp.json`.
-2. Paste the block. Replace `/ABSOLUTE/PATH/TO/mcp/src/index.ts` with the full path to `mcp/src/index.ts` on that computer.
+2. Paste the block.
 3. Save. Turn **pulse** on (in Cursor: **Settings → MCP**).
-4. Open a new chat in that client. In Cursor, use **Agent**, not Ask. Ask: “Who am I in Pulse, and list my villas.”
+4. Open a new chat. In Cursor, use **Agent**, not Ask. Ask: “Who am I in Pulse, and list my villas.”
 
 ```json
 {
   "mcpServers": {
     "pulse": {
       "command": "npx",
-      "args": ["tsx", "/ABSOLUTE/PATH/TO/mcp/src/index.ts"],
+      "args": ["-y", "@pulseflow/mcp"],
       "env": {
-        "PULSE_BASE_URL": "https://app.pulseflow.site",
         "PULSE_MCP_TOKEN": "pfmcp_…"
       }
     }
@@ -47,9 +41,9 @@ Paste it into your client: Cursor, Claude, or another AI agent.
 }
 ```
 
-For local dev, use `"PULSE_BASE_URL": "http://localhost:3000"`.
+`PULSE_BASE_URL` defaults to `https://app.pulseflow.site`. For local app development add `"PULSE_BASE_URL": "http://localhost:3000"`.
 
-If the log says `spawn npx ENOENT`, your client cannot find `npx`. In Terminal run `which node`. Put that full path in `command` instead of `npx`, and set `args` to the full paths of `mcp/node_modules/tsx/dist/cli.mjs` and `mcp/src/index.ts`.
+If the log says `spawn npx ENOENT`, install Node.js, then restart the client.
 
 ## What the agent can do
 
