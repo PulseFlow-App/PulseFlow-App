@@ -368,6 +368,8 @@ const en = {
     "Team directory - owners book you from their Contacts list",
   "contacts.empty": "No contacts",
   "contacts.emptyHint": "Add cleaning, plumbing, and other vendors.",
+  "contacts.emptyHint.personal":
+    "Add cleaners, plumbers, and other numbers you use often.",
   "contacts.fieldApp": "Field app",
   "contacts.fieldAppHint":
     "Your jobs live under Jobs. Call teammates from Chat if needed.",
@@ -597,7 +599,7 @@ const en = {
   "settings.pushCategoryHint.stay": "Guest stay and deposit updates.",
   "settings.mcpTitle": "Connect your agent",
   "settings.mcpHint":
-    "Let Cursor (or another AI agent) read and update tasks and jobs in this workspace. Create a connection key, then paste it into your agent app.",
+    "Let Cursor, Claude (or another AI agent) read and update tasks and jobs in this workspace. Create a connection key, then paste it into your agent app.",
   "settings.mcpDemoHint": "Sign in to a live workspace to connect an agent.",
   "settings.mcpLabel": "Name this connection",
   "settings.mcpCreate": "Create connection key",
@@ -610,16 +612,15 @@ const en = {
   "settings.mcpRevokeConfirm":
     "Disconnect this agent? It will lose access until you create a new key.",
   "settings.mcpHowTitle": "How to connect an agent",
-  "settings.mcpHowIntro":
-    "For people who want Cursor (or another MCP client) to work inside this Pulse workspace.",
+  "settings.mcpHowIntro": "",
   "settings.mcpHowStep1":
     "Create a connection key above and copy it.",
   "settings.mcpHowStep2":
     "On your computer, open the Pulse repo and install the agent bridge:",
   "settings.mcpHowStep3":
-    "Add this to Cursor’s mcp.json (replace the path and paste your key):",
+    "Add this to your agent's mcp.json (replace the path and paste your key):",
   "settings.mcpHowStep4":
-    "Restart Cursor and enable the pulse MCP server.",
+    "Restart client and enable the pulse MCP server.",
   "settings.mcpHowCopyConfig": "Copy config",
   "settings.mcpHowToolsLabel": "What it can do:",
   "settings.mcpHowTools":

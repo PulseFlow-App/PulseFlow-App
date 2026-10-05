@@ -225,11 +225,11 @@ export default function ContactsPage() {
 
       {grouped.length === 0 ? (
         <EmptyState
-          title="No contacts"
+          title={t("contacts.empty")}
           description={
             isPersonal
-              ? "Add cleaners, plumbers, and other numbers you use often."
-              : "Add cleaning, plumbing, and other vendors."
+              ? t("contacts.emptyHint.personal")
+              : t("contacts.emptyHint")
           }
         />
       ) : (

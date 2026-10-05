@@ -26,8 +26,26 @@ type I18nContextValue = {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
+function readQueryLocale(): Locale | null {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  const raw = (params.get("lang") || params.get("locale") || "")
+    .trim()
+    .toLowerCase();
+  return isLocale(raw) ? raw : null;
+}
+
 function readStoredLocale(): Locale {
   if (typeof window === "undefined") return "en";
+  const fromQuery = readQueryLocale();
+  if (fromQuery) {
+    try {
+      localStorage.setItem(LOCALE_STORAGE_KEY, fromQuery);
+    } catch {
+      /* ignore quota / private mode */
+    }
+    return fromQuery;
+  }
   const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
   if (isLocale(stored)) return stored;
   const nav = navigator.language.slice(0, 2).toLowerCase();

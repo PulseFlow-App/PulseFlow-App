@@ -21,9 +21,9 @@ cd mcp
 npm install
 ```
 
-## 4. Cursor config
+## 4. Agent client config
 
-Add to `~/.cursor/mcp.json` (or project `.cursor/mcp.json`):
+Add to your agent’s `mcp.json` (e.g. `~/.cursor/mcp.json` or project `.cursor/mcp.json`):
 
 ```json
 {
@@ -42,7 +42,7 @@ Add to `~/.cursor/mcp.json` (or project `.cursor/mcp.json`):
 
 For local dev, use `"PULSE_BASE_URL": "http://localhost:3000"`.
 
-Restart Cursor → enable **pulse** in MCP settings.
+Restart client → enable **pulse** in MCP settings.
 
 ## What the agent can do
 

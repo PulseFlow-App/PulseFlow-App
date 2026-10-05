@@ -254,7 +254,9 @@ export function McpSettingsCard() {
         </button>
         {howOpen ? (
           <div className="mt-3 space-y-3 text-sm text-muted">
-            <p>{t("settings.mcpHowIntro")}</p>
+            {t("settings.mcpHowIntro") ? (
+              <p>{t("settings.mcpHowIntro")}</p>
+            ) : null}
             <ol className="list-decimal space-y-2 pl-4 text-ink">
               <li>{t("settings.mcpHowStep1")}</li>
               <li>
