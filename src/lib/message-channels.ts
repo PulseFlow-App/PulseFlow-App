@@ -8,12 +8,18 @@ export const MESSAGE_CHANNELS: MessageChannel[] = [
   "request",
   "photo",
   "general",
+  "agent",
 ];
 
 export function parseMessageChannel(
   value: string | null | undefined,
 ): MessageChannel | null {
-  if (value === "request" || value === "photo" || value === "general") {
+  if (
+    value === "request" ||
+    value === "photo" ||
+    value === "general" ||
+    value === "agent"
+  ) {
     return value;
   }
   return null;
@@ -61,6 +67,7 @@ export function unreadTeamChatCountByChannel(input: {
     request: 0,
     photo: 0,
     general: 0,
+    agent: 0,
   };
 
   const unread = unreadNotifications(

@@ -22,7 +22,7 @@ import type { MessageChannel, MessageWithSender, Profile } from "@/lib/types";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 import { LocalizedText } from "@/components/i18n/localized-text";
-import { canUseTeamChat, isGuestApp } from "@/lib/roles";
+import { canUseAgentChat, canUseTeamChat, isGuestApp } from "@/lib/roles";
 import { isJobSystemChatBody } from "@/lib/demo/localize";
 import {
   GuestSupportChat,
@@ -42,8 +42,18 @@ import {
   unreadTeamChatCountByChannel,
 } from "@/lib/message-channels";
 import { teamChatCommandSuggestions } from "@/lib/team-chat-commands";
+import {
+  agentCommandPickText,
+  agentCommandSuggestions,
+  runAgentCommand,
+} from "@/lib/agent-chat/commands";
+import {
+  isAgentReplyBody,
+  stripAgentReplyPrefix,
+  wrapAgentReply,
+} from "@/lib/agent-chat/markers";
 
-const CHANNELS: {
+const TEAM_CHANNELS: {
   id: MessageChannel;
   labelKey: MessageKey;
   hintKey: MessageKey;
@@ -64,6 +74,12 @@ const CHANNELS: {
     hintKey: "messages.channel.generalHint",
   },
 ];
+
+const AGENT_CHANNEL = {
+  id: "agent" as const,
+  labelKey: "messages.channel.agent" as MessageKey,
+  hintKey: "messages.channel.agentHint" as MessageKey,
+};
 
 export default function MessagesPage() {
   return (
@@ -113,12 +129,22 @@ function MessagesPageInner() {
     [data.profiles, data.profile?.org_id],
   );
 
+  const showAgent = Boolean(
+    data.profile && canUseAgentChat(data.profile.role),
+  );
+  const channels = useMemo(
+    () => (showAgent ? [...TEAM_CHANNELS, AGENT_CHANNEL] : TEAM_CHANNELS),
+    [showAgent],
+  );
+
   const unreadByChannel = useMemo(() => {
     if (!data.profile) {
-      return { request: 0, photo: 0, general: 0 } as Record<
-        MessageChannel,
-        number
-      >;
+      return {
+        request: 0,
+        photo: 0,
+        general: 0,
+        agent: 0,
+      } as Record<MessageChannel, number>;
     }
     return unreadTeamChatCountByChannel({
       messages: data.messages,
@@ -128,8 +154,8 @@ function MessagesPageInner() {
   }, [data.messages, data.notifications, data.profile]);
 
   const activeMention = useMemo(
-    () => getActiveMention(body, cursor),
-    [body, cursor],
+    () => (channel === "agent" ? null : getActiveMention(body, cursor)),
+    [body, cursor, channel],
   );
 
   const mentionOptions = useMemo(() => {
@@ -141,9 +167,13 @@ function MessagesPageInner() {
     );
   }, [activeMention, teammates, data.profile, mentionDismissed]);
 
-  const commandSuggestions = useMemo(
-    () => teamChatCommandSuggestions(body),
-    [body],
+  const agentSuggestions = useMemo(
+    () => (channel === "agent" ? agentCommandSuggestions(body) : []),
+    [body, channel],
+  );
+  const teamSuggestions = useMemo(
+    () => (channel === "agent" ? [] : teamChatCommandSuggestions(body)),
+    [body, channel],
   );
 
   const selectChannel = (next: MessageChannel, replaceUrl = true) => {
@@ -169,7 +199,11 @@ function MessagesPageInner() {
       notifications: data.notifications,
       profileId: data.profile.id,
     });
-    selectChannel(next);
+    if (next === "agent" && !canUseAgentChat(data.profile.role)) {
+      selectChannel("request");
+    } else {
+      selectChannel(next);
+    }
     setChannelReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- settle once when data is ready
   }, [
@@ -180,6 +214,14 @@ function MessagesPageInner() {
     channelReady,
     searchParams,
   ]);
+
+  useEffect(() => {
+    if (!data.profile) return;
+    if (channel === "agent" && !canUseAgentChat(data.profile.role)) {
+      selectChannel("request");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- guard role/channel mismatch
+  }, [channel, data.profile?.role]);
 
   useEffect(() => {
     setMentionIndex(0);
@@ -265,19 +307,22 @@ function MessagesPageInner() {
     }
     setError(null);
     const attachmentUrl = channel === "photo" ? pendingPhoto : null;
+    const profile = data.profile!;
     const temp: MessageWithSender = {
       id: `temp-${Date.now()}`,
-      org_id: data.profile!.org_id,
-      sender_id: data.profile!.id,
+      org_id: profile.org_id,
+      sender_id: profile.id,
       body: text || " ",
       created_at: new Date().toISOString(),
       service_order_id: null,
       channel,
       attachment_url: attachmentUrl,
+      audience_profile_ids:
+        channel === "agent" ? [profile.id] : null,
       sender: {
-        id: data.profile!.id,
-        full_name: data.profile!.full_name,
-        role: data.profile!.role,
+        id: profile.id,
+        full_name: profile.full_name,
+        role: profile.role,
       },
     };
     setBody("");
@@ -286,10 +331,49 @@ function MessagesPageInner() {
     startTransition(async () => {
       addOptimistic(temp);
       try {
-        await data.sendMessage(text || " ", {
-          channel,
-          attachmentUrl,
-        });
+        if (channel === "agent") {
+          await data.sendMessage(text, { channel: "agent" });
+          const reply = await runAgentCommand(text, {
+            profile,
+            organization: data.organization,
+            profiles: data.profiles,
+            villas: data.villas,
+            tasks: data.tasks,
+            bills: data.bills,
+            serviceOrders: data.serviceOrders,
+            contacts: data.contacts,
+            createTask: data.createTask,
+            setTaskStatus: data.setTaskStatus,
+            createServiceOrder: data.createServiceOrder,
+            createVilla: data.createVilla,
+          });
+          const botTemp: MessageWithSender = {
+            id: `temp-bot-${Date.now()}`,
+            org_id: profile.org_id,
+            sender_id: profile.id,
+            body: wrapAgentReply(reply),
+            created_at: new Date().toISOString(),
+            service_order_id: null,
+            channel: "agent",
+            attachment_url: null,
+            audience_profile_ids: [profile.id],
+            sender: {
+              id: profile.id,
+              full_name: profile.full_name,
+              role: profile.role,
+            },
+          };
+          addOptimistic(botTemp);
+          await data.sendMessage(reply, {
+            channel: "agent",
+            agentReply: true,
+          });
+        } else {
+          await data.sendMessage(text || " ", {
+            channel,
+            attachmentUrl,
+          });
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Could not send.");
       }
@@ -306,7 +390,7 @@ function MessagesPageInner() {
         </div>
 
         <div className="mb-3 flex gap-1.5 overflow-x-auto pb-0.5">
-          {CHANNELS.map((c) => {
+          {channels.map((c) => {
             const active = channel === c.id;
             const unread = unreadByChannel[c.id] ?? 0;
             return (
@@ -346,14 +430,23 @@ function MessagesPageInner() {
               {t("messages.photoNote")}
             </p>
           ) : null}
+          {channel === "agent" ? (
+            <p className="border-b border-black/5 bg-[#F7F5F1] px-3 py-2 text-xs leading-relaxed text-muted">
+              {t("messages.agentNote")}
+            </p>
+          ) : null}
           <div className="flex-1 space-y-3 overflow-y-auto p-3">
             {optimistic.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted">
-                {t("messages.empty")}
+                {channel === "agent"
+                  ? t("messages.agentEmpty")
+                  : t("messages.empty")}
               </p>
             ) : (
               optimistic.map((msg) => {
-                const mine = msg.sender_id === data.profile?.id;
+                const agentReply = isAgentReplyBody(msg.body);
+                const mine =
+                  !agentReply && msg.sender_id === data.profile?.id;
                 const order = msg.service_order_id
                   ? data.serviceOrders.find((o) => o.id === msg.service_order_id)
                   : null;
@@ -364,6 +457,9 @@ function MessagesPageInner() {
                     (order.status === "agreed" &&
                       (order.staff_profile_id === data.profile.id ||
                         order.ordered_by === data.profile.id)));
+                const displayBody = agentReply
+                  ? stripAgentReplyPrefix(msg.body)
+                  : msg.body;
                 return (
                   <div
                     key={msg.id}
@@ -375,12 +471,18 @@ function MessagesPageInner() {
                     <div
                       className={cn(
                         "max-w-[80%] space-y-2 rounded-2xl px-3 py-2 text-sm",
-                        mine ? "bg-primary text-white" : "bg-sand text-ink",
+                        mine
+                          ? "bg-primary text-white"
+                          : agentReply
+                            ? "bg-ink text-white"
+                            : "bg-sand text-ink",
                       )}
                     >
                       {!mine ? (
                         <p className="mb-0.5 text-[11px] font-semibold opacity-70">
-                          {msg.sender?.full_name ?? t("messages.teammate")}
+                          {agentReply
+                            ? t("messages.agentBotName")
+                            : (msg.sender?.full_name ?? t("messages.teammate"))}
                         </p>
                       ) : null}
                       {msg.attachment_url ? (
@@ -390,7 +492,9 @@ function MessagesPageInner() {
                           rel="noreferrer"
                           className={cn(
                             "block overflow-hidden rounded-xl ring-1",
-                            mine ? "ring-white/30" : "ring-black/10",
+                            mine || agentReply
+                              ? "ring-white/30"
+                              : "ring-black/10",
                           )}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -401,12 +505,12 @@ function MessagesPageInner() {
                           />
                         </a>
                       ) : null}
-                      {msg.body.trim() ? (
+                      {displayBody.trim() ? (
                         <div className="whitespace-pre-wrap">
                           <MessageBody
-                            body={msg.body}
+                            body={displayBody}
                             profiles={teammates}
-                            mine={mine}
+                            mine={mine || agentReply}
                           />
                         </div>
                       ) : null}
@@ -423,12 +527,47 @@ function MessagesPageInner() {
             <div ref={bottomRef} />
           </div>
           <div className="relative border-t border-black/5 p-3">
-            {commandSuggestions.length > 0 ? (
+            {agentSuggestions.length > 0 ? (
+              <ul
+                className="absolute bottom-full left-3 right-14 z-10 mb-1 max-h-52 overflow-y-auto rounded-2xl border border-black/5 bg-white py-1 soft-shadow"
+                role="listbox"
+              >
+                {agentSuggestions.map((cmd) => {
+                  const pick = agentCommandPickText(cmd);
+                  const label = cmd.placeholder
+                    ? `${cmd.command} ${cmd.placeholder}`
+                    : cmd.command;
+                  return (
+                    <li key={cmd.command}>
+                      <button
+                        type="button"
+                        role="option"
+                        className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-sand"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setBody(pick);
+                          setCursor(pick.length);
+                          requestAnimationFrame(() =>
+                            inputRef.current?.focus(),
+                          );
+                        }}
+                      >
+                        <span className="font-semibold text-ink">{label}</span>
+                        <span className="text-xs text-muted">
+                          {t(cmd.descriptionKey)}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+            {teamSuggestions.length > 0 ? (
               <ul
                 className="absolute bottom-full left-3 right-14 z-10 mb-1 max-h-44 overflow-y-auto rounded-2xl border border-black/5 bg-white py-1 soft-shadow"
                 role="listbox"
               >
-                {commandSuggestions.map((cmd) => (
+                {teamSuggestions.map((cmd) => (
                   <li key={cmd.command}>
                     <button
                       type="button"
@@ -552,7 +691,9 @@ function MessagesPageInner() {
                 placeholder={
                   channel === "photo"
                     ? t("messages.placeholderPhoto")
-                    : t("messages.placeholder")
+                    : channel === "agent"
+                      ? t("messages.placeholderAgent")
+                      : t("messages.placeholder")
                 }
                 onKeyDown={(e) => {
                   if (mentionOptions.length > 0) {

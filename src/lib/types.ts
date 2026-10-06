@@ -302,7 +302,7 @@ export type AppNotification = {
   read_by: string[];
 };
 
-export type MessageChannel = "request" | "photo" | "general";
+export type MessageChannel = "request" | "photo" | "general" | "agent";
 
 export type Message = {
   id: string;

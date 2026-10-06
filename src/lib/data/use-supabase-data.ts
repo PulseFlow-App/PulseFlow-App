@@ -35,12 +35,14 @@ import {
   canBookServices,
   canCreateVillas,
   canInviteGuest,
+  canUseAgentChat,
   canViewAllBills,
   invitableStaffRoles,
   isStaffApp,
   isTaskAssignableRole,
   personalVillasOnly,
 } from "@/lib/roles";
+import { wrapAgentReply } from "@/lib/agent-chat/markers";
 import {
   ENTITLEMENT_BLOCKED_MESSAGE,
   isCompanyEntitled,
@@ -944,14 +946,24 @@ export function useSupabaseData(enabled: boolean): AppData {
       )
     : [];
   const visibleMessages = profile
-    ? messages.filter((m) =>
-        canViewServiceOrderMessage(
-          profile,
-          m,
-          serviceOrders,
-          organization?.kind ?? null,
-        ),
-      )
+    ? messages
+        .filter((m) => {
+          if ((m.channel ?? "general") === "agent") {
+            if (!canUseAgentChat(profile.role)) return false;
+            const audience = m.audience_profile_ids;
+            if (audience?.length) return audience.includes(profile.id);
+            return m.sender_id === profile.id;
+          }
+          return true;
+        })
+        .filter((m) =>
+          canViewServiceOrderMessage(
+            profile,
+            m,
+            serviceOrders,
+            organization?.kind ?? null,
+          ),
+        )
     : messages;
 
   return {
@@ -2126,6 +2138,28 @@ export function useSupabaseData(enabled: boolean): AppData {
       const attachmentUrl = options?.attachmentUrl ?? null;
       if (channel === "photo" && !attachmentUrl) {
         throw new Error("Add a photo or screenshot for this thread.");
+      }
+
+      if (channel === "agent") {
+        if (!canUseAgentChat(profile.role)) {
+          throw new Error("Agent chat is for owners and managers.");
+        }
+        const supabase = createClient();
+        const storedBody = options?.agentReply
+          ? wrapAgentReply(body)
+          : body.trim();
+        if (!storedBody) return;
+        const { error } = await supabase.from("messages").insert({
+          org_id: profile.org_id,
+          sender_id: profile.id,
+          body: storedBody,
+          channel: "agent",
+          attachment_url: null,
+          audience_profile_ids: [profile.id],
+        });
+        if (error) throw error;
+        await refresh();
+        return;
       }
 
       const cancelCmd = parseCancelJobCommand(body);

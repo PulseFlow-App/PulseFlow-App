@@ -199,6 +199,8 @@ export type AppData = {
     options?: {
       channel?: import("@/lib/types").MessageChannel;
       attachmentUrl?: string | null;
+      /** Agent channel only: store as a bot reply (private to sender). */
+      agentReply?: boolean;
     },
   ) => Promise<void>;
   /** Team chat image for the photo-proof channel. */

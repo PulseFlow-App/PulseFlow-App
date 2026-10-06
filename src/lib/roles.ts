@@ -85,6 +85,11 @@ export function canCreateVillas(role: UserRole) {
   );
 }
 
+/** In-app Agent slash chat (owners/managers — same audience as MCP tokens). */
+export function canUseAgentChat(role: UserRole) {
+  return role === "owner" || role === "manager";
+}
+
 /** Cleaner / field staff get the simplified field app. */
 export function isStaffApp(role: UserRole) {
   return role === "cleaner" || role === "staff";

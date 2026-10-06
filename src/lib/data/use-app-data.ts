@@ -60,10 +60,12 @@ import { buildOrderChatBody, parseCancelJobCommand, resolveCancelJobTarget, form
 import { canBookServices,
   canCreateVillas,
   canMarkBillsPaid,
+  canUseAgentChat,
   canViewAllBills,
   isTaskAssignableRole,
   personalVillasOnly,
 } from "@/lib/roles";
+import { wrapAgentReply } from "@/lib/agent-chat/markers";
 import {
   canApproveTaskVerify,
   canCompleteTaskDirectly,
@@ -311,6 +313,15 @@ function useDemoData(): AppData {
       store.orgs.find((org) => org.id === profile.org_id)?.kind ?? null;
     return [...store.messages]
       .filter((m) => m.org_id === profile.org_id)
+      .filter((m) => {
+        if ((m.channel ?? "general") === "agent") {
+          if (!canUseAgentChat(profile.role)) return false;
+          const audience = m.audience_profile_ids;
+          if (audience?.length) return audience.includes(profile.id);
+          return m.sender_id === profile.id;
+        }
+        return true;
+      })
       .filter((m) =>
         canViewServiceOrderMessage(profile, m, allOrgOrders, orgKind),
       )
@@ -1089,6 +1100,33 @@ function useDemoData(): AppData {
       const attachmentUrl = options?.attachmentUrl ?? null;
       if (channel === "photo" && !attachmentUrl) {
         throw new Error("Add a photo or screenshot for this thread.");
+      }
+      if (channel === "agent") {
+        if (!canUseAgentChat(profile.role)) {
+          throw new Error("Agent chat is for owners and managers.");
+        }
+        const storedBody = options?.agentReply
+          ? wrapAgentReply(body)
+          : body.trim();
+        if (!storedBody) return;
+        updateDemoStore((s) => ({
+          ...s,
+          messages: [
+            ...s.messages,
+            {
+              id: uid("msg"),
+              org_id: profile.org_id,
+              sender_id: profile.id,
+              body: storedBody,
+              created_at: new Date().toISOString(),
+              service_order_id: null,
+              channel: "agent",
+              attachment_url: null,
+              audience_profile_ids: [profile.id],
+            },
+          ],
+        }));
+        return;
       }
       const cancelCmd = parseCancelJobCommand(body);
       if (cancelCmd.matched) {
