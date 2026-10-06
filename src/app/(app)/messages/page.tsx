@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
   useOptimistic,
-  startTransition,
 } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ImagePlus, Send, X } from "lucide-react";
@@ -46,6 +45,8 @@ import {
   agentCommandPickText,
   agentCommandSuggestions,
   runAgentCommand,
+  type AgentChip,
+  type VillaIntake,
 } from "@/lib/agent-chat/commands";
 import {
   isAgentReplyBody,
@@ -107,17 +108,25 @@ function MessagesPageInner() {
   const [mentionDismissed, setMentionDismissed] = useState(false);
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [agentBusy, setAgentBusy] = useState(false);
+  const [agentChips, setAgentChips] = useState<AgentChip[]>([]);
+  const [agentAllowPhoto, setAgentAllowPhoto] = useState(false);
+  const [villaIntake, setVillaIntake] = useState<VillaIntake | null>(null);
+  const [localAgent, setLocalAgent] = useState<MessageWithSender[]>([]);
+  const villaIntakeRef = useRef<VillaIntake | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const channelMessages = useMemo(
-    () =>
-      data.messages.filter(
-        (m) => (m.channel ?? "general") === channel,
-      ),
-    [data.messages, channel],
-  );
+  const channelMessages = useMemo(() => {
+    const live = data.messages.filter(
+      (m) => (m.channel ?? "general") === channel,
+    );
+    if (channel !== "agent") return live;
+    const ids = new Set(live.map((m) => m.body));
+    const extras = localAgent.filter((m) => !ids.has(m.body));
+    return [...live, ...extras];
+  }, [data.messages, channel, localAgent]);
 
   const [optimistic, addOptimistic] = useOptimistic(
     channelMessages,
@@ -236,9 +245,17 @@ function MessagesPageInner() {
   }, [optimistic.length, channel]);
 
   useEffect(() => {
+    villaIntakeRef.current = villaIntake;
+  }, [villaIntake]);
+
+  useEffect(() => {
     setBody("");
     setPendingPhoto(null);
     setError(null);
+    if (channel !== "agent") {
+      setAgentChips([]);
+      setAgentAllowPhoto(false);
+    }
   }, [channel]);
 
   useEffect(() => {
@@ -283,7 +300,10 @@ function MessagesPageInner() {
     setError(null);
     setUploading(true);
     try {
-      const url = await data.uploadChatAttachment(file);
+      const url =
+        channel === "agent"
+          ? await data.uploadVillaPhoto(file)
+          : await data.uploadChatAttachment(file);
       if (!url) throw new Error(t("common.error"));
       setPendingPhoto(url);
     } catch (e) {
@@ -294,8 +314,109 @@ function MessagesPageInner() {
     }
   };
 
+  const makeTemp = (
+    text: string,
+    extra?: Partial<MessageWithSender>,
+  ): MessageWithSender => {
+    const profile = data.profile!;
+    return {
+      id: `temp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      org_id: profile.org_id,
+      sender_id: profile.id,
+      body: text || " ",
+      created_at: new Date().toISOString(),
+      service_order_id: null,
+      channel,
+      attachment_url: extra?.attachment_url ?? null,
+      audience_profile_ids: channel === "agent" ? [profile.id] : null,
+      sender: {
+        id: profile.id,
+        full_name: profile.full_name,
+        role: profile.role,
+      },
+      ...extra,
+    };
+  };
+
+  const submitAgent = async (input: {
+    text: string;
+    chipId?: string;
+    photoUrl?: string | null;
+  }) => {
+    const profile = data.profile;
+    if (!profile || agentBusy) return;
+    const text = input.text.trim();
+    const photoUrl = input.photoUrl ?? null;
+    if (!text && !photoUrl && !input.chipId) return;
+
+    setError(null);
+    setAgentChips([]);
+    setBody("");
+    setCursor(0);
+    setPendingPhoto(null);
+    setAgentBusy(true);
+
+    const userMsg = makeTemp(text || (input.chipId ? input.chipId : " "), {
+      attachment_url: photoUrl,
+    });
+    setLocalAgent((rows) => [...rows, userMsg]);
+
+    try {
+      if (text || photoUrl || input.chipId) {
+        try {
+          await data.sendMessage(text || " ", { channel: "agent" });
+        } catch {
+          /* Reply still runs locally if the channel is not migrated yet. */
+        }
+      }
+      const result = await runAgentCommand(text, {
+        profile,
+        organization: data.organization,
+        profiles: data.profiles,
+        villas: data.villas,
+        tasks: data.tasks,
+        bills: data.bills,
+        serviceOrders: data.serviceOrders,
+        contacts: data.contacts,
+        createTask: data.createTask,
+        setTaskStatus: data.setTaskStatus,
+        createServiceOrder: data.createServiceOrder,
+        createVilla: data.createVilla,
+      }, {
+        photoUrl,
+        chipId: input.chipId,
+        intake: villaIntakeRef.current,
+      });
+      setVillaIntake(result.intake);
+      villaIntakeRef.current = result.intake;
+      setAgentChips(result.turn.chips ?? []);
+      setAgentAllowPhoto(Boolean(result.turn.allowPhoto));
+      const botMsg = makeTemp(wrapAgentReply(result.turn.text));
+      setLocalAgent((rows) => [...rows, botMsg]);
+      try {
+        await data.sendMessage(result.turn.text, {
+          channel: "agent",
+          agentReply: true,
+        });
+      } catch {
+        /* Shown in-thread even if persistence fails. */
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not send.");
+    } finally {
+      setAgentBusy(false);
+    }
+  };
+
   const send = () => {
     const text = body.trim();
+    if (channel === "agent") {
+      void submitAgent({
+        text,
+        photoUrl: pendingPhoto,
+      });
+      return;
+    }
     if (channel === "photo") {
       if (!pendingPhoto) {
         setError(t("messages.photoRequired"));
@@ -307,77 +428,21 @@ function MessagesPageInner() {
     }
     setError(null);
     const attachmentUrl = channel === "photo" ? pendingPhoto : null;
-    const profile = data.profile!;
-    const temp: MessageWithSender = {
-      id: `temp-${Date.now()}`,
-      org_id: profile.org_id,
-      sender_id: profile.id,
-      body: text || " ",
-      created_at: new Date().toISOString(),
-      service_order_id: null,
-      channel,
-      attachment_url: attachmentUrl,
-      audience_profile_ids:
-        channel === "agent" ? [profile.id] : null,
-      sender: {
-        id: profile.id,
-        full_name: profile.full_name,
-        role: profile.role,
-      },
-    };
+    const temp = makeTemp(text || " ", { attachment_url: attachmentUrl });
     setBody("");
     setCursor(0);
     setPendingPhoto(null);
-    startTransition(async () => {
+    void (async () => {
       addOptimistic(temp);
       try {
-        if (channel === "agent") {
-          await data.sendMessage(text, { channel: "agent" });
-          const reply = await runAgentCommand(text, {
-            profile,
-            organization: data.organization,
-            profiles: data.profiles,
-            villas: data.villas,
-            tasks: data.tasks,
-            bills: data.bills,
-            serviceOrders: data.serviceOrders,
-            contacts: data.contacts,
-            createTask: data.createTask,
-            setTaskStatus: data.setTaskStatus,
-            createServiceOrder: data.createServiceOrder,
-            createVilla: data.createVilla,
-          });
-          const botTemp: MessageWithSender = {
-            id: `temp-bot-${Date.now()}`,
-            org_id: profile.org_id,
-            sender_id: profile.id,
-            body: wrapAgentReply(reply),
-            created_at: new Date().toISOString(),
-            service_order_id: null,
-            channel: "agent",
-            attachment_url: null,
-            audience_profile_ids: [profile.id],
-            sender: {
-              id: profile.id,
-              full_name: profile.full_name,
-              role: profile.role,
-            },
-          };
-          addOptimistic(botTemp);
-          await data.sendMessage(reply, {
-            channel: "agent",
-            agentReply: true,
-          });
-        } else {
-          await data.sendMessage(text || " ", {
-            channel,
-            attachmentUrl,
-          });
-        }
+        await data.sendMessage(text || " ", {
+          channel,
+          attachmentUrl,
+        });
       } catch (e) {
         setError(e instanceof Error ? e.message : "Could not send.");
       }
-    });
+    })();
   };
 
   return (
@@ -534,9 +599,6 @@ function MessagesPageInner() {
               >
                 {agentSuggestions.map((cmd) => {
                   const pick = agentCommandPickText(cmd);
-                  const label = cmd.placeholder
-                    ? `${cmd.command} ${cmd.placeholder}`
-                    : cmd.command;
                   return (
                     <li key={cmd.command}>
                       <button
@@ -545,6 +607,11 @@ function MessagesPageInner() {
                         className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-sand"
                         onMouseDown={(e) => {
                           e.preventDefault();
+                          if (cmd.runOnPick) {
+                            setBody("");
+                            void submitAgent({ text: cmd.command });
+                            return;
+                          }
                           setBody(pick);
                           setCursor(pick.length);
                           requestAnimationFrame(() =>
@@ -552,9 +619,12 @@ function MessagesPageInner() {
                           );
                         }}
                       >
-                        <span className="font-semibold text-ink">{label}</span>
+                        <span className="font-semibold text-ink">
+                          {cmd.command}
+                        </span>
                         <span className="text-xs text-muted">
                           {t(cmd.descriptionKey)}
+                          {cmd.hint ? ` · ${cmd.hint}` : ""}
                         </span>
                       </button>
                     </li>
@@ -629,7 +699,29 @@ function MessagesPageInner() {
               </ul>
             ) : null}
             {error ? <p className="mb-2 text-xs text-danger">{error}</p> : null}
-            {channel === "photo" && pendingPhoto ? (
+            {channel === "agent" && agentBusy ? (
+              <p className="mb-2 text-xs text-muted">{t("messages.agentWorking")}</p>
+            ) : null}
+            {channel === "agent" && agentChips.length > 0 ? (
+              <div className="mb-2 flex flex-wrap gap-1.5">
+                {agentChips.map((chip) => (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    disabled={agentBusy}
+                    className="rounded-full bg-sand px-3 py-1.5 text-xs font-semibold text-ink"
+                    onClick={() =>
+                      void submitAgent({ text: chip.label, chipId: chip.id })
+                    }
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            {(channel === "photo" ||
+              (channel === "agent" && (agentAllowPhoto || pendingPhoto))) &&
+            pendingPhoto ? (
               <div className="mb-2 flex items-start gap-2">
                 <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-1 ring-black/10">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -650,7 +742,8 @@ function MessagesPageInner() {
               </div>
             ) : null}
             <div className="flex items-center gap-1.5">
-              {channel === "photo" ? (
+              {channel === "photo" ||
+              (channel === "agent" && agentAllowPhoto) ? (
                 <>
                   <input
                     ref={fileRef}
@@ -733,7 +826,7 @@ function MessagesPageInner() {
                 size="xs"
                 onClick={send}
                 className="h-8 w-8 shrink-0 px-0"
-                disabled={uploading}
+                disabled={uploading || agentBusy}
               >
                 <Send className="size-3.5" />
               </Button>

@@ -15,79 +15,102 @@ import {
   resolveContactForProfile,
   resolveTask,
   resolveTeammate,
-  resolveVilla,
   stripMention,
 } from "@/lib/agent-chat/resolve";
+import { lookupFamousPlace } from "@/lib/agent-chat/places";
+import {
+  continueVillaIntake,
+  startVillaIntake,
+  villaCreateInput,
+  type AgentChip,
+  type AgentTurn,
+  type VillaIntake,
+} from "@/lib/agent-chat/villa-intake";
+
+export type { AgentChip, AgentTurn, VillaIntake };
 
 export type AgentCommandSuggestion = {
   command: string;
-  placeholder: string;
+  hint: string;
   descriptionKey: MessageKey;
+  /** Tapping the row should send immediately (lists / intake start). */
+  runOnPick: boolean;
 };
 
 export const AGENT_CHAT_COMMANDS: AgentCommandSuggestion[] = [
   {
     command: "/help",
-    placeholder: "",
+    hint: "",
     descriptionKey: "messages.agent.cmd.help",
+    runOnPick: true,
   },
   {
     command: "/whoami",
-    placeholder: "",
+    hint: "",
     descriptionKey: "messages.agent.cmd.whoami",
+    runOnPick: true,
   },
   {
     command: "/team",
-    placeholder: "",
+    hint: "",
     descriptionKey: "messages.agent.cmd.team",
+    runOnPick: true,
   },
   {
     command: "/villas",
-    placeholder: "",
+    hint: "",
     descriptionKey: "messages.agent.cmd.villas",
+    runOnPick: true,
   },
   {
     command: "/tasks",
-    placeholder: "[open|done]",
+    hint: "open · done",
     descriptionKey: "messages.agent.cmd.tasks",
+    runOnPick: true,
   },
   {
     command: "/task",
-    placeholder: "title @person villa",
+    hint: "title @person villa",
     descriptionKey: "messages.agent.cmd.task",
+    runOnPick: false,
   },
   {
     command: "/done",
-    placeholder: "task…",
+    hint: "task name",
     descriptionKey: "messages.agent.cmd.done",
+    runOnPick: true,
   },
   {
     command: "/jobs",
-    placeholder: "",
+    hint: "",
     descriptionKey: "messages.agent.cmd.jobs",
+    runOnPick: true,
   },
   {
     command: "/job",
-    placeholder: "service @person villa",
+    hint: "service @person villa",
     descriptionKey: "messages.agent.cmd.job",
+    runOnPick: false,
   },
   {
     command: "/bills",
-    placeholder: "[pending|paid]",
+    hint: "pending · paid",
     descriptionKey: "messages.agent.cmd.bills",
+    runOnPick: true,
   },
   {
     command: "/villa",
-    placeholder: "Name | maps link",
+    hint: "name or famous place",
     descriptionKey: "messages.agent.cmd.villa",
+    runOnPick: true,
   },
 ];
 
-/** Slash picker while typing `/…` before the first space ends. */
-export function agentCommandSuggestions(input: string): AgentCommandSuggestion[] {
+export function agentCommandSuggestions(
+  input: string,
+): AgentCommandSuggestion[] {
   if (!input.startsWith("/")) return [];
   const token = input.match(/^\/[^\s]*/)?.[0] ?? input;
-  // After a space, hide the menu (user is filling args).
   if (input.length > token.length) return [];
   const q = token.toLowerCase();
   return AGENT_CHAT_COMMANDS.filter((c) => {
@@ -97,8 +120,22 @@ export function agentCommandSuggestions(input: string): AgentCommandSuggestion[]
 }
 
 export function agentCommandPickText(cmd: AgentCommandSuggestion) {
-  if (!cmd.placeholder) return `${cmd.command} `;
-  return `${cmd.command} ${cmd.placeholder}`;
+  return cmd.runOnPick ? cmd.command : `${cmd.command} `;
+}
+
+function isDummyArg(args: string) {
+  const a = args.trim();
+  if (!a) return true;
+  if (/^\[.+\]$/.test(a)) return true;
+  if (/\|/.test(a) && /open|done|pending|paid|person|maps/i.test(a)) return true;
+  if (
+    /^(title @person villa|task…|task\.\.\.|service @person villa|name \| maps link|open · done|pending · paid|task name)$/i.test(
+      a,
+    )
+  ) {
+    return true;
+  }
+  return false;
 }
 
 export type AgentCommandContext = {
@@ -134,17 +171,29 @@ export type AgentCommandContext = {
     location_url: string;
     area?: string;
     description?: string;
+    photo_url?: string | null;
+    bedrooms?: number | null;
+    bathrooms?: number | null;
+    max_guests?: number | null;
+    aircon?: Villa["aircon"];
+    parking?: Villa["parking"];
+    view?: Villa["view"];
+    has_garden?: boolean | null;
+    has_wifi?: boolean | null;
+    pet_friendly?: boolean | null;
+    kitchen?: Villa["kitchen"];
+    setting?: Villa["setting"];
+    has_pool?: boolean | null;
   }) => Promise<void>;
 };
 
 function helpText() {
-  const lines = [
-    "Pulse Agent — type / for commands:",
+  return [
+    "Type / for commands. Tap a row to run it.",
     ...AGENT_CHAT_COMMANDS.map((c) =>
-      c.placeholder ? `${c.command} ${c.placeholder}` : c.command,
+      c.hint ? `${c.command} — ${c.hint}` : c.command,
     ),
-  ];
-  return lines.join("\n");
+  ].join("\n");
 }
 
 function lineList(rows: string[], empty: string) {
@@ -152,18 +201,66 @@ function lineList(rows: string[], empty: string) {
   return rows.join("\n");
 }
 
+function turn(text: string, extra?: Partial<AgentTurn>): AgentTurn {
+  return { text, ...extra };
+}
+
 export async function runAgentCommand(
   raw: string,
   ctx: AgentCommandContext,
-): Promise<string> {
+  options?: {
+    photoUrl?: string | null;
+    chipId?: string;
+    intake?: VillaIntake | null;
+  },
+): Promise<{ turn: AgentTurn; intake: VillaIntake | null }> {
   const text = raw.trim();
+  const intake = options?.intake ?? null;
+
+  if (intake) {
+    if (text.startsWith("/") && !/^\/cancel$/i.test(text)) {
+      return runAgentCommand(text, ctx, { ...options, intake: null });
+    }
+    const next = await continueVillaIntake(
+      intake,
+      {
+        text,
+        photoUrl: options?.photoUrl,
+        chipId: options?.chipId,
+      },
+      lookupFamousPlace,
+    );
+    if (next.create) {
+      const input = villaCreateInput(next.create);
+      await ctx.createVilla(input);
+      return {
+        intake: null,
+        turn: turn(`Added ${input.name}. Open Properties to see it.`),
+      };
+    }
+    return { intake: next.intake, turn: next.turn };
+  }
+
+  if (options?.chipId?.startsWith("done:")) {
+    const id = options.chipId.slice(5);
+    const task = ctx.tasks.find((t) => t.id === id);
+    if (!task) return { intake: null, turn: turn("That task is gone. Try /tasks.") };
+    await ctx.setTaskStatus(task.id, "done");
+    return { intake: null, turn: turn(`Marked done: ${task.title}`) };
+  }
+
   if (!text.startsWith("/")) {
-    return `I only run slash commands for now.\n\n${helpText()}`;
+    return {
+      intake: null,
+      turn: turn(`I run slash commands. Type / to pick one.\n\n${helpText()}`),
+    };
   }
 
   const [cmdToken, ...restParts] = text.split(/\s+/);
   const cmd = (cmdToken ?? "").toLowerCase();
-  const args = restParts.join(" ").trim();
+  const args = isDummyArg(restParts.join(" "))
+    ? ""
+    : restParts.join(" ").trim();
   const orgProfiles = ctx.profiles.filter(
     (p) => p.org_id === ctx.profile.org_id && p.role !== "guest",
   );
@@ -177,34 +274,50 @@ export async function runAgentCommand(
     (c) => c.org_id === ctx.profile.org_id,
   );
 
-  if (cmd === "/help") return helpText();
+  if (cmd === "/help") return { intake: null, turn: turn(helpText()) };
 
   if (cmd === "/whoami") {
-    return [
-      `${ctx.profile.full_name}`,
-      `Role: ${ctx.profile.role}`,
-      `Org: ${ctx.organization?.name ?? ctx.profile.org_id}`,
-      `Kind: ${ctx.organization?.kind ?? "—"}`,
-    ].join("\n");
+    return {
+      intake: null,
+      turn: turn(
+        [
+          ctx.profile.full_name,
+          `Role: ${ctx.profile.role}`,
+          `Org: ${ctx.organization?.name ?? ctx.profile.org_id}`,
+        ].join("\n"),
+      ),
+    };
   }
 
   if (cmd === "/team") {
-    return lineList(
-      orgProfiles.map((p) => `• ${p.full_name} (${p.role})`),
-      "No teammates yet.",
-    );
+    return {
+      intake: null,
+      turn: turn(
+        lineList(
+          orgProfiles.map((p) => `• ${p.full_name} (${p.role})`),
+          "No teammates yet.",
+        ),
+      ),
+    };
   }
 
   if (cmd === "/villas") {
-    return lineList(
-      orgVillas.map((v) => `• ${v.name}${v.status ? ` — ${v.status}` : ""}`),
-      "No properties yet.",
-    );
+    return {
+      intake: null,
+      turn: turn(
+        lineList(
+          orgVillas.map(
+            (v) => `• ${v.name}${v.status ? ` — ${v.status}` : ""}`,
+          ),
+          "No properties yet. /villa to add one.",
+        ),
+      ),
+    };
   }
 
   if (cmd === "/tasks") {
     const statusFilter = args.toLowerCase();
-    let list = orgTasks;
+    let list = orgTasks.filter((t) => t.status !== "done");
     if (statusFilter === "open" || statusFilter === "done") {
       list = orgTasks.filter((t) => t.status === statusFilter);
     } else if (
@@ -212,29 +325,35 @@ export async function runAgentCommand(
       statusFilter === "verify"
     ) {
       list = orgTasks.filter((t) => t.status === "pending_verify");
-    } else if (statusFilter) {
-      return "Usage: /tasks [open|done|pending_verify]";
-    } else {
-      list = orgTasks.filter((t) => t.status !== "done");
     }
-    return lineList(
-      list.slice(0, 40).map((t) => {
-        const villa = orgVillas.find((v) => v.id === t.villa_id);
-        const who = orgProfiles.find((p) => p.id === t.assigned_to);
-        const bits = [
-          t.status,
-          villa?.name,
-          who?.full_name ? `@${who.full_name}` : null,
-        ].filter(Boolean);
-        return `• ${t.title}${bits.length ? ` (${bits.join(" · ")})` : ""}`;
-      }),
-      "No matching tasks.",
-    );
+    return {
+      intake: null,
+      turn: turn(
+        lineList(
+          list.slice(0, 40).map((t) => {
+            const villa = orgVillas.find((v) => v.id === t.villa_id);
+            const who = orgProfiles.find((p) => p.id === t.assigned_to);
+            const bits = [
+              t.status,
+              villa?.name,
+              who?.full_name ? `@${who.full_name}` : null,
+            ].filter(Boolean);
+            return `• ${t.title}${bits.length ? ` (${bits.join(" · ")})` : ""}`;
+          }),
+          "No matching tasks.",
+        ),
+      ),
+    };
   }
 
   if (cmd === "/task") {
     if (!args) {
-      return "Usage: /task title @person villa\nExample: /task Restock fridge @Mai Coral";
+      return {
+        intake: null,
+        turn: turn(
+          "Send /task plus a title. Optional: @person and a villa name.\nExample: /task Restock fridge @Mai Coral",
+        ),
+      };
     }
     let working = args;
     const mention = extractMentionToken(working);
@@ -242,14 +361,17 @@ export async function runAgentCommand(
     if (mention) {
       assignee = resolveTeammate(mention, orgProfiles);
       if (!assignee) {
-        return `No teammate matching @${mention}. Try /team.`;
+        return {
+          intake: null,
+          turn: turn(`No teammate matching @${mention}. Try /team.`),
+        };
       }
       working = stripMention(working, mention);
     }
     const { rest, villa } = peelVillaFromText(working, orgVillas);
     const title = rest.trim();
     if (!title) {
-      return "Usage: /task title @person villa\nNeed a task title.";
+      return { intake: null, turn: turn("Need a task title.") };
     }
     await ctx.createTask({
       title,
@@ -262,58 +384,109 @@ export async function runAgentCommand(
       assignee ? `@${assignee.full_name}` : null,
       villa?.name ?? null,
     ].filter(Boolean);
-    return `Created task: ${title}${bits.length ? ` (${bits.join(" · ")})` : ""}`;
+    return {
+      intake: null,
+      turn: turn(
+        `Created task: ${title}${bits.length ? ` (${bits.join(" · ")})` : ""}`,
+      ),
+    };
   }
 
   if (cmd === "/done") {
+    const open = orgTasks.filter(
+      (t) => t.status === "open" || t.status === "pending_verify",
+    );
     if (!args) {
-      return "Usage: /done task…\nExample: /done Restock fridge";
+      if (!open.length) {
+        return { intake: null, turn: turn("No open tasks.") };
+      }
+      return {
+        intake: null,
+        turn: turn("Tap a task to mark it done.", {
+          chips: open.slice(0, 12).map((t) => ({
+            id: `done:${t.id}`,
+            label: t.title,
+          })),
+        }),
+      };
     }
     const task = resolveTask(args, orgTasks, ["open", "pending_verify"]);
     if (!task) {
-      return `No open task matching “${args}”. Try /tasks.`;
+      return {
+        intake: null,
+        turn: turn(`No open task matching “${args}”.`, {
+          chips: open.slice(0, 12).map((t) => ({
+            id: `done:${t.id}`,
+            label: t.title,
+          })),
+        }),
+      };
     }
     await ctx.setTaskStatus(task.id, "done");
-    return `Marked done: ${task.title}`;
+    return { intake: null, turn: turn(`Marked done: ${task.title}`) };
   }
 
   if (cmd === "/jobs") {
     const open = orgOrders.filter(
       (o) => o.status === "pending_ack" || o.status === "agreed",
     );
-    return lineList(
-      open.slice(0, 40).map((o) => {
-        const who = orgProfiles.find((p) => p.id === o.staff_profile_id);
-        return `• ${o.service_type} — ${o.location_label ?? "—"} (${o.status}${
-          who ? ` · ${who.full_name}` : ""
-        })`;
-      }),
-      "No open jobs.",
-    );
+    return {
+      intake: null,
+      turn: turn(
+        lineList(
+          open.slice(0, 40).map((o) => {
+            const who = orgProfiles.find((p) => p.id === o.staff_profile_id);
+            return `• ${o.service_type} — ${o.location_label ?? "—"} (${o.status}${
+              who ? ` · ${who.full_name}` : ""
+            })`;
+          }),
+          "No open jobs.",
+        ),
+      ),
+    };
   }
 
   if (cmd === "/job") {
     if (!args) {
-      return "Usage: /job service @person villa\nExample: /job Deep clean @Mai Coral";
+      return {
+        intake: null,
+        turn: turn(
+          "Send /job plus the service, @who, and villa.\nExample: /job Deep clean @Mai Coral",
+        ),
+      };
     }
     let working = args;
     const mention = extractMentionToken(working);
     if (!mention) {
-      return "Usage: /job service @person villa\nTag who should do it with @Name.";
+      return {
+        intake: null,
+        turn: turn("Tag who should do it with @Name."),
+      };
     }
     const assignee = resolveTeammate(mention, orgProfiles);
     if (!assignee) {
-      return `No teammate matching @${mention}. Try /team.`;
+      return {
+        intake: null,
+        turn: turn(`No teammate matching @${mention}. Try /team.`),
+      };
     }
     working = stripMention(working, mention);
     const { rest, villa } = peelVillaFromText(working, orgVillas);
     const serviceType = rest.trim();
     if (!serviceType) {
-      return "Usage: /job service @person villa\nNeed a service type (e.g. Deep clean).";
+      return {
+        intake: null,
+        turn: turn("Need a service type (e.g. Deep clean)."),
+      };
     }
     const contact = resolveContactForProfile(assignee.id, orgContacts);
     if (!contact) {
-      return `${assignee.full_name} needs a Contacts entry linked to their profile before you can book a job. Add them under Contacts, then retry.`;
+      return {
+        intake: null,
+        turn: turn(
+          `${assignee.full_name} needs a Contacts entry linked to their profile before you can book a job.`,
+        ),
+      };
     }
     const order = await ctx.createServiceOrder({
       contact_id: contact.id,
@@ -321,55 +494,54 @@ export async function runAgentCommand(
       location_label: villa?.name ?? null,
       service_type: serviceType,
     });
-    return `Booked: ${order.service_type} for ${assignee.full_name}${
-      villa ? ` at ${villa.name}` : ""
-    }. They’ll see it in Questions/Feedback.`;
+    return {
+      intake: null,
+      turn: turn(
+        `Booked: ${order.service_type} for ${assignee.full_name}${
+          villa ? ` at ${villa.name}` : ""
+        }. They’ll see it in Questions/Feedback.`,
+      ),
+    };
   }
 
   if (cmd === "/bills") {
     const statusFilter = args.toLowerCase();
-    let list = orgBills;
+    let list = orgBills.filter((b) => b.status === "pending");
     if (statusFilter === "pending" || statusFilter === "paid") {
       list = orgBills.filter((b) => b.status === statusFilter);
-    } else if (statusFilter) {
-      return "Usage: /bills [pending|paid]";
-    } else {
-      list = orgBills.filter((b) => b.status === "pending");
     }
-    return lineList(
-      list.slice(0, 40).map((b) => {
-        const villa = orgVillas.find((v) => v.id === b.villa_id);
-        return `• ${b.description} — ${b.amount} ${b.currency}${
-          villa ? ` · ${villa.name}` : ""
-        } (${b.status})`;
-      }),
-      "No matching bills.",
-    );
+    return {
+      intake: null,
+      turn: turn(
+        lineList(
+          list.slice(0, 40).map((b) => {
+            const villa = orgVillas.find((v) => v.id === b.villa_id);
+            return `• ${b.description} — ${b.amount} ${b.currency}${
+              villa ? ` · ${villa.name}` : ""
+            } (${b.status})`;
+          }),
+          "No matching bills.",
+        ),
+      ),
+    };
   }
 
   if (cmd === "/villa") {
-    if (!args) {
-      return [
-        "Usage: /villa Name | https://maps…",
-        "For photo + full details, use Properties in the app or Connect your agent.",
-      ].join("\n");
+    if (args) {
+      const started = startVillaIntake();
+      const next = await continueVillaIntake(
+        started.intake,
+        { text: args, photoUrl: options?.photoUrl },
+        lookupFamousPlace,
+      );
+      return { intake: next.intake, turn: next.turn };
     }
-    const parts = args.split("|").map((p) => p.trim());
-    const name = parts[0] ?? "";
-    const locationUrl = parts[1] ?? "";
-    if (!name || !locationUrl) {
-      return "Usage: /villa Name | https://maps…\nBoth name and maps link are required.";
-    }
-    if (!/^https?:\/\//i.test(locationUrl)) {
-      return "Maps link must start with http:// or https://";
-    }
-    const existing = resolveVilla(name, orgVillas);
-    if (existing) {
-      return `A property named “${existing.name}” already exists.`;
-    }
-    await ctx.createVilla({ name, location_url: locationUrl });
-    return `Added property: ${name}`;
+    const started = startVillaIntake();
+    return { intake: started.intake, turn: started.turn };
   }
 
-  return `Unknown command: ${cmdToken}\n\n${helpText()}`;
+  return {
+    intake: null,
+    turn: turn(`Unknown command: ${cmdToken}\n\n${helpText()}`),
+  };
 }
