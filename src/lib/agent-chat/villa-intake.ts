@@ -57,7 +57,7 @@ export function startVillaIntake(): { intake: VillaIntake; turn: AgentTurn } {
   return {
     intake: { step: "name", draft: {} },
     turn: {
-      text: "Add a property — same intake as Connect your agent.\n\nWhat’s the name? (or a famous place, like “Villa Sila Koh Phangan”)",
+      text: "Add a property. Same intake as Connect your agent.\n\nWhat’s the name? (or a famous place, like “Villa Sila Koh Phangan”)",
     },
   };
 }
@@ -103,11 +103,11 @@ function promptForStep(
     return {
       intake: { step: "size", draft },
       turn: {
-        text: "Size? (kept as a range in notes — not a square-metre number)",
+        text: "Size? (kept as a range in notes, not a square-metre number)",
         chips: chips([
           { id: "size:under150", label: "Under 150 m²" },
-          { id: "size:150-300", label: "150–300 m²" },
-          { id: "size:300-500", label: "300–500 m²" },
+          { id: "size:150-300", label: "150-300 m²" },
+          { id: "size:300-500", label: "300-500 m²" },
           { id: "size:over500", label: "Over 500 m²" },
           { id: "size:unsure", label: "Not sure" },
         ]),
@@ -196,7 +196,7 @@ function extrasTurn(draft: VillaDraft): { intake: VillaIntake; turn: AgentTurn }
         { id: "extra:kitchen", label: on("kitchen", "Full kitchen") },
         { id: "extra:standalone", label: on("setting", "Standalone") },
         { id: "extra:pool", label: on("has_pool", "Pool") },
-        { id: "done", label: "Done — create" },
+        { id: "done", label: "Done, create" },
       ]),
     },
   };
@@ -412,8 +412,8 @@ export async function continueVillaIntake(
   if (intake.step === "size") {
     const map: Record<string, string> = {
       "size:under150": "under 150 m²",
-      "size:150-300": "150–300 m²",
-      "size:300-500": "300–500 m²",
+      "size:150-300": "150-300 m²",
+      "size:300-500": "300-500 m²",
       "size:over500": "over 500 m²",
     };
     const details =

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useI18n } from "@/lib/i18n/provider";
@@ -29,6 +30,11 @@ export function ConfirmDialog({
   onClose,
 }: ConfirmDialogProps) {
   const { t } = useI18n();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -39,9 +45,18 @@ export function ConfirmDialog({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, busy, onClose]);
 
-  if (!open) return null;
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
-  return (
+  if (!open || !mounted) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-[90] flex items-end justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center sm:pb-4">
       <button
         type="button"
@@ -91,6 +106,7 @@ export function ConfirmDialog({
           </Button>
         </div>
       </Card>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -126,6 +126,9 @@ const en = {
   "home.attention":
     "{count} property needs attention today|{count} properties need attention today",
   "home.opsReadiness": "Ops readiness",
+  "home.opsReadiness.good": "Ops readiness: you're good to go",
+  "home.opsReadiness.watch": "Ops readiness: some things need attention",
+  "home.opsReadiness.low": "Ops readiness: get back on track with your work",
   "home.focusToday": "Focus of today",
   "home.focusTodayClear": "Nothing urgent right now.",
   "home.focusTodayMore": "+{count} more",
@@ -160,7 +163,7 @@ const en = {
   "order.reach.awaiting": "Not contacted (awaiting agreement)",
 
   "villas.title": "Properties",
-  "villas.subtitle": "Company inventory first, then your personal list",
+  "villas.subtitle": "",
   "villas.subtitleStaff": "Assigned company properties + your own personal list",
   "villas.addNew": "Add new",
   "villas.empty": "No properties yet",
@@ -169,6 +172,9 @@ const en = {
   "villas.company": "company",
   "villas.personal": "No company (personal)",
   "villas.locationLink": "Location link",
+  "villas.cardMore": "More details",
+  "villas.cardLess": "Less",
+  "villas.openProperty": "Open property",
   "villas.description": "Description (optional)",
   "villas.area": "Area",
   "villas.status": "Status",
@@ -274,8 +280,7 @@ const en = {
   "tasks.create": "Create task",
   "tasks.notesPlaceholder": "Gate code, keys, or anything the assignee should know",
   "tasks.examplePhoto": "Example photo",
-  "tasks.examplePhotoHint":
-    "One photo of what to do. More photos can go in chat after they agree.",
+  "tasks.examplePhotoHint": "",
   "tasks.addPhoto": "Add photo",
   "tasks.hasPhoto": "Has photo",
   "tasks.noNotes": "No notes on this task.",
@@ -469,16 +474,16 @@ const en = {
   "messages.channel.general": "General",
   "messages.channel.generalHint": "Everyday chat",
   "messages.channel.agent": "Agent",
-  "messages.channel.agentHint": "Private slash commands — acts as you",
+  "messages.channel.agentHint": "Private slash commands that act as you",
   "messages.photoNote":
     "Use this thread when a photo or screenshot helps: damage, a screen code, proof of work, and similar. Not for property bills or receipts; those belong in Bills.",
   "messages.agentNote":
-    "Private to you. Type / and tap a command. Pulse replies here — list work, create a task, or add a property.",
+    "Private to you. Type / and tap a command:\n/help  list of commands for your actions\n/whoami  you and this company\n/team  list teammates\n/villas  list properties\n/tasks  list open tasks\n/task  create a task\n/done  mark a task done\n/jobs  list open jobs\n/job  book a job\n/bills  list pending bills\n/villa  add a property",
   "messages.placeholderAgent": "Type / or answer Pulse…",
   "messages.agentEmpty": "Type / and tap a command. Pulse answers in this thread.",
   "messages.agentBotName": "Pulse",
   "messages.agentWorking": "Working…",
-  "messages.agent.cmd.help": "List commands",
+  "messages.agent.cmd.help": "List of commands for your actions",
   "messages.agent.cmd.whoami": "You and this company",
   "messages.agent.cmd.team": "List teammates",
   "messages.agent.cmd.villas": "List properties",
@@ -1294,7 +1299,7 @@ const en = {
 
   "talent.title": "Find staff",
   "talent.subtitle":
-    "Search people who opted into the talent directory - by skill, place, or map.",
+    "Search people who posted their profile available - by skill, place, or map.",
   "talent.searchPlaceholder": "Search by name, skill, or bio…",
   "talent.filterLocation": "City or area…",
   "talent.filterCountry": "Country",
@@ -1347,7 +1352,7 @@ const en = {
   "talent.skill.handyman": "Handyman",
   "talent.skill.manager": "On-site manager",
   "talent.reviewsSection": "Reviews & endorsements",
-  "talent.browseLink": "Browse talent directory",
+  "talent.browseLink": "Start search",
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -278,7 +278,11 @@ export default function TasksPage() {
                 ({t("common.optional")})
               </span>
             </Label>
-            <p className="mb-2 text-xs text-muted">{t("tasks.examplePhotoHint")}</p>
+            {t("tasks.examplePhotoHint") ? (
+              <p className="mb-2 text-xs text-muted">
+                {t("tasks.examplePhotoHint")}
+              </p>
+            ) : null}
             <input
               ref={fileRef}
               type="file"

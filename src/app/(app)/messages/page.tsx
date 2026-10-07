@@ -496,7 +496,7 @@ function MessagesPageInner() {
             </p>
           ) : null}
           {channel === "agent" ? (
-            <p className="border-b border-black/5 bg-[#F7F5F1] px-3 py-2 text-xs leading-relaxed text-muted">
+            <p className="whitespace-pre-wrap border-b border-black/5 bg-[#F7F5F1] px-3 py-2 text-xs leading-relaxed text-muted">
               {t("messages.agentNote")}
             </p>
           ) : null}
@@ -624,7 +624,7 @@ function MessagesPageInner() {
                         </span>
                         <span className="text-xs text-muted">
                           {t(cmd.descriptionKey)}
-                          {cmd.hint ? ` · ${cmd.hint}` : ""}
+                          {cmd.hint ? ` (${cmd.hint})` : ""}
                         </span>
                       </button>
                     </li>

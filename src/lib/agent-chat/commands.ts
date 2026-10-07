@@ -10,12 +10,12 @@ import type {
   Villa,
 } from "@/lib/types";
 import {
-  extractMentionToken,
+  normalizeAgentSlashInput,
+  parseAgentSlash,
+  peelAssigneeFromText,
   peelVillaFromText,
   resolveContactForProfile,
   resolveTask,
-  resolveTeammate,
-  stripMention,
 } from "@/lib/agent-chat/resolve";
 import { lookupFamousPlace } from "@/lib/agent-chat/places";
 import {
@@ -64,7 +64,7 @@ export const AGENT_CHAT_COMMANDS: AgentCommandSuggestion[] = [
   },
   {
     command: "/tasks",
-    hint: "open · done",
+    hint: "open or done",
     descriptionKey: "messages.agent.cmd.tasks",
     runOnPick: true,
   },
@@ -94,7 +94,7 @@ export const AGENT_CHAT_COMMANDS: AgentCommandSuggestion[] = [
   },
   {
     command: "/bills",
-    hint: "pending · paid",
+    hint: "pending or paid",
     descriptionKey: "messages.agent.cmd.bills",
     runOnPick: true,
   },
@@ -110,8 +110,10 @@ export function agentCommandSuggestions(
   input: string,
 ): AgentCommandSuggestion[] {
   if (!input.startsWith("/")) return [];
-  const token = input.match(/^\/[^\s]*/)?.[0] ?? input;
-  if (input.length > token.length) return [];
+  const normalized = normalizeAgentSlashInput(input);
+  const token = normalized.match(/^\/[^\s]*/)?.[0] ?? normalized;
+  // After a space past the command word, hide the menu (user is filling args).
+  if (normalized.length > token.length) return [];
   const q = token.toLowerCase();
   return AGENT_CHAT_COMMANDS.filter((c) => {
     const cmd = c.command.toLowerCase();
@@ -129,7 +131,7 @@ function isDummyArg(args: string) {
   if (/^\[.+\]$/.test(a)) return true;
   if (/\|/.test(a) && /open|done|pending|paid|person|maps/i.test(a)) return true;
   if (
-    /^(title @person villa|task…|task\.\.\.|service @person villa|name \| maps link|open · done|pending · paid|task name)$/i.test(
+    /^(title @person villa|task…|task\.\.\.|service @person villa|name \| maps link|open · done|open or done|pending · paid|pending or paid|task name)$/i.test(
       a,
     )
   ) {
@@ -187,12 +189,24 @@ export type AgentCommandContext = {
   }) => Promise<void>;
 };
 
+const HELP_LINES: { command: string; label: string }[] = [
+  { command: "/help", label: "list of commands for your actions" },
+  { command: "/whoami", label: "you and this company" },
+  { command: "/team", label: "list teammates" },
+  { command: "/villas", label: "list properties" },
+  { command: "/tasks", label: "list open tasks (or /tasks open, /tasks done)" },
+  { command: "/task", label: "create a task (example: /task Restock fridge @Mai Coral)" },
+  { command: "/done", label: "mark a task done" },
+  { command: "/jobs", label: "list open jobs" },
+  { command: "/job", label: "book a job (example: /job Deep clean @Mai Coral)" },
+  { command: "/bills", label: "list pending bills (or /bills paid)" },
+  { command: "/villa", label: "add a property (questionnaire or famous place)" },
+];
+
 function helpText() {
   return [
-    "Type / for commands. Tap a row to run it.",
-    ...AGENT_CHAT_COMMANDS.map((c) =>
-      c.hint ? `${c.command} — ${c.hint}` : c.command,
-    ),
+    "The list of commands used for your actions. Type / and tap one, or send it.",
+    ...HELP_LINES.map((c) => `${c.command}  ${c.label}`),
   ].join("\n");
 }
 
@@ -218,8 +232,9 @@ export async function runAgentCommand(
   const intake = options?.intake ?? null;
 
   if (intake) {
-    if (text.startsWith("/") && !/^\/cancel$/i.test(text)) {
-      return runAgentCommand(text, ctx, { ...options, intake: null });
+    const asSlash = normalizeAgentSlashInput(text);
+    if (asSlash.startsWith("/") && !/^\/cancel$/i.test(asSlash)) {
+      return runAgentCommand(asSlash, ctx, { ...options, intake: null });
     }
     const next = await continueVillaIntake(
       intake,
@@ -256,11 +271,8 @@ export async function runAgentCommand(
     };
   }
 
-  const [cmdToken, ...restParts] = text.split(/\s+/);
-  const cmd = (cmdToken ?? "").toLowerCase();
-  const args = isDummyArg(restParts.join(" "))
-    ? ""
-    : restParts.join(" ").trim();
+  const { cmd, args: rawArgs } = parseAgentSlash(text);
+  const args = isDummyArg(rawArgs) ? "" : rawArgs;
   const orgProfiles = ctx.profiles.filter(
     (p) => p.org_id === ctx.profile.org_id && p.role !== "guest",
   );
@@ -307,7 +319,7 @@ export async function runAgentCommand(
       turn: turn(
         lineList(
           orgVillas.map(
-            (v) => `• ${v.name}${v.status ? ` — ${v.status}` : ""}`,
+            (v) => `• ${v.name}${v.status ? ` (${v.status})` : ""}`,
           ),
           "No properties yet. /villa to add one.",
         ),
@@ -338,7 +350,7 @@ export async function runAgentCommand(
               villa?.name,
               who?.full_name ? `@${who.full_name}` : null,
             ].filter(Boolean);
-            return `• ${t.title}${bits.length ? ` (${bits.join(" · ")})` : ""}`;
+            return `• ${t.title}${bits.length ? ` (${bits.join(", ")})` : ""}`;
           }),
           "No matching tasks.",
         ),
@@ -355,20 +367,16 @@ export async function runAgentCommand(
         ),
       };
     }
-    let working = args;
-    const mention = extractMentionToken(working);
-    let assignee: Profile | null = null;
-    if (mention) {
-      assignee = resolveTeammate(mention, orgProfiles);
-      if (!assignee) {
-        return {
-          intake: null,
-          turn: turn(`No teammate matching @${mention}. Try /team.`),
-        };
-      }
-      working = stripMention(working, mention);
+    const peeled = peelAssigneeFromText(args, orgProfiles);
+    if (peeled.unmatchedMention != null && !peeled.assignee) {
+      return {
+        intake: null,
+        turn: turn(
+          `No teammate matching @${peeled.unmatchedMention}. Try /team.`,
+        ),
+      };
     }
-    const { rest, villa } = peelVillaFromText(working, orgVillas);
+    const { rest, villa } = peelVillaFromText(peeled.rest, orgVillas);
     const title = rest.trim();
     if (!title) {
       return { intake: null, turn: turn("Need a task title.") };
@@ -377,17 +385,17 @@ export async function runAgentCommand(
       title,
       villa_id: villa?.id ?? null,
       priority: /urgent/i.test(title) ? "urgent" : "normal",
-      assigned_to: assignee?.id ?? null,
+      assigned_to: peeled.assignee?.id ?? null,
       due_date: null,
     });
     const bits = [
-      assignee ? `@${assignee.full_name}` : null,
+      peeled.assignee ? `@${peeled.assignee.full_name}` : null,
       villa?.name ?? null,
     ].filter(Boolean);
     return {
       intake: null,
       turn: turn(
-        `Created task: ${title}${bits.length ? ` (${bits.join(" · ")})` : ""}`,
+        `Created task: ${title}${bits.length ? ` (${bits.join(", ")})` : ""}`,
       ),
     };
   }
@@ -436,8 +444,8 @@ export async function runAgentCommand(
         lineList(
           open.slice(0, 40).map((o) => {
             const who = orgProfiles.find((p) => p.id === o.staff_profile_id);
-            return `• ${o.service_type} — ${o.location_label ?? "—"} (${o.status}${
-              who ? ` · ${who.full_name}` : ""
+            return `• ${o.service_type} at ${o.location_label ?? "TBC"} (${o.status}${
+              who ? `, ${who.full_name}` : ""
             })`;
           }),
           "No open jobs.",
@@ -455,23 +463,22 @@ export async function runAgentCommand(
         ),
       };
     }
-    let working = args;
-    const mention = extractMentionToken(working);
-    if (!mention) {
+    if (!args.includes("@")) {
       return {
         intake: null,
         turn: turn("Tag who should do it with @Name."),
       };
     }
-    const assignee = resolveTeammate(mention, orgProfiles);
-    if (!assignee) {
+    const peeled = peelAssigneeFromText(args, orgProfiles);
+    if (!peeled.assignee) {
       return {
         intake: null,
-        turn: turn(`No teammate matching @${mention}. Try /team.`),
+        turn: turn(
+          `No teammate matching @${peeled.unmatchedMention ?? "Name"}. Try /team.`,
+        ),
       };
     }
-    working = stripMention(working, mention);
-    const { rest, villa } = peelVillaFromText(working, orgVillas);
+    const { rest, villa } = peelVillaFromText(peeled.rest, orgVillas);
     const serviceType = rest.trim();
     if (!serviceType) {
       return {
@@ -479,12 +486,12 @@ export async function runAgentCommand(
         turn: turn("Need a service type (e.g. Deep clean)."),
       };
     }
-    const contact = resolveContactForProfile(assignee.id, orgContacts);
+    const contact = resolveContactForProfile(peeled.assignee.id, orgContacts);
     if (!contact) {
       return {
         intake: null,
         turn: turn(
-          `${assignee.full_name} needs a Contacts entry linked to their profile before you can book a job.`,
+          `${peeled.assignee.full_name} needs a Contacts entry linked to their profile before you can book a job.`,
         ),
       };
     }
@@ -497,7 +504,7 @@ export async function runAgentCommand(
     return {
       intake: null,
       turn: turn(
-        `Booked: ${order.service_type} for ${assignee.full_name}${
+        `Booked: ${order.service_type} for ${peeled.assignee.full_name}${
           villa ? ` at ${villa.name}` : ""
         }. They’ll see it in Questions/Feedback.`,
       ),
@@ -516,9 +523,9 @@ export async function runAgentCommand(
         lineList(
           list.slice(0, 40).map((b) => {
             const villa = orgVillas.find((v) => v.id === b.villa_id);
-            return `• ${b.description} — ${b.amount} ${b.currency}${
-              villa ? ` · ${villa.name}` : ""
-            } (${b.status})`;
+            return `• ${b.description}: ${b.amount} ${b.currency}${
+              villa ? ` (${villa.name})` : ""
+            } [${b.status}]`;
           }),
           "No matching bills.",
         ),
@@ -542,6 +549,6 @@ export async function runAgentCommand(
 
   return {
     intake: null,
-    turn: turn(`Unknown command: ${cmdToken}\n\n${helpText()}`),
+    turn: turn(`Unknown command: ${cmd || "/"}\n\n${helpText()}`),
   };
 }

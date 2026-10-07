@@ -2,19 +2,17 @@
 
 import { useMemo, useState, Suspense } from "react";
 import Link from "next/link";
-import { Building2, ExternalLink, MapPin, Plus, UserRound } from "lucide-react";
+import { Building2, Plus, UserRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
-import { StatusPill } from "@/components/ui/status-pill";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
-import { VillaFacts } from "@/components/villas/villa-facts";
 import { VillaDetailsFields } from "@/components/villas/villa-details-fields";
+import { VillaListCard } from "@/components/villas/villa-list-card";
 import { useVillaPhotoUpload } from "@/components/villas/use-villa-photo-upload";
 import { useData } from "@/lib/data/use-app-data";
 import {
-  formatShortDate,
   isValidLocationUrl,
   normalizeLocationUrl,
 } from "@/lib/utils";
@@ -26,7 +24,6 @@ import {
 } from "@/lib/roles";
 import { GuestBookingGuide } from "@/components/home/guest-booking-guide";
 import { useI18n } from "@/lib/i18n/provider";
-import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
 import type { VillaListItem } from "@/lib/types";
 import {
@@ -104,6 +101,9 @@ export default function VillasPage() {
   ).length;
   const canManageDates =
     data.profile?.role === "owner" || data.profile?.role === "manager";
+  const villasSubtitle = staff
+    ? t("villas.subtitleStaff")
+    : t("villas.subtitle");
 
   return (
     <div className="relative space-y-4 animate-rise">
@@ -112,13 +112,9 @@ export default function VillasPage() {
           <h1 className="type-title">
             {t("villas.title")}
           </h1>
-          <p className="type-meta mt-1">
-            {isPersonalWorkspace
-              ? t("villas.subtitle")
-              : staff
-                ? t("villas.subtitleStaff")
-                : t("villas.subtitle")}
-          </p>
+          {villasSubtitle ? (
+            <p className="type-meta mt-1">{villasSubtitle}</p>
+          ) : null}
         </div>
         {canAdd ? (
           <Button
@@ -419,104 +415,17 @@ function VillaSection({
           <p className="text-xs text-muted">{subtitle}</p>
         </div>
       </div>
-      <ul className="space-y-3">
-        {villas.map((villa) => {
-          const assignees = assigneesFor(villa.id);
-          return (
-            <li key={villa.id}>
-              <Link href={`/villas/${villa.id}`}>
-                <Card className="overflow-hidden p-0 transition hover:-translate-y-0.5">
-                  {villa.photo_url ? (
-                    <VillaPhotoThumb
-                      src={villa.photo_url}
-                      alt={villa.name}
-                      className="rounded-none"
-                    />
-                  ) : null}
-                  <div className="p-5">
-                  <div className="mb-3 flex flex-wrap gap-2">
-                    {!hideBucketBadge ? (
-                      <span
-                        className={
-                          villa.bucket === "company"
-                            ? "rounded-full bg-secondary-soft px-2.5 py-1 text-[11px] font-semibold text-secondary-dark"
-                            : "rounded-full bg-[#F0EDE6] px-2.5 py-1 text-[11px] font-semibold text-muted"
-                        }
-                      >
-                        {villa.orgLabel}
-                      </span>
-                    ) : null}
-                    <StatusPill status={villa.status} />
-                  </div>
-                  <h3 className="font-display text-lg font-bold text-ink">
-                    {villa.name}
-                  </h3>
-                  {villa.area ? (
-                    <p className="mt-1 flex items-center gap-1 text-sm text-muted">
-                      <MapPin className="size-3.5" />
-                      {villa.area}
-                    </p>
-                  ) : null}
-                  <VillaFacts villa={villa} />
-                  {villa.description ? (
-                    <p className="mt-2 line-clamp-2 text-sm text-muted">
-                      <LocalizedText text={villa.description} />
-                    </p>
-                  ) : null}
-                  {villa.location_url ? (
-                    <span
-                      role="link"
-                      tabIndex={0}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        window.open(
-                          normalizeLocationUrl(villa.location_url!),
-                          "_blank",
-                          "noopener,noreferrer",
-                        );
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          window.open(
-                            normalizeLocationUrl(villa.location_url!),
-                            "_blank",
-                            "noopener,noreferrer",
-                          );
-                        }
-                      }}
-                      className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
-                    >
-                      <ExternalLink className="size-3.5" />
-                      {t("villas.locationLink")}
-                    </span>
-                  ) : null}
-                  <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted">
-                    <span>
-                      {t("villas.checkIn")} {formatShortDate(villa.check_in)}
-                    </span>
-                    <span>
-                      {t("villas.checkOut")} {formatShortDate(villa.check_out)}
-                    </span>
-                  </div>
-                  {showAssignees ? (
-                    <div className="mt-3 flex items-center gap-2 rounded-2xl bg-[#F7F5F1] px-3 py-2 text-sm">
-                      <span className="text-muted">{t("villas.assignedTo")}</span>
-                      <span className="font-semibold text-ink">
-                        {assignees.length
-                          ? assignees.join(", ")
-                          : t("tasks.unassigned")}
-                      </span>
-                    </div>
-                  ) : null}
-                  </div>
-                </Card>
-              </Link>
-            </li>
-          );
-        })}
+      <ul className="space-y-2.5">
+        {villas.map((villa) => (
+          <li key={villa.id}>
+            <VillaListCard
+              villa={villa}
+              showAssignees={showAssignees}
+              assignees={assigneesFor(villa.id)}
+              hideBucketBadge={hideBucketBadge}
+            />
+          </li>
+        ))}
       </ul>
     </section>
   );

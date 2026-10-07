@@ -19,6 +19,12 @@ export function HeroCard({
     (attentionCount === 0
       ? t("home.allSteady")
       : t("home.attention", { count: attentionCount }));
+  const readinessLabel =
+    progress >= 80
+      ? t("home.opsReadiness.good")
+      : progress > 60
+        ? t("home.opsReadiness.watch")
+        : t("home.opsReadiness.low");
 
   return (
     <section className="relative overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-primary to-primary-dark px-4 py-4 text-white shadow-[0_16px_36px_rgba(240,122,58,0.32)] md:px-6 md:py-7">
@@ -57,7 +63,7 @@ export function HeroCard({
       </p>
       <div className="relative mt-3 md:mt-5">
         <div className="mb-1.5 flex items-center justify-between text-[11px] font-bold text-white md:mb-2 md:text-xs">
-          <span>{t("home.opsReadiness")}</span>
+          <span>{readinessLabel}</span>
           <span>{progress}%</span>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-white/25 md:h-2">

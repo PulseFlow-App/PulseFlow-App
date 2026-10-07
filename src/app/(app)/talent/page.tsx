@@ -140,13 +140,17 @@ export default function TalentPage() {
       </div>
 
       <Card className="space-y-3 p-4">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
+        <div className="flex items-center gap-2.5 rounded-2xl bg-[#F7F5F1] px-3">
+          <Search
+            className="size-4 shrink-0 text-muted"
+            aria-hidden
+          />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("talent.searchPlaceholder")}
-            className="pl-10"
+            className="bg-transparent px-0 focus:ring-0"
+            aria-label={t("talent.searchPlaceholder")}
           />
         </div>
         <div className="grid gap-2 sm:grid-cols-2">

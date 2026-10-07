@@ -63,7 +63,55 @@ export function peelVillaFromText(
   return { rest: trimmed, villa: null };
 }
 
-/** First @mention token in text, if any. */
+/**
+ * Pull @Name from text using the longest matching teammate name, so
+ * "/task Buy milk @Anastasia Maduewan Home" keeps the villa after the person.
+ */
+export function peelAssigneeFromText(
+  text: string,
+  profiles: Profile[],
+): {
+  assignee: Profile | null;
+  rest: string;
+  unmatchedMention: string | null;
+} {
+  const at = text.indexOf("@");
+  if (at < 0) {
+    return { assignee: null, rest: text.trim(), unmatchedMention: null };
+  }
+  const before = text.slice(0, at).trim();
+  const after = text.slice(at + 1).trim();
+  if (!after) {
+    return { assignee: null, rest: before, unmatchedMention: "" };
+  }
+
+  const afterNorm = normalize(after);
+  const candidates = profiles
+    .filter((p) => p.role !== "guest")
+    .slice()
+    .sort((a, b) => b.full_name.length - a.full_name.length);
+
+  for (const p of candidates) {
+    const name = normalize(p.full_name);
+    if (!name) continue;
+    if (afterNorm === name || afterNorm.startsWith(`${name} `)) {
+      const nameWords = p.full_name.trim().split(/\s+/).filter(Boolean).length;
+      const afterWords = after.split(/\s+/).filter(Boolean);
+      const restAfter = afterWords.slice(nameWords).join(" ").trim();
+      const rest = [before, restAfter].filter(Boolean).join(" ").trim();
+      return { assignee: p, rest, unmatchedMention: null };
+    }
+  }
+
+  const first = after.split(/\s+/)[0] ?? after;
+  return {
+    assignee: null,
+    rest: text.trim(),
+    unmatchedMention: first,
+  };
+}
+
+/** @deprecated Prefer peelAssigneeFromText for /task and /job. */
 export function extractMentionToken(text: string): string | null {
   const m = text.match(/@([^\s@]+(?:\s+[^\s@]+){0,3})/);
   return m?.[1]?.trim() ?? null;
@@ -101,4 +149,25 @@ export function resolveTask(
     pool.find((t) => t.id.toLowerCase().startsWith(q)) ??
     null
   );
+}
+
+/** Collapse "/ task …" → "/task …" so spaced slash still works. */
+export function normalizeAgentSlashInput(raw: string) {
+  return raw.trim().replace(/^\/\s+/, "/");
+}
+
+/** Parse "/task Buy milk @Mai Coral" or "/ task Buy milk…". */
+export function parseAgentSlash(raw: string): { cmd: string; args: string } {
+  const text = normalizeAgentSlashInput(raw);
+  if (!text.startsWith("/")) return { cmd: "", args: text };
+
+  const m = text.match(/^\/([a-zA-Z][\w-]*)(?:\s+([\s\S]*))?$/);
+  if (!m) {
+    const token = text.split(/\s+/)[0] ?? "/";
+    return { cmd: token.toLowerCase(), args: "" };
+  }
+  return {
+    cmd: `/${(m[1] ?? "").toLowerCase()}`,
+    args: (m[2] ?? "").trim(),
+  };
 }
