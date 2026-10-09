@@ -266,7 +266,7 @@ export function GuestVillasBrowse({
               </Button>
             ) : requestFor === v.id ? (
               <div className="space-y-2 rounded-2xl bg-white/60 p-3 ring-1 ring-black/5">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   <div>
                     <Label htmlFor={`in-${v.id}`}>{t("guest.checkIn")}</Label>
                     <DateField
