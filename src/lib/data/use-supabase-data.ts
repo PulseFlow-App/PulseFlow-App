@@ -3338,15 +3338,18 @@ export function useSupabaseData(enabled: boolean): AppData {
         { p_request_id: requestId },
       );
       if (rpcError) {
-        if (
-          rpcError.message.includes("confirm_stay_date_request") ||
-          rpcError.code === "PGRST202"
-        ) {
+        const msg = rpcError.message ?? "";
+        if (msg.includes("confirm_stay_date_request") || rpcError.code === "PGRST202") {
           throw new Error(
-            "Quote confirm needs migration 031 on Supabase. Ask your host to update the app database.",
+            "Quote confirm needs a database update (migration 050). Ask your host to apply the latest Supabase migrations.",
           );
         }
-        throw rpcError;
+        if (msg.includes("Guests may only decline")) {
+          throw new Error(
+            "Quote confirm needs a database update (migration 050). Ask your host to apply the latest Supabase migrations.",
+          );
+        }
+        throw new Error(msg || "Could not confirm this stay. Try again.");
       }
 
       const villa = villas.find((v) => v.id === request.villa_id);
