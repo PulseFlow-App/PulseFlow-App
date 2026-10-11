@@ -1,88 +1,111 @@
 # Pulse Flow
 
-**The pulse of your rental operations.** Mobile-first PWA for villa ops - owners and on-site staff sharing one live dataset.
+**The pulse of your rental operations.** A phone-first app where owners, managers, field staff, and guests share one live picture of properties, jobs, money, and stays.
 
-## Stack
+App: [app.pulseflow.site](https://app.pulseflow.site) · Guides by role: [`docs/FEATURE_GUIDES_BY_AUDIENCE.md`](docs/FEATURE_GUIDES_BY_AUDIENCE.md)
 
-- Next.js (App Router) + TypeScript + Tailwind CSS
-- Supabase (Auth, Postgres + RLS, Realtime, Storage)
-- Stripe Billing (company orgs after trial)
-- Zod + React Hook Form, Lucide, Recharts
-- Installable PWA (`manifest.webmanifest` + `sw.js`)
+---
 
-## Quick start (demo mode)
+## Who it’s for
 
-Demo mode is on by default so you can use the full UI without a Supabase project.
+| You are… | You use Pulse Flow to… |
+|----------|------------------------|
+| **Owner** (company) | Run the ops workspace: villas, team, guests, reports, and billing |
+| **Manager** | Day-to-day ops like an owner (without owning the company bill) |
+| **Field staff** | See today’s jobs, agree/complete work, submit receipts, build reputation |
+| **Guest** | House guide, host support, deposit/bills, request next stay dates |
+| **Personal** | Solo villas and light ops — free, no team features |
+
+---
+
+## Getting started
+
+1. **Open the app** on your phone or desktop: [app.pulseflow.site](https://app.pulseflow.site).
+2. **Create an account** (or accept an invite link from your host/employer).
+3. On signup, pick **Personal** (solo) or **Company** (team + guests).
+4. Optional: **Settings → Face ID / passkey** for faster sign-in, and **Phone alerts** after adding the app to your Home Screen (iPhone: Share → Add to Home Screen).
+
+**Language & display currency:** Settings.
+
+---
+
+## How to use it (by role)
+
+### Owner / manager (company)
+
+| Do this | Where |
+|---------|--------|
+| See occupancy, urgent work, spend | **Home** |
+| Add/edit properties, photos, check-in/out, house guide (Wi‑Fi, gate, checkout) | **Properties** |
+| Create and assign work | **Tasks** |
+| Book cleaners/vendors; track agree → complete | **Jobs** |
+| Vendor phone book; Call / WhatsApp / LINE; in-app Order | **Contacts** |
+| Receipts and mark paid | **Bills** |
+| Team thread (not guest support) | **Messages** |
+| Confirmed stays, deposits, briefings | **Guests** |
+| Accept/decline guest date requests & send price quotes | **Date requests** (menu) |
+| CSV exports, weekly summary, handoffs | **Reports & handoffs** (menu) — needs active trial/Full |
+| Find opted-in field talent | **Staff search** (menu) |
+| Invite staff, managers, guests | **Invites** / Settings flip cards |
+| Assign which villas each field person sees | **Company** (owner) |
+| Billing / trial / referral year | **Settings → Plan** (owner) |
+| Connect Cursor/Claude agent for villa & task ops | **Settings → Connect agent** |
+
+**Guest booking loop:** Guest requests dates → you send a **price quote** (and optional deposit) → guest **Accept price & confirm stay** → stay + villa dates update → guest gets house guide and Support.
+
+### Field staff
+
+| Do this | Where |
+|---------|--------|
+| Today’s work first | **Home** |
+| Read & agree, then complete jobs | **Jobs** |
+| Only assigned properties | **Properties** |
+| Team chat | **Messages** |
+| Submit your own receipts | **Bills** |
+| Opt into skills / bio / map for hire | **Settings → Talent profile** |
+| Stars & public profile | **Endorsements** / **Leaderboard** (menu) |
+
+### Guest
+
+Footer tabs only:
+
+| Tab | What you do |
+|-----|-------------|
+| **Stay** | Confirmed stay, host notices, house guide, briefings (mark as read), arrival/departure photos |
+| **Villas** | Browse host properties → **Request dates & price** → accept the host’s quote when it arrives |
+| **Support** | Message owner/manager only (after a confirmed stay). Use `/deposit` when you’ve paid a deposit; `/cancel` if canceling in time |
+| **Bills** | Security deposit, deductions, balance |
+
+### Personal (solo)
+
+Villas, tasks, your bills, and a simple contacts list. No team chat, staff invites, guest panel, or company reports. Invite friends with your referral link (Settings) — 5 joins can unlock a year of company Full when you grow into a team.
+
+---
+
+## Everyday tips
+
+- **Install as an app** for a fuller phone experience and push alerts.
+- **Notifications** (bell) cover check-ins, tasks, chat, bills, and stay updates — kinds depend on your role.
+- **Reports** appear in the menu for company owners/managers only while trial or Full is active.
+- **Agent (Messages → Agent)** lets owners/managers run slash commands (e.g. tasks, villas) from the phone when enabled.
+- Guests never land in the cleaning crew chat — Support is host-only.
+
+---
+
+## Plans (short)
+
+- **Personal** — free forever, solo.
+- **Company** — trial, then owner subscribes for Full (team, guests, reports, talent, etc.). Details: [`docs/COMPANY_FEATURES.md`](docs/COMPANY_FEATURES.md).
+
+---
+
+## For developers
+
+Local demo, Supabase, Stripe, and deploy notes live in [`docs/PRODUCTION.md`](docs/PRODUCTION.md). Agent / MCP setup: [`docs/MCP.md`](docs/MCP.md).
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-**Sign in (seeded demo):**
-
-| Role     | Email                      | Password       |
-|----------|----------------------------|----------------|
-| Owner    | `owner@pulseflow.site`     | `TestPass123!` |
-| Manager  | `manager@pulseflow.site`   | `TestPass123!` |
-| Employee | `employee@pulseflow.site`  | `TestPass123!` |
-
-**Or register** at `/register`: pick Personal vs Company, then Owner vs Employee/manager.
-
-**Invites:** Settings → Invite teammate (`/join/[token]`).
-
-## Connect Supabase (production path)
-
-1. Create a Supabase project.
-2. Apply **all** SQL migrations in order under [`supabase/migrations/`](supabase/migrations/):
-   - `001_schema.sql` … `008_villa_photo.sql`
-   - `009_production_rls_storage.sql` (personal-org RLS + villa photos bucket)
-   - `010_billing.sql` (trial + Stripe fields)
-3. Copy [`.env.example`](.env.example) → `.env.local` and set:
-
-```env
-NEXT_PUBLIC_DEMO_MODE=false
-NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
-4. Seed users + sample data:
-
-```bash
-npm run seed
-```
-
-5. Sign in as `owner@pulseflow.site` / `TestPass123!` and open `/home`.
-
-## Stripe (company subscriptions)
-
-Personal orgs are always free. Company orgs get a **30-day trial**; after that only the **owner** pays.
-
-```env
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_PRICE_ID_COMPANY_MONTHLY=price_...
-```
-
-Webhook endpoint: `POST /api/billing/webhook`  
-Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`.
-
-Owner billing UI: Settings → Billing.
-
-## App map
-
-- **Home** - greeting, villa tiles, urgent tasks, chart / staff jobs
-- **Villas / Tasks / Contacts / Bills / Jobs** - role-gated ops
-- **Messages** - org chat (realtime on Supabase)
-- **Settings** - profile, invites, assignments, billing (company owners)
-
-## Deploy
-
-See [`docs/PRODUCTION.md`](docs/PRODUCTION.md) for staging QA and launch checklist.
-
-Deploy the app to Vercel (`app.pulseflow.site`), set env vars, point Stripe webhooks at production.
+Demo mode works without Supabase. Open [http://localhost:3000](http://localhost:3000).
