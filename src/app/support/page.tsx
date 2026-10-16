@@ -17,7 +17,7 @@ export default function SupportPage() {
       <div className="mb-6 flex items-center gap-3">
         <PulseMark className="size-10 shrink-0" />
         <div className="min-w-0">
-          <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
             Support
           </h1>
           <p className="text-sm text-muted">{brand.name}</p>

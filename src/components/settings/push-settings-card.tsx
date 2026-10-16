@@ -182,7 +182,7 @@ export function PushSettingsCard() {
       </div>
 
       {iosNeedsInstall ? (
-        <p className="rounded-2xl bg-[#F7F5F1] px-3 py-2 text-sm text-muted">
+        <p className="rounded-2xl bg-canvas-deep px-3 py-2 text-sm text-muted">
           {t("settings.pushIosHint")}
         </p>
       ) : null}
@@ -216,7 +216,7 @@ export function PushSettingsCard() {
       )}
 
       {subscribed ? (
-        <div className="overflow-hidden rounded-2xl border border-black/5 bg-[#F7F5F1]/40">
+        <div className="overflow-hidden rounded-2xl border border-black/5 bg-canvas-deep/40">
           <button
             type="button"
             className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left"

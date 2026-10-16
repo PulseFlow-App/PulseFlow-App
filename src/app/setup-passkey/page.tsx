@@ -71,7 +71,7 @@ export default function SetupPasskeyPage() {
 
         <Card className="space-y-4 p-5">
           <div className="flex items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+            <div className="pf-icon-well size-11">
               <Fingerprint className="size-5" aria-hidden />
             </div>
             <div>

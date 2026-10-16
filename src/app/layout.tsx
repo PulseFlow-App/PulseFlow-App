@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import {
-  Nunito,
+  Heebo,
+  Sora,
   Noto_Sans,
   Noto_Sans_Arabic,
   Noto_Sans_Thai,
-  Noto_Sans_Hebrew,
   Noto_Sans_Myanmar,
 } from "next/font/google";
 import { brand, colors } from "@/lib/design-tokens";
@@ -12,10 +12,19 @@ import { APP_URL, OG_IMAGE } from "@/lib/seo";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const nunito = Nunito({
-  subsets: ["latin", "latin-ext", "cyrillic"],
-  weight: ["400", "500", "600", "700", "800"],
+/** Horizon body / Hebrew + Latin (DESIGN.md) — max weight 700 */
+const heebo = Heebo({
+  subsets: ["latin", "latin-ext", "hebrew"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-pulse",
+  display: "swap",
+});
+
+/** Horizon display / H1–H2 — Latin only; RTL falls back to Heebo */
+const sora = Sora({
+  subsets: ["latin", "latin-ext"],
+  weight: ["500", "600", "700"],
+  variable: "--font-display-face",
   display: "swap",
 });
 
@@ -30,13 +39,6 @@ const thai = Noto_Sans_Thai({
   subsets: ["thai"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-thai",
-  display: "swap",
-});
-
-const hebrew = Noto_Sans_Hebrew({
-  subsets: ["hebrew"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-hebrew",
   display: "swap",
 });
 
@@ -118,13 +120,13 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${nunito.variable} ${noto.variable} ${thai.variable} ${hebrew.variable} ${myanmar.variable} ${arabic.variable} h-full`}
+      className={`${heebo.variable} ${sora.variable} ${noto.variable} ${thai.variable} ${myanmar.variable} ${arabic.variable} h-full`}
     >
       <body
-        className={`${nunito.className} min-h-full antialiased`}
+        className={`${heebo.className} min-h-full antialiased`}
         style={{
           fontFamily:
-            "var(--font-pulse), var(--font-noto), var(--font-thai), var(--font-hebrew), var(--font-myanmar), var(--font-arabic), system-ui, sans-serif",
+            "var(--font-pulse), var(--font-noto), var(--font-thai), var(--font-myanmar), var(--font-arabic), system-ui, sans-serif",
         }}
       >
         <Providers>{children}</Providers>

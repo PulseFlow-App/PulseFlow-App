@@ -59,7 +59,7 @@ export function DeleteAccountCard() {
       />
       <Card id="delete-account" className="scroll-mt-4 space-y-3 p-4 sm:p-5">
         <div>
-          <h2 className="text-lg font-extrabold tracking-tight text-ink">
+          <h2 className="text-lg font-bold tracking-tight text-ink">
             {t("settings.deleteAccount")}
           </h2>
           <p className="type-meta mt-1">{t("settings.deleteAccountHint")}</p>

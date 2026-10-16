@@ -249,9 +249,9 @@ export function buildWeeklySummaryHtml(data: WeeklySummaryData): string {
   <meta charset="utf-8" />
   <title>Weekly ops · ${escapeHtml(data.orgName)}</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 24px auto; color: #16231f; line-height: 1.45; }
+    body { font-family: Heebo, system-ui, sans-serif; max-width: 720px; margin: 24px auto; color: #023047; line-height: 1.45; }
     h1 { font-size: 1.35rem; margin: 0 0 4px; }
-    .meta { color: #4a544f; font-size: 0.9rem; margin-bottom: 20px; }
+    .meta { color: #5a6d78; font-size: 0.9rem; margin-bottom: 20px; }
     h2 { font-size: 1rem; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.04em; }
     ul { margin: 0; padding-left: 1.2rem; }
     li { margin: 4px 0; }

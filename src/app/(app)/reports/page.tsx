@@ -347,7 +347,7 @@ export default function ReportsPage() {
             {snapshots.map((snapshot) => (
               <li
                 key={snapshot.id}
-                className="flex items-center justify-between rounded-2xl bg-[#F7F5F1] px-3 py-2"
+                className="flex items-center justify-between rounded-2xl bg-canvas-deep px-3 py-2"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">

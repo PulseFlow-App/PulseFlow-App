@@ -20,7 +20,7 @@ export function TranslateContentSettingsCard() {
         </p>
         <p className="text-sm text-muted">{t(hintKey)}</p>
       </div>
-      <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl bg-[#F7F5F1] px-4 py-3">
+      <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl bg-canvas-deep px-4 py-3">
         <span className="text-sm font-medium text-ink">
           {enabled ? t("common.on") : t("common.off")}
         </span>

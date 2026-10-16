@@ -133,7 +133,7 @@ export default function LeaderboardPage() {
                       "flex size-8 items-center justify-center rounded-full text-sm font-bold",
                       index === 0
                         ? "bg-primary text-white"
-                        : "bg-[#F7F5F1] text-muted",
+                        : "bg-canvas-deep text-muted",
                     )}
                   >
                     {index + 1}

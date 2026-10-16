@@ -365,7 +365,7 @@ export default function BillsPage() {
                     "rounded-full px-3 py-1 text-xs font-semibold",
                     category === cat
                       ? "bg-primary text-white"
-                      : "bg-[#F7F5F1] text-ink",
+                      : "bg-canvas-deep text-ink",
                   )}
                 >
                   {categoryLabel(cat)}
@@ -467,7 +467,7 @@ export default function BillsPage() {
                   "rounded-full px-3 py-1 text-xs font-semibold",
                   filterCategory === ""
                     ? "bg-primary text-white"
-                    : "bg-[#F7F5F1] text-ink",
+                    : "bg-canvas-deep text-ink",
                 )}
               >
                 {t("bills.allCategories")}
@@ -483,7 +483,7 @@ export default function BillsPage() {
                     "rounded-full px-3 py-1 text-xs font-semibold",
                     filterCategory === cat
                       ? "bg-primary text-white"
-                      : "bg-[#F7F5F1] text-ink",
+                      : "bg-canvas-deep text-ink",
                   )}
                 >
                   {categoryLabel(cat)}
@@ -542,7 +542,7 @@ export default function BillsPage() {
                   key={row.cat}
                   className="flex items-center justify-between gap-2 text-sm"
                 >
-                  <span className="rounded-full bg-[#F7F5F1] px-2.5 py-0.5 text-xs font-semibold text-ink">
+                  <span className="rounded-full bg-canvas-deep px-2.5 py-0.5 text-xs font-semibold text-ink">
                     {categoryLabel(row.cat)}
                   </span>
                   <span className="font-semibold text-ink">
@@ -602,7 +602,7 @@ export default function BillsPage() {
                       <LocalizedText text={bill.description} />
                     </p>
                     <p className="mt-1">
-                      <span className="rounded-full bg-[#F7F5F1] px-2 py-0.5 text-[11px] font-semibold text-ink">
+                      <span className="rounded-full bg-canvas-deep px-2 py-0.5 text-[11px] font-semibold text-ink">
                         {categoryLabel(bill.category ?? "other")}
                       </span>
                     </p>

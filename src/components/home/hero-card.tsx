@@ -27,7 +27,7 @@ export function HeroCard({
         : t("home.opsReadiness.low");
 
   return (
-    <section className="relative overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-primary to-primary-dark px-4 py-4 text-white shadow-[0_16px_36px_rgba(240,122,58,0.32)] md:px-6 md:py-7">
+    <section className="relative overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-primary to-primary-dark px-4 py-4 text-white shadow-[0_16px_36px_rgba(242,106,54,0.32)] md:px-6 md:py-7">
       {/* Soft bubble wash — keep on phone; this is the welcome signature */}
       <div
         className="pointer-events-none absolute -right-10 -top-12 size-40 rounded-full bg-white/15 blur-[1px] md:size-44"
@@ -55,7 +55,7 @@ export function HeroCard({
       <p className="type-section relative text-white">
         {t("home.ready")}
       </p>
-      <h1 className="relative mt-1 font-display text-[1.35rem] font-extrabold leading-tight tracking-tight text-white md:mt-2 md:text-[clamp(1.5rem,1.2rem+1.2vw,1.875rem)]">
+      <h1 className="relative mt-1 font-display text-[1.35rem] font-bold leading-tight tracking-tight text-white md:mt-2 md:text-[clamp(1.5rem,1.2rem+1.2vw,1.875rem)]">
         {t("home.hello", { name: greetingName(name) })}
       </h1>
       <p className="type-section relative mt-1 max-w-[36rem] text-white">

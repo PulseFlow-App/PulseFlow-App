@@ -259,13 +259,13 @@ export function AppMenuButton() {
 
               <div className="mx-4 mb-3 flex shrink-0 items-center gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-sand px-3 py-3">
                 <div
-                  className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-extrabold text-white"
+                  className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold text-white"
                   aria-hidden
                 >
                   {initial}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-extrabold text-ink">
+                  <p className="truncate text-sm font-bold text-ink">
                     {profile.full_name}
                   </p>
                   <p className="type-meta truncate">

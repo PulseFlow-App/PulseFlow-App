@@ -239,7 +239,7 @@ export default function LoginPage() {
                       className={
                         account.role === demoRole
                           ? "rounded-2xl bg-primary-soft px-3 py-3 text-left ring-2 ring-primary/30"
-                          : "rounded-2xl bg-[#F7F5F1] px-3 py-3 text-left transition hover:bg-primary-soft"
+                          : "rounded-2xl bg-canvas-deep px-3 py-3 text-left transition hover:bg-primary-soft"
                       }
                     >
                       <p className="text-sm font-bold text-ink">

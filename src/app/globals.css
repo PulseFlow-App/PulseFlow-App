@@ -1,39 +1,63 @@
 @import "tailwindcss";
 
-/* ─── Design system: Pulse Flow premium SaaS ─── */
+/* ─── Horizon design system (DESIGN.md) ─── */
 @theme inline {
-  --color-sand: #f7f1eb;
-  --color-sand-deep: #efe6dc;
+  /* Surfaces — cool canvas (sand alias kept for existing bg-sand classes) */
+  --color-sand: #f5fafc;
+  --color-sand-deep: #e8f4f8;
+  --color-canvas: #f5fafc;
+  --color-canvas-deep: #e8f4f8;
   --color-card: #ffffff;
-  --color-primary: #f07a3a;
-  --color-primary-dark: #d45a1f;
-  --color-primary-soft: #ffe4d4;
-  --color-secondary: #3cb89a;
-  --color-secondary-dark: #2a8f78;
-  --color-secondary-soft: #d8f3ec;
-  --color-sky: #6eb6e8;
-  --color-sky-soft: #dceffa;
-  --color-lavender: #a78bda;
-  --color-lavender-soft: #ede4fa;
-  --color-warning: #e0a84a;
-  --color-warning-dark: #8a5a14;
-  --color-danger: #e15a4a;
-  --color-danger-dark: #b03a2e;
-  --color-ink: #1f1815;
-  --color-muted: #7a716c;
-  --color-border: rgba(31, 24, 21, 0.1);
-  --color-nav: #1c1c1e;
-  --color-background: var(--color-sand);
+  --color-surface: #ffffff;
+
+  /* Action / brand */
+  --color-primary: #f26a36;
+  --color-primary-dark: #d94e1b;
+  --color-primary-soft: #ffe0d4;
+  --color-action: #f26a36;
+
+  /* Success / confirmed */
+  --color-secondary: #2a9d8f;
+  --color-secondary-dark: #1f7a6f;
+  --color-secondary-soft: #d4f0ec;
+  --color-success: #2a9d8f;
+
+  /* Sky */
+  --color-sky: #219ebc;
+  --color-sky-soft: #8ecae6;
+
+  /* Amber */
+  --color-sun: #ffb703;
+  --color-warning: #ffb703;
+  --color-warning-dark: #b37f00;
+
+  /* Danger */
+  --color-danger: #e63946;
+  --color-danger-dark: #b02a35;
+
+  /* Ink / muted — no warm brown */
+  --color-ink: #023047;
+  --color-muted: #5a6d78;
+  --color-border: rgba(2, 48, 71, 0.12);
+  --color-nav: #023047;
+  --color-background: var(--color-canvas);
   --color-foreground: var(--color-ink);
-  --font-sans: var(--font-pulse), "Nunito", ui-sans-serif, sans-serif;
+
+  /* Deprecated purple aliases → sky (Horizon has no lavender) */
+  --color-lavender: #8ecae6;
+  --color-lavender-soft: #e8f4f8;
+
+  /* Fonts: Heebo body, Sora display */
+  --font-sans: var(--font-pulse), "Heebo", ui-sans-serif, sans-serif;
+  --font-display: var(--font-display-face), "Sora", var(--font-pulse), sans-serif;
 
   /* Spacing scale: 8px base */
-  --spacing-1: 0.5rem; /* 8 */
-  --spacing-2: 1rem; /* 16 */
-  --spacing-3: 1.5rem; /* 24 */
-  --spacing-4: 2rem; /* 32 */
-  --spacing-5: 2.5rem; /* 40 */
-  --spacing-6: 3rem; /* 48 */
+  --spacing-1: 0.5rem;
+  --spacing-2: 1rem;
+  --spacing-3: 1.5rem;
+  --spacing-4: 2rem;
+  --spacing-5: 2.5rem;
+  --spacing-6: 3rem;
 
   /* Radii */
   --radius-card: 1rem;
@@ -42,48 +66,49 @@
 }
 
 :root {
-  /* Typography — 3 levels */
-  --type-title: clamp(1.5rem, 1.2rem + 1vw, 1.875rem); /* L1 */
-  --type-body: 0.9375rem; /* L2 — 15px */
-  --type-meta: 0.75rem; /* L3 — 12px */
+  /* Typography — Horizon scale (max weight 700) */
+  --type-title: clamp(1.5rem, 1.2rem + 1vw, 1.875rem);
+  --type-subtitle: clamp(1.125rem, 1.05rem + 0.35vw, 1.3rem);
+  --type-body: 1rem; /* 16px */
+  --type-meta: 0.8125rem; /* 13px */
+  --type-sign: 0.75rem;
   --leading-title: 1.2;
-  --leading-body: 1.5;
+  --leading-body: 1.55;
   --leading-meta: 1.35;
 
-  /* Elevation */
-  --shadow-soft: 0 1px 2px rgba(31, 24, 21, 0.04),
-    0 8px 24px rgba(31, 24, 21, 0.06);
-  --shadow-lift: 0 2px 4px rgba(31, 24, 21, 0.05),
-    0 16px 40px rgba(31, 24, 21, 0.08);
-  --shadow-nav: 0 12px 32px rgba(28, 28, 30, 0.28);
+  /* Elevation — cool ink shadow */
+  --shadow-soft: 0 1px 2px rgba(2, 48, 71, 0.04),
+    0 8px 24px rgba(2, 48, 71, 0.06);
+  --shadow-lift: 0 2px 4px rgba(2, 48, 71, 0.05),
+    0 16px 40px rgba(2, 48, 71, 0.08);
+  --shadow-cta: 0 8px 20px rgba(242, 106, 54, 0.28);
+  --shadow-nav: 0 12px 32px rgba(2, 48, 71, 0.28);
 
-  /* Layout breakpoints content — keep phone gutters tight so labels fit */
-  --shell-pad: 0.5rem; /* 8 — phone */
+  /* Layout */
+  --shell-pad: 0.5rem;
   --shell-max: 100%;
-  --content-gap: 0.75rem; /* 12 */
+  --content-gap: 0.75rem;
 }
 
-/* Narrow phones — keep content readable without horizontal overflow */
 @media (max-width: 379px) {
   :root {
-    --shell-pad: 0.5rem; /* 8 */
+    --shell-pad: 0.5rem;
     --content-gap: 0.625rem;
     --type-title: clamp(1.35rem, 1.15rem + 1.5vw, 1.625rem);
-    --type-body: 0.9375rem; /* keep 15px; forms use 16px separately */
   }
 }
 
 @media (min-width: 768px) {
   :root {
-    --shell-pad: 1.5rem; /* 24 */
+    --shell-pad: 1.5rem;
     --shell-max: 48rem;
-    --content-gap: 1.5rem; /* 24 */
+    --content-gap: 1.5rem;
   }
 }
 
 @media (min-width: 1440px) {
   :root {
-    --shell-pad: 2rem; /* 32 */
+    --shell-pad: 2rem;
     --shell-max: 72rem;
     --content-gap: 1.5rem;
   }
@@ -114,9 +139,9 @@ body {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(240, 122, 58, 0.08), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, rgba(60, 184, 154, 0.06), transparent 50%),
-    var(--color-sand);
+    radial-gradient(1200px 600px at 10% -10%, rgba(142, 202, 230, 0.22), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(242, 106, 54, 0.06), transparent 50%),
+    var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-size: var(--type-body);
@@ -133,24 +158,24 @@ body {
   max-width: 100vw;
 }
 
-/* Same family everywhere — hierarchy is weight/size only */
-.font-display,
+/* Display face for titles / brand; body stays Heebo */
+.font-display {
+  font-family: var(--font-display) !important;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
 .font-sans {
   font-family: var(--font-sans) !important;
 }
 
-.font-display {
-  font-weight: 800;
-  letter-spacing: -0.03em;
-}
-
 /* Type levels */
 .type-title {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--type-title);
   line-height: var(--leading-title);
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--color-ink);
 }
 
@@ -164,19 +189,28 @@ body {
 .type-meta {
   font-size: var(--type-meta);
   line-height: var(--leading-meta);
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  letter-spacing: 0;
   color: var(--color-muted);
 }
 
-/* Home / card section headings — one bold weight everywhere; color inherits */
+.type-sign {
+  font-size: var(--type-sign);
+  line-height: var(--leading-meta);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-sky);
+}
+
+/* Home / card section headings */
 .type-section {
   margin: 0;
   font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.3;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 button,
@@ -193,6 +227,14 @@ a,
 li,
 label {
   font-family: inherit;
+}
+
+/* RTL: Sora has no Hebrew/Arabic — titles fall back to Heebo */
+[dir="rtl"] .type-title,
+[dir="rtl"] .font-display,
+[dir="rtl"] .pf-screen-header h1 {
+  font-family: var(--font-sans);
+  letter-spacing: 0;
 }
 
 /* 12-column content grid */
@@ -252,7 +294,7 @@ label {
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
@@ -266,6 +308,23 @@ label {
 
 .soft-shadow {
   box-shadow: var(--shadow-soft);
+}
+
+/* Minimal icon well — orange fill, ink border + ink stroke icons */
+.pf-icon-well {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 0.75rem;
+  background: var(--color-primary);
+  color: var(--color-ink);
+  border: 2px solid var(--color-ink);
+  box-shadow: none;
+}
+
+.pf-icon-well svg {
+  stroke: currentColor;
 }
 
 .lift-shadow {
@@ -292,10 +351,11 @@ label {
 
 .pf-screen-header h1 {
   margin: 0;
+  font-family: var(--font-display);
   font-size: var(--type-title);
   line-height: var(--leading-title);
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .pf-screen-header p {
@@ -303,7 +363,7 @@ label {
   font-size: var(--type-meta);
   line-height: var(--leading-meta);
   color: var(--color-muted);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* Slide-over sheet (burger / more menu) — PWA safe */

@@ -118,7 +118,7 @@ export function PasskeySettingsCard({
   return (
     <Card className="space-y-3 p-5">
       <div className="flex items-start gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+        <div className="pf-icon-well size-10">
           <Fingerprint className="size-5" aria-hidden />
         </div>
         <div>
@@ -138,7 +138,7 @@ export function PasskeySettingsCard({
           {passkeys.map((item) => (
             <li
               key={item.id}
-              className="flex items-center justify-between gap-3 rounded-2xl bg-[#F7F5F1] px-3 py-3"
+              className="flex items-center justify-between gap-3 rounded-2xl bg-canvas-deep px-3 py-3"
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-ink">

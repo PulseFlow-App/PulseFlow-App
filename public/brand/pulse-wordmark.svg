@@ -13,7 +13,7 @@
     <rect x="236" y="300" width="40" height="70" rx="8" fill="#FFFFFF"/>
   </g>
   <text x="320" y="195"
-        font-family="Nunito, Arial Black, Helvetica Neue, Helvetica, Arial, sans-serif"
-        font-size="110" font-weight="800" fill="#1F1815"
+        font-family="Sora, Heebo, Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="110" font-weight="700" fill="#023047"
         letter-spacing="-2">Pulse Flow</text>
 </svg>

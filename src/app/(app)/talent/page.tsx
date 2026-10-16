@@ -26,7 +26,7 @@ const TalentMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-64 items-center justify-center rounded-2xl bg-[#F7F5F1] text-sm text-muted">
+      <div className="flex h-64 items-center justify-center rounded-2xl bg-canvas-deep text-sm text-muted">
         …
       </div>
     ),
@@ -140,7 +140,7 @@ export default function TalentPage() {
       </div>
 
       <Card className="space-y-3 p-4">
-        <div className="flex items-center gap-2.5 rounded-2xl bg-[#F7F5F1] px-3">
+        <div className="flex items-center gap-2.5 rounded-2xl bg-canvas-deep px-3">
           <Search
             className="size-4 shrink-0 text-muted"
             aria-hidden
@@ -178,7 +178,7 @@ export default function TalentPage() {
             onClick={() => setSkill("")}
             className={cn(
               "rounded-full px-3 py-1.5 text-xs font-semibold transition",
-              !skill ? "bg-primary text-white" : "bg-[#F7F5F1] text-ink",
+              !skill ? "bg-primary text-white" : "bg-canvas-deep text-ink",
             )}
           >
             {t("talent.allSkills")}
@@ -190,7 +190,7 @@ export default function TalentPage() {
               onClick={() => setSkill(s === skill ? "" : s)}
               className={cn(
                 "rounded-full px-3 py-1.5 text-xs font-semibold transition",
-                skill === s ? "bg-primary text-white" : "bg-[#F7F5F1] text-ink",
+                skill === s ? "bg-primary text-white" : "bg-canvas-deep text-ink",
               )}
             >
               {skillLabel[s]}
@@ -207,7 +207,7 @@ export default function TalentPage() {
               {t("talent.clearNear")}
             </Button>
           ) : null}
-          <div className="ms-auto flex gap-1 rounded-full bg-[#F7F5F1] p-1">
+          <div className="ms-auto flex gap-1 rounded-full bg-canvas-deep p-1">
             <button
               type="button"
               onClick={() => setView("list")}
@@ -257,7 +257,7 @@ export default function TalentPage() {
               <li key={person.id}>
                 <Card className="space-y-3 p-4">
                   <div className="flex items-start gap-3">
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+                    <div className="pf-icon-well size-11">
                       <UserRound className="size-5" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -282,7 +282,7 @@ export default function TalentPage() {
                           {person.job_search_skills.map((s) => (
                             <span
                               key={s}
-                              className="rounded-full bg-[#F7F5F1] px-2.5 py-1 text-[11px] font-semibold text-ink"
+                              className="rounded-full bg-canvas-deep px-2.5 py-1 text-[11px] font-semibold text-ink"
                             >
                               {skillLabel[s] ?? s}
                             </span>

@@ -218,7 +218,7 @@ export function DateField({
                 "flex h-10 items-center justify-center rounded-full text-sm font-semibold transition",
                 !inMonth && "opacity-35",
                 disabled && "cursor-not-allowed text-muted/40 opacity-40",
-                !disabled && !isSelected && "text-ink hover:bg-[#F7F5F1]",
+                !disabled && !isSelected && "text-ink hover:bg-canvas-deep",
                 isSelected && "bg-primary text-white hover:bg-primary",
                 !isSelected && isToday && !disabled && "ring-1 ring-primary/40",
               )}
@@ -242,7 +242,7 @@ export function DateField({
         aria-haspopup="dialog"
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "flex w-full items-center gap-2 rounded-2xl border-0 bg-[#F7F5F1] px-4 py-3 text-left text-sm outline-none ring-primary/25 focus:ring-2",
+          "flex w-full items-center gap-2 rounded-2xl border-0 bg-canvas-deep px-4 py-3 text-left text-sm outline-none ring-primary/25 focus:ring-2",
           value && value >= minIso ? "text-ink" : "text-muted",
         )}
       >

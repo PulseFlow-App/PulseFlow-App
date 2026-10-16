@@ -141,11 +141,11 @@ export default function TasksPage() {
   const deleteTrailing = (taskId: string) => (
     <button
       type="button"
-      className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+      className="shrink-0 rounded-full p-1 text-muted transition hover:bg-danger/10 hover:text-danger"
       aria-label={t("common.delete")}
       onClick={() => void removeTask(taskId)}
     >
-      <Trash2 className="size-4" />
+      <Trash2 className="size-3.5" strokeWidth={2} />
     </button>
   );
 
@@ -322,25 +322,13 @@ export default function TasksPage() {
         ) : (
           <>
             {pendingVerify.map((task) => (
-              <Card key={task.id} className="p-3">
+              <Card key={task.id} className="p-2.5">
                 <TaskRow task={task} trailing={deleteTrailing(task.id)} />
               </Card>
             ))}
             {open.map((task) => (
-              <Card key={task.id} className="p-3">
-                <TaskRow
-                  task={task}
-                  trailing={
-                    <>
-                      {task.priority === "urgent" ? (
-                        <span className="text-[10px] font-bold uppercase text-danger">
-                          {t("tasks.urgent")}
-                        </span>
-                      ) : null}
-                      {deleteTrailing(task.id)}
-                    </>
-                  }
-                />
+              <Card key={task.id} className="p-2.5">
+                <TaskRow task={task} trailing={deleteTrailing(task.id)} />
               </Card>
             ))}
           </>
@@ -353,7 +341,7 @@ export default function TasksPage() {
           <p className="text-sm text-muted">{t("tasks.noDone")}</p>
         ) : (
           done.map((task) => (
-            <Card key={task.id} className="p-3">
+            <Card key={task.id} className="p-2.5">
               <TaskRow
                 task={task}
                 doneStyle

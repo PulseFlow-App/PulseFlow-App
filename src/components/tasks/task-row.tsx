@@ -33,9 +33,10 @@ export function TaskRow({
   const villaLabel = task.villa?.name ?? t("common.general");
   const hasNotes = Boolean(task.notes?.trim());
   const hasPhoto = Boolean(task.photo_url);
+  const urgent = !doneStyle && task.priority === "urgent";
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <TaskCompleteControl
         task={task}
         meta={
@@ -45,19 +46,24 @@ export function TaskRow({
             aria-expanded={expanded}
             onClick={() => setExpanded((v) => !v)}
           >
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-1.5">
               <div className="min-w-0 flex-1 space-y-0.5">
+                {urgent ? (
+                  <span className="inline-block text-[10px] font-bold uppercase leading-none tracking-wide text-danger">
+                    {t("tasks.urgent")}
+                  </span>
+                ) : null}
                 <p
                   className={cn(
-                    "font-semibold text-ink break-words",
-                    doneStyle && "text-sm line-through opacity-70",
+                    "text-sm font-semibold leading-snug text-ink break-words",
+                    doneStyle && "line-through opacity-70",
                     !expanded && "line-clamp-2",
                   )}
                 >
                   <LocalizedText text={task.title} />
                 </p>
                 {!doneStyle ? (
-                  <p className="truncate text-xs text-muted">
+                  <p className="truncate text-[11px] leading-snug text-muted">
                     {villaLabel}
                     {schedule ? ` · ${schedule}` : ""}
                     {showAssignee && task.assignee
@@ -66,20 +72,20 @@ export function TaskRow({
                   </p>
                 ) : null}
                 {!expanded && hasNotes ? (
-                  <p className="line-clamp-1 text-xs text-muted">
+                  <p className="line-clamp-1 text-[11px] text-muted">
                     <LocalizedText text={task.notes!} />
                   </p>
                 ) : null}
                 {!expanded && hasPhoto ? (
-                  <p className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                    <ImageIcon className="size-3.5" />
+                  <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+                    <ImageIcon className="size-3" />
                     {t("tasks.hasPhoto")}
                   </p>
                 ) : null}
               </div>
               <ChevronDown
                 className={cn(
-                  "mt-0.5 size-4 shrink-0 text-muted transition-transform",
+                  "mt-0.5 size-3.5 shrink-0 text-muted transition-transform",
                   expanded && "rotate-180",
                 )}
               />
@@ -90,7 +96,7 @@ export function TaskRow({
       />
 
       {expanded ? (
-        <div className="ml-8 space-y-3 rounded-2xl border border-black/5 bg-[#F7F5F1] px-3 py-3">
+        <div className="ml-6 space-y-2.5 rounded-xl border border-black/5 bg-canvas-deep px-2.5 py-2.5">
           <div className="grid gap-2 text-sm">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted">

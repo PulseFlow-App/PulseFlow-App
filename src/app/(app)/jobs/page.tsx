@@ -325,7 +325,7 @@ export default function JobsPage() {
                             ? "bg-secondary/15 text-secondary-dark"
                             : order.status === "cancelled"
                               ? "bg-danger/10 text-danger"
-                              : "bg-[#F7F5F1] text-muted",
+                              : "bg-canvas-deep text-muted",
                       )}
                     >
                       {t(`order.status.${order.status}` as MessageKey)}
@@ -418,28 +418,21 @@ export default function JobsPage() {
           <p className="text-sm text-muted">{t("jobs.noOpenTasks")}</p>
         ) : (
           myTasks.map((task) => (
-              <Card key={task.id} className="p-3">
+              <Card key={task.id} className="p-2.5">
                 <TaskRow
                   task={task}
                   trailing={
-                    <>
-                      {task.priority === "urgent" ? (
-                        <span className="text-[10px] font-bold uppercase text-danger">
-                          {t("tasks.urgent")}
-                        </span>
-                      ) : null}
-                      <button
-                        type="button"
-                        className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
-                        aria-label={t("common.delete")}
-                        onClick={() => {
-                          if (!window.confirm(t("tasks.deleteConfirm"))) return;
-                          void data.deleteTask(task.id);
-                        }}
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
-                    </>
+                    <button
+                      type="button"
+                      className="shrink-0 rounded-full p-1 text-muted transition hover:bg-danger/10 hover:text-danger"
+                      aria-label={t("common.delete")}
+                      onClick={() => {
+                        if (!window.confirm(t("tasks.deleteConfirm"))) return;
+                        void data.deleteTask(task.id);
+                      }}
+                    >
+                      <Trash2 className="size-3.5" strokeWidth={2} />
+                    </button>
                   }
                 />
               </Card>

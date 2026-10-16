@@ -50,7 +50,7 @@ export function WeeklyChart({ tasks }: { tasks: Task[] }) {
       <div className="h-40 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} barGap={4}>
-            <CartesianGrid vertical={false} stroke="#E5DFD2" />
+            <CartesianGrid vertical={false} stroke="rgba(2,48,71,0.1)" />
             <XAxis
               dataKey="day"
               tickLine={false}
@@ -58,22 +58,22 @@ export function WeeklyChart({ tasks }: { tasks: Task[] }) {
               tick={{
                 fill: colors.muted,
                 fontSize: 12,
-                fontFamily: "var(--font-pulse), Nunito, sans-serif",
+                fontFamily: "var(--font-pulse), Heebo, sans-serif",
               }}
             />
             <YAxis hide allowDecimals={false} />
             <Tooltip
-              cursor={{ fill: "rgba(43,33,28,0.04)" }}
+              cursor={{ fill: "rgba(2,48,71,0.04)" }}
               contentStyle={{
                 borderRadius: 16,
                 border: "none",
-                boxShadow: "0 8px 24px rgba(43,33,28,0.1)",
-                fontFamily: "var(--font-pulse), Nunito, sans-serif",
+                boxShadow: "0 8px 24px rgba(2,48,71,0.1)",
+                fontFamily: "var(--font-pulse), Heebo, sans-serif",
               }}
             />
             <Bar
               dataKey="opened"
-              fill="#FFD2B8"
+              fill={colors.primarySoft}
               radius={[10, 10, 10, 10]}
               name={openedLabel}
             />

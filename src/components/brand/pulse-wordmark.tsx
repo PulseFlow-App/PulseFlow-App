@@ -28,7 +28,7 @@ export function PulseWordmark({
       />
       <span
         className={cn(
-          "min-w-0 truncate font-display text-[1.2rem] font-extrabold leading-none tracking-tight text-ink",
+          "min-w-0 truncate font-display text-[1.2rem] font-bold leading-none tracking-tight text-ink",
           textClassName,
         )}
       >

@@ -319,7 +319,7 @@ export default function GuestsPage() {
                     "rounded-full px-3 py-1.5 text-xs font-bold",
                     activeId === s.id
                       ? "bg-primary text-white"
-                      : "bg-[#F7F5F1] text-ink",
+                      : "bg-canvas-deep text-ink",
                   )}
                 >
                   {guest?.full_name ?? t("guests.guest")}
@@ -574,7 +574,7 @@ export default function GuestsPage() {
                   {stayCharges.map((c) => (
                     <li
                       key={c.id}
-                      className="flex items-start justify-between gap-2 rounded-xl bg-[#F7F5F1] p-3 text-sm"
+                      className="flex items-start justify-between gap-2 rounded-xl bg-canvas-deep p-3 text-sm"
                     >
                       <div>
                         <p className="font-semibold text-ink">
@@ -666,7 +666,7 @@ export default function GuestsPage() {
                 onChange={(e) =>
                   setCategory(e.target.value as GuestBriefingCategory)
                 }
-                className="w-full appearance-none rounded-2xl border-0 bg-[#F7F5F1] px-4 py-3 text-sm text-ink outline-none ring-primary/25 focus:ring-2"
+                className="w-full appearance-none rounded-2xl border-0 bg-canvas-deep px-4 py-3 text-sm text-ink outline-none ring-primary/25 focus:ring-2"
               >
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>

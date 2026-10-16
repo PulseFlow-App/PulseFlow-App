@@ -163,8 +163,8 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                     className="absolute inset-0 w-full text-left [backface-visibility:hidden]"
                   >
                     <Card className="flex h-full min-h-[12.5rem] flex-col space-y-2 p-4 hover:border-primary/30">
-                      <div className="flex size-9 items-center justify-center rounded-2xl bg-primary-soft text-primary">
-                        <Icon className="size-4" />
+                      <div className="pf-icon-well size-9">
+                        <Icon className="size-4" strokeWidth={2} />
                       </div>
                       <p className="font-display text-base font-bold leading-snug text-ink">
                         {t(titleKey)}

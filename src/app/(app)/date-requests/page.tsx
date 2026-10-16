@@ -175,7 +175,7 @@ export default function DateRequestsPage() {
                   </div>
 
                   {showingAccept ? (
-                    <div className="space-y-3 rounded-2xl bg-[#F7F5F1] p-3">
+                    <div className="space-y-3 rounded-2xl bg-canvas-deep p-3">
                       <p className="text-sm font-bold text-ink">
                         {t("dateRequests.confirmPrice")}
                       </p>

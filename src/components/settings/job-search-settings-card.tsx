@@ -126,7 +126,7 @@ export function JobSearchSettingsCard() {
   return (
     <Card className="space-y-4 p-5">
       <div className="flex items-start gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-secondary-soft text-secondary-dark">
+        <div className="pf-icon-well size-10">
           <Briefcase className="size-5" />
         </div>
         <div>
@@ -137,7 +137,7 @@ export function JobSearchSettingsCard() {
         </div>
       </div>
 
-      <label className="flex items-start gap-3 rounded-2xl bg-[#F7F5F1] px-3 py-3">
+      <label className="flex items-start gap-3 rounded-2xl bg-canvas-deep px-3 py-3">
         <input
           type="checkbox"
           checked={visible}
@@ -166,7 +166,7 @@ export function JobSearchSettingsCard() {
                 onClick={() => toggleSkill(skill)}
                 className={cn(
                   "rounded-full px-3 py-1.5 text-xs font-semibold transition",
-                  active ? "bg-primary text-white" : "bg-[#F7F5F1] text-ink",
+                  active ? "bg-primary text-white" : "bg-canvas-deep text-ink",
                 )}
               >
                 {skillLabel[skill]}

@@ -77,7 +77,7 @@ export default function InvitesPage() {
           </p>
           <p className="mt-1 text-sm text-muted">{t("plan.referralHint")}</p>
           {referralProgress ? (
-            <div className="mt-3 rounded-2xl bg-[#F7F5F1] px-3 py-2.5">
+            <div className="mt-3 rounded-2xl bg-canvas-deep px-3 py-2.5">
               <p className="text-sm font-semibold text-ink">
                 {t("plan.referralProgress", {
                   count: referralProgress.count,
@@ -111,7 +111,7 @@ export default function InvitesPage() {
         />
 
         {profile.role !== "owner" && publicShareSlug ? (
-          <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3">
+          <div className="rounded-2xl bg-canvas-deep px-3 py-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">
               {t("settings.publicLink")}
             </p>

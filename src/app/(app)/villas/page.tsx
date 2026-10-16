@@ -172,7 +172,7 @@ export default function VillasPage() {
             </div>
           ) : null}
           {inCompany && personalOnly && canAdd ? (
-            <p className="rounded-2xl bg-[#F7F5F1] px-3 py-2 text-xs text-muted">
+            <p className="rounded-2xl bg-canvas-deep px-3 py-2 text-xs text-muted">
               {t("villas.personalHint")}
             </p>
           ) : null}
@@ -366,7 +366,7 @@ export default function VillasPage() {
             setScope(defaultScope);
             setShowAdd(true);
           }}
-          className="fixed bottom-24 right-5 z-40 flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-dark text-white shadow-[0_12px_28px_rgba(240,122,58,0.45)]"
+          className="fixed bottom-24 right-5 z-40 flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-dark text-white shadow-[0_12px_28px_rgba(242,106,54,0.45)]"
         >
           <Plus className="size-7" strokeWidth={2.5} />
         </button>
@@ -401,7 +401,7 @@ function VillaSection({
           className={
             icon === "company"
               ? "flex size-8 items-center justify-center rounded-full bg-secondary-soft text-secondary-dark"
-              : "flex size-8 items-center justify-center rounded-full bg-[#F7F5F1] text-muted"
+              : "flex size-8 items-center justify-center rounded-full bg-canvas-deep text-muted"
           }
         >
           {icon === "company" ? (

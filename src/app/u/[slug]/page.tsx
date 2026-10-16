@@ -242,7 +242,7 @@ function PublicProfilePageInner({
             ) : null}
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-[#F7F5F1] p-3">
+              <div className="rounded-2xl bg-canvas-deep p-3">
                 <p className="text-xs font-semibold uppercase text-muted">
                   {t("publicProfile.tasksDone")}
                 </p>
@@ -250,7 +250,7 @@ function PublicProfilePageInner({
                   {data.tasksDone}
                 </p>
               </div>
-              <div className="rounded-2xl bg-[#F7F5F1] p-3">
+              <div className="rounded-2xl bg-canvas-deep p-3">
                 <p className="text-xs font-semibold uppercase text-muted">
                   {t("publicProfile.tasksOpen")}
                 </p>
@@ -278,7 +278,7 @@ function PublicProfilePageInner({
                     return (
                       <li
                         key={org.id}
-                        className="flex min-w-0 flex-col gap-1.5 rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                        className="flex min-w-0 flex-col gap-1.5 rounded-2xl bg-canvas-deep px-3 py-2.5 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                       >
                         <span className="min-w-0 break-words font-semibold leading-snug text-ink">
                           {org.name}

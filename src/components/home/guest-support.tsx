@@ -222,8 +222,8 @@ export function GuestSupportChat() {
                         className={cn(
                           "flex w-full flex-col gap-0.5 px-3 py-2.5 text-left transition",
                           index === activeSuggestion
-                            ? "bg-[#F7F5F1]"
-                            : "hover:bg-[#F7F5F1]/80",
+                            ? "bg-canvas-deep"
+                            : "hover:bg-canvas-deep/80",
                         )}
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => applySuggestion(item.command)}
@@ -436,7 +436,7 @@ export function HostSupportInbox() {
                 "rounded-full px-3 py-1.5 text-xs font-bold",
                 activeId === s.id
                   ? "bg-primary text-white"
-                  : "bg-[#F7F5F1] text-ink",
+                  : "bg-canvas-deep text-ink",
               )}
             >
               {guest?.full_name ?? "Guest"}
@@ -494,8 +494,8 @@ export function HostSupportInbox() {
                   className={cn(
                     "flex w-full flex-col gap-0.5 px-3 py-2.5 text-left transition",
                     index === activeSuggestion
-                      ? "bg-[#F7F5F1]"
-                      : "hover:bg-[#F7F5F1]/80",
+                      ? "bg-canvas-deep"
+                      : "hover:bg-canvas-deep/80",
                   )}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => applySuggestion(item.command)}

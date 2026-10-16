@@ -320,7 +320,7 @@ export default function VillaDetailPage({
         )}
 
         {villaItem && data.orgKind === "company" ? (
-          <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3 text-sm">
+          <div className="rounded-2xl bg-canvas-deep px-3 py-3 text-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">
               Belongs to
             </p>
@@ -363,7 +363,7 @@ export default function VillaDetailPage({
                 const checked = assigneeIds.includes(person.id);
                 return (
                   <li key={person.id}>
-                    <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm">
+                    <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-canvas-deep px-3 py-2.5 text-sm">
                       <input
                         type="checkbox"
                         className="size-5 shrink-0 accent-primary"
@@ -418,7 +418,7 @@ export default function VillaDetailPage({
         </div>
 
         {staff ? (
-          <div className="space-y-2 rounded-2xl bg-[#F7F5F1] px-3 py-3">
+          <div className="space-y-2 rounded-2xl bg-canvas-deep px-3 py-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">
               {t("villas.yourJobsHere")}
             </p>

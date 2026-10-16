@@ -19,7 +19,7 @@ export function VillaPhoto({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-[#F0EDE6]",
+        "relative overflow-hidden rounded-2xl bg-canvas-deep",
         className,
       )}
     >

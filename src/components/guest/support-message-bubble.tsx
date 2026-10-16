@@ -37,7 +37,7 @@ export function SupportMessageBubble({
             ? "bg-secondary/10 text-secondary"
             : mine
               ? "bg-primary text-white"
-              : "bg-[#F7F5F1] text-ink",
+              : "bg-canvas-deep text-ink",
         )}
       >
         {!mine && !system ? (

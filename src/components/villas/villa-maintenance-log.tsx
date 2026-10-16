@@ -87,7 +87,7 @@ export function VillaMaintenanceLog({ villaId }: { villaId: string }) {
       </div>
 
       {openForm ? (
-        <div className="space-y-2 rounded-2xl bg-[#F7F5F1] p-3">
+        <div className="space-y-2 rounded-2xl bg-canvas-deep p-3">
           <div className="min-w-0">
             <Label htmlFor="maint-item">{t("villas.maintItem")}</Label>
             <Input

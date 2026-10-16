@@ -125,15 +125,15 @@ export function TaskCompleteControl({
   };
 
   const tick = (
-    <span className="relative mt-0.5 inline-flex size-5 shrink-0 items-center justify-center">
+    <span className="relative mt-0.5 inline-flex size-4 shrink-0 items-center justify-center">
       <button
         type="button"
         className={cn(
-          "relative size-5 rounded-full border-2 border-secondary transition",
+          "relative size-4 rounded-full border-[1.5px] border-secondary transition",
           task.status === "done" && "border-0 bg-secondary text-white",
           task.status === "pending_verify" && "border-warning bg-warning/20",
           flash &&
-            "border-0 bg-secondary text-white ring-4 ring-secondary/25",
+            "border-0 bg-secondary text-white ring-2 ring-secondary/25",
           busy && "opacity-60",
         )}
         aria-label={
@@ -172,11 +172,11 @@ export function TaskCompleteControl({
         }}
       >
         {(task.status === "done" || flash) && !busy ? (
-          <Check className="absolute inset-0 m-auto size-3" strokeWidth={3} />
+          <Check className="absolute inset-0 m-auto size-2.5" strokeWidth={3} />
         ) : null}
         {busy ? (
           <Loader2
-            className="absolute inset-0 m-auto size-3 animate-spin text-secondary"
+            className="absolute inset-0 m-auto size-2.5 animate-spin text-secondary"
             strokeWidth={3}
           />
         ) : null}
@@ -185,21 +185,21 @@ export function TaskCompleteControl({
   );
 
   return (
-    <div className="min-w-0 flex-1 space-y-2 overflow-hidden">
-      <div className="flex min-w-0 items-start gap-3">
+    <div className="min-w-0 flex-1 space-y-1.5 overflow-hidden">
+      <div className="flex min-w-0 items-start gap-2">
         {tick}
         <div className="min-w-0 flex-1">{meta}</div>
-        {trailing ? <div className="shrink-0">{trailing}</div> : null}
+        {trailing ? <div className="shrink-0 self-start">{trailing}</div> : null}
       </div>
 
       {flash && task.status !== "pending_verify" ? (
-        <p className="ml-8 text-xs font-semibold text-secondary">
+        <p className="ml-6 text-xs font-semibold text-secondary">
           {t("tasks.closedFlash")}
         </p>
       ) : null}
 
       {task.status === "pending_verify" ? (
-        <div className="ml-8 space-y-2 rounded-2xl bg-warning/10 px-3 py-2">
+        <div className="ml-6 space-y-2 rounded-2xl bg-warning/10 px-3 py-2">
           <p className="text-xs font-semibold text-warning-dark">
             {t("tasks.verifyPending")}
           </p>
@@ -244,7 +244,7 @@ export function TaskCompleteControl({
       ) : null}
 
       {task.status === "open" && expanded && canSubmit ? (
-        <div className="ml-8 space-y-2 rounded-2xl bg-[#F7F5F1] p-3">
+        <div className="ml-6 space-y-2 rounded-2xl bg-canvas-deep p-3">
           <p className="text-xs font-semibold text-ink">
             {t("tasks.verifyTitle")}
           </p>
@@ -325,7 +325,7 @@ export function TaskCompleteControl({
         </div>
       ) : null}
 
-      {error ? <p className="ml-8 text-xs text-danger">{error}</p> : null}
+      {error ? <p className="ml-6 text-xs text-danger">{error}</p> : null}
     </div>
   );
 }

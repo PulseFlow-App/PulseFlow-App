@@ -40,13 +40,15 @@ export function Button({
         size === "md" && "h-10 px-4 py-2 text-sm",
         size === "lg" && "h-11 px-5 py-2.5 text-sm",
         variant === "primary" &&
-          "bg-gradient-to-r from-primary to-primary-dark text-white shadow-[0_8px_20px_rgba(240,122,58,0.28)]",
+          "bg-primary text-white shadow-[0_8px_20px_rgba(242,106,54,0.28)] hover:bg-primary-dark",
         variant === "primary" &&
           size === "xs" &&
-          "shadow-[0_4px_12px_rgba(240,122,58,0.22)]",
-        variant === "secondary" && "bg-secondary text-white",
+          "shadow-[0_4px_12px_rgba(242,106,54,0.22)]",
+        /* Horizon secondary action = sky (not success teal) */
+        variant === "secondary" &&
+          "bg-sky text-white shadow-[0_8px_18px_rgba(33,158,188,0.28)] hover:brightness-95",
         variant === "ghost" &&
-          "border border-[var(--color-border)] bg-card text-ink hover:bg-sand-deep",
+          "border border-[var(--color-border)] bg-card text-ink hover:bg-canvas-deep",
         variant === "danger" && "bg-danger text-white",
         showBusy && "pointer-events-none",
         className,

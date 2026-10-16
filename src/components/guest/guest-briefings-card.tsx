@@ -24,7 +24,7 @@ export function GuestBriefingsCard({ stayId }: { stayId: string }) {
       {briefings.map((b) => (
         <div
           key={b.id}
-          className="rounded-2xl bg-[#F7F5F1] p-3 text-sm text-ink"
+          className="rounded-2xl bg-canvas-deep p-3 text-sm text-ink"
         >
           <p className="font-bold">
             <LocalizedText text={b.title} />

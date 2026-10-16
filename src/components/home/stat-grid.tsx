@@ -62,7 +62,7 @@ export function StatGrid({
               strokeWidth={1.85}
               aria-hidden
             />
-            <p className="mt-1 font-display text-lg font-extrabold leading-none tracking-tight text-ink md:mt-4 md:text-3xl">
+            <p className="mt-1 font-display text-lg font-bold leading-none tracking-tight text-ink md:mt-4 md:text-3xl">
               {counts[status]}
             </p>
             <p

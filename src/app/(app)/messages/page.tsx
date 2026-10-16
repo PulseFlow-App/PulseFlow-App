@@ -491,12 +491,12 @@ function MessagesPageInner() {
 
         <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {channel === "photo" ? (
-            <p className="border-b border-black/5 bg-[#F7F5F1] px-3 py-2 text-xs leading-relaxed text-muted">
+            <p className="border-b border-black/5 bg-canvas-deep px-3 py-2 text-xs leading-relaxed text-muted">
               {t("messages.photoNote")}
             </p>
           ) : null}
           {channel === "agent" ? (
-            <p className="whitespace-pre-wrap border-b border-black/5 bg-[#F7F5F1] px-3 py-2 text-xs leading-relaxed text-muted">
+            <p className="whitespace-pre-wrap border-b border-black/5 bg-canvas-deep px-3 py-2 text-xs leading-relaxed text-muted">
               {t("messages.agentNote")}
             </p>
           ) : null}

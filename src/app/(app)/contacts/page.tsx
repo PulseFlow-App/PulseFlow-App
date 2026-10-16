@@ -347,7 +347,7 @@ export default function ContactsPage() {
                                 href={phoneToWaMe(contact.phone)}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-[#F7F5F1] px-3 py-2 text-sm font-semibold text-ink"
+                                className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-canvas-deep px-3 py-2 text-sm font-semibold text-ink"
                               >
                                 <MessageCircle className="size-4" /> WhatsApp
                               </a>
@@ -360,7 +360,7 @@ export default function ContactsPage() {
                                 href={lineDeepLink(m.handle)}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-[#F7F5F1] px-3 py-2 text-sm font-semibold text-ink"
+                                className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-canvas-deep px-3 py-2 text-sm font-semibold text-ink"
                               >
                                 <MessageCircle className="size-4" /> LINE
                               </a>
@@ -373,7 +373,7 @@ export default function ContactsPage() {
                                 href={telegramDeepLink(m.handle)}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-[#F7F5F1] px-3 py-2 text-sm font-semibold text-ink"
+                                className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-canvas-deep px-3 py-2 text-sm font-semibold text-ink"
                               >
                                 <MessageCircle className="size-4" /> Telegram
                               </a>
@@ -712,7 +712,7 @@ function ContactForm({
               {messengers.map((m) => (
                 <li
                   key={m.kind}
-                  className="flex items-center justify-between gap-2 rounded-xl bg-[#F7F5F1] px-3 py-2 text-sm"
+                  className="flex items-center justify-between gap-2 rounded-xl bg-canvas-deep px-3 py-2 text-sm"
                 >
                   <span className="font-semibold text-ink">
                     {messengerLabel(m.kind)}

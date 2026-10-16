@@ -74,7 +74,7 @@ function PublicProfileReviewFormInner({
 
   if (!data.profile) {
     return (
-      <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3 text-sm">
+      <div className="rounded-2xl bg-canvas-deep px-3 py-3 text-sm">
         <p className="font-semibold text-ink">{t("publicProfile.reviewSignIn")}</p>
         <Link href="/login" className="mt-2 inline-block">
           <Button size="sm">{t("publicProfile.goApp")}</Button>
@@ -85,7 +85,7 @@ function PublicProfileReviewFormInner({
 
   if (!canReview) {
     return (
-      <div className="rounded-2xl bg-[#F7F5F1] px-3 py-3 text-sm text-muted">
+      <div className="rounded-2xl bg-canvas-deep px-3 py-3 text-sm text-muted">
         {t("publicProfile.reviewNotAllowed")}
       </div>
     );

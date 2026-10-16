@@ -1,24 +1,40 @@
+/**
+ * Horizon design tokens — keep in sync with pulseflow-site/DESIGN.md
+ * Prefer CSS vars in UI; this object is for JS (charts, themeColor, SVGs).
+ */
 export const colors = {
-  background: "#FDF7F2",
+  /** Page canvas — cool white, not warm cream */
+  background: "#F5FAFC",
+  canvas: "#F5FAFC",
+  canvasDeep: "#E8F4F8",
   card: "#FFFFFF",
+  /** Logo / CTA orange */
   primary: "#F26A36",
   primaryDark: "#D94E1B",
-  primarySoft: "#FFE4D4",
-  secondary: "#3CB89A",
-  secondaryDark: "#2A8F78",
-  secondarySoft: "#D8F3EC",
-  sky: "#6EB6E8",
-  skySoft: "#DCEFFA",
-  lavender: "#A78BDA",
-  lavenderSoft: "#EDE4FA",
-  warning: "#E0A84A",
-  warningDark: "#8A5A14",
-  danger: "#E15A4A",
-  dangerDark: "#B03A2E",
-  ink: "#2B211C",
-  muted: "#8A817C",
-  nav: "#1C1C1E",
+  primarySoft: "#FFE0D4",
+  action: "#F26A36",
+  /** Confirmed / paid */
+  secondary: "#2A9D8F",
+  secondaryDark: "#1F7A6F",
+  secondarySoft: "#D4F0EC",
+  success: "#2A9D8F",
+  /** Links, info, focus */
+  sky: "#219EBC",
+  skySoft: "#8ECAE6",
+  /** Amber highlight / Pro */
+  sun: "#FFB703",
+  warning: "#FFB703",
+  warningDark: "#B37F00",
+  danger: "#E63946",
+  dangerDark: "#B02A35",
+  /** Authority text */
+  ink: "#023047",
+  muted: "#5A6D78",
+  nav: "#023047",
   white: "#FFFFFF",
+  /** @deprecated Horizon has no purple — alias to sky soft for old call sites */
+  lavender: "#8ECAE6",
+  lavenderSoft: "#E8F4F8",
 } as const;
 
 export type VillaStatus = "available" | "occupied" | "turnover" | "maintenance";
@@ -71,9 +87,9 @@ export const statusColors: Record<
     label: "Available",
   },
   turnover: {
-    bg: colors.warning,
-    fg: "#8A5A14",
-    soft: "#FFF0D6",
+    bg: colors.sun,
+    fg: colors.warningDark,
+    soft: "#FFF3CC",
     label: "Turnover",
   },
   maintenance: {

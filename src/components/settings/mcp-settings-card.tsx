@@ -97,7 +97,7 @@ export function McpSettingsCard() {
   if (isDemoMode()) {
     return (
       <Card className="space-y-2 p-4 sm:p-5">
-        <h2 className="text-lg font-extrabold tracking-tight text-ink">
+        <h2 className="text-lg font-bold tracking-tight text-ink">
           {t("settings.mcpTitle")}
         </h2>
         <p className="type-meta">{t("settings.mcpDemoHint")}</p>
@@ -175,7 +175,7 @@ export function McpSettingsCard() {
   return (
     <Card className="space-y-4 p-4 sm:p-5">
       <div>
-        <h2 className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-ink">
+        <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight text-ink">
           <KeyRound className="size-5 text-primary" aria-hidden />
           {t("settings.mcpTitle")}
         </h2>
