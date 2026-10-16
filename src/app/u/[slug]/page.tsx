@@ -169,9 +169,15 @@ function PublicProfilePageInner({
   return (
     <div className="flex h-dvh w-full flex-col overflow-hidden bg-sand font-sans">
       <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain">
-        <div className="mx-auto w-full max-w-lg px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))]">
+        <div
+          className="mx-auto w-full max-w-lg py-6 pb-[max(2rem,env(safe-area-inset-bottom))]"
+          style={{
+            paddingInline:
+              "max(0.5rem, env(safe-area-inset-left)) max(0.5rem, env(safe-area-inset-right))",
+          }}
+        >
           <PublicProfileBack label={t("publicProfile.back")} />
-          <div className="mb-6 flex items-center gap-3">
+          <div className="mb-5 flex items-center gap-3">
             <PulseMark className="size-10 shrink-0" />
             <div className="min-w-0">
               <p className="text-lg font-bold text-ink">{brand.name}</p>
@@ -179,7 +185,7 @@ function PublicProfilePageInner({
             </div>
           </div>
 
-          <Card className="space-y-4 overflow-hidden p-5">
+          <Card className="space-y-4 overflow-hidden p-3.5 sm:p-5">
             <div>
               <h1 className="text-2xl font-bold text-ink">
                 {data.profile.full_name}
@@ -272,12 +278,12 @@ function PublicProfilePageInner({
                     return (
                       <li
                         key={org.id}
-                        className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm"
+                        className="flex min-w-0 flex-col gap-1.5 rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                       >
-                        <span className="min-w-0 truncate font-semibold text-ink">
+                        <span className="min-w-0 break-words font-semibold leading-snug text-ink">
                           {org.name}
                         </span>
-                        <div className="shrink-0">
+                        <div className="shrink-0 self-start sm:self-auto">
                           <StarsDisplay
                             value={orgRating.average}
                             size="sm"

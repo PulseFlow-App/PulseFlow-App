@@ -24,8 +24,12 @@ export function TaskRow({
   const { t } = useI18n();
   const [expanded, setExpanded] = useState(false);
   const schedule =
-    formatWorkWindow(task.due_date, task.time_start, task.time_end) ??
-    (task.due_date ? formatShortDate(task.due_date) : null);
+    formatWorkWindow(task.due_date, task.time_start, task.time_end, {
+      schedule_mode: task.schedule_mode,
+      time_slots: task.time_slots,
+      recurrence: task.recurrence,
+      recurrence_count: task.recurrence_count,
+    }) ?? (task.due_date ? formatShortDate(task.due_date) : null);
   const villaLabel = task.villa?.name ?? t("common.general");
   const hasNotes = Boolean(task.notes?.trim());
   const hasPhoto = Boolean(task.photo_url);

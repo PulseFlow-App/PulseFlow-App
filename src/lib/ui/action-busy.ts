@@ -30,11 +30,18 @@ export function endActionBusy() {
   emit();
 }
 
+const MIN_BUSY_MS = 450;
+
 export async function withActionBusy<T>(fn: () => Promise<T>): Promise<T> {
   beginActionBusy();
+  const started = Date.now();
   try {
     return await fn();
   } finally {
+    const left = MIN_BUSY_MS - (Date.now() - started);
+    if (left > 0) {
+      await new Promise((r) => setTimeout(r, left));
+    }
     endActionBusy();
   }
 }

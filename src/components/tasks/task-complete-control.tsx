@@ -76,7 +76,12 @@ export function TaskCompleteControl({
     const doer = findProfile(doerId);
     const href = reviewOfferHref(doer, doerId);
     const schedule =
-      formatWorkWindow(task.due_date, task.time_start, task.time_end) ??
+      formatWorkWindow(task.due_date, task.time_start, task.time_end, {
+        schedule_mode: task.schedule_mode,
+        time_slots: task.time_slots,
+        recurrence: task.recurrence,
+        recurrence_count: task.recurrence_count,
+      }) ??
       (task.due_date ? formatShortDate(task.due_date) : null);
     const workLabel = [task.title, task.villa?.name, schedule]
       .filter(Boolean)

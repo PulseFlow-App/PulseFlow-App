@@ -220,6 +220,11 @@ export type ServiceOrder = {
   scheduled_date: string | null;
   time_start: string | null;
   time_end: string | null;
+  /** window = From–Until; slots = discrete visit times in time_slots */
+  schedule_mode: "window" | "slots";
+  time_slots: string[] | null;
+  recurrence: "once" | "daily" | "weekdays";
+  recurrence_count: number | null;
   status: ServiceOrderStatus;
   agreed_at: string | null;
   chat_message_id: string | null;
@@ -243,6 +248,11 @@ export type Task = {
   /** Work window HH:mm (staff-focused; not guest check-in). */
   time_start: string | null;
   time_end: string | null;
+  /** window = From–Until; slots = discrete visit times in time_slots */
+  schedule_mode: "window" | "slots";
+  time_slots: string[] | null;
+  recurrence: "once" | "daily" | "weekdays";
+  recurrence_count: number | null;
   created_by: string;
   created_at: string;
   completed_at: string | null;

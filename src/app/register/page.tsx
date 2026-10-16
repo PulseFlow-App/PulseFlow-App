@@ -145,7 +145,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="h-dvh overflow-x-hidden overflow-y-auto overscroll-contain bg-sand px-4 py-10">
+    <div
+      className="h-dvh overflow-x-hidden overflow-y-auto overscroll-contain bg-sand py-10"
+      style={{
+        paddingInline:
+          "max(0.5rem, env(safe-area-inset-left)) max(0.5rem, env(safe-area-inset-right))",
+      }}
+    >
       <div className="mx-auto w-full max-w-md animate-rise">
         <div className="mb-4 flex justify-end">
           <LanguageSwitcher variant="inline" />

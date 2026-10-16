@@ -68,6 +68,7 @@ import {
   villaOpsAudience,
   type NotificationInsert,
 } from "@/lib/notifications";
+import { withScheduleDefaults } from "@/lib/work-schedule";
 import { formatMoney } from "@/lib/utils";
 import { normalizeBillCurrency } from "@/lib/billing/currencies";
 import {
@@ -533,15 +534,17 @@ export function useSupabaseData(enabled: boolean): AppData {
       ((contactsRes.data as Contact[]) ?? []).map((c) => normalizeContactRow(c)),
     );
     setTasks(
-      ((tasksRes.data as Task[]) ?? []).map((t) => ({
-        ...t,
-        notes: t.notes ?? null,
-        photo_url: t.photo_url ?? null,
-        verify_notes: t.verify_notes ?? null,
-        verify_photo_url: t.verify_photo_url ?? null,
-        verify_submitted_by: t.verify_submitted_by ?? null,
-        verify_submitted_at: t.verify_submitted_at ?? null,
-      })),
+      ((tasksRes.data as Task[]) ?? []).map((t) =>
+        withScheduleDefaults({
+          ...t,
+          notes: t.notes ?? null,
+          photo_url: t.photo_url ?? null,
+          verify_notes: t.verify_notes ?? null,
+          verify_photo_url: t.verify_photo_url ?? null,
+          verify_submitted_by: t.verify_submitted_by ?? null,
+          verify_submitted_at: t.verify_submitted_at ?? null,
+        }),
+      ),
     );
     setBills((billsRes.data as Bill[]) ?? []);
     setMessages(
@@ -567,7 +570,9 @@ export function useSupabaseData(enabled: boolean): AppData {
         read_by: Array.isArray(n.read_by) ? n.read_by : [],
       })),
     );
-    setServiceOrders((ordersRes.data as ServiceOrder[]) ?? []);
+    setServiceOrders(
+      ((ordersRes.data as ServiceOrder[]) ?? []).map(withScheduleDefaults),
+    );
     setStayDateRequests(
       dateRequestsRes.error
         ? []
@@ -1130,11 +1135,16 @@ export function useSupabaseData(enabled: boolean): AppData {
         villa?.name ?? input.location_label?.trim() ?? "Location TBC";
       const serviceType = capitalizeLabel(input.service_type);
       const scheduledDate = input.scheduled_date?.trim() || null;
+      const schedule_mode = input.schedule_mode ?? "window";
+      const time_slots = input.time_slots ?? null;
+      const recurrence = input.recurrence ?? "once";
+      const recurrence_count = input.recurrence_count ?? null;
       const when =
         formatWorkWindow(
           scheduledDate,
           input.time_start ?? null,
           input.time_end ?? null,
+          { schedule_mode, time_slots, recurrence, recurrence_count },
         ) ?? "";
 
       const { data: order, error } = await supabase
@@ -1151,6 +1161,10 @@ export function useSupabaseData(enabled: boolean): AppData {
           scheduled_date: scheduledDate,
           time_start: input.time_start || null,
           time_end: input.time_end || null,
+          schedule_mode,
+          time_slots,
+          recurrence,
+          recurrence_count,
           status: "pending_ack",
         })
         .select("*")
@@ -1172,6 +1186,10 @@ export function useSupabaseData(enabled: boolean): AppData {
           due_date: scheduledDate,
           time_start: input.time_start || null,
           time_end: input.time_end || null,
+          schedule_mode,
+          time_slots,
+          recurrence,
+          recurrence_count,
           created_by: profile.id,
           service_order_id: order.id,
         })
@@ -1753,11 +1771,16 @@ export function useSupabaseData(enabled: boolean): AppData {
         : null;
       const location = villa?.name ?? "General";
       const scheduledDate = input.due_date?.trim() || null;
+      const schedule_mode = input.schedule_mode ?? "window";
+      const time_slots = input.time_slots ?? null;
+      const recurrence = input.recurrence ?? "once";
+      const recurrence_count = input.recurrence_count ?? null;
       const when =
         formatWorkWindow(
           scheduledDate,
           input.time_start ?? null,
           input.time_end ?? null,
+          { schedule_mode, time_slots, recurrence, recurrence_count },
         ) ?? "";
       const assignee = assigneeId
         ? profiles.find((p) => p.id === assigneeId)
@@ -1779,6 +1802,10 @@ export function useSupabaseData(enabled: boolean): AppData {
           scheduled_date: scheduledDate,
           time_start: input.time_start || null,
           time_end: input.time_end || null,
+          schedule_mode,
+          time_slots,
+          recurrence,
+          recurrence_count,
           status: "pending_ack",
         })
         .select("*")
@@ -1823,6 +1850,10 @@ export function useSupabaseData(enabled: boolean): AppData {
           due_date: scheduledDate,
           time_start: input.time_start ?? null,
           time_end: input.time_end ?? null,
+          schedule_mode,
+          time_slots,
+          recurrence,
+          recurrence_count,
           service_order_id: order.id,
         })
         .select("id")

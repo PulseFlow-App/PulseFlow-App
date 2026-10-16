@@ -544,18 +544,58 @@ export const NOTIFICATION_META: Record<
   guest_update: { label: "Guest update", tone: "text-primary" },
 };
 
+export type WorkScheduleFormat = {
+  schedule_mode?: "window" | "slots" | null;
+  time_slots?: string[] | null;
+  recurrence?: "once" | "daily" | "weekdays" | null;
+  recurrence_count?: number | null;
+};
+
 export function formatWorkWindow(
   date: string | null,
   timeStart: string | null,
   timeEnd: string | null,
+  schedule?: WorkScheduleFormat | null,
 ) {
-  if (!date && !timeStart) return null;
+  const slots =
+    schedule?.schedule_mode === "slots"
+      ? (schedule.time_slots?.length
+          ? schedule.time_slots
+          : timeStart
+            ? [timeStart]
+            : []
+        ).map((t) => t.slice(0, 5))
+      : null;
+
+  const hasTime = Boolean(slots?.length || timeStart);
+  if (!date && !hasTime) return null;
+
   const day = date ? formatShortDate(date) : "";
-  if (timeStart && timeEnd) {
-    return `${day}${day ? " · " : ""}${timeStart}-${timeEnd}`;
+  let timePart = "";
+  if (slots?.length) {
+    timePart = `at ${slots.join(" & ")}`;
+  } else if (timeStart && timeEnd) {
+    timePart = `${timeStart.slice(0, 5)}-${timeEnd.slice(0, 5)}`;
+  } else if (timeStart) {
+    timePart = `at ${timeStart.slice(0, 5)}`;
   }
-  if (timeStart) return `${day}${day ? " · " : ""}from ${timeStart}`;
-  return day || null;
+
+  const recurrence = schedule?.recurrence ?? "once";
+  const count = schedule?.recurrence_count ?? null;
+  let prefix = "";
+  if (recurrence === "daily" && date) {
+    prefix = count && count > 1 ? `Daily ×${count} from ` : "Daily from ";
+  } else if (recurrence === "weekdays" && date) {
+    prefix = count && count > 1 ? `Weekdays ×${count} from ` : "Weekdays from ";
+  }
+
+  if (prefix) {
+    const dayBit = day || "";
+    return `${prefix}${dayBit}${timePart ? ` · ${timePart}` : ""}`.trim();
+  }
+
+  if (day && timePart) return `${day} · ${timePart}`;
+  return day || timePart || null;
 }
 
 export type ContactReachability = "confirmed" | "awaiting_ack" | "not_on_app";

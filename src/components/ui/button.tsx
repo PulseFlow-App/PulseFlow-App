@@ -1,11 +1,19 @@
+"use client";
+
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useActionBusy } from "@/lib/ui/use-action-busy";
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "xs" | "sm" | "md" | "lg";
   /** Shows spinner and disables the control while work is in flight. */
   busy?: boolean;
+  /**
+   * Also spin while any tracked app mutation runs.
+   * Defaults on for primary/danger so submit actions never look idle.
+   */
+  reflectGlobalBusy?: boolean;
 };
 
 export function Button({
@@ -13,10 +21,16 @@ export function Button({
   variant = "primary",
   size = "md",
   busy = false,
+  reflectGlobalBusy,
   disabled,
   children,
   ...props
 }: Props) {
+  const globalBusy = useActionBusy();
+  const trackGlobal =
+    reflectGlobalBusy ?? (variant === "primary" || variant === "danger");
+  const showBusy = busy || (trackGlobal && globalBusy);
+
   return (
     <button
       className={cn(
@@ -34,14 +48,14 @@ export function Button({
         variant === "ghost" &&
           "border border-[var(--color-border)] bg-card text-ink hover:bg-sand-deep",
         variant === "danger" && "bg-danger text-white",
-        busy && "pointer-events-none",
+        showBusy && "pointer-events-none",
         className,
       )}
-      aria-busy={busy || undefined}
-      disabled={disabled || busy}
+      aria-busy={showBusy || undefined}
+      disabled={disabled || showBusy}
       {...props}
     >
-      {busy ? (
+      {showBusy ? (
         <Loader2
           className={cn(
             "shrink-0 animate-spin",

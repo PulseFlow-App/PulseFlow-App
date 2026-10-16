@@ -57,8 +57,8 @@
     0 16px 40px rgba(31, 24, 21, 0.08);
   --shadow-nav: 0 12px 32px rgba(28, 28, 30, 0.28);
 
-  /* Layout breakpoints content */
-  --shell-pad: 0.75rem; /* 12 — phone */
+  /* Layout breakpoints content — keep phone gutters tight so labels fit */
+  --shell-pad: 0.5rem; /* 8 — phone */
   --shell-max: 100%;
   --content-gap: 0.75rem; /* 12 */
 }
@@ -66,7 +66,7 @@
 /* Narrow phones — keep content readable without horizontal overflow */
 @media (max-width: 379px) {
   :root {
-    --shell-pad: 0.625rem; /* 10 */
+    --shell-pad: 0.5rem; /* 8 */
     --content-gap: 0.625rem;
     --type-title: clamp(1.35rem, 1.15rem + 1.5vw, 1.625rem);
     --type-body: 0.9375rem; /* keep 15px; forms use 16px separately */

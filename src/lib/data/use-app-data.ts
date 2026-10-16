@@ -723,11 +723,16 @@ function useDemoData(): AppData {
         : null;
       const location = villa?.name ?? "General";
       const scheduledDate = input.due_date?.trim() || null;
+      const schedule_mode = input.schedule_mode ?? "window";
+      const time_slots = input.time_slots ?? null;
+      const recurrence = input.recurrence ?? "once";
+      const recurrence_count = input.recurrence_count ?? null;
       const when =
         formatWorkWindow(
           scheduledDate,
           input.time_start ?? null,
           input.time_end ?? null,
+          { schedule_mode, time_slots, recurrence, recurrence_count },
         ) ?? "";
       const now = new Date().toISOString();
       const notes = input.notes?.trim() || null;
@@ -759,6 +764,10 @@ function useDemoData(): AppData {
             scheduled_date: scheduledDate,
             time_start: input.time_start ?? null,
             time_end: input.time_end ?? null,
+            schedule_mode,
+            time_slots,
+            recurrence,
+            recurrence_count,
             status: "pending_ack" as const,
             agreed_at: null,
             chat_message_id: msgId,
@@ -780,6 +789,10 @@ function useDemoData(): AppData {
             due_date: scheduledDate,
             time_start: input.time_start ?? null,
             time_end: input.time_end ?? null,
+            schedule_mode,
+            time_slots,
+            recurrence,
+            recurrence_count,
             status: "open" as const,
             created_by: profile.id,
             created_at: now,

@@ -41,6 +41,14 @@ import {
 } from "@/lib/contacts/messengers";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
+import {
+  WorkScheduleFields,
+  emptyWorkSchedule,
+} from "@/components/schedule/work-schedule-fields";
+import {
+  resolveWorkSchedule,
+  schedulePayloadFromResolved,
+} from "@/lib/work-schedule";
 
 const ROLE_ORDER = [
   "cleaning",
@@ -479,6 +487,10 @@ function OrderForm({
     scheduled_date?: string | null;
     time_start?: string | null;
     time_end?: string | null;
+    schedule_mode?: "window" | "slots";
+    time_slots?: string[] | null;
+    recurrence?: "once" | "daily" | "weekdays";
+    recurrence_count?: number | null;
   }) => Promise<void>;
 }) {
   const { t } = useI18n();
@@ -488,9 +500,7 @@ function OrderForm({
   );
   const [villaId, setVillaId] = useState(villas[0]?.id ?? "");
   const [locationLabel, setLocationLabel] = useState("");
-  const [date, setDate] = useState("");
-  const [timeStart, setTimeStart] = useState("");
-  const [timeEnd, setTimeEnd] = useState("");
+  const [schedule, setSchedule] = useState(() => emptyWorkSchedule());
   const [details, setDetails] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -530,32 +540,11 @@ function OrderForm({
           />
         </div>
       ) : null}
-      <div>
-        <Label>When (date)</Label>
-        <Input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label>{t("common.from")}</Label>
-          <Input
-            type="time"
-            value={timeStart}
-            onChange={(e) => setTimeStart(e.target.value)}
-          />
-        </div>
-        <div>
-          <Label>{t("common.until")}</Label>
-          <Input
-            type="time"
-            value={timeEnd}
-            onChange={(e) => setTimeEnd(e.target.value)}
-          />
-        </div>
-      </div>
+      <WorkScheduleFields
+        value={schedule}
+        onChange={setSchedule}
+        dateLabel={t("common.when")}
+      />
       <div>
         <Label>Details</Label>
         <Textarea
@@ -582,15 +571,22 @@ function OrderForm({
               setError("Pick a property or enter a location.");
               return;
             }
+            const resolved = resolveWorkSchedule(schedule);
+            if (
+              schedule.schedule_mode === "slots" &&
+              !resolved.time_slots?.length
+            ) {
+              setError(t("schedule.needVisit"));
+              return;
+            }
             setSaving(true);
             void onSave({
               villa_id: villaId || null,
               location_label: locationLabel.trim() || null,
               service_type: capitalizeLabel(serviceType),
               details: details.trim() || null,
-              scheduled_date: date || null,
-              time_start: timeStart || null,
-              time_end: timeEnd || null,
+              scheduled_date: resolved.date,
+              ...schedulePayloadFromResolved(resolved),
             })
               .catch((e: unknown) =>
                 setError(e instanceof Error ? e.message : "Could not book."),
@@ -598,7 +594,7 @@ function OrderForm({
               .finally(() => setSaving(false));
           }}
         >
-          {saving ? "Sending…" : "Send order"}
+          {saving ? t("common.saving") : "Send order"}
         </Button>
       </div>
     </Card>

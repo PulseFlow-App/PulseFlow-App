@@ -434,8 +434,18 @@ export default function VillaDetailPage({
             {villaTasks.map((t) => (
               <p key={t.id} className="text-sm text-ink">
                 {t.title}
-                {formatWorkWindow(t.due_date, t.time_start, t.time_end)
-                  ? ` · ${formatWorkWindow(t.due_date, t.time_start, t.time_end)}`
+                {formatWorkWindow(t.due_date, t.time_start, t.time_end, {
+                  schedule_mode: t.schedule_mode,
+                  time_slots: t.time_slots,
+                  recurrence: t.recurrence,
+                  recurrence_count: t.recurrence_count,
+                })
+                  ? ` · ${formatWorkWindow(t.due_date, t.time_start, t.time_end, {
+                      schedule_mode: t.schedule_mode,
+                      time_slots: t.time_slots,
+                      recurrence: t.recurrence,
+                      recurrence_count: t.recurrence_count,
+                    })}`
                   : ""}
               </p>
             ))}

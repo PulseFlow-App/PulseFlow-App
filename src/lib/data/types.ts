@@ -80,6 +80,10 @@ export type AppData = {
     scheduled_date?: string | null;
     time_start?: string | null;
     time_end?: string | null;
+    schedule_mode?: "window" | "slots";
+    time_slots?: string[] | null;
+    recurrence?: "once" | "daily" | "weekdays";
+    recurrence_count?: number | null;
   }) => Promise<ServiceOrder>;
   agreeServiceOrder: (orderId: string) => Promise<void>;
   /** Undo Read and agreed while the job is still >24h away. */
@@ -168,6 +172,10 @@ export type AppData = {
     due_date: string | null;
     time_start?: string | null;
     time_end?: string | null;
+    schedule_mode?: "window" | "slots";
+    time_slots?: string[] | null;
+    recurrence?: "once" | "daily" | "weekdays";
+    recurrence_count?: number | null;
     notes?: string | null;
     photo_url?: string | null;
   }) => Promise<void>;

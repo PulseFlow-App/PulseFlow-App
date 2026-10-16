@@ -41,21 +41,40 @@ export function orderReachabilityLabel(order: ServiceOrder, t?: TFn) {
 }
 
 export function formatOrderWhen(
-  order: Pick<ServiceOrder, "scheduled_date" | "time_start" | "time_end">,
+  order: Pick<
+    ServiceOrder,
+    | "scheduled_date"
+    | "time_start"
+    | "time_end"
+    | "schedule_mode"
+    | "time_slots"
+    | "recurrence"
+    | "recurrence_count"
+  >,
 ) {
   return (
-    formatWorkWindow(
-      order.scheduled_date,
-      order.time_start,
-      order.time_end,
-    ) ?? ""
+    formatWorkWindow(order.scheduled_date, order.time_start, order.time_end, {
+      schedule_mode: order.schedule_mode,
+      time_slots: order.time_slots,
+      recurrence: order.recurrence,
+      recurrence_count: order.recurrence_count,
+    }) ?? ""
   );
 }
 
 /** "at Location (when)" suffix for status chat lines — omits empty when / Soon. */
 export function formatOrderAtWhen(
   location: string,
-  order: Pick<ServiceOrder, "scheduled_date" | "time_start" | "time_end">,
+  order: Pick<
+    ServiceOrder,
+    | "scheduled_date"
+    | "time_start"
+    | "time_end"
+    | "schedule_mode"
+    | "time_slots"
+    | "recurrence"
+    | "recurrence_count"
+  >,
 ) {
   const when = formatOrderWhen(order);
   return when ? `at ${location} (${when})` : `at ${location}`;

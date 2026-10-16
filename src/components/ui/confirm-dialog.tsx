@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useI18n } from "@/lib/i18n/provider";
+import { useActionBusy } from "@/lib/ui/use-action-busy";
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -30,6 +31,8 @@ export function ConfirmDialog({
   onClose,
 }: ConfirmDialogProps) {
   const { t } = useI18n();
+  const globalBusy = useActionBusy();
+  const isBusy = busy || globalBusy;
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -39,11 +42,11 @@ export function ConfirmDialog({
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !busy) onClose();
+      if (e.key === "Escape" && !isBusy) onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, busy, onClose]);
+  }, [open, isBusy, onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -63,7 +66,7 @@ export function ConfirmDialog({
         className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]"
         aria-label={t("common.close")}
         onClick={onClose}
-        disabled={busy}
+        disabled={isBusy}
       />
       <Card
         role="alertdialog"
@@ -91,16 +94,17 @@ export function ConfirmDialog({
             variant={confirmVariant}
             className="w-full"
             onClick={onConfirm}
-            busy={busy}
+            busy={isBusy}
+            reflectGlobalBusy={false}
           >
-            {busy ? t("common.saving") : (confirmLabel ?? t("common.confirm"))}
+            {isBusy ? t("common.saving") : (confirmLabel ?? t("common.confirm"))}
           </Button>
           <Button
             type="button"
             variant="ghost"
             className="w-full"
             onClick={onClose}
-            disabled={busy}
+            disabled={isBusy}
           >
             {cancelLabel ?? t("common.cancel")}
           </Button>

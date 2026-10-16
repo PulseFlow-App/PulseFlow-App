@@ -13,6 +13,14 @@ import { cn } from "@/lib/utils";
 import type { TaskPriority } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
 import { TaskRow } from "@/components/tasks/task-row";
+import {
+  WorkScheduleFields,
+  emptyWorkSchedule,
+} from "@/components/schedule/work-schedule-fields";
+import {
+  resolveWorkSchedule,
+  schedulePayloadFromResolved,
+} from "@/lib/work-schedule";
 import type { MessageKey } from "@/lib/i18n";
 
 type Filter = "all" | "mine" | "urgent";
@@ -28,9 +36,7 @@ export default function TasksPage() {
   const [villaId, setVillaId] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("normal");
   const [assignee, setAssignee] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [timeStart, setTimeStart] = useState("");
-  const [timeEnd, setTimeEnd] = useState("");
+  const [schedule, setSchedule] = useState(() => emptyWorkSchedule());
   const [notes, setNotes] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -71,9 +77,7 @@ export default function TasksPage() {
     setVillaId("");
     setPriority("normal");
     setAssignee("");
-    setDueDate("");
-    setTimeStart("");
-    setTimeEnd("");
+    setSchedule(emptyWorkSchedule());
     setNotes("");
     setPhotoUrl(null);
     setShowForm(false);
@@ -100,6 +104,11 @@ export default function TasksPage() {
       setError("Title is required.");
       return;
     }
+    const resolved = resolveWorkSchedule(schedule);
+    if (schedule.schedule_mode === "slots" && !resolved.time_slots?.length) {
+      setError(t("schedule.needVisit"));
+      return;
+    }
     setSaving(true);
     try {
       await data.createTask({
@@ -107,9 +116,8 @@ export default function TasksPage() {
         villa_id: villaId || null,
         priority,
         assigned_to: assignee || null,
-        due_date: dueDate || null,
-        time_start: timeStart || null,
-        time_end: timeEnd || null,
+        due_date: resolved.date,
+        ...schedulePayloadFromResolved(resolved),
         notes: notes.trim() || null,
         photo_url: photoUrl,
       });
@@ -205,44 +213,21 @@ export default function TasksPage() {
               ))}
             </Select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>{t("tasks.priority")}</Label>
-              <Select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as TaskPriority)}
-              >
-                <option value="normal">{t("tasks.priority.normal")}</option>
-                <option value="urgent">{t("tasks.priority.urgent")}</option>
-              </Select>
-            </div>
-            <div>
-              <Label>{t("tasks.day")}</Label>
-              <Input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
-            </div>
+          <div>
+            <Label>{t("tasks.priority")}</Label>
+            <Select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as TaskPriority)}
+            >
+              <option value="normal">{t("tasks.priority.normal")}</option>
+              <option value="urgent">{t("tasks.priority.urgent")}</option>
+            </Select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>{t("common.from")}</Label>
-              <Input
-                type="time"
-                value={timeStart}
-                onChange={(e) => setTimeStart(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>{t("common.until")}</Label>
-              <Input
-                type="time"
-                value={timeEnd}
-                onChange={(e) => setTimeEnd(e.target.value)}
-              />
-            </div>
-          </div>
+          <WorkScheduleFields
+            value={schedule}
+            onChange={setSchedule}
+            dateLabel={t("tasks.day")}
+          />
           <div>
             <Label>{t("tasks.assignee")}</Label>
             <Select

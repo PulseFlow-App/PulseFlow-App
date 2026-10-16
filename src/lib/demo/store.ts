@@ -253,6 +253,10 @@ function normalizeStore(store: DemoStore): DemoStore {
       photo_url: t.photo_url ?? null,
       time_start: t.time_start ?? null,
       time_end: t.time_end ?? null,
+      schedule_mode: t.schedule_mode ?? "window",
+      time_slots: t.time_slots ?? null,
+      recurrence: t.recurrence ?? "once",
+      recurrence_count: t.recurrence_count ?? null,
       service_order_id: t.service_order_id ?? null,
     })),
     bills: [
@@ -1021,6 +1025,10 @@ export function demoCreateServiceOrder(
     scheduled_date?: string | null;
     time_start?: string | null;
     time_end?: string | null;
+    schedule_mode?: "window" | "slots";
+    time_slots?: string[] | null;
+    recurrence?: "once" | "daily" | "weekdays";
+    recurrence_count?: number | null;
     require_ack?: boolean;
   },
 ): ServiceOrder {
@@ -1052,11 +1060,16 @@ export function demoCreateServiceOrder(
   const taskId = crypto.randomUUID();
   const msgId = crypto.randomUUID();
   const scheduledDate = input.scheduled_date?.trim() || null;
+  const schedule_mode = input.schedule_mode ?? "window";
+  const time_slots = input.time_slots ?? null;
+  const recurrence = input.recurrence ?? "once";
+  const recurrence_count = input.recurrence_count ?? null;
   const when =
     formatWorkWindow(
       scheduledDate,
       input.time_start ?? null,
       input.time_end ?? null,
+      { schedule_mode, time_slots, recurrence, recurrence_count },
     ) ?? "";
   const now = new Date().toISOString();
 
@@ -1073,6 +1086,10 @@ export function demoCreateServiceOrder(
     scheduled_date: scheduledDate,
     time_start: input.time_start || null,
     time_end: input.time_end || null,
+    schedule_mode,
+    time_slots,
+    recurrence,
+    recurrence_count,
     status: "pending_ack",
     agreed_at: null,
     chat_message_id: msgId,
@@ -1104,6 +1121,10 @@ export function demoCreateServiceOrder(
         due_date: order.scheduled_date,
         time_start: order.time_start,
         time_end: order.time_end,
+        schedule_mode: order.schedule_mode,
+        time_slots: order.time_slots,
+        recurrence: order.recurrence,
+        recurrence_count: order.recurrence_count,
         created_by: actor.id,
         created_at: order.created_at,
         completed_at: null,
