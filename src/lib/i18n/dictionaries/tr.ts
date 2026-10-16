@@ -1093,7 +1093,13 @@ const tr: Dictionary = {
   "settings.privacyLink": "Gizlilik Politikası",
   "settings.supportLink": "Desteğe başvurun",
   "settings.supportHint": "Sorular, hatalar veya faturalandırma yardımı.",
-  "settings.preparingShareLink": "Herkese açık bağlantınız hazırlanıyor…",
+    "settings.deleteAccount": "Delete account",
+  "settings.deleteAccountHint":
+    "Permanently remove your login and profile from Pulse Flow. This cannot be undone.",
+  "settings.deleteAccountTitle": "Delete your account?",
+  "settings.deleteAccountConfirm":
+    "Your login and profile will be removed. Company data owned by others may remain. This cannot be undone.",
+"settings.preparingShareLink": "Herkese açık bağlantınız hazırlanıyor…",
   "settings.scanToJoin": "Katılmak için tarayın",
   "register.referralSaved": "Davet bağlantısı tanındı. Aşağıda kişisel veya şirketi seçin; otomatik olarak herhangi birinin çalışanı olarak kaydolmuyorsunuz.",
   "talent.title": "Personel bul",

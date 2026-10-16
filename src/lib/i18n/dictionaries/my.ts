@@ -1109,7 +1109,13 @@ const my: Dictionary = {
   "settings.privacyLink": "Privacy Policy",
   "settings.supportLink": "Contact support",
   "settings.supportHint": "Questions, bugs, or billing help.",
-  "settings.preparingShareLink": "အများသုံးလင့်ခ် ပြင်ဆင်နေသည်…",
+    "settings.deleteAccount": "Delete account",
+  "settings.deleteAccountHint":
+    "Permanently remove your login and profile from Pulse Flow. This cannot be undone.",
+  "settings.deleteAccountTitle": "Delete your account?",
+  "settings.deleteAccountConfirm":
+    "Your login and profile will be removed. Company data owned by others may remain. This cannot be undone.",
+"settings.preparingShareLink": "အများသုံးလင့်ခ် ပြင်ဆင်နေသည်…",
   "settings.scanToJoin": "Scan to join",
 
   "register.referralSaved":

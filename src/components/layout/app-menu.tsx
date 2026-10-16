@@ -33,7 +33,6 @@ import { legalAudienceFromRole, legalPageHref } from "@/lib/legal/audiences";
 import { canUseManagerReporting } from "@/lib/billing/reporting";
 import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
-import { brand } from "@/lib/design-tokens";
 import { cn } from "@/lib/utils";
 import { labelRole } from "@/lib/i18n/labels";
 
@@ -184,10 +183,9 @@ export function AppMenuButton() {
   ];
   if (!isGuest) {
     account.push({
-      href: `mailto:${brand.supportEmail}`,
+      href: "/support",
       label: t("settings.supportLink"),
       icon: LifeBuoy,
-      external: true,
     });
   }
   account.push({

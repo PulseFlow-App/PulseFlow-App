@@ -45,7 +45,7 @@ export function VillaDetailsFields({
         onChange={(v) => set("property_type", v)}
       />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <NumberField
           label={t("villas.sqm")}
           value={value.sq_m}
@@ -88,7 +88,7 @@ export function VillaDetailsFields({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <TriField
           label={t("villas.pool")}
           value={value.has_pool}
@@ -178,7 +178,7 @@ function NumberField({
   step: string;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <Label>{label}</Label>
       <Input
         type="number"
@@ -208,11 +208,13 @@ function TriField({
   onChange: (value: TriSelect) => void;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <Label>{label}</Label>
       <Select
         value={value}
         onChange={(e) => onChange(e.target.value as TriSelect)}
+        aria-label={label}
+        title={label}
       >
         <option value="">{unset}</option>
         <option value="yes">{yes}</option>
@@ -235,12 +237,16 @@ function EnumField<T extends string>({
   options: { id: T; label: string }[];
   onChange: (value: "" | T) => void;
 }) {
+  const selectedLabel =
+    options.find((opt) => opt.id === value)?.label ?? unsetLabel;
   return (
-    <div>
+    <div className="min-w-0">
       <Label>{label}</Label>
       <Select
         value={value}
         onChange={(e) => onChange(e.target.value as "" | T)}
+        aria-label={label}
+        title={selectedLabel}
       >
         <option value="">{unsetLabel}</option>
         {options.map((opt) => (

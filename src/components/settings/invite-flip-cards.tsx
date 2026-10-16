@@ -153,7 +153,7 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
               <div key={kind} className="[perspective:1200px]">
                 <div
                   className={cn(
-                    "relative min-h-[11rem] transition-transform duration-500 [transform-style:preserve-3d]",
+                    "relative min-h-[12.5rem] transition-transform duration-500 [transform-style:preserve-3d]",
                     flipped && "[transform:rotateY(180deg)]",
                   )}
                 >
@@ -162,14 +162,16 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                     onClick={() => flip(kind)}
                     className="absolute inset-0 w-full text-left [backface-visibility:hidden]"
                   >
-                    <Card className="flex h-full min-h-[11rem] flex-col space-y-2 p-4 hover:border-primary/30">
-                      <div className="flex size-10 items-center justify-center rounded-2xl bg-primary-soft text-primary">
-                        <Icon className="size-5" />
+                    <Card className="flex h-full min-h-[12.5rem] flex-col space-y-2 p-4 hover:border-primary/30">
+                      <div className="flex size-9 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+                        <Icon className="size-4" />
                       </div>
-                      <p className="font-display text-base font-bold text-ink">
+                      <p className="font-display text-base font-bold leading-snug text-ink">
                         {t(titleKey)}
                       </p>
-                      <p className="flex-1 text-xs text-muted">{t(hintKey)}</p>
+                      <p className="flex-1 text-xs leading-snug text-muted">
+                        {t(hintKey)}
+                      </p>
                       <p className="text-[11px] font-semibold text-primary">
                         {t("invite.tapToFlip")}
                       </p>
@@ -177,7 +179,7 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                   </button>
 
                   <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]">
-                    <Card className="flex h-full min-h-[11rem] flex-col space-y-2 overflow-auto p-4">
+                    <Card className="flex h-full min-h-[12.5rem] flex-col space-y-2 overflow-auto p-4">
                       <div className="flex items-start justify-between gap-2">
                         <p className="font-display text-sm font-bold text-ink">
                           {t(titleKey)}

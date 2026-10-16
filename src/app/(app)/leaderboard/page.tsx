@@ -153,13 +153,13 @@ export default function LeaderboardPage() {
                         : ""}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="shrink-0 text-right">
                     <StarsDisplay
                       value={row.rating.average}
                       size="sm"
                       showValue
                     />
-                    <p className="text-[11px] text-muted">
+                    <p className="mt-0.5 whitespace-nowrap text-[11px] text-muted">
                       {row.rating.totalStars}★ · {row.rating.voteCount} votes
                     </p>
                   </div>

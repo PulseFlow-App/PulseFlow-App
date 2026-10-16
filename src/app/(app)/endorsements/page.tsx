@@ -138,7 +138,7 @@ function EndorsementsPageInner() {
                     setOk(null);
                     setError(null);
                   }}
-                  className={`flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left transition ${
+                  className={`flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-left transition ${
                     active
                       ? "bg-primary-soft"
                       : done
@@ -146,16 +146,18 @@ function EndorsementsPageInner() {
                         : "bg-[#F7F5F1] hover:bg-primary-soft/60"
                   }`}
                 >
-                  <div>
-                    <p className="font-semibold text-ink">{person.full_name}</p>
-                    <p className="text-xs text-muted">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-ink">
+                      {person.full_name}
+                    </p>
+                    <p className="truncate text-xs text-muted">
                       {labelRole(t, person.role)}
                       {person.job_title ? ` · ${person.job_title}` : ""}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="shrink-0 text-right">
                     <StarsDisplay value={rating.average} size="sm" />
-                    <p className="mt-0.5 text-[11px] text-muted">
+                    <p className="mt-0.5 whitespace-nowrap text-[11px] text-muted">
                       {done ? "Voted this week" : `${rating.voteCount} votes`}
                     </p>
                   </div>
@@ -192,6 +194,7 @@ function EndorsementsPageInner() {
                 <p className="text-sm font-semibold text-secondary">{ok}</p>
               ) : null}
               <Button
+                size="sm"
                 className="w-full"
                 onClick={() => {
                   setError(null);

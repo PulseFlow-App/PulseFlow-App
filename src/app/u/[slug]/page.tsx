@@ -272,16 +272,18 @@ function PublicProfilePageInner({
                     return (
                       <li
                         key={org.id}
-                        className="flex min-w-0 items-center justify-between gap-2 rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm"
+                        className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-[#F7F5F1] px-3 py-2.5 text-sm"
                       >
                         <span className="min-w-0 truncate font-semibold text-ink">
                           {org.name}
                         </span>
-                        <StarsDisplay
-                          value={orgRating.average}
-                          size="sm"
-                          showValue
-                        />
+                        <div className="shrink-0">
+                          <StarsDisplay
+                            value={orgRating.average}
+                            size="sm"
+                            showValue
+                          />
+                        </div>
                       </li>
                     );
                   })}
@@ -302,9 +304,11 @@ function PublicProfilePageInner({
                       key={e.id}
                       className="rounded-2xl border border-black/5 px-3 py-2.5"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <StarsDisplay value={e.stars} size="sm" />
-                        <span className="shrink-0 text-[11px] text-muted">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0 shrink-0">
+                          <StarsDisplay value={e.stars} size="sm" />
+                        </div>
+                        <span className="shrink-0 whitespace-nowrap text-[11px] text-muted">
                           {weekLabel(e.week_key, locale)}
                         </span>
                       </div>

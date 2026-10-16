@@ -1110,7 +1110,13 @@ const de: Dictionary = {
   "settings.privacyLink": "Privacy Policy",
   "settings.supportLink": "Support kontaktieren",
   "settings.supportHint": "Fragen, Fehler oder Hilfe zur Abrechnung.",
-  "settings.preparingShareLink": "Öffentlicher Link wird vorbereitet…",
+    "settings.deleteAccount": "Delete account",
+  "settings.deleteAccountHint":
+    "Permanently remove your login and profile from Pulse Flow. This cannot be undone.",
+  "settings.deleteAccountTitle": "Delete your account?",
+  "settings.deleteAccountConfirm":
+    "Your login and profile will be removed. Company data owned by others may remain. This cannot be undone.",
+"settings.preparingShareLink": "Öffentlicher Link wird vorbereitet…",
   "settings.scanToJoin": "Scannen zum Beitreten",
 
   "register.referralSaved":

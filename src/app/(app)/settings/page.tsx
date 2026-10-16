@@ -15,6 +15,7 @@ import { BillingSettingsCard } from "@/components/billing/billing-card";
 import { PasskeySettingsCard } from "@/components/auth/passkey-settings-card";
 import { JobSearchSettingsCard } from "@/components/settings/job-search-settings-card";
 import { McpSettingsCard } from "@/components/settings/mcp-settings-card";
+import { DeleteAccountCard } from "@/components/settings/delete-account-card";
 import { PushSettingsCard } from "@/components/settings/push-settings-card";
 import { TranslateContentSettingsCard } from "@/components/settings/translate-content-settings-card";
 import type { MessageKey } from "@/lib/i18n";
@@ -107,7 +108,7 @@ export default function SettingsPage() {
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  className="min-h-11 flex-1"
+                  className="flex-1"
                   disabled={nameBusy || !displayName.trim()}
                   onClick={() => void saveDisplayName()}
                 >
@@ -116,7 +117,7 @@ export default function SettingsPage() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="min-h-11 flex-1"
+                  className="flex-1"
                   disabled={nameBusy}
                   onClick={() => {
                     setNameEditing(false);
@@ -174,7 +175,7 @@ export default function SettingsPage() {
                 <div className="flex gap-2">
                   <Button
                     size="sm"
-                    className="min-h-11 flex-1"
+                    className="flex-1"
                     disabled={orgBusy || !orgName.trim()}
                     onClick={() => void saveOrgName()}
                   >
@@ -183,7 +184,7 @@ export default function SettingsPage() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="min-h-11 flex-1"
+                    className="flex-1"
                     disabled={orgBusy}
                     onClick={() => {
                       setOrgEditing(false);
@@ -268,6 +269,8 @@ export default function SettingsPage() {
           <JobSearchSettingsCard />
         </div>
       ) : null}
+
+      <DeleteAccountCard />
     </Screen>
   );
 }

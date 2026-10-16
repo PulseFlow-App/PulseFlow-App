@@ -1108,7 +1108,13 @@ const th: Dictionary = {
   "settings.privacyLink": "Privacy Policy",
   "settings.supportLink": "ติดต่อฝ่ายสนับสนุน",
   "settings.supportHint": "คำถาม ข้อผิดพลาด หรือความช่วยเหลือด้านการชำระเงิน",
-  "settings.preparingShareLink": "กำลังเตรียมลิงก์สาธารณะ…",
+    "settings.deleteAccount": "Delete account",
+  "settings.deleteAccountHint":
+    "Permanently remove your login and profile from Pulse Flow. This cannot be undone.",
+  "settings.deleteAccountTitle": "Delete your account?",
+  "settings.deleteAccountConfirm":
+    "Your login and profile will be removed. Company data owned by others may remain. This cannot be undone.",
+"settings.preparingShareLink": "กำลังเตรียมลิงก์สาธารณะ…",
   "settings.scanToJoin": "Scan to join",
 
   "register.referralSaved":

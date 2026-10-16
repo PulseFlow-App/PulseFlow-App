@@ -28,7 +28,7 @@ export function StarsDisplay({
       : "fill-transparent text-[#E5D9CF]";
 
   return (
-    <div className="inline-flex max-w-full flex-wrap items-center gap-0.5 font-sans">
+    <div className="inline-flex max-w-full shrink-0 flex-nowrap items-center gap-0.5 font-sans">
       {Array.from({ length: 5 }, (_, i) => {
         const filled = i + 1 <= Math.floor(full);
         const half = !filled && i + 0.5 === full;
@@ -47,7 +47,7 @@ export function StarsDisplay({
       {showValue ? (
         <span
           className={cn(
-            "ml-1 text-sm font-bold",
+            "ml-1 shrink-0 text-sm font-bold tabular-nums",
             tone === "onDark" ? "text-white" : "text-ink",
           )}
         >
@@ -66,18 +66,18 @@ export function StarsPicker({
   onChange: (stars: 1 | 2 | 3 | 4 | 5) => void;
 }) {
   return (
-    <div className="flex max-w-full flex-wrap items-center gap-0.5">
+    <div className="flex max-w-full flex-nowrap items-center gap-0.5">
       {([1, 2, 3, 4, 5] as const).map((n) => (
         <button
           key={n}
           type="button"
           aria-label={`${n} stars`}
           onClick={() => onChange(n)}
-          className="rounded-full p-1 transition hover:scale-105"
+          className="rounded-full p-0.5 transition hover:scale-105 sm:p-1"
         >
           <Star
             className={cn(
-              "size-7 shrink-0 sm:size-8",
+              "size-6 shrink-0 sm:size-7",
               n <= value
                 ? "fill-primary text-primary"
                 : "fill-transparent text-[#E5D9CF]",

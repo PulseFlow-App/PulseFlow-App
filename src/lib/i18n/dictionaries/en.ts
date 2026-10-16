@@ -1291,6 +1291,12 @@ const en = {
   "settings.privacyLink": "Privacy Policy",
   "settings.supportLink": "Contact support",
   "settings.supportHint": "Questions, bugs, or billing help.",
+  "settings.deleteAccount": "Delete account",
+  "settings.deleteAccountHint":
+    "Permanently remove your login and profile from Pulse Flow. This cannot be undone.",
+  "settings.deleteAccountTitle": "Delete your account?",
+  "settings.deleteAccountConfirm":
+    "Your login and profile will be removed. Company data owned by others may remain. This cannot be undone.",
   "settings.preparingShareLink": "Preparing your public link…",
   "settings.scanToJoin": "Scan to join",
 

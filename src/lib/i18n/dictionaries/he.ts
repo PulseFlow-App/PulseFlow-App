@@ -1107,7 +1107,13 @@ const he: Dictionary = {
   "settings.privacyLink": "Privacy Policy",
   "settings.supportLink": "צור קשר עם התמיכה",
   "settings.supportHint": "שאלות, באגים או עזרה בחיוב.",
-  "settings.preparingShareLink": "מכינים את הקישור הציבורי…",
+    "settings.deleteAccount": "Delete account",
+  "settings.deleteAccountHint":
+    "Permanently remove your login and profile from Pulse Flow. This cannot be undone.",
+  "settings.deleteAccountTitle": "Delete your account?",
+  "settings.deleteAccountConfirm":
+    "Your login and profile will be removed. Company data owned by others may remain. This cannot be undone.",
+"settings.preparingShareLink": "מכינים את הקישור הציבורי…",
   "settings.scanToJoin": "סרוק להצטרפות",
 
   "register.referralSaved":
