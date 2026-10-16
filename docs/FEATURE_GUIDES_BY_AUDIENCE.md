@@ -43,6 +43,8 @@ Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll chec
 - **Home dashboard** - occupancy pulse, urgent work, date strip, weekly spend chart  
 - **Villas inventory** - status, check-in/out (auto from dates), cleaning, photos, map/location, notes  
 - **House guide** per villa - Wi‑Fi, gate, bins, quiet hours, checkout checklist (visible to guests)  
+- **Master info** per villa (team-only) - utilities, service providers, access/systems, key contacts, tax notes, handoff so someone else can run the property  
+- **Maintenance log** per villa - item, date, description, vendor/brand, optional system photo  
 - **Tasks** - create, assign, prioritize, complete across the company  
 - **Contacts + Order** - vendor book; Call / WhatsApp / LINE; in-app Order to linked staff  
 - **Jobs / service orders** - book linked contacts; track agree / complete / cancel  
@@ -187,6 +189,7 @@ Legend: ● yes · ◐ limited · ○ no
 
 - Soft auto-archive of completed stays; richer host tools  
 - Google Sheets / iCal / LINE-WhatsApp ops bridges (see `INTEGRATIONS_ROADMAP.md`)  
+- Long-term tenant screening / e-lease (not Pulse Flow’s vacation-ops focus)  
 - Full accounting product, “integrate with everything”
 
 ---

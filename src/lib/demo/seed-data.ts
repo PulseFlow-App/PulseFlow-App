@@ -10,6 +10,8 @@ import type {
   GuestStay,
   HouseGuide,
   Invite,
+  VillaMaintenanceLog,
+  VillaMasterInfo,
   Message,
   Organization,
   OrgMembership,
@@ -1252,6 +1254,8 @@ export type DemoStore = {
   serviceOrders: ServiceOrder[];
   guestStays: GuestStay[];
   houseGuides: HouseGuide[];
+  villaMasterInfo: VillaMasterInfo[];
+  villaMaintenanceLogs: VillaMaintenanceLog[];
   supportMessages: SupportMessage[];
   guestBriefings: GuestBriefing[];
   guestDeposits: GuestDeposit[];
@@ -1289,6 +1293,53 @@ export const demoHouseGuides: HouseGuide[] = [
       "Close all windows\nTurn off AC and lights\nLeave keys on kitchen counter\nLock the side gate",
     extra_notes: "Beach towels in the left cupboard. Extra water under the sink.",
     updated_at: daysAgo(2) + "T10:00:00.000Z",
+  },
+];
+
+export const demoVillaMasterInfo: VillaMasterInfo[] = [
+  {
+    id: "77777777-7777-4777-8777-7777777777a1",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.sunset,
+    utilities_notes:
+      "PEA electric · meter behind side wall. Water: community tank, valve under sink cabinet.",
+    service_providers_notes:
+      "Pool: Nok Cleaning. AC: Island Cool. Electrician: Sam (in Contacts).",
+    access_notes:
+      "Main lock code in house guide. Alarm panel: 1234 disarm. Shed padlock key on kitchen hook.",
+    key_contacts_notes:
+      "Community guard 08:00-20:00 at front gate. Owner WhatsApp on file.",
+    tax_notes: "Land tax paid annually in March — folder with receipt in Drive.",
+    handoff_notes:
+      "If I'm offline: check occupancy on Home, send guest guide, book Nok for turnovers.",
+    updated_at: daysAgo(2) + "T10:00:00.000Z",
+  },
+];
+
+export const demoVillaMaintenanceLogs: VillaMaintenanceLog[] = [
+  {
+    id: "77777777-7777-4777-8777-7777777777b1",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.sunset,
+    item: "Pool pump",
+    logged_on: daysAgo(40).slice(0, 10),
+    description: "Replaced impeller. Spare O-rings in shed box labeled Pool.",
+    vendor: "Island Pool Parts · Thong Sala",
+    photo_url: null,
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(40) + "T09:00:00.000Z",
+  },
+  {
+    id: "77777777-7777-4777-8777-7777777777b2",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.sunset,
+    item: "Water heater",
+    logged_on: daysAgo(120).slice(0, 10),
+    description: "New 50L unit installed on roof. Warranty card in MASTER INFO.",
+    vendor: "Rheem / local installer",
+    photo_url: null,
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(120) + "T11:00:00.000Z",
   },
 ];
 
@@ -1467,6 +1518,8 @@ export function createFreshDemoStore(): DemoStore {
     serviceOrders: structuredClone(demoServiceOrders),
     guestStays: structuredClone(demoGuestStays),
     houseGuides: structuredClone(demoHouseGuides),
+    villaMasterInfo: structuredClone(demoVillaMasterInfo),
+    villaMaintenanceLogs: structuredClone(demoVillaMaintenanceLogs),
     supportMessages: structuredClone(demoSupportMessages),
     guestBriefings: structuredClone(demoGuestBriefings),
     guestDeposits: structuredClone(demoGuestDeposits),

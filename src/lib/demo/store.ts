@@ -98,6 +98,8 @@ function createFreshDemoStore(): DemoStore {
     ],
     guestStays: [...base.guestStays, ...structuredClone(extraGuestStays)],
     houseGuides: [...base.houseGuides, ...structuredClone(extraHouseGuides)],
+    villaMasterInfo: [...(base.villaMasterInfo ?? [])],
+    villaMaintenanceLogs: [...(base.villaMaintenanceLogs ?? [])],
     supportMessages: [
       ...base.supportMessages,
       ...structuredClone(extraSupportMessages),
@@ -310,6 +312,8 @@ function normalizeStore(store: DemoStore): DemoStore {
       ...(store.guestStays ?? []).filter((s) => !seedStayIds.has(s.id)),
     ],
     houseGuides: fresh.houseGuides,
+    villaMasterInfo: fresh.villaMasterInfo ?? [],
+    villaMaintenanceLogs: fresh.villaMaintenanceLogs ?? [],
     supportMessages: fresh.supportMessages,
     guestBriefings: fresh.guestBriefings,
     guestDeposits: fresh.guestDeposits,

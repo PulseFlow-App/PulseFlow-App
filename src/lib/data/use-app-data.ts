@@ -427,6 +427,20 @@ function useDemoData(): AppData {
     return (store.houseGuides ?? []).filter((g) => g.org_id === profile.org_id);
   }, [store.houseGuides, store.memberships, profile]);
 
+  const villaMasterInfo = useMemo(() => {
+    if (!profile || profile.role === "guest") return [];
+    return (store.villaMasterInfo ?? []).filter(
+      (g) => g.org_id === profile.org_id,
+    );
+  }, [store.villaMasterInfo, profile]);
+
+  const villaMaintenanceLogs = useMemo(() => {
+    if (!profile || profile.role === "guest") return [];
+    return [...(store.villaMaintenanceLogs ?? [])]
+      .filter((g) => g.org_id === profile.org_id)
+      .sort((a, b) => b.logged_on.localeCompare(a.logged_on));
+  }, [store.villaMaintenanceLogs, profile]);
+
   const supportMessages = useMemo(() => {
     if (!profile) return [];
     const stayIds = new Set(guestStays.map((s) => s.id));
@@ -508,6 +522,8 @@ function useDemoData(): AppData {
     guestStays,
     activeStay,
     houseGuides,
+    villaMasterInfo,
+    villaMaintenanceLogs,
     supportMessages,
     guestBriefings,
     guestDeposits,
@@ -1769,6 +1785,82 @@ function useDemoData(): AppData {
           ],
         };
       });
+    },
+    upsertVillaMasterInfo: async (villaId, patch) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can edit master info.");
+      }
+      updateDemoStore((s) => {
+        const list = s.villaMasterInfo ?? [];
+        const existing = list.find((g) => g.villa_id === villaId);
+        const now = new Date().toISOString();
+        if (existing) {
+          return {
+            ...s,
+            villaMasterInfo: list.map((g) =>
+              g.villa_id === villaId ? { ...g, ...patch, updated_at: now } : g,
+            ),
+          };
+        }
+        return {
+          ...s,
+          villaMasterInfo: [
+            ...list,
+            {
+              id: uid("master"),
+              org_id: profile.org_id,
+              villa_id: villaId,
+              utilities_notes: null,
+              service_providers_notes: null,
+              access_notes: null,
+              key_contacts_notes: null,
+              tax_notes: null,
+              handoff_notes: null,
+              ...patch,
+              updated_at: now,
+            },
+          ],
+        };
+      });
+    },
+    addVillaMaintenanceLog: async (input) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role === "guest") {
+        throw new Error("Guests cannot edit the maintenance log.");
+      }
+      const item = input.item.trim();
+      if (!item) throw new Error("Add what was installed or repaired.");
+      updateDemoStore((s) => ({
+        ...s,
+        villaMaintenanceLogs: [
+          {
+            id: uid("maint"),
+            org_id: profile.org_id,
+            villa_id: input.villa_id,
+            item,
+            logged_on: input.logged_on,
+            description: input.description?.trim() || null,
+            vendor: input.vendor?.trim() || null,
+            photo_url: input.photo_url?.trim() || null,
+            created_by: profile.id,
+            created_at: new Date().toISOString(),
+          },
+          ...(s.villaMaintenanceLogs ?? []),
+        ],
+      }));
+    },
+    deleteVillaMaintenanceLog: async (logId) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      updateDemoStore((s) => ({
+        ...s,
+        villaMaintenanceLogs: (s.villaMaintenanceLogs ?? []).filter(
+          (l) => l.id !== logId,
+        ),
+      }));
     },
     requestStayDates: async (input) => {
       assertDemoWritable();

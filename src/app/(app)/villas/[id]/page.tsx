@@ -26,6 +26,8 @@ import {
   labelVillaStatus,
 } from "@/lib/i18n/labels";
 import { HouseGuideEditor } from "@/components/villas/house-guide-editor";
+import { VillaMasterInfoEditor } from "@/components/villas/villa-master-info-editor";
+import { VillaMaintenanceLog } from "@/components/villas/villa-maintenance-log";
 import { useVillaPhotoUpload } from "@/components/villas/use-villa-photo-upload";
 import {
   detailsToForm,
@@ -524,6 +526,8 @@ export default function VillaDetailPage({
       </Card>
 
       {canEditCore && !staff ? <HouseGuideEditor villaId={id} /> : null}
+      <VillaMasterInfoEditor villaId={id} />
+      <VillaMaintenanceLog villaId={id} />
 
       <ConfirmDialog
         open={confirmDelete}

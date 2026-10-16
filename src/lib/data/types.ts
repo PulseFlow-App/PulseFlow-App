@@ -11,6 +11,8 @@ import type {
   GuestStay,
   HouseGuide,
   Invite,
+  VillaMaintenanceLog,
+  VillaMasterInfo,
   MessageWithSender,
   OrgMembership,
   Organization,
@@ -57,6 +59,8 @@ export type AppData = {
   guestStays: GuestStay[];
   activeStay: GuestStay | null;
   houseGuides: HouseGuide[];
+  villaMasterInfo: VillaMasterInfo[];
+  villaMaintenanceLogs: VillaMaintenanceLog[];
   supportMessages: SupportMessageWithSender[];
   guestDeposits: GuestDeposit[];
   guestCharges: GuestCharge[];
@@ -261,6 +265,21 @@ export type AppData = {
       Omit<HouseGuide, "id" | "org_id" | "villa_id" | "updated_at">
     >,
   ) => Promise<void>;
+  upsertVillaMasterInfo: (
+    villaId: string,
+    patch: Partial<
+      Omit<VillaMasterInfo, "id" | "org_id" | "villa_id" | "updated_at">
+    >,
+  ) => Promise<void>;
+  addVillaMaintenanceLog: (input: {
+    villa_id: string;
+    item: string;
+    logged_on: string;
+    description?: string | null;
+    vendor?: string | null;
+    photo_url?: string | null;
+  }) => Promise<void>;
+  deleteVillaMaintenanceLog: (logId: string) => Promise<void>;
   requestStayDates: (input: {
     villa_id: string;
     check_in: string;

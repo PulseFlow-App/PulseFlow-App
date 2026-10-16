@@ -26,6 +26,8 @@ import type {
   Task,
   Villa,
   VillaAssignment,
+  VillaMaintenanceLog,
+  VillaMasterInfo,
 } from "@/lib/types";
 import { isConfirmedStayStatus, pickConfirmedStay, canUseSupportStay } from "@/lib/guest/confirmed-stay";
 import { canGuestSelfCancelStay } from "@/lib/guest/cancel-booking";
@@ -234,6 +236,8 @@ export function useSupabaseData(enabled: boolean): AppData {
     guestStays: [],
     activeStay: null,
     houseGuides: [],
+    villaMasterInfo: [],
+    villaMaintenanceLogs: [],
     supportMessages: [],
     guestBriefings: [],
     guestDeposits: [],
@@ -289,6 +293,9 @@ export function useSupabaseData(enabled: boolean): AppData {
     addGuestCharge: async () => undefined,
     cancelGuestStay: async () => undefined,
     upsertHouseGuide: async () => undefined,
+    upsertVillaMasterInfo: async () => undefined,
+    addVillaMaintenanceLog: async () => undefined,
+    deleteVillaMaintenanceLog: async () => undefined,
     requestStayDates: async () => undefined,
     respondStayDateRequest: async () => undefined,
     confirmStayDateRequest: async () => undefined,
@@ -320,6 +327,10 @@ export function useSupabaseData(enabled: boolean): AppData {
   );
   const [guestStays, setGuestStays] = useState<GuestStay[]>([]);
   const [houseGuides, setHouseGuides] = useState<HouseGuide[]>([]);
+  const [villaMasterInfo, setVillaMasterInfo] = useState<VillaMasterInfo[]>([]);
+  const [villaMaintenanceLogs, setVillaMaintenanceLogs] = useState<
+    VillaMaintenanceLog[]
+  >([]);
   const [supportMessages, setSupportMessages] = useState<
     SupportMessageWithSender[]
   >([]);
@@ -591,6 +602,27 @@ export function useSupabaseData(enabled: boolean): AppData {
         ? []
         : ((houseGuidesRes.data as HouseGuide[]) ?? []),
     );
+    if (!isGuest) {
+      const [masterRes, maintRes] = await Promise.all([
+        supabase.from("villa_master_info").select("*").in("org_id", orgIds),
+        supabase
+          .from("villa_maintenance_logs")
+          .select("*")
+          .in("org_id", orgIds)
+          .order("logged_on", { ascending: false }),
+      ]);
+      setVillaMasterInfo(
+        masterRes.error ? [] : ((masterRes.data as VillaMasterInfo[]) ?? []),
+      );
+      setVillaMaintenanceLogs(
+        maintRes.error
+          ? []
+          : ((maintRes.data as VillaMaintenanceLog[]) ?? []),
+      );
+    } else {
+      setVillaMasterInfo([]);
+      setVillaMaintenanceLogs([]);
+    }
     setSupportMessages(
       supportMessagesRes.error
         ? []
@@ -1006,6 +1038,8 @@ export function useSupabaseData(enabled: boolean): AppData {
     guestStays: scopedGuestStays,
     activeStay,
     houseGuides,
+    villaMasterInfo,
+    villaMaintenanceLogs,
     supportMessages: scopedSupportMessages,
     guestBriefings: scopedGuestBriefings,
     guestDeposits: scopedGuestDeposits,
@@ -3144,6 +3178,122 @@ export function useSupabaseData(enabled: boolean): AppData {
           throw error;
         }
       }
+      await refresh();
+    },
+    upsertVillaMasterInfo: async (villaId, patch) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role !== "owner" && profile.role !== "manager") {
+        throw new Error("Only owners or managers can edit master info.");
+      }
+      const villa =
+        villas.find((v) => v.id === villaId) ??
+        allOrgVillas.find((v) => v.id === villaId);
+      if (!villa || villa.org_id !== profile.org_id) {
+        throw new Error("Property not found.");
+      }
+      const supabase = createClient();
+      const now = new Date().toISOString();
+      const existing = villaMasterInfo.find((g) => g.villa_id === villaId);
+      if (existing) {
+        const { error } = await supabase
+          .from("villa_master_info")
+          .update({ ...patch, updated_at: now })
+          .eq("id", existing.id);
+        if (error) {
+          if (
+            error.code === "42P01" ||
+            error.code === "PGRST205" ||
+            error.message.includes("does not exist")
+          ) {
+            throw new Error(
+              "Master info needs migration 051 on Supabase.",
+            );
+          }
+          throw error;
+        }
+      } else {
+        const { error } = await supabase.from("villa_master_info").insert({
+          org_id: profile.org_id,
+          villa_id: villaId,
+          utilities_notes: null,
+          service_providers_notes: null,
+          access_notes: null,
+          key_contacts_notes: null,
+          tax_notes: null,
+          handoff_notes: null,
+          ...patch,
+          updated_at: now,
+        });
+        if (error) {
+          if (
+            error.code === "42P01" ||
+            error.code === "PGRST205" ||
+            error.message.includes("does not exist")
+          ) {
+            throw new Error(
+              "Master info needs migration 051 on Supabase.",
+            );
+          }
+          throw error;
+        }
+      }
+      await refresh();
+    },
+    addVillaMaintenanceLog: async (input) => {
+      if (!profile) throw new Error("Not signed in.");
+      if (profile.role === "guest") {
+        throw new Error("Guests cannot edit the maintenance log.");
+      }
+      const villa =
+        villas.find((v) => v.id === input.villa_id) ??
+        allOrgVillas.find((v) => v.id === input.villa_id);
+      if (!villa || villa.org_id !== profile.org_id) {
+        throw new Error("Property not found.");
+      }
+      const item = input.item.trim();
+      if (!item) throw new Error("Add what was installed or repaired.");
+      const supabase = createClient();
+      const { error } = await supabase.from("villa_maintenance_logs").insert({
+        org_id: profile.org_id,
+        villa_id: input.villa_id,
+        item,
+        logged_on: input.logged_on,
+        description: input.description?.trim() || null,
+        vendor: input.vendor?.trim() || null,
+        photo_url: input.photo_url?.trim() || null,
+        created_by: profile.id,
+      });
+      if (error) {
+        if (
+          error.code === "42P01" ||
+          error.code === "PGRST205" ||
+          error.message.includes("does not exist")
+        ) {
+          throw new Error(
+            "Maintenance log needs migration 051 on Supabase.",
+          );
+        }
+        throw error;
+      }
+      await refresh();
+    },
+    deleteVillaMaintenanceLog: async (logId) => {
+      if (!profile) throw new Error("Not signed in.");
+      const row = villaMaintenanceLogs.find((l) => l.id === logId);
+      if (!row) throw new Error("Log entry not found.");
+      if (
+        profile.role !== "owner" &&
+        profile.role !== "manager" &&
+        row.created_by !== profile.id
+      ) {
+        throw new Error("You can only delete your own log entries.");
+      }
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("villa_maintenance_logs")
+        .delete()
+        .eq("id", logId);
+      if (error) throw error;
       await refresh();
     },
     requestStayDates: async (input) => {

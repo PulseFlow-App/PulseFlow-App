@@ -374,6 +374,34 @@ export type HouseGuide = {
   updated_at: string;
 };
 
+/** Team-only master ops file so someone else can run the property. */
+export type VillaMasterInfo = {
+  id: string;
+  org_id: string;
+  villa_id: string;
+  utilities_notes: string | null;
+  service_providers_notes: string | null;
+  access_notes: string | null;
+  key_contacts_notes: string | null;
+  tax_notes: string | null;
+  handoff_notes: string | null;
+  updated_at: string;
+};
+
+/** Running maintenance / capital record per property. */
+export type VillaMaintenanceLog = {
+  id: string;
+  org_id: string;
+  villa_id: string;
+  item: string;
+  logged_on: string;
+  description: string | null;
+  vendor: string | null;
+  photo_url: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
 /** Support chat: guest ↔ owner/manager only (one thread per stay). */
 export type SupportMessage = {
   id: string;
