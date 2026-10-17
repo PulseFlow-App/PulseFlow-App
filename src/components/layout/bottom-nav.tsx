@@ -3,17 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  Building2,
-  CheckSquare,
-  Users,
-  Receipt,
-  CalendarClock,
-  MessageCircle,
-  BedDouble,
-  Settings,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useData } from "@/lib/data/use-app-data";
 import { isGuestApp, isStaffApp } from "@/lib/roles";
@@ -22,11 +11,15 @@ import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 import { PulseWordmark } from "@/components/brand/pulse-wordmark";
 import { useBrandName } from "@/lib/i18n/use-brand-name";
+import {
+  PulseIcon,
+  type PulseIconName,
+} from "@/components/icons/pulse-icon";
 
 type Tab = {
   href: string;
   labelKey: MessageKey;
-  icon: typeof Home;
+  icon: PulseIconName;
 };
 
 type TabSet = "company" | "main" | "staff" | "guest";
@@ -34,35 +27,35 @@ type TabSet = "company" | "main" | "staff" | "guest";
 const NAV_TAB_SET_KEY = "pulseflow.navTabSet";
 
 const mainTabs: Tab[] = [
-  { href: "/home", labelKey: "nav.home", icon: Home },
-  { href: "/villas", labelKey: "nav.villas", icon: Building2 },
-  { href: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
-  { href: "/contacts", labelKey: "nav.contacts", icon: Users },
-  { href: "/bills", labelKey: "nav.bills", icon: Receipt },
+  { href: "/home", labelKey: "nav.home", icon: "home" },
+  { href: "/villas", labelKey: "nav.villas", icon: "properties" },
+  { href: "/tasks", labelKey: "nav.tasks", icon: "tasks" },
+  { href: "/contacts", labelKey: "nav.contacts", icon: "contacts" },
+  { href: "/bills", labelKey: "nav.bills", icon: "bills" },
 ];
 
 const companyHostTabs: Tab[] = [
-  { href: "/home", labelKey: "nav.home", icon: Home },
-  { href: "/villas", labelKey: "nav.villas", icon: Building2 },
-  { href: "/guests", labelKey: "nav.guests", icon: BedDouble },
-  { href: "/tasks", labelKey: "nav.tasks", icon: CheckSquare },
-  { href: "/contacts", labelKey: "nav.contacts", icon: Users },
-  { href: "/bills", labelKey: "nav.bills", icon: Receipt },
+  { href: "/home", labelKey: "nav.home", icon: "home" },
+  { href: "/villas", labelKey: "nav.villas", icon: "properties" },
+  { href: "/guests", labelKey: "nav.guests", icon: "guests" },
+  { href: "/tasks", labelKey: "nav.tasks", icon: "tasks" },
+  { href: "/contacts", labelKey: "nav.contacts", icon: "contacts" },
+  { href: "/bills", labelKey: "nav.bills", icon: "bills" },
 ];
 
 const staffTabs: Tab[] = [
-  { href: "/home", labelKey: "nav.home", icon: Home },
-  { href: "/jobs", labelKey: "nav.jobs", icon: CalendarClock },
-  { href: "/villas", labelKey: "nav.villas", icon: Building2 },
-  { href: "/messages", labelKey: "nav.chat", icon: MessageCircle },
-  { href: "/bills", labelKey: "nav.bills", icon: Receipt },
+  { href: "/home", labelKey: "nav.home", icon: "home" },
+  { href: "/jobs", labelKey: "nav.jobs", icon: "jobs" },
+  { href: "/villas", labelKey: "nav.villas", icon: "properties" },
+  { href: "/messages", labelKey: "nav.chat", icon: "chat" },
+  { href: "/bills", labelKey: "nav.bills", icon: "bills" },
 ];
 
 const guestTabs: Tab[] = [
-  { href: "/home", labelKey: "guest.nav.stay", icon: Home },
-  { href: "/villas", labelKey: "guest.nav.guide", icon: Building2 },
-  { href: "/messages", labelKey: "guest.nav.support", icon: MessageCircle },
-  { href: "/bills", labelKey: "guest.nav.bills", icon: Receipt },
+  { href: "/home", labelKey: "guest.nav.stay", icon: "home" },
+  { href: "/villas", labelKey: "guest.nav.guide", icon: "properties" },
+  { href: "/messages", labelKey: "guest.nav.support", icon: "chat" },
+  { href: "/bills", labelKey: "guest.nav.bills", icon: "bills" },
 ];
 
 function tabsForSet(set: TabSet): Tab[] {
@@ -124,9 +117,26 @@ export function useAppTabs() {
 
   if (data.ready && resolved) return tabsForSet(resolved);
   if (cachedSet) return tabsForSet(cachedSet);
-  // First visit before profile loads: reserve company host slots so owner/
-  // manager footers do not grow from 4 → 6 after hydration.
   return companyHostTabs;
+}
+
+function NavGlyph({
+  name,
+  active,
+  onDark,
+}: {
+  name: PulseIconName;
+  active: boolean;
+  onDark: boolean;
+}) {
+  return (
+    <PulseIcon
+      name={name}
+      surface={onDark && !active ? "nav" : "canvas"}
+      className="size-4 shrink-0 md:size-5"
+      aria-hidden
+    />
+  );
 }
 
 /** Desktop / tablet side rail — SaaS product chrome. */
@@ -146,7 +156,7 @@ export function SideNav() {
         />
       </Link>
       <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
-        {tabs.map(({ href, labelKey, icon: Icon }) => {
+        {tabs.map(({ href, labelKey, icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
@@ -159,7 +169,7 @@ export function SideNav() {
                   : "text-muted hover:bg-sand-deep hover:text-ink",
               )}
             >
-              <Icon className="size-5 shrink-0" strokeWidth={active ? 2.4 : 2} />
+              <NavGlyph name={icon} active={active} onDark={false} />
               <span className="truncate">{t(labelKey)}</span>
             </Link>
           );
@@ -174,7 +184,11 @@ export function SideNav() {
             : "text-muted hover:bg-sand-deep hover:text-ink",
         )}
       >
-        <Settings className="size-5 shrink-0" strokeWidth={2} />
+        <NavGlyph
+          name="settings"
+          active={pathname.startsWith("/settings")}
+          onDark={false}
+        />
         <span>{t("nav.settings")}</span>
       </Link>
     </aside>
@@ -186,14 +200,13 @@ export function BottomNav() {
   const { t } = useI18n();
   const data = useData();
   const tabs = useAppTabs();
-  // 5 tabs + long localized labels overflow phones — icons only when crowded.
   const iconOnly = tabs.length >= 5;
   const tabsReady = data.ready && Boolean(data.profile?.role);
 
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden">
       <ul className="pointer-events-auto mx-auto flex h-12 w-full max-w-lg items-stretch justify-between gap-0 overflow-hidden rounded-2xl bg-nav px-0.5 shadow-[var(--shadow-nav)]">
-        {tabs.map(({ href, labelKey, icon: Icon }) => {
+        {tabs.map(({ href, labelKey, icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           const label = t(labelKey);
           return (
@@ -210,11 +223,7 @@ export function BottomNav() {
                 )}
                 tabIndex={tabsReady ? undefined : -1}
               >
-                <Icon
-                  className="size-4 shrink-0"
-                  strokeWidth={active ? 2.4 : 1.9}
-                  aria-hidden
-                />
+                <NavGlyph name={icon} active={active} onDark />
                 {!iconOnly ? (
                   <span className="max-w-full truncate text-[8px] font-bold leading-none">
                     {label}

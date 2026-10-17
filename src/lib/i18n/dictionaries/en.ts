@@ -191,6 +191,32 @@ const en = {
     "New properties you add go to No company (your own list). You only see company properties assigned to you - not the full inventory. Booking you for a job also grants access.",
   "villas.details": "Property details",
   "villas.detailsHint": "All optional. Only filled fields show on the card.",
+  "villas.quickSources": "Quick fill (optional)",
+  "villas.quickSourcesHint":
+    "Skip typing facts by sharing a listing, folder, document, or paste.",
+  "villas.placeLookup": "Find a known place",
+  "villas.placeLookupPh": "e.g. Villa Sila Koh Phangan",
+  "villas.placeLookupHint":
+    "Search fills the maps pin and area - same lookup as the chat agent.",
+  "villas.listingUrl": "Listing link",
+  "villas.listingUrlPh": "https://www.airbnb.com/rooms/…",
+  "villas.listingUrlHint":
+    "Airbnb, Booking.com, VRBO, or any aggregator page with the property.",
+  "villas.driveUrl": "Photo / docs folder",
+  "villas.driveUrlPh": "https://drive.google.com/…",
+  "villas.driveUrlHint": "Google Drive, Dropbox, or shared album link.",
+  "villas.infoDoc": "Info document",
+  "villas.infoDocAdd": "Upload PDF or sheet",
+  "villas.infoDocAttached": "Attached document",
+  "villas.infoDocHint": "PDF, Word, Excel, CSV, or text with house facts.",
+  "villas.sourceNotes": "Paste listing text",
+  "villas.sourceNotesPh":
+    "Paste from Airbnb, WhatsApp, email, or a spreadsheet…",
+  "villas.sourceNotesHint":
+    "Raw text is fine - bedrooms, amenities, access notes, whatever you have.",
+  "villas.openListing": "Open listing",
+  "villas.openDrive": "Open folder",
+  "villas.openInfoDoc": "Open document",
   "villas.masterInfoTitle": "Master info",
   "villas.masterInfoHint":
     "Team-only handoff file so someone else can run this property without you.",

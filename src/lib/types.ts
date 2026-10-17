@@ -161,6 +161,15 @@ export type Villa = {
   description: string | null;
   /** Exterior / facade photo so staff can recognize the place */
   photo_url: string | null;
+  /** Airbnb / Booking.com / VRBO / other aggregator listing */
+  listing_url: string | null;
+  /** Google Drive / Dropbox folder with photos or docs */
+  drive_url: string | null;
+  /** Uploaded PDF / sheet / doc with property info */
+  info_doc_url: string | null;
+  info_doc_name: string | null;
+  /** Pasted listing text or freeform notes from chat / email */
+  source_notes: string | null;
   status: VillaStatus;
   check_in: string | null;
   check_out: string | null;

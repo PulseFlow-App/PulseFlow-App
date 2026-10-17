@@ -116,6 +116,11 @@ export type AppData = {
         | "location_url"
         | "description"
         | "photo_url"
+        | "listing_url"
+        | "drive_url"
+        | "info_doc_url"
+        | "info_doc_name"
+        | "source_notes"
         | "property_type"
         | "sq_m"
         | "bedrooms"
@@ -140,6 +145,11 @@ export type AppData = {
     location_url: string;
     description?: string;
     photo_url?: string | null;
+    listing_url?: string | null;
+    drive_url?: string | null;
+    info_doc_url?: string | null;
+    info_doc_name?: string | null;
+    source_notes?: string | null;
     status?: Villa["status"];
     /** Owners default to company; managers default to personal side work. */
     scope?: "company" | "personal";

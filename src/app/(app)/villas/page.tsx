@@ -10,6 +10,11 @@ import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { VillaDetailsFields } from "@/components/villas/villa-details-fields";
 import { VillaListCard } from "@/components/villas/villa-list-card";
+import {
+  EMPTY_VILLA_QUICK_SOURCES,
+  VillaQuickSources,
+  quickSourcesPayload,
+} from "@/components/villas/villa-quick-sources";
 import { useVillaPhotoUpload } from "@/components/villas/use-villa-photo-upload";
 import { useData } from "@/lib/data/use-app-data";
 import {
@@ -40,6 +45,7 @@ export default function VillasPage() {
   const [locationUrl, setLocationUrl] = useState("");
   const [description, setDescription] = useState("");
   const [details, setDetails] = useState(EMPTY_VILLA_DETAILS_FORM);
+  const [quickSources, setQuickSources] = useState(EMPTY_VILLA_QUICK_SOURCES);
   const [scope, setScope] = useState<"company" | "personal">("personal");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -192,6 +198,16 @@ export default function VillasPage() {
               placeholder="Srithanu"
             />
           </div>
+          <VillaQuickSources
+            value={quickSources}
+            onChange={setQuickSources}
+            uploadDoc={data.uploadVillaPhoto}
+            onPlacePick={(place) => {
+              setLocationUrl(place.mapsUrl);
+              if (place.area) setArea(place.area);
+              if (!name.trim()) setName(place.label);
+            }}
+          />
           <div>
             <Label>{t("villas.locationLink")}</Label>
             <Input
@@ -283,6 +299,7 @@ export default function VillasPage() {
                       location_url: normalizeLocationUrl(locationUrl),
                       description: description.trim() || undefined,
                       photo_url: photoUrl,
+                      ...quickSourcesPayload(quickSources),
                       ...formToDetails(details),
                       scope:
                         inCompany && isOwner
@@ -295,6 +312,7 @@ export default function VillasPage() {
                     setDescription("");
                     photo.resetPhoto();
                     setDetails(EMPTY_VILLA_DETAILS_FORM);
+                    setQuickSources(EMPTY_VILLA_QUICK_SOURCES);
                     setShowAdd(false);
                     setError(null);
                   } catch (e: unknown) {

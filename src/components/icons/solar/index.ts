@@ -1,0 +1,36 @@
+/** Vendored from Iconify Solar Bold Duotone — color via soft/ink props. */
+
+export { SolarHomeSmile } from "./home-smile";
+export { SolarHome2 } from "./home2";
+export { SolarBuildings2 } from "./buildings2";
+export { SolarChecklist } from "./checklist";
+export { SolarBed } from "./bed";
+export { SolarBillList } from "./bill-list";
+export { SolarUsersGroup } from "./users-group";
+export { SolarBroom } from "./broom";
+export { SolarCalendarMark } from "./calendar-mark";
+export { SolarChatDots } from "./chat-dots";
+export { SolarMapPoint } from "./map-point";
+export { SolarKeyMinimal } from "./key-minimal";
+export { SolarMagicWand } from "./magic-wand";
+export { SolarCheckCircle } from "./check-circle";
+export { SolarDangerTriangle } from "./danger-triangle";
+export { SolarBell } from "./bell";
+export { SolarWalletMoney } from "./wallet-money";
+export { SolarWifiRouter } from "./wifi-router";
+export { SolarHammer } from "./hammer";
+export { SolarStars } from "./stars";
+export { SolarSettings } from "./settings";
+export { SolarClipboardList } from "./clipboard-list";
+export { SolarClipboardCheck } from "./clipboard-check";
+export { SolarMagnifier } from "./magnifier";
+export { SolarCupStar } from "./cup-star";
+export { SolarStar } from "./star";
+export { SolarBook } from "./book";
+export { SolarGlobe } from "./globe";
+export { SolarShield } from "./shield";
+export { SolarUserPlus } from "./user-plus";
+export { SolarLogout } from "./logout";
+export { SolarHeadphones } from "./headphones";
+export { SolarDocumentText } from "./document-text";
+export { SolarMedalStar } from "./medal-star";

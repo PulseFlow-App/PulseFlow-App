@@ -105,7 +105,14 @@ import {
   rememberLocallyRead,
 } from "@/lib/notifications-read";
 import { capitalizeLabel } from "@/lib/format-label";
-import { normalizeVillaRow, omitVillaDetails, pickVillaDetails, isMissingVillaDetailsColumn } from "@/lib/villas/property-details";
+import {
+  normalizeVillaRow,
+  omitVillaDetails,
+  omitVillaQuickSources,
+  pickVillaDetails,
+  isMissingVillaDetailsColumn,
+  isMissingVillaQuickSourceColumn,
+} from "@/lib/villas/property-details";
 import { isTransientPhotoUrl } from "@/lib/villas/prepare-photo";
 import { normalizeContactRow } from "@/lib/contacts/messengers";
 
@@ -1637,6 +1644,13 @@ export function useSupabaseData(enabled: boolean): AppData {
           .eq("id", id);
         error = retry.error;
       }
+      if (error && isMissingVillaQuickSourceColumn(error.message)) {
+        const retry = await supabase
+          .from("villas")
+          .update(omitVillaQuickSources(payload))
+          .eq("id", id);
+        error = retry.error;
+      }
       if (error) throw error;
       if (villa) {
         const alerts = buildVillaDateNotifications({
@@ -1695,6 +1709,11 @@ export function useSupabaseData(enabled: boolean): AppData {
         location_url: input.location_url.trim(),
         description: input.description?.trim() || null,
         photo_url,
+        listing_url: input.listing_url?.trim() || null,
+        drive_url: input.drive_url?.trim() || null,
+        info_doc_url: input.info_doc_url ?? null,
+        info_doc_name: input.info_doc_name?.trim() || null,
+        source_notes: input.source_notes?.trim() || null,
         status: input.status ?? "available",
         created_by: profile.id,
         ...pickVillaDetails(input),
@@ -1702,6 +1721,12 @@ export function useSupabaseData(enabled: boolean): AppData {
       let { error } = await supabase.from("villas").insert(row);
       if (error && isMissingVillaDetailsColumn(error.message)) {
         const retry = await supabase.from("villas").insert(omitVillaDetails(row));
+        error = retry.error;
+      }
+      if (error && isMissingVillaQuickSourceColumn(error.message)) {
+        const retry = await supabase
+          .from("villas")
+          .insert(omitVillaQuickSources(row));
         error = retry.error;
       }
       if (error) throw error;

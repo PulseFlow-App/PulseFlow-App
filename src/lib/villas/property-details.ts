@@ -168,7 +168,32 @@ export function pickVillaDetails(
 }
 
 export function normalizeVillaRow<T extends Villa>(villa: T): T {
-  return { ...villa, ...pickVillaDetails(villa) };
+  return {
+    ...villa,
+    ...pickVillaDetails(villa),
+    listing_url: villa.listing_url ?? null,
+    drive_url: villa.drive_url ?? null,
+    info_doc_url: villa.info_doc_url ?? null,
+    info_doc_name: villa.info_doc_name ?? null,
+    source_notes: villa.source_notes ?? null,
+  };
+}
+
+export function isMissingVillaQuickSourceColumn(message: string | undefined) {
+  if (!message) return false;
+  return /(listing_url|drive_url|info_doc_url|info_doc_name|source_notes).*(column|schema cache)|(column|schema cache).*(listing_url|drive_url|info_doc_url|info_doc_name|source_notes)/i.test(
+    message,
+  );
+}
+
+export function omitVillaQuickSources<T extends object>(row: T): T {
+  const next = { ...row } as T & Record<string, unknown>;
+  delete next.listing_url;
+  delete next.drive_url;
+  delete next.info_doc_url;
+  delete next.info_doc_name;
+  delete next.source_notes;
+  return next;
 }
 
 function triFromBool(value: boolean | null): TriSelect {

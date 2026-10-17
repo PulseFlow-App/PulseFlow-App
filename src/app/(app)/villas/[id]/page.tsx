@@ -12,6 +12,12 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { VillaFacts } from "@/components/villas/villa-facts";
 import { VillaDetailsFields } from "@/components/villas/villa-details-fields";
+import {
+  EMPTY_VILLA_QUICK_SOURCES,
+  VillaQuickSources,
+  quickSourcesFromVilla,
+  quickSourcesPayload,
+} from "@/components/villas/villa-quick-sources";
 import { useData } from "@/lib/data/use-app-data";
 import type { CleaningStatus, VillaStatus } from "@/lib/design-tokens";
 import { canDeleteVilla, canEditVillaCore, isStaffApp } from "@/lib/roles";
@@ -90,6 +96,7 @@ export default function VillaDetailPage({
   const [locationUrl, setLocationUrl] = useState("");
   const [description, setDescription] = useState("");
   const [details, setDetails] = useState(EMPTY_VILLA_DETAILS_FORM);
+  const [quickSources, setQuickSources] = useState(EMPTY_VILLA_QUICK_SOURCES);
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -128,6 +135,7 @@ export default function VillaDetailPage({
     setDescription(villa.description ?? "");
     photo.setPhotoUrl(villa.photo_url ?? null);
     setDetails(detailsToForm(villa));
+    setQuickSources(quickSourcesFromVilla(villa));
     // Only hydrate when opening a villa - re-syncing on every server refresh
     // would wipe a just-uploaded photo before Save.
   }, [villa?.id]);
@@ -169,6 +177,7 @@ export default function VillaDetailPage({
         location_url: normalizeLocationUrl(locationUrl),
         description: description.trim() || null,
         photo_url: photoUrl,
+        ...quickSourcesPayload(quickSources),
         ...formToDetails(details),
         ...(canEditCore ? { name, area: area || null } : {}),
       });
@@ -256,6 +265,15 @@ export default function VillaDetailPage({
               <Label>Area</Label>
               <Input value={area} onChange={(e) => setArea(e.target.value)} />
             </div>
+            <VillaQuickSources
+              value={quickSources}
+              onChange={setQuickSources}
+              uploadDoc={data.uploadVillaPhoto}
+              onPlacePick={(place) => {
+                setLocationUrl(place.mapsUrl);
+                if (place.area) setArea(place.area);
+              }}
+            />
             <div>
               <Label>Location link</Label>
               <Input
@@ -287,16 +305,56 @@ export default function VillaDetailPage({
               </p>
             ) : null}
             <VillaFacts villa={villa} className="mt-3" />
-            {villa.location_url ? (
-              <a
-                href={normalizeLocationUrl(villa.location_url)}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
-              >
-                <ExternalLink className="size-3.5" />
-                {t("villas.locationLink")}
-              </a>
+            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
+              {villa.location_url ? (
+                <a
+                  href={normalizeLocationUrl(villa.location_url)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+                >
+                  <ExternalLink className="size-3.5" />
+                  {t("villas.locationLink")}
+                </a>
+              ) : null}
+              {villa.listing_url ? (
+                <a
+                  href={villa.listing_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+                >
+                  <ExternalLink className="size-3.5" />
+                  {t("villas.openListing")}
+                </a>
+              ) : null}
+              {villa.drive_url ? (
+                <a
+                  href={villa.drive_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+                >
+                  <ExternalLink className="size-3.5" />
+                  {t("villas.openDrive")}
+                </a>
+              ) : null}
+              {villa.info_doc_url ? (
+                <a
+                  href={villa.info_doc_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+                >
+                  <ExternalLink className="size-3.5" />
+                  {villa.info_doc_name || t("villas.openInfoDoc")}
+                </a>
+              ) : null}
+            </div>
+            {villa.source_notes ? (
+              <p className="mt-3 whitespace-pre-wrap rounded-xl bg-canvas-deep px-3 py-2 text-sm text-ink">
+                <LocalizedText text={villa.source_notes} />
+              </p>
             ) : null}
             <div className="mt-4 space-y-3">
               <div>

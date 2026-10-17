@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ExternalLink, MapPin } from "lucide-react";
+import { ChevronDown, ExternalLink } from "lucide-react";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
 import { VillaPhoto } from "@/components/villas/villa-photo";
@@ -72,7 +73,7 @@ export function VillaListCard({
             </h3>
             {villa.area ? (
               <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted">
-                <MapPin className="size-3 shrink-0" />
+                <PulseIcon name="map" className="size-3" />
                 {villa.area}
               </p>
             ) : null}

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Copy, KeyRound, Trash2 } from "lucide-react";
+import { Copy, Trash2 } from "lucide-react";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
@@ -176,7 +177,7 @@ export function McpSettingsCard() {
     <Card className="space-y-4 p-4 sm:p-5">
       <div>
         <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight text-ink">
-          <KeyRound className="size-5 text-primary" aria-hidden />
+          <PulseIcon name="key" className="size-5" aria-hidden />
           {t("settings.mcpTitle")}
         </h2>
         <p className="type-meta mt-1">{t("settings.mcpHint")}</p>

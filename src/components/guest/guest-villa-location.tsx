@@ -1,8 +1,9 @@
 "use client";
 
-import { ExternalLink, MapPin } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { useI18n } from "@/lib/i18n/provider";
 import { normalizeLocationUrl } from "@/lib/utils";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 
 export function GuestVillaLocation({
   area,
@@ -22,7 +23,7 @@ export function GuestVillaLocation({
     <div className="space-y-1">
       {area ? (
         <p className="flex items-center gap-1.5 text-sm text-muted">
-          <MapPin className="size-3.5 shrink-0" />
+          <PulseIcon name="map" className="size-3.5" />
           {area}
         </p>
       ) : null}

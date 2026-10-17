@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, MessageCircle, Settings } from "lucide-react";
 import { PulseWordmark } from "@/components/brand/pulse-wordmark";
 import { useBrandName } from "@/lib/i18n/use-brand-name";
 import { useI18n } from "@/lib/i18n/provider";
 import { useData } from "@/lib/data/use-app-data";
 import { canUseTeamChat } from "@/lib/roles";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { AppMenuButton } from "./app-menu";
 
 const headerIconBtn =
@@ -46,7 +46,7 @@ export function AppHeader({
           className={headerIconBtn}
           aria-label={t("nav.notifications")}
         >
-          <Bell className="size-4" strokeWidth={1.9} />
+          <PulseIcon name="bell" className="size-4" />
           {unreadNotifications > 0 ? (
             <span className="absolute right-0.5 top-0.5 flex h-3 min-w-3 items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-bold text-white">
               {unreadNotifications > 9 ? "9+" : unreadNotifications}
@@ -59,7 +59,7 @@ export function AppHeader({
             className={headerIconBtn}
             aria-label={t("nav.messages")}
           >
-            <MessageCircle className="size-4" strokeWidth={1.9} />
+            <PulseIcon name="chat" className="size-4" />
             {unreadMessages > 0 ? (
               <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-primary" />
             ) : null}
@@ -70,7 +70,7 @@ export function AppHeader({
           className={`${headerIconBtn} md:hidden`}
           aria-label={t("nav.settings")}
         >
-          <Settings className="size-4" strokeWidth={1.9} />
+          <PulseIcon name="settings" className="size-4" />
         </Link>
         <AppMenuButton />
       </div>

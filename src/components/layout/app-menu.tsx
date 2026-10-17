@@ -4,24 +4,7 @@ import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  BookOpen,
-  Building2,
-  ClipboardList,
-  FileText,
-  Globe,
-  LifeBuoy,
-  Menu,
-  Shield,
-  Star,
-  Trophy,
-  UserPlus,
-  Users,
-  X,
-  Search,
-  CalendarClock,
-  LogOut,
-} from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import {
@@ -35,11 +18,15 @@ import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
 import { cn } from "@/lib/utils";
 import { labelRole } from "@/lib/i18n/labels";
+import {
+  PulseIcon,
+  type PulseIconName,
+} from "@/components/icons/pulse-icon";
 
 type MenuLink = {
   href: string;
   label: string;
-  icon: typeof Star;
+  icon: PulseIconName;
   external?: boolean;
 };
 
@@ -98,26 +85,26 @@ export function AppMenuButton() {
     primary.push({
       href: "/endorsements",
       label: t("nav.endorsements"),
-      icon: Star,
+      icon: "star",
     });
     primary.push({
       href: "/leaderboard",
       label: t("nav.leaderboard"),
-      icon: Trophy,
+      icon: "trophy",
     });
   }
   if (showReports) {
     primary.push({
       href: "/reports",
       label: t("nav.reports"),
-      icon: ClipboardList,
+      icon: "clipboard",
     });
   }
   if (isOpsLead) {
     primary.push({
       href: "/talent",
       label: t("nav.talent"),
-      icon: Search,
+      icon: "search",
     });
   }
 
@@ -126,31 +113,31 @@ export function AppMenuButton() {
     manage.push({
       href: "/contacts",
       label: t("nav.contacts"),
-      icon: Users,
+      icon: "contacts",
     });
     manage.push({
       href: "/date-requests",
       label: t("nav.dateRequests"),
-      icon: CalendarClock,
+      icon: "jobs",
     });
     manage.push({
       href: "/company",
       label: t("nav.company"),
-      icon: Building2,
+      icon: "properties",
     });
   }
   if (showInvites) {
     manage.push({
       href: "/invites",
       label: t("nav.invites"),
-      icon: UserPlus,
+      icon: "invite",
     });
   }
   if (!isGuest && profile.role !== "owner") {
     manage.push({
       href: "/settings#talent-profile",
       label: t("talent.settingsTitle"),
-      icon: Search,
+      icon: "search",
     });
   }
 
@@ -171,13 +158,13 @@ export function AppMenuButton() {
     {
       href: guideHref,
       label: t("settings.userGuide"),
-      icon: BookOpen,
+      icon: "guide",
       external: true,
     },
     {
       href: "https://www.pulseflow.site",
       label: t("settings.website"),
-      icon: Globe,
+      icon: "globe",
       external: true,
     },
   ];
@@ -185,18 +172,18 @@ export function AppMenuButton() {
     account.push({
       href: "/support",
       label: t("settings.supportLink"),
-      icon: LifeBuoy,
+      icon: "support",
     });
   }
   account.push({
     href: legalPageHref("/terms", legalAudience),
     label: t("settings.termsLink"),
-    icon: FileText,
+    icon: "document",
   });
   account.push({
     href: legalPageHref("/privacy", legalAudience),
     label: t("settings.privacyLink"),
-    icon: Shield,
+    icon: "shield",
   });
 
   const sections: MenuSection[] = [
@@ -304,7 +291,7 @@ export function AppMenuButton() {
                   onClick={() => void signOut()}
                   className="flex min-h-11 w-full items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-sm font-bold text-danger transition hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/30"
                 >
-                  <LogOut className="size-4 shrink-0" strokeWidth={2.2} />
+                  <PulseIcon name="logout" className="size-4" soft="danger" />
                   {t("settings.signOut")}
                 </button>
               </div>
@@ -338,7 +325,6 @@ function MenuRow({
   link: MenuLink;
   onNavigate: () => void;
 }) {
-  const Icon = link.icon;
   const className =
     "flex min-h-11 w-full items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-[0.9375rem] font-semibold text-ink transition hover:bg-primary-soft hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
 
@@ -351,7 +337,7 @@ function MenuRow({
         onClick={onNavigate}
         className={className}
       >
-        <Icon className="size-5 shrink-0 text-ink/70" strokeWidth={1.9} />
+        <PulseIcon name={link.icon} className="size-5" />
         <span className="truncate">{link.label}</span>
       </a>
     );
@@ -359,7 +345,7 @@ function MenuRow({
 
   return (
     <Link href={link.href} onClick={onNavigate} className={className}>
-      <Icon className="size-5 shrink-0 text-ink/70" strokeWidth={1.9} />
+      <PulseIcon name={link.icon} className="size-5" />
       <span className="truncate">{link.label}</span>
     </Link>
   );

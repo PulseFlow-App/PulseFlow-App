@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Camera, KeyRound, Wifi } from "lucide-react";
+import { Camera } from "lucide-react";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { GuestVillaLocation } from "@/components/guest/guest-villa-location";
 import { VillaFacts } from "@/components/villas/villa-facts";
 import { GuestBriefingsCard } from "@/components/guest/guest-briefings-card";
@@ -207,7 +208,7 @@ export function GuestBookingGuide() {
               <div className="grid gap-2 text-sm">
                 {guide.wifi_ssid ? (
                   <p className="flex gap-2">
-                    <Wifi className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <PulseIcon name="wifi" className="mt-0.5 size-4" />
                     <span>
                       <strong>{t("guest.wifi")}</strong>: {guide.wifi_ssid}
                       {guide.wifi_password ? (
@@ -223,7 +224,7 @@ export function GuestBookingGuide() {
                 ) : null}
                 {guide.gate_code ? (
                   <p className="flex gap-2">
-                    <KeyRound className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <PulseIcon name="key" className="mt-0.5 size-4" />
                     <span>
                       <strong>{t("guest.gate")}</strong>: {guide.gate_code}
                     </span>

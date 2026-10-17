@@ -124,12 +124,13 @@ export function TaskCompleteControl({
     });
   };
 
+  /* size-* uses Horizon --spacing-N (size-4 = 32px). Pin the tick in rem. */
   const tick = (
-    <span className="relative mt-0.5 inline-flex size-4 shrink-0 items-center justify-center">
+    <span className="relative -m-1.5 mt-[-0.125rem] inline-flex size-8 shrink-0 items-center justify-center self-start">
       <button
         type="button"
         className={cn(
-          "relative size-4 rounded-full border-[1.5px] border-secondary transition",
+          "relative size-[1rem] shrink-0 rounded-full border-[1.5px] border-secondary transition",
           task.status === "done" && "border-0 bg-secondary text-white",
           task.status === "pending_verify" && "border-warning bg-warning/20",
           flash &&
@@ -172,11 +173,14 @@ export function TaskCompleteControl({
         }}
       >
         {(task.status === "done" || flash) && !busy ? (
-          <Check className="absolute inset-0 m-auto size-2.5" strokeWidth={3} />
+          <Check
+            className="absolute inset-0 m-auto size-[0.625rem]"
+            strokeWidth={3}
+          />
         ) : null}
         {busy ? (
           <Loader2
-            className="absolute inset-0 m-auto size-2.5 animate-spin text-secondary"
+            className="absolute inset-0 m-auto size-[0.625rem] animate-spin text-secondary"
             strokeWidth={3}
           />
         ) : null}

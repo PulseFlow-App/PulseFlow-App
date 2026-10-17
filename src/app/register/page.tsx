@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Building2, UserRound } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
@@ -173,14 +173,14 @@ export default function RegisterPage() {
           {step === "use" ? (
             <div className="grid gap-3">
               <Choice
-                icon={<UserRound className="size-5" />}
+                icon={<PulseIcon name="home" className="size-5" />}
                 title="Personal use"
                 description="Just you and your properties - track work, bills, and jobs in one simple workspace."
                 active={useKind === "personal"}
                 onClick={() => setUseKind("personal")}
               />
               <Choice
-                icon={<Building2 className="size-5" />}
+                icon={<PulseIcon name="properties" className="size-5" />}
                 title="Company use"
                 description="You are creating a new company as the owner. After setup you can invite your team."
                 active={useKind === "company"}
