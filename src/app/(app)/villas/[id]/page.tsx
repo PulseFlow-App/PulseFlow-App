@@ -257,25 +257,22 @@ export default function VillaDetailPage({
 
         {canEditCore ? (
           <>
-            <div>
-              <Label>Name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-            <div>
-              <Label>Area</Label>
-              <Input value={area} onChange={(e) => setArea(e.target.value)} />
-            </div>
             <VillaQuickSources
               value={quickSources}
               onChange={setQuickSources}
+              name={name}
+              area={area}
+              onNameChange={setName}
+              onAreaChange={setArea}
               uploadDoc={data.uploadVillaPhoto}
               onPlacePick={(place) => {
                 setLocationUrl(place.mapsUrl);
                 if (place.area) setArea(place.area);
+                if (!name.trim()) setName(place.label);
               }}
             />
             <div>
-              <Label>Location link</Label>
+              <Label>{t("villas.locationLink")}</Label>
               <Input
                 value={locationUrl}
                 onChange={(e) => setLocationUrl(e.target.value)}

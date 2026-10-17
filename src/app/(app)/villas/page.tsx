@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, Suspense } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { Building2, Plus, UserRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -47,6 +47,7 @@ export default function VillasPage() {
   const [details, setDetails] = useState(EMPTY_VILLA_DETAILS_FORM);
   const [quickSources, setQuickSources] = useState(EMPTY_VILLA_QUICK_SOURCES);
   const [scope, setScope] = useState<"company" | "personal">("personal");
+  const [companyOrgId, setCompanyOrgId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const photo = useVillaPhotoUpload(data.uploadVillaPhoto);
@@ -59,6 +60,42 @@ export default function VillasPage() {
     : false;
   const inCompany = data.orgKind === "company";
   const isPersonalWorkspace = data.orgKind === "personal";
+
+  const ownedCompanies = useMemo(() => {
+    const profileId = data.profile?.id;
+    if (!profileId) return [];
+    return data.orgs.filter(
+      (o) =>
+        o.kind === "company" &&
+        data.memberships.some(
+          (m) =>
+            m.profile_id === profileId &&
+            m.org_id === o.id &&
+            m.role === "owner",
+        ),
+    );
+  }, [data.orgs, data.memberships, data.profile?.id]);
+
+  const defaultScope =
+    isOwner && inCompany ? "company" : "personal";
+
+  useEffect(() => {
+    if (!canAdd || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("add") !== "1") return;
+    setScope(defaultScope);
+    setCompanyOrgId(
+      ownedCompanies.find((o) => o.id === data.profile?.org_id)?.id ??
+        ownedCompanies[0]?.id ??
+        "",
+    );
+    setShowAdd(true);
+  }, [
+    canAdd,
+    defaultScope,
+    ownedCompanies,
+    data.profile?.org_id,
+  ]);
 
   const companyVillas = useMemo(
     () => data.villaList.filter((v) => v.bucket === "company"),
@@ -100,8 +137,6 @@ export default function VillasPage() {
       .map((a) => data.profiles.find((p) => p.id === a.profile_id)?.full_name)
       .filter(Boolean) as string[];
 
-  const defaultScope =
-    isOwner && inCompany ? "company" : "personal";
   const pendingDateRequests = data.stayDateRequests.filter(
     (r) => r.status === "pending",
   ).length;
@@ -128,6 +163,11 @@ export default function VillasPage() {
             className="shrink-0"
             onClick={() => {
               setScope(defaultScope);
+              setCompanyOrgId(
+                ownedCompanies.find((o) => o.id === data.profile?.org_id)?.id ??
+                  ownedCompanies[0]?.id ??
+                  "",
+              );
               setShowAdd(true);
             }}
           >
@@ -161,18 +201,30 @@ export default function VillasPage() {
       {showAdd ? (
         <Card className="space-y-3 p-5">
           <h2 className="font-display text-lg font-bold text-ink">{t("villas.addNew")}</h2>
-          {inCompany && isOwner ? (
+          {isOwner && ownedCompanies.length > 0 ? (
             <div>
-              <Label>{t("villas.belongsTo")}</Label>
+              <Label>{t("villas.companyName")}</Label>
               <Select
-                value={scope}
-                onChange={(e) =>
-                  setScope(e.target.value as "company" | "personal")
+                value={
+                  scope === "personal"
+                    ? "personal"
+                    : companyOrgId || ownedCompanies[0]?.id || "personal"
                 }
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "personal") {
+                    setScope("personal");
+                    return;
+                  }
+                  setScope("company");
+                  setCompanyOrgId(v);
+                }}
               >
-                <option value="company">
-                  {data.orgName} ({t("villas.company")})
-                </option>
+                {ownedCompanies.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.name} ({t("villas.company")})
+                  </option>
+                ))}
                 <option value="personal">{t("villas.personal")}</option>
               </Select>
             </div>
@@ -182,25 +234,13 @@ export default function VillasPage() {
               {t("villas.personalHint")}
             </p>
           ) : null}
-          <div>
-            <Label>{t("common.name")}</Label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Lotus House"
-            />
-          </div>
-          <div>
-            <Label>{t("villas.area")}</Label>
-            <Input
-              value={area}
-              onChange={(e) => setArea(e.target.value)}
-              placeholder="Srithanu"
-            />
-          </div>
           <VillaQuickSources
             value={quickSources}
             onChange={setQuickSources}
+            name={name}
+            area={area}
+            onNameChange={setName}
+            onAreaChange={setArea}
             uploadDoc={data.uploadVillaPhoto}
             onPlacePick={(place) => {
               setLocationUrl(place.mapsUrl);
@@ -217,7 +257,7 @@ export default function VillasPage() {
               inputMode="url"
             />
             <p className="mt-1 text-xs text-muted">
-              Paste a Google Maps / Apple Maps pin link for the exact spot.
+              {t("villas.locationLinkHint")}
             </p>
           </div>
           <div>
@@ -302,9 +342,13 @@ export default function VillasPage() {
                       ...quickSourcesPayload(quickSources),
                       ...formToDetails(details),
                       scope:
-                        inCompany && isOwner
+                        isOwner && ownedCompanies.length > 0
                           ? scope
                           : "personal",
+                      org_id:
+                        scope === "company" && companyOrgId
+                          ? companyOrgId
+                          : undefined,
                     });
                     setName("");
                     setArea("");

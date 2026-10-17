@@ -627,6 +627,18 @@ function useDemoData(): AppData {
       let orgId = profile.org_id;
       if (scope === "personal") {
         orgId = ensurePersonalOrg(getDemoProfile() ?? profile);
+      } else if (input.org_id) {
+        const allowed = (store.memberships ?? []).some(
+          (m) =>
+            m.profile_id === profile.id &&
+            m.org_id === input.org_id &&
+            m.role === "owner",
+        );
+        const orgRow = store.orgs.find((o) => o.id === input.org_id);
+        if (!allowed || !orgRow || orgRow.kind !== "company") {
+          throw new Error("You cannot add properties to that company.");
+        }
+        orgId = input.org_id;
       }
 
       updateDemoStore((s) => ({

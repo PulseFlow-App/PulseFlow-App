@@ -15,11 +15,14 @@ export function TaskRow({
   trailing,
   showAssignee = true,
   doneStyle = false,
+  /** When false, skip the inline URGENT label (e.g. Focus of today already implies it). */
+  showUrgentLabel = true,
 }: {
   task: TaskWithRelations;
   trailing?: React.ReactNode;
   showAssignee?: boolean;
   doneStyle?: boolean;
+  showUrgentLabel?: boolean;
 }) {
   const { t } = useI18n();
   const [expanded, setExpanded] = useState(false);
@@ -33,7 +36,7 @@ export function TaskRow({
   const villaLabel = task.villa?.name ?? t("common.general");
   const hasNotes = Boolean(task.notes?.trim());
   const hasPhoto = Boolean(task.photo_url);
-  const urgent = !doneStyle && task.priority === "urgent";
+  const urgent = showUrgentLabel && !doneStyle && task.priority === "urgent";
 
   return (
     <div className="space-y-1.5">

@@ -14,7 +14,10 @@ import type { VillaStatus } from "@/lib/design-tokens";
 import { isGuestApp, isStaffApp } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 import { GuestHome } from "@/components/home/guest-home";
-import { Screen, Grid12, Col } from "@/components/ui/page";
+import { Screen } from "@/components/ui/page";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { canCreateVillas } from "@/lib/roles";
 
 export default function HomePage() {
   const data = useData();
@@ -63,8 +66,21 @@ export default function HomePage() {
     return <StaffHome data={data} />;
   }
 
+  const canAddProperty = canCreateVillas(data.profile.role);
+
   return (
     <Screen>
+      {canAddProperty ? (
+        <div className="flex justify-end">
+          <Link
+            href="/villas?add=1"
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-[var(--radius-pill)] bg-primary px-2.5 text-xs font-semibold text-white shadow-[0_4px_12px_rgba(242,106,54,0.22)] hover:bg-primary-dark"
+          >
+            <Plus className="size-3.5" strokeWidth={2.4} />
+            {t("home.addProperty")}
+          </Link>
+        </div>
+      ) : null}
       <HeroCard
         name={data.profile.full_name}
         attentionCount={attentionCount}
@@ -74,24 +90,19 @@ export default function HomePage() {
             : t("home.attention", { count: attentionCount })
         }
       />
-      <div className="animate-rise-delay">
-        <Grid12>
-          <Col span={8} className="space-y-3 md:space-y-6">
-            <StatGrid counts={counts} />
-            <UrgentTasks
-              tasks={urgent}
-              onDelete={async (id) => data.deleteTask(id)}
-            />
-          </Col>
-          <Col span={4} className="space-y-4 md:space-y-6">
-            <DateStrip
-              villas={data.villas}
-              selected={selectedDay}
-              onSelect={setSelectedDay}
-            />
-            <WeeklyChart tasks={data.tasks} />
-          </Col>
-        </Grid12>
+      {/* Stack: 4 cards → focus → check-ins → task volume (never beside cards). */}
+      <div className="animate-rise-delay space-y-3 md:space-y-6">
+        <StatGrid counts={counts} />
+        <UrgentTasks
+          tasks={urgent}
+          onDelete={async (id) => data.deleteTask(id)}
+        />
+        <DateStrip
+          villas={data.villas}
+          selected={selectedDay}
+          onSelect={setSelectedDay}
+        />
+        <WeeklyChart tasks={data.tasks} />
       </div>
     </Screen>
   );

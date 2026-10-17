@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FileText, Link2, MapPin, Search, X } from "lucide-react";
+import {
+  FileText,
+  ImagePlus,
+  Link2,
+  MapPin,
+  Search,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n/provider";
@@ -30,6 +37,10 @@ export const EMPTY_VILLA_QUICK_SOURCES: VillaQuickSourcesValue = {
 type Props = {
   value: VillaQuickSourcesValue;
   onChange: (next: VillaQuickSourcesValue) => void;
+  name: string;
+  area: string;
+  onNameChange: (next: string) => void;
+  onAreaChange: (next: string) => void;
   /** Called when a place search result is chosen (fills maps + area). */
   onPlacePick?: (place: PlaceHit) => void;
   uploadDoc: (file: File) => Promise<string | null>;
@@ -38,16 +49,24 @@ type Props = {
 export function VillaQuickSources({
   value,
   onChange,
+  name,
+  area,
+  onNameChange,
+  onAreaChange,
   onPlacePick,
   uploadDoc,
 }: Props) {
   const { t } = useI18n();
   const fileRef = useRef<HTMLInputElement>(null);
+  const shotRef = useRef<HTMLInputElement>(null);
   const [placeQuery, setPlaceQuery] = useState("");
   const [places, setPlaces] = useState<PlaceHit[]>([]);
   const [searching, setSearching] = useState(false);
   const [docBusy, setDocBusy] = useState(false);
   const [docError, setDocError] = useState<string | null>(null);
+  const [shotBusy, setShotBusy] = useState(false);
+  const [shotError, setShotError] = useState<string | null>(null);
+  const [shotName, setShotName] = useState<string | null>(null);
 
   const set = (patch: Partial<VillaQuickSourcesValue>) =>
     onChange({ ...value, ...patch });
@@ -90,6 +109,29 @@ export function VillaQuickSources({
     }
   };
 
+  const onScreenshot = async (file: File | null) => {
+    if (!file) return;
+    setShotBusy(true);
+    setShotError(null);
+    try {
+      const url = await uploadDoc(file);
+      if (!url) throw new Error(t("common.error"));
+      setShotName(file.name);
+      const noteLine = t("villas.screenshotAttached", { name: file.name });
+      const nextNotes = value.source_notes.trim()
+        ? `${value.source_notes.trim()}\n\n${noteLine}\n${url}`
+        : `${noteLine}\n${url}`;
+      set({
+        drive_url: value.drive_url.trim() || url,
+        source_notes: nextNotes,
+      });
+    } catch (e) {
+      setShotError(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setShotBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-canvas-deep/60 p-3">
       <div>
@@ -97,6 +139,23 @@ export function VillaQuickSources({
           {t("villas.quickSources")}
         </p>
         <p className="text-xs text-muted">{t("villas.quickSourcesHint")}</p>
+      </div>
+
+      <div>
+        <Label>{t("villas.propertyName")}</Label>
+        <Input
+          value={name}
+          onChange={(e) => onNameChange(e.target.value)}
+          placeholder={t("villas.propertyNamePh")}
+        />
+      </div>
+      <div>
+        <Label>{t("villas.area")}</Label>
+        <Input
+          value={area}
+          onChange={(e) => onAreaChange(e.target.value)}
+          placeholder={t("villas.areaPh")}
+        />
       </div>
 
       <div>
@@ -171,6 +230,36 @@ export function VillaQuickSources({
           inputMode="url"
         />
         <p className="mt-1 text-xs text-muted">{t("villas.driveUrlHint")}</p>
+        <input
+          ref={shotRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0] ?? null;
+            e.target.value = "";
+            void onScreenshot(file);
+          }}
+        />
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          className="mt-2"
+          reflectGlobalBusy={false}
+          busy={shotBusy}
+          onClick={() => shotRef.current?.click()}
+        >
+          <ImagePlus className="size-3.5" />
+          {shotBusy ? t("villas.screenshotAnalyzing") : t("villas.screenshotUpload")}
+        </Button>
+        {shotName ? (
+          <p className="mt-1 text-xs font-semibold text-ink">
+            {t("villas.screenshotReady", { name: shotName })}
+          </p>
+        ) : null}
+        <p className="mt-1 text-xs text-muted">{t("villas.screenshotHint")}</p>
+        {shotError ? <p className="mt-1 text-xs text-danger">{shotError}</p> : null}
       </div>
 
       <div>

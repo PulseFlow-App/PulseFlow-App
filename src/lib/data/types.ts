@@ -153,6 +153,8 @@ export type AppData = {
     status?: Villa["status"];
     /** Owners default to company; managers default to personal side work. */
     scope?: "company" | "personal";
+    /** When scope is company, create under this org (must be an owned company). */
+    org_id?: string;
     property_type?: Villa["property_type"];
     sq_m?: number | null;
     bedrooms?: number | null;

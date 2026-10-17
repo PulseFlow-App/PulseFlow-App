@@ -43,25 +43,21 @@ export function UrgentTasks({
       <div className="bg-danger/[0.04] px-3 py-2.5 md:px-4 md:py-3">
         <TaskRow
           task={focus}
+          showUrgentLabel={false}
           trailing={
-            <>
-              <span className="shrink-0 rounded-full bg-danger/10 px-2 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-danger">
-                {t("tasks.urgent")}
-              </span>
-              {onDelete ? (
-                <button
-                  type="button"
-                  className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
-                  aria-label={t("common.delete")}
-                  onClick={() => {
-                    if (!window.confirm(t("tasks.deleteConfirm"))) return;
-                    void onDelete(focus.id);
-                  }}
-                >
-                  <Trash2 className="size-4" />
-                </button>
-              ) : null}
-            </>
+            onDelete ? (
+              <button
+                type="button"
+                className="shrink-0 rounded-full p-2 text-muted transition hover:bg-danger/10 hover:text-danger"
+                aria-label={t("common.delete")}
+                onClick={() => {
+                  if (!window.confirm(t("tasks.deleteConfirm"))) return;
+                  void onDelete(focus.id);
+                }}
+              >
+                <Trash2 className="size-4" />
+              </button>
+            ) : null
           }
         />
       </div>

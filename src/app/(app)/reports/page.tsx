@@ -197,8 +197,47 @@ export default function ReportsPage() {
     }
   };
 
+  const exportActions = [
+    {
+      key: "budget",
+      label: t("reports.exportBudget"),
+      onClick: () =>
+        downloadCsv(`budget-${stamp}.csv`, budgetSheetToCsv(filteredBills)),
+    },
+    {
+      key: "bills",
+      label: t("reports.exportBills"),
+      onClick: () =>
+        downloadCsv(`bills-${stamp}.csv`, billsToCsv(filteredBills)),
+    },
+    {
+      key: "tasks",
+      label: t("reports.exportTasks"),
+      onClick: () =>
+        downloadCsv(`tasks-${stamp}.csv`, tasksToCsv(filteredTasks)),
+    },
+    {
+      key: "properties",
+      label: t("reports.exportProperties"),
+      onClick: () =>
+        downloadCsv(`properties-${stamp}.csv`, villasToCsv(filteredVillas)),
+    },
+    {
+      key: "jobs",
+      label: t("reports.exportJobs"),
+      onClick: () =>
+        downloadCsv(`jobs-${stamp}.csv`, serviceOrdersToCsv(filteredOrders)),
+    },
+    {
+      key: "occupancy",
+      label: t("reports.exportOccupancy"),
+      onClick: () =>
+        downloadCsv(`occupancy-${stamp}.csv`, occupancyToCsv(filteredVillas)),
+    },
+  ] as const;
+
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-3 px-4 pb-28 pt-4">
+    <div className="flex w-full flex-col gap-3 pb-28 pt-4">
       <div className="flex items-baseline justify-between gap-2">
         <h1 className="font-display text-2xl font-bold text-ink">
           {t("reports.title")}
@@ -214,9 +253,9 @@ export default function ReportsPage() {
         </p>
       ) : null}
 
-      <Card className="space-y-3 p-4">
-        <div className="grid grid-cols-2 gap-2">
-          <div>
+      <Card className="space-y-4 p-4 sm:p-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="min-w-0">
             <Label>{t("reports.period")}</Label>
             <Select
               value={period}
@@ -229,7 +268,7 @@ export default function ReportsPage() {
               <option value="last_90">{t("reports.period90")}</option>
             </Select>
           </div>
-          <div>
+          <div className="min-w-0">
             <Label>{t("reports.property")}</Label>
             <Select
               value={filterVilla}
@@ -245,77 +284,25 @@ export default function ReportsPage() {
             </Select>
           </div>
         </div>
-        <div>
+        <div className="min-w-0">
           <Label>{t("bills.currency")}</Label>
           <DisplayCurrencySelect aria-label={t("bills.currency")} />
           <p className="mt-1 text-xs text-muted">{t("bills.displayCurrencyHint")}</p>
         </div>
         <p className="text-xs text-muted">{t("reports.exportHint")}</p>
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() =>
-              downloadCsv(`budget-${stamp}.csv`, budgetSheetToCsv(filteredBills))
-            }
-          >
-            <Download className="size-4" />
-            {t("reports.exportBudget")}
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() =>
-              downloadCsv(`bills-${stamp}.csv`, billsToCsv(filteredBills))
-            }
-          >
-            {t("reports.exportBills")}
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() =>
-              downloadCsv(`tasks-${stamp}.csv`, tasksToCsv(filteredTasks))
-            }
-          >
-            {t("reports.exportTasks")}
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() =>
-              downloadCsv(
-                `properties-${stamp}.csv`,
-                villasToCsv(filteredVillas),
-              )
-            }
-          >
-            {t("reports.exportProperties")}
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() =>
-              downloadCsv(
-                `jobs-${stamp}.csv`,
-                serviceOrdersToCsv(filteredOrders),
-              )
-            }
-          >
-            {t("reports.exportJobs")}
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() =>
-              downloadCsv(
-                `occupancy-${stamp}.csv`,
-                occupancyToCsv(filteredVillas),
-              )
-            }
-          >
-            {t("reports.exportOccupancy")}
-          </Button>
+        <div className="flex flex-col gap-2">
+          {exportActions.map((action) => (
+            <Button
+              key={action.key}
+              size="sm"
+              variant="secondary"
+              className="h-auto min-h-10 w-full justify-start px-4 py-2.5 text-left"
+              onClick={action.onClick}
+            >
+              <Download className="size-4 shrink-0" />
+              <span className="min-w-0 flex-1 leading-snug">{action.label}</span>
+            </Button>
+          ))}
         </div>
         <Button className="w-full" size="sm" onClick={printWeekly}>
           <Printer className="size-4" />

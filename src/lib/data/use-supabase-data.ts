@@ -1692,6 +1692,19 @@ export function useSupabaseData(enabled: boolean): AppData {
       let orgId = profile.org_id;
       if (scope === "personal") {
         orgId = await ensurePersonalOrgId(profile);
+      } else if (input.org_id) {
+        const allowed = memberships.some(
+          (m) =>
+            m.profile_id === profile.id &&
+            m.org_id === input.org_id &&
+            m.role === "owner",
+        );
+        const orgRow = orgs.find((o) => o.id === input.org_id);
+        if (!allowed || !orgRow || orgRow.kind !== "company") {
+          throw new Error("You cannot add properties to that company.");
+        }
+        orgId = input.org_id;
+        requireOrgWrite(orgId);
       } else {
         requireOrgWrite(orgId);
       }
