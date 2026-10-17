@@ -1,0 +1,23 @@
+---
+description: Horizon design system for the Pulse Flow app
+globs: src/**/*.{tsx,ts,css}
+alwaysApply: true
+---
+
+# Horizon design system (mandatory)
+
+Before any visual, UX, colour, typography, motion, or component change in the **app**:
+
+1. Read and follow [`docs/DESIGN.md`](docs/DESIGN.md) (Pulse Flow Design Bible — Horizon).
+2. Reuse tokens in `src/app/globals.css` and `src/lib/design-tokens.ts` — do not invent new hex colours, radii, shadows, or fonts.
+
+## Hard constraints
+
+- Palette only: `#8ecae6` `#219ebc` `#023047` `#ffb703` `#f26a36` (+ neutrals in DESIGN.md).
+- Primary CTA = `#f26a36`. Ink = `#023047`. Canvas = cool white `#f5fafc` (**not** warm cream).
+- Fonts: **Sora** (display / titles) + **Heebo** (body / Hebrew). Script fallbacks: Noto for Thai / Arabic / Myanmar / Cyrillic.
+- Max font-weight **700** (no 800/900 — not loaded).
+- No purple / lavender, no terracotta-on-cream, no Inter / Roboto / Arial as brand faces.
+- Prefer CSS variables / Tailwind theme tokens (`bg-primary`, `text-ink`, `bg-sand` → canvas alias). No raw hex in components.
+
+If a request conflicts with DESIGN.md, follow DESIGN.md and note the conflict briefly.
