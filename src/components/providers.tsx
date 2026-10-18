@@ -3,6 +3,7 @@
 import { LocaleProvider } from "@/lib/i18n/provider";
 import { TranslateContentProvider } from "@/lib/translate/use-localized-content";
 import { ActionBusyOverlay } from "@/components/ui/action-busy-overlay";
+import { ServiceWorkerRegister } from "@/components/pwa/sw-register";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <TranslateContentProvider>
         {children}
         <ActionBusyOverlay />
+        <ServiceWorkerRegister />
       </TranslateContentProvider>
     </LocaleProvider>
   );

@@ -22,6 +22,7 @@ import {
   PulseIcon,
   type PulseIconName,
 } from "@/components/icons/pulse-icon";
+import { AppVersionMark } from "@/components/layout/app-version-mark";
 
 type MenuLink = {
   href: string;
@@ -294,6 +295,7 @@ export function AppMenuButton() {
                   <PulseIcon name="logout" className="size-4" soft="danger" />
                   {t("settings.signOut")}
                 </button>
+                <AppVersionMark compact className="mt-2 pb-1" />
               </div>
             </div>
           </div>,

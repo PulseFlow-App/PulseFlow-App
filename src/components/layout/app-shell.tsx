@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AppHeader } from "./app-header";
+import { AppVersionMark } from "./app-version-mark";
 import { BottomNav, SideNav } from "./bottom-nav";
 import { OfflineBanner } from "@/components/ui/empty-state";
 import { TrialBanner } from "@/components/billing/billing-card";
@@ -91,6 +92,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
             ) : null}
             <TrialBanner />
             <main className="w-full max-w-full pb-4">{children}</main>
+            <AppVersionMark className="pb-1 pt-2" />
           </div>
         </div>
         <BottomNav />

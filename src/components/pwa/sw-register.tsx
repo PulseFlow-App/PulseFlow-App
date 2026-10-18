@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { UpdateAvailable } from "@/components/pwa/update-available";
 
 export function ServiceWorkerRegister() {
   useEffect(() => {
@@ -9,5 +10,5 @@ export function ServiceWorkerRegister() {
       // Ignore registration failures in dev / unsupported contexts.
     });
   }, []);
-  return null;
+  return <UpdateAvailable />;
 }

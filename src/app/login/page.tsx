@@ -8,6 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Fingerprint } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
+import { AppVersionMark } from "@/components/layout/app-version-mark";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
@@ -354,6 +355,7 @@ export default function LoginPage() {
               ) : null}
             </div>
           </Card>
+          <AppVersionMark className="mt-6" />
         </div>
       </div>
     </div>

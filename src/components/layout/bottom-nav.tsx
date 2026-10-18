@@ -10,6 +10,7 @@ import type { UserRole } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 import { PulseWordmark } from "@/components/brand/pulse-wordmark";
+import { AppVersionMark } from "@/components/layout/app-version-mark";
 import { useBrandName } from "@/lib/i18n/use-brand-name";
 import {
   PulseIcon,
@@ -191,6 +192,7 @@ export function SideNav() {
         />
         <span>{t("nav.settings")}</span>
       </Link>
+      <AppVersionMark compact className="mt-3 px-2" />
     </aside>
   );
 }

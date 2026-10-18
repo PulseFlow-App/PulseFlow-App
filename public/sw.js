@@ -1,4 +1,4 @@
-const CACHE = "pulseflow-shell-v6";
+const CACHE = "pulseflow-shell-v7";
 const SHELL = [
   "/",
   "/login",
@@ -8,10 +8,17 @@ const SHELL = [
   "/icons/icon-512.png",
 ];
 
+function isVersionProbe(url) {
+  try {
+    const path = new URL(url).pathname;
+    return path === "/api/version" || path === "/version.json";
+  } catch {
+    return false;
+  }
+}
+
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()),
-  );
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
 });
 
 self.addEventListener("activate", (event) => {
@@ -22,9 +29,20 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
+
+  if (isVersionProbe(request.url)) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
   event.respondWith(
     fetch(request)
