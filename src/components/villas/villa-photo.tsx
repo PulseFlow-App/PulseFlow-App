@@ -83,7 +83,7 @@ export function ExpandableVillaPhoto({
           setOpen(true);
         }}
         className={cn(
-          "group relative block overflow-hidden bg-[#F0EDE6] text-left",
+          "group relative block overflow-hidden bg-canvas-deep text-left",
           className ?? "w-full rounded-2xl",
         )}
         aria-label={t("guest.expandPhoto")}

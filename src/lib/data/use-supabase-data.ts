@@ -264,7 +264,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     reopenServiceOrder: async () => undefined,
     completeServiceOrder: async () => undefined,
     updateVilla: async () => undefined,
-    createVilla: async () => undefined,
+    createVilla: async () => "",
     deleteVilla: async () => undefined,
     mergeVillaToCompany: async () => undefined,
     updateOrganizationName: async () => undefined,
@@ -1728,22 +1728,39 @@ export function useSupabaseData(enabled: boolean): AppData {
         info_doc_name: input.info_doc_name?.trim() || null,
         source_notes: input.source_notes?.trim() || null,
         status: input.status ?? "available",
+        cleaning_status: input.cleaning_status ?? "not_needed",
+        check_in: input.check_in || null,
+        check_out: input.check_out || null,
+        notes: input.notes?.trim() || null,
         created_by: profile.id,
         ...pickVillaDetails(input),
       };
-      let { error } = await supabase.from("villas").insert(row);
-      if (error && isMissingVillaDetailsColumn(error.message)) {
-        const retry = await supabase.from("villas").insert(omitVillaDetails(row));
-        error = retry.error;
-      }
-      if (error && isMissingVillaQuickSourceColumn(error.message)) {
-        const retry = await supabase
+      let insertRes = await supabase.from("villas").insert(row).select("id").single();
+      if (
+        insertRes.error &&
+        isMissingVillaDetailsColumn(insertRes.error.message)
+      ) {
+        insertRes = await supabase
           .from("villas")
-          .insert(omitVillaQuickSources(row));
-        error = retry.error;
+          .insert(omitVillaDetails(row))
+          .select("id")
+          .single();
       }
-      if (error) throw error;
+      if (
+        insertRes.error &&
+        isMissingVillaQuickSourceColumn(insertRes.error.message)
+      ) {
+        insertRes = await supabase
+          .from("villas")
+          .insert(omitVillaQuickSources(row))
+          .select("id")
+          .single();
+      }
+      if (insertRes.error || !insertRes.data?.id) {
+        throw insertRes.error ?? new Error("Could not add property.");
+      }
       await refresh();
+      return insertRes.data.id as string;
     },
     deleteVilla: async (id) => {
       const villa = villas.find((v) => v.id === id);
@@ -1826,28 +1843,43 @@ export function useSupabaseData(enabled: boolean): AppData {
       const notes = input.notes?.trim() || null;
       const photoUrl = input.photo_url?.trim() || null;
 
-      const { data: order, error: orderError } = await supabase
+      const orderBase = {
+        org_id: profile.org_id,
+        contact_id: null as string | null,
+        staff_profile_id: assigneeId,
+        ordered_by: profile.id,
+        villa_id: villa?.id ?? null,
+        location_label: location,
+        service_type: title,
+        details: notes,
+        scheduled_date: scheduledDate,
+        time_start: input.time_start || null,
+        time_end: input.time_end || null,
+        status: "pending_ack" as const,
+      };
+      const orderSchedule = {
+        schedule_mode,
+        time_slots,
+        recurrence,
+        recurrence_count,
+      };
+      let orderRes = await supabase
         .from("service_orders")
-        .insert({
-          org_id: profile.org_id,
-          contact_id: null,
-          staff_profile_id: assigneeId,
-          ordered_by: profile.id,
-          villa_id: villa?.id ?? null,
-          location_label: location,
-          service_type: title,
-          details: notes,
-          scheduled_date: scheduledDate,
-          time_start: input.time_start || null,
-          time_end: input.time_end || null,
-          schedule_mode,
-          time_slots,
-          recurrence,
-          recurrence_count,
-          status: "pending_ack",
-        })
+        .insert({ ...orderBase, ...orderSchedule })
         .select("*")
         .single();
+      if (
+        orderRes.error &&
+        /schedule_mode|time_slots|recurrence/i.test(orderRes.error.message)
+      ) {
+        orderRes = await supabase
+          .from("service_orders")
+          .insert(orderBase)
+          .select("*")
+          .single();
+      }
+      const order = orderRes.data;
+      const orderError = orderRes.error;
       if (orderError || !order) {
         throw orderError ?? new Error("Could not create job confirmation.");
       }
@@ -1873,30 +1905,45 @@ export function useSupabaseData(enabled: boolean): AppData {
         .select("id")
         .single();
 
-      const { data: inserted, error } = await supabase
+      const taskBase = {
+        org_id: profile.org_id,
+        created_by: profile.id,
+        status: "open" as const,
+        title,
+        notes,
+        photo_url: photoUrl,
+        villa_id: input.villa_id,
+        priority: input.priority,
+        assigned_to: assigneeId,
+        due_date: scheduledDate,
+        time_start: input.time_start ?? null,
+        time_end: input.time_end ?? null,
+        service_order_id: order.id,
+      };
+      let taskRes = await supabase
         .from("tasks")
         .insert({
-          org_id: profile.org_id,
-          created_by: profile.id,
-          status: "open",
-          title,
-          notes,
-          photo_url: photoUrl,
-          villa_id: input.villa_id,
-          priority: input.priority,
-          assigned_to: assigneeId,
-          due_date: scheduledDate,
-          time_start: input.time_start ?? null,
-          time_end: input.time_end ?? null,
+          ...taskBase,
           schedule_mode,
           time_slots,
           recurrence,
           recurrence_count,
-          service_order_id: order.id,
         })
         .select("id")
         .single();
-      if (error) throw error;
+      if (
+        taskRes.error &&
+        /schedule_mode|time_slots|recurrence/i.test(taskRes.error.message)
+      ) {
+        taskRes = await supabase
+          .from("tasks")
+          .insert(taskBase)
+          .select("id")
+          .single();
+      }
+      const inserted = taskRes.data;
+      const error = taskRes.error;
+      if (error || !inserted) throw error ?? new Error("Could not create task.");
 
       await supabase
         .from("service_orders")

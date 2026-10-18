@@ -64,7 +64,7 @@ export const ORDER_POOL = "77777777-7777-4777-8777-777777777786";
 export const ORDER_GARDEN = "77777777-7777-4777-8777-777777777787";
 export const ORDER_DONE = "77777777-7777-4777-8777-777777777788";
 
-/** Push richer occupancy / cleaning states onto company villas + real photos. */
+/** Push richer occupancy / quick-fill sources onto company villas + real photos. */
 export function enrichDemoVillas(villas: Villa[]): Villa[] {
   return villas.map((v) => {
     const photo_url = PROPERTY_PHOTO_BY_ID[v.id] ?? v.photo_url;
@@ -78,6 +78,7 @@ export function enrichDemoVillas(villas: Villa[]): Villa[] {
         check_out: null,
         cleaning_status: "done",
         notes: "Office for rent · showings by appointment.",
+        drive_url: "https://drive.google.com/drive/folders/demo-office",
       };
     }
     if (v.id === VILLA_IDS.bamboo) {
@@ -90,6 +91,8 @@ export function enrichDemoVillas(villas: Villa[]): Villa[] {
         check_out: daysFromNow(5),
         cleaning_status: "in_progress",
         notes: "Same-day turnover · linen change in progress.",
+        listing_url: "https://www.airbnb.com/rooms/demo-bamboo",
+        drive_url: "https://drive.google.com/drive/folders/demo-bamboo",
       };
     }
     if (v.id === VILLA_IDS.coral) {
@@ -102,6 +105,10 @@ export function enrichDemoVillas(villas: Villa[]): Villa[] {
         check_out: daysFromNow(4),
         cleaning_status: "not_needed",
         notes: "Long-stay guest · quiet hours requested.",
+        listing_url: "https://www.airbnb.com/rooms/demo-coral",
+        drive_url: "https://drive.google.com/drive/folders/demo-coral",
+        source_notes:
+          "2BR bungalow · garden · near pier · max 4 guests · basic kitchen · street parking",
       };
     }
     if (v.id === VILLA_IDS.tide) {
@@ -133,18 +140,44 @@ export function enrichDemoVillas(villas: Villa[]): Villa[] {
         ...v,
         photo_url,
         property_type: v.property_type ?? "studio",
+        listing_url: "https://www.airbnb.com/rooms/demo-cliff",
       };
     }
-    if (
-      v.id === VILLA_IDS.lotus ||
-      v.id === VILLA_IDS.palm ||
-      v.id === VILLA_IDS.jungle ||
-      v.id === VILLA_IDS.sunset
-    ) {
+    if (v.id === VILLA_IDS.lotus) {
       return {
         ...v,
         photo_url,
         property_type: v.property_type ?? "villa",
+        listing_url: "https://www.airbnb.com/rooms/demo-lotus",
+        drive_url: "https://drive.google.com/drive/folders/demo-lotus",
+        source_notes:
+          "Sea-view 2BR · private pool · Srithanu · sleeps 4 · full kitchen · private parking",
+      };
+    }
+    if (v.id === VILLA_IDS.palm) {
+      return {
+        ...v,
+        photo_url,
+        property_type: v.property_type ?? "villa",
+        listing_url: "https://www.airbnb.com/rooms/demo-palm",
+        drive_url: "https://drive.google.com/drive/folders/demo-palm",
+        source_notes:
+          "Family 3BR · pool + garden · Haad Yao · pet friendly · full AC",
+      };
+    }
+    if (v.id === VILLA_IDS.jungle || v.id === VILLA_IDS.sunset) {
+      return {
+        ...v,
+        photo_url,
+        property_type: v.property_type ?? "villa",
+        listing_url:
+          v.id === VILLA_IDS.sunset
+            ? "https://www.airbnb.com/rooms/demo-sunset"
+            : "https://www.airbnb.com/rooms/demo-jungle",
+        drive_url:
+          v.id === VILLA_IDS.sunset
+            ? "https://drive.google.com/drive/folders/demo-sunset"
+            : "https://drive.google.com/drive/folders/demo-jungle",
       };
     }
     return { ...v, photo_url };
@@ -708,6 +741,20 @@ export const extraHouseGuides: HouseGuide[] = [
       "Strip beds\nEmpty fridge\nClose all umbrellas\nReturn keys to lockbox",
     extra_notes: "Kayak paddles under the deck.",
     updated_at: daysAgo(3) + "T09:00:00.000Z",
+  },
+  {
+    id: "77777777-7777-4777-8777-7777777777d5",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.coral,
+    wifi_ssid: "CoralBungalow",
+    wifi_password: "coralguest26",
+    gate_code: "1188#",
+    bins_notes: "Shared bins at end of lane · Tue / Fri",
+    quiet_hours: "22:00 - 08:00",
+    checkout_checklist:
+      "Lock windows\nTurn off AC\nLeave keys on dining table\nClose side gate",
+    extra_notes: "Extra beach towels in left cupboard. Fans in both bedrooms.",
+    updated_at: daysAgo(2) + "T14:00:00.000Z",
   },
 ];
 

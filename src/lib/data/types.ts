@@ -151,6 +151,10 @@ export type AppData = {
     info_doc_name?: string | null;
     source_notes?: string | null;
     status?: Villa["status"];
+    check_in?: string | null;
+    check_out?: string | null;
+    notes?: string | null;
+    cleaning_status?: Villa["cleaning_status"];
     /** Owners default to company; managers default to personal side work. */
     scope?: "company" | "personal";
     /** When scope is company, create under this org (must be an owned company). */
@@ -170,7 +174,7 @@ export type AppData = {
     kitchen?: Villa["kitchen"];
     aircon?: Villa["aircon"];
     view?: Villa["view"];
-  }) => Promise<void>;
+  }) => Promise<string>;
   deleteVilla: (id: string) => Promise<void>;
   mergeVillaToCompany: (villaId: string) => Promise<void>;
   updateOrganizationName: (name: string) => Promise<void>;

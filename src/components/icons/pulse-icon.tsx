@@ -27,6 +27,7 @@ import {
   SolarMagnifier,
   SolarMapPoint,
   SolarMedalStar,
+  SolarPen,
   SolarSettings,
   SolarShield,
   SolarStar,
@@ -83,6 +84,7 @@ export type PulseIconName =
   | "invite"
   | "support"
   | "document"
+  | "edit"
   | "logout"
   | "medal";
 
@@ -123,6 +125,7 @@ const registry: Record<
   invite: { Icon: SolarUserPlus, soft: "action" },
   support: { Icon: SolarHeadphones, soft: "sky" },
   document: { Icon: SolarDocumentText, soft: "sky" },
+  edit: { Icon: SolarPen, soft: "action" },
   logout: { Icon: SolarLogout, soft: "danger" },
   medal: { Icon: SolarMedalStar, soft: "sun" },
 };

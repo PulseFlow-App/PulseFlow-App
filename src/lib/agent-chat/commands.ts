@@ -186,7 +186,7 @@ export type AgentCommandContext = {
     kitchen?: Villa["kitchen"];
     setting?: Villa["setting"];
     has_pool?: boolean | null;
-  }) => Promise<void>;
+  }) => Promise<string>;
 };
 
 const HELP_LINES: { command: string; label: string }[] = [

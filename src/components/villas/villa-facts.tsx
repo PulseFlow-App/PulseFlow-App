@@ -17,7 +17,7 @@ export function VillaFacts({
       {chips.map((chip) => (
         <li
           key={chip}
-          className="rounded-full bg-[#F0EDE6] px-2.5 py-1 text-[11px] font-semibold text-ink"
+          className="rounded-full bg-canvas-deep px-2.5 py-1 text-[11px] font-semibold text-ink"
         >
           {chip}
         </li>

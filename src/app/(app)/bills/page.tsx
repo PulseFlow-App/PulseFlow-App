@@ -30,6 +30,7 @@ import { cn, formatMoneyCompact, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
+import { ReportsEntryLink } from "@/components/reports/reports-entry-link";
 
 type PeriodKey = "all" | "this_month" | "last_30" | "last_90" | "custom";
 
@@ -274,6 +275,8 @@ export default function BillsPage() {
             {showFinance ? t("bills.financeSubtitle") : t("bills.subtitle")}
           </p>
         </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <ReportsEntryLink />
         <Button
           type="button"
           size="xs"
@@ -301,6 +304,7 @@ export default function BillsPage() {
             </>
           )}
         </Button>
+        </div>
       </div>
 
       {showForm ? (

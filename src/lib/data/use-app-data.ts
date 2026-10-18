@@ -641,11 +641,12 @@ function useDemoData(): AppData {
         orgId = input.org_id;
       }
 
+      const id = crypto.randomUUID();
       updateDemoStore((s) => ({
         ...s,
         villas: [
           {
-            id: crypto.randomUUID(),
+            id,
             org_id: orgId,
             name: input.name,
             area: input.area ?? null,
@@ -658,10 +659,10 @@ function useDemoData(): AppData {
             info_doc_name: input.info_doc_name?.trim() || null,
             source_notes: input.source_notes?.trim() || null,
             status: input.status ?? "available",
-            check_in: null,
-            check_out: null,
-            cleaning_status: "not_needed",
-            notes: null,
+            check_in: input.check_in || null,
+            check_out: input.check_out || null,
+            cleaning_status: input.cleaning_status ?? "not_needed",
+            notes: input.notes?.trim() || null,
             created_by: profile.id,
             updated_at: new Date().toISOString(),
             ...pickVillaDetails(input),
@@ -669,6 +670,7 @@ function useDemoData(): AppData {
           ...s.villas,
         ],
       }));
+      return id;
     },
     deleteVilla: async (id) => {
       assertDemoWritable();

@@ -155,7 +155,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v24";
+const STORE_KEY = "pulseflow_demo_store_v25";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -366,6 +366,7 @@ function readStore(): DemoStore {
         "pulseflow_demo_store_v21",
         "pulseflow_demo_store_v22",
         "pulseflow_demo_store_v23",
+        "pulseflow_demo_store_v24",
       ]) {
         localStorage.removeItem(key);
       }

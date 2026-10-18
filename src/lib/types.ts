@@ -404,6 +404,8 @@ export type VillaMasterInfo = {
   key_contacts_notes: string | null;
   tax_notes: string | null;
   handoff_notes: string | null;
+  /** When false, managers cannot read this handoff file (owners always can). */
+  allow_manager_view?: boolean | null;
   updated_at: string;
 };
 

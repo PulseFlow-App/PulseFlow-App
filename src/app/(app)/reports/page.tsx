@@ -94,6 +94,12 @@ export default function ReportsPage() {
   }, [data.ready, allowed, router]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const villa = new URLSearchParams(window.location.search).get("villa");
+    if (villa) setFilterVilla(villa);
+  }, []);
+
+  useEffect(() => {
     if (!data.profile || !allowed) return;
     void listHandoffSnapshots(data.profile.org_id)
       .then(setSnapshots)

@@ -1,6 +1,10 @@
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
+/** Shared control chrome — same padding/type for Input, Textarea, Select. */
+const controlClass =
+  "w-full max-w-full rounded-2xl border-0 bg-canvas-deep px-3 py-2.5 text-base leading-snug text-ink outline-none ring-primary/25 placeholder:text-muted focus:ring-2 sm:px-4";
+
 export const Input = forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement>
@@ -8,10 +12,7 @@ export const Input = forwardRef<
   return (
     <input
       ref={ref}
-      className={cn(
-        "w-full max-w-full rounded-2xl border-0 bg-canvas-deep px-3 py-2.5 text-base text-ink outline-none ring-primary/25 placeholder:text-muted placeholder:truncate focus:ring-2 sm:px-4 sm:py-3",
-        className,
-      )}
+      className={cn(controlClass, "placeholder:truncate", className)}
       {...props}
     />
   );
@@ -23,10 +24,7 @@ export function Textarea({
 }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
-      className={cn(
-        "w-full max-w-full rounded-2xl border-0 bg-canvas-deep px-3 py-2.5 text-base text-ink outline-none ring-primary/25 placeholder:text-muted focus:ring-2 sm:px-4 sm:py-3",
-        className,
-      )}
+      className={cn(controlClass, "resize-y", className)}
       {...props}
     />
   );
@@ -38,13 +36,7 @@ export function Select({
   ...props
 }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <select
-      className={cn(
-        "w-full max-w-full appearance-none rounded-2xl border-0 bg-canvas-deep px-3 py-2.5 text-sm text-ink outline-none ring-primary/25 focus:ring-2 sm:px-4 sm:py-3 sm:text-base",
-        className,
-      )}
-      {...props}
-    >
+    <select className={cn(controlClass, "appearance-none", className)} {...props}>
       {children}
     </select>
   );

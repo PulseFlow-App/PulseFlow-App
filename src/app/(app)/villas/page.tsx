@@ -2,19 +2,38 @@
 
 import { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
-import { Building2, Plus, UserRound } from "lucide-react";
+import { Plus } from "lucide-react";
+import { ReportsEntryLink } from "@/components/reports/reports-entry-link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { VillaDetailsFields } from "@/components/villas/villa-details-fields";
 import { VillaListCard } from "@/components/villas/villa-list-card";
 import {
+  CompanySelectField,
   EMPTY_VILLA_QUICK_SOURCES,
   VillaQuickSources,
   quickSourcesPayload,
 } from "@/components/villas/villa-quick-sources";
+import {
+  VillaExpandSection,
+  applyVillaEnrichment,
+} from "@/components/villas/villa-form-sections";
+import {
+  EMPTY_HOUSE_GUIDE_DRAFT,
+  HouseGuideEditor,
+  houseGuideHasContent,
+  houseGuidePayload,
+} from "@/components/villas/house-guide-editor";
+import {
+  EMPTY_MASTER_INFO_DRAFT,
+  VillaMasterInfoEditor,
+  masterInfoHasContent,
+  masterInfoPayload,
+} from "@/components/villas/villa-master-info-editor";
 import { useVillaPhotoUpload } from "@/components/villas/use-villa-photo-upload";
 import { useData } from "@/lib/data/use-app-data";
 import {
@@ -23,19 +42,21 @@ import {
 } from "@/lib/utils";
 import {
   canCreateVillas,
+  canEditVillaCore,
   isGuestApp,
   isStaffApp,
   personalVillasOnly,
 } from "@/lib/roles";
 import { GuestBookingGuide } from "@/components/home/guest-booking-guide";
 import { useI18n } from "@/lib/i18n/provider";
+import { labelRole, labelVillaStatus } from "@/lib/i18n/labels";
 import type { MessageKey } from "@/lib/i18n";
 import type { VillaListItem } from "@/lib/types";
+import type { VillaStatus } from "@/lib/design-tokens";
 import {
   EMPTY_VILLA_DETAILS_FORM,
   formToDetails,
 } from "@/lib/villas/property-details";
-
 export default function VillasPage() {
   const data = useData();
   const { t } = useI18n();
@@ -44,6 +65,13 @@ export default function VillasPage() {
   const [area, setArea] = useState("");
   const [locationUrl, setLocationUrl] = useState("");
   const [description, setDescription] = useState("");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState<VillaStatus>("available");
+  const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
+  const [houseGuide, setHouseGuide] = useState(EMPTY_HOUSE_GUIDE_DRAFT);
+  const [masterInfo, setMasterInfo] = useState(EMPTY_MASTER_INFO_DRAFT);
   const [details, setDetails] = useState(EMPTY_VILLA_DETAILS_FORM);
   const [quickSources, setQuickSources] = useState(EMPTY_VILLA_QUICK_SOURCES);
   const [scope, setScope] = useState<"company" | "personal">("personal");
@@ -51,6 +79,14 @@ export default function VillasPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const photo = useVillaPhotoUpload(data.uploadVillaPhoto);
+
+  const team = useMemo(
+    () =>
+      data.profiles.filter(
+        (p) => p.role === "cleaner" || p.role === "staff",
+      ),
+    [data.profiles],
+  );
 
   const canAdd = data.profile ? canCreateVillas(data.profile.role) : false;
   const isOwner = data.profile?.role === "owner";
@@ -60,7 +96,6 @@ export default function VillasPage() {
     : false;
   const inCompany = data.orgKind === "company";
   const isPersonalWorkspace = data.orgKind === "personal";
-
   const ownedCompanies = useMemo(() => {
     const profileId = data.profile?.id;
     if (!profileId) return [];
@@ -146,37 +181,58 @@ export default function VillasPage() {
     ? t("villas.subtitleStaff")
     : t("villas.subtitle");
 
+  const resetAdd = () => {
+    photo.resetPhoto();
+    setName("");
+    setArea("");
+    setLocationUrl("");
+    setDescription("");
+    setCheckIn("");
+    setCheckOut("");
+    setNotes("");
+    setStatus("available");
+    setAssigneeIds([]);
+    setHouseGuide(EMPTY_HOUSE_GUIDE_DRAFT);
+    setMasterInfo(EMPTY_MASTER_INFO_DRAFT);
+    setDetails(EMPTY_VILLA_DETAILS_FORM);
+    setQuickSources(EMPTY_VILLA_QUICK_SOURCES);
+    setShowAdd(false);
+    setError(null);
+  };
+
   return (
     <div className="relative space-y-4 animate-rise">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="type-title">
-            {t("villas.title")}
-          </h1>
+          <h1 className="type-title">{t("villas.title")}</h1>
           {villasSubtitle ? (
             <p className="type-meta mt-1">{villasSubtitle}</p>
           ) : null}
         </div>
-        {canAdd ? (
-          <Button
-            size="xs"
-            className="shrink-0"
-            onClick={() => {
-              setScope(defaultScope);
-              setCompanyOrgId(
-                ownedCompanies.find((o) => o.id === data.profile?.org_id)?.id ??
-                  ownedCompanies[0]?.id ??
-                  "",
-              );
-              setShowAdd(true);
-            }}
-          >
-            <Plus className="size-3.5" strokeWidth={2.4} /> {t("villas.addNew")}
-          </Button>
-        ) : null}
+        <div className="flex shrink-0 items-center gap-2">
+          {!showAdd ? <ReportsEntryLink /> : null}
+          {canAdd && !showAdd ? (
+            <Button
+              size="xs"
+              className="shrink-0"
+              onClick={() => {
+                setScope(defaultScope);
+                setCompanyOrgId(
+                  ownedCompanies.find((o) => o.id === data.profile?.org_id)
+                    ?.id ??
+                    ownedCompanies[0]?.id ??
+                    "",
+                );
+                setShowAdd(true);
+              }}
+            >
+              <Plus className="size-3.5" strokeWidth={2.4} /> {t("villas.addNew")}
+            </Button>
+          ) : null}
+        </div>
       </div>
 
-      {canManageDates && pendingDateRequests > 0 ? (
+      {canManageDates && pendingDateRequests > 0 && !showAdd ? (
         <Link href="/date-requests">
           <Card className="flex items-center justify-between gap-3 bg-primary-soft/50 p-4 transition hover:bg-primary-soft">
             <div>
@@ -200,78 +256,51 @@ export default function VillasPage() {
 
       {showAdd ? (
         <Card className="space-y-3 p-5">
-          <h2 className="font-display text-lg font-bold text-ink">{t("villas.addNew")}</h2>
+          <h2 className="font-display text-lg font-bold text-ink">
+            {t("villas.addNew")}
+          </h2>
           {isOwner && ownedCompanies.length > 0 ? (
-            <div>
-              <Label>{t("villas.companyName")}</Label>
-              <Select
-                value={
-                  scope === "personal"
-                    ? "personal"
-                    : companyOrgId || ownedCompanies[0]?.id || "personal"
+            <CompanySelectField
+              label={t("villas.companyName")}
+              value={
+                scope === "personal"
+                  ? "personal"
+                  : companyOrgId || ownedCompanies[0]?.id || "personal"
+              }
+              onChange={(v) => {
+                if (v === "personal") {
+                  setScope("personal");
+                  return;
                 }
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (v === "personal") {
-                    setScope("personal");
-                    return;
-                  }
-                  setScope("company");
-                  setCompanyOrgId(v);
-                }}
-              >
-                {ownedCompanies.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.name} ({t("villas.company")})
-                  </option>
-                ))}
-                <option value="personal">{t("villas.personal")}</option>
-              </Select>
-            </div>
+                setScope("company");
+                setCompanyOrgId(v);
+              }}
+              companies={ownedCompanies.map((o) => ({
+                id: o.id,
+                name: o.name,
+              }))}
+              personalLabel={t("villas.personal")}
+              companyKindLabel={t("villas.company")}
+            />
           ) : null}
           {inCompany && personalOnly && canAdd ? (
             <p className="rounded-2xl bg-canvas-deep px-3 py-2 text-xs text-muted">
               {t("villas.personalHint")}
             </p>
           ) : null}
-          <VillaQuickSources
-            value={quickSources}
-            onChange={setQuickSources}
-            name={name}
-            area={area}
-            onNameChange={setName}
-            onAreaChange={setArea}
-            uploadDoc={data.uploadVillaPhoto}
-            onPlacePick={(place) => {
-              setLocationUrl(place.mapsUrl);
-              if (place.area) setArea(place.area);
-              if (!name.trim()) setName(place.label);
-            }}
-          />
+
           <div>
-            <Label>{t("villas.locationLink")}</Label>
+            <Label>{t("villas.propertyName")}</Label>
             <Input
-              value={locationUrl}
-              onChange={(e) => setLocationUrl(e.target.value)}
-              placeholder="https://maps.google.com/?q=..."
-              inputMode="url"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
-            <p className="mt-1 text-xs text-muted">
-              {t("villas.locationLinkHint")}
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-ink">
+              {t("villas.photoSection")}
             </p>
-          </div>
-          <div>
-            <Label>{t("villas.description")}</Label>
-            <Textarea
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Short notes about the property…"
-            />
-          </div>
-          <VillaDetailsFields value={details} onChange={setDetails} />
-          <div>
-            <Label>Property photo</Label>
             <Input
               type="file"
               accept="image/*"
@@ -285,12 +314,8 @@ export default function VillasPage() {
                 photo.pickPhoto(file);
               }}
             />
-            <p className="mt-1 text-xs text-muted">
-              Upload from your gallery or take a photo. Staff see this when
-              accepting a job so they can recognize the place.
-            </p>
             {photo.photoBusy ? (
-              <p className="mt-1 text-xs font-semibold text-muted">
+              <p className="text-xs font-semibold text-muted">
                 {t("villas.photoUploading")}
               </p>
             ) : null}
@@ -298,10 +323,166 @@ export default function VillasPage() {
               <VillaPhotoThumb
                 src={photo.displayUrl}
                 alt="New property preview"
-                className="mt-2"
               />
             ) : null}
           </div>
+
+          <VillaQuickSources
+            value={quickSources}
+            onChange={setQuickSources}
+            uploadDoc={data.uploadVillaPhoto}
+            onEnrich={(enrichment) => {
+              const next = applyVillaEnrichment(enrichment, {
+                name,
+                area,
+                description,
+                locationUrl,
+                details,
+              });
+              setName(next.name);
+              setArea(next.area);
+              setDescription(next.description);
+              setLocationUrl(next.locationUrl);
+              setDetails(next.details);
+            }}
+          />
+
+          <div>
+            <Label>{t("villas.locationLink")}</Label>
+            <Input
+              value={locationUrl}
+              onChange={(e) => setLocationUrl(e.target.value)}
+              inputMode="url"
+            />
+          </div>
+          <div>
+            <Label>{t("villas.description")}</Label>
+            <Textarea
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          <VillaDetailsFields value={details} onChange={setDetails} />
+
+          <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-canvas-deep/40 p-3">
+            <p className="text-sm font-semibold text-ink">
+              {t("villas.opsSection")}
+            </p>
+            {isOwner &&
+            scope === "company" &&
+            inCompany &&
+            ownedCompanies.length > 0 ? (
+              <div>
+                <Label>{t("villas.assignedTo")}</Label>
+                <ul className="mt-2 space-y-2">
+                  {team.map((person) => {
+                    const checked = assigneeIds.includes(person.id);
+                    return (
+                      <li key={person.id}>
+                        <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-card px-3 py-2.5 text-sm">
+                          <input
+                            type="checkbox"
+                            className="size-5 shrink-0 accent-primary"
+                            checked={checked}
+                            onChange={() => {
+                              setAssigneeIds((prev) =>
+                                checked
+                                  ? prev.filter((x) => x !== person.id)
+                                  : [...prev, person.id],
+                              );
+                            }}
+                          />
+                          <span className="font-semibold text-ink">
+                            {person.full_name}
+                          </span>
+                          <span className="text-muted">
+                            {labelRole(t, person.role)}
+                          </span>
+                        </label>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {team.length === 0 ? (
+                  <p className="mt-1 text-sm text-muted">
+                    Invite a manager or staff member first.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            <div>
+              <Label>{t("villas.status")}</Label>
+              <Select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as VillaStatus)}
+              >
+                <option value="available">
+                  {labelVillaStatus(t, "available")}
+                </option>
+                <option value="occupied">
+                  {labelVillaStatus(t, "occupied")}
+                </option>
+                <option value="turnover">
+                  {labelVillaStatus(t, "turnover")}
+                </option>
+                <option value="maintenance">
+                  {labelVillaStatus(t, "maintenance")}
+                </option>
+              </Select>
+            </div>
+
+            {!staff ? (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>{t("villas.checkIn")}</Label>
+                  <Input
+                    type="date"
+                    value={checkIn}
+                    onChange={(e) => setCheckIn(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>{t("villas.checkOut")}</Label>
+                  <Input
+                    type="date"
+                    value={checkOut}
+                    onChange={(e) => setCheckOut(e.target.value)}
+                  />
+                </div>
+              </div>
+            ) : null}
+
+            <div>
+              <Label>{t("common.notes")}</Label>
+              <Textarea
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {!staff ? (
+            <VillaExpandSection title={t("villas.houseGuideSection")}>
+              <HouseGuideEditor
+                embed
+                value={houseGuide}
+                onChange={setHouseGuide}
+              />
+            </VillaExpandSection>
+          ) : null}
+
+          <VillaExpandSection title={t("villas.masterInfoTitle")}>
+            <VillaMasterInfoEditor
+              embed
+              value={masterInfo}
+              onChange={setMasterInfo}
+            />
+          </VillaExpandSection>
+
           {error || photo.photoError ? (
             <p className="text-sm text-danger">{error ?? photo.photoError}</p>
           ) : null}
@@ -309,10 +490,7 @@ export default function VillasPage() {
             <Button
               variant="ghost"
               className="flex-1"
-              onClick={() => {
-                photo.resetPhoto();
-                setShowAdd(false);
-              }}
+              onClick={resetAdd}
             >
               {t("common.cancel")}
             </Button>
@@ -333,12 +511,16 @@ export default function VillasPage() {
                 void (async () => {
                   try {
                     const photoUrl = await photo.waitForPhoto();
-                    await data.createVilla({
+                    const villaId = await data.createVilla({
                       name: name.trim(),
                       area: area.trim() || undefined,
                       location_url: normalizeLocationUrl(locationUrl),
                       description: description.trim() || undefined,
                       photo_url: photoUrl,
+                      status,
+                      check_in: checkIn || null,
+                      check_out: checkOut || null,
+                      notes: notes.trim() || null,
                       ...quickSourcesPayload(quickSources),
                       ...formToDetails(details),
                       scope:
@@ -350,15 +532,26 @@ export default function VillasPage() {
                           ? companyOrgId
                           : undefined,
                     });
-                    setName("");
-                    setArea("");
-                    setLocationUrl("");
-                    setDescription("");
-                    photo.resetPhoto();
-                    setDetails(EMPTY_VILLA_DETAILS_FORM);
-                    setQuickSources(EMPTY_VILLA_QUICK_SOURCES);
-                    setShowAdd(false);
-                    setError(null);
+                    if (
+                      isOwner &&
+                      scope === "company" &&
+                      assigneeIds.length > 0
+                    ) {
+                      await data.setVillaAssignees(villaId, assigneeIds);
+                    }
+                    if (!staff && houseGuideHasContent(houseGuide)) {
+                      await data.upsertHouseGuide(
+                        villaId,
+                        houseGuidePayload(houseGuide),
+                      );
+                    }
+                    if (masterInfoHasContent(masterInfo)) {
+                      await data.upsertVillaMasterInfo(
+                        villaId,
+                        masterInfoPayload(masterInfo, isOwner),
+                      );
+                    }
+                    resetAdd();
                   } catch (e: unknown) {
                     setError(e instanceof Error ? e.message : "Could not add.");
                   } finally {
@@ -375,63 +568,67 @@ export default function VillasPage() {
         </Card>
       ) : null}
 
-      {data.villaList.length === 0 ? (
+      {!showAdd && data.villaList.length === 0 ? (
         <EmptyState
           title={t("villas.empty")}
           description={t("villas.emptyHint")}
         />
-      ) : isPersonalWorkspace ? (
-        <VillaSection
-          title={data.orgName || t("villas.title")}
-          subtitle={t("villas.personal")}
-          icon="personal"
-          villas={data.villaList}
-          showAssignees={false}
-          assigneesFor={assigneesFor}
-          hideBucketBadge
-          t={t}
-        />
-      ) : (
-        <>
-          {companyGroups.map((group) => (
-            <VillaSection
-              key={group.orgId}
-              title={group.label}
-              subtitle={t("villas.company")}
-              icon="company"
-              villas={group.villas}
-              showAssignees={isOwner}
-              assigneesFor={assigneesFor}
-              t={t}
-            />
-          ))}
+      ) : null}
 
-          {personalVillas.length > 0 ? (
-            <VillaSection
-              title={t("villas.personal")}
-              subtitle={t("villas.personalHint")}
-              icon="personal"
-              villas={personalVillas}
-              showAssignees={false}
-              assigneesFor={assigneesFor}
-              t={t}
-            />
-          ) : null}
-        </>
-      )}
+      {!showAdd && data.villaList.length > 0 ? (
+        isPersonalWorkspace ? (
+          <VillaSection
+            title={data.orgName || t("villas.title")}
+            subtitle={t("villas.personal")}
+            icon="personal"
+            villas={data.villaList}
+            showAssignees={false}
+            assigneesFor={assigneesFor}
+            hideBucketBadge
+            canEditCore={(v) =>
+              Boolean(
+                data.profile &&
+                  (v.bucket === "personal" ||
+                    canEditVillaCore(data.profile.role)),
+              )
+            }
+            showMasterInfo={isOwner || data.profile?.role === "manager"}
+            t={t}
+          />
+        ) : (
+          <>
+            {companyGroups.map((group) => (
+              <VillaSection
+                key={group.orgId}
+                title={group.label}
+                subtitle={t("villas.company")}
+                icon="company"
+                villas={group.villas}
+                showAssignees={isOwner}
+                assigneesFor={assigneesFor}
+                canEditCore={() =>
+                  Boolean(data.profile && canEditVillaCore(data.profile.role))
+                }
+                showMasterInfo={isOwner || data.profile?.role === "manager"}
+                t={t}
+              />
+            ))}
 
-      {canAdd ? (
-        <button
-          type="button"
-          aria-label={t("villas.addNew")}
-          onClick={() => {
-            setScope(defaultScope);
-            setShowAdd(true);
-          }}
-          className="fixed bottom-24 right-5 z-40 flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-dark text-white shadow-[0_12px_28px_rgba(242,106,54,0.45)]"
-        >
-          <Plus className="size-7" strokeWidth={2.5} />
-        </button>
+            {personalVillas.length > 0 ? (
+              <VillaSection
+                title={t("villas.personal")}
+                subtitle={t("villas.personalHint")}
+                icon="personal"
+                villas={personalVillas}
+                showAssignees={false}
+                assigneesFor={assigneesFor}
+                canEditCore={() => true}
+                showMasterInfo={isOwner || data.profile?.role === "manager"}
+                t={t}
+              />
+            ) : null}
+          </>
+        )
       ) : null}
     </div>
   );
@@ -445,6 +642,8 @@ function VillaSection({
   showAssignees,
   assigneesFor,
   hideBucketBadge = false,
+  canEditCore,
+  showMasterInfo,
   t,
 }: {
   title: string;
@@ -454,6 +653,8 @@ function VillaSection({
   showAssignees: boolean;
   assigneesFor: (id: string) => string[];
   hideBucketBadge?: boolean;
+  canEditCore: (villa: VillaListItem) => boolean;
+  showMasterInfo: boolean;
   t: (key: MessageKey, params?: Record<string, string | number>) => string;
 }) {
   return (
@@ -467,9 +668,9 @@ function VillaSection({
           }
         >
           {icon === "company" ? (
-            <Building2 className="size-4" />
+            <PulseIcon name="properties" className="size-4" />
           ) : (
-            <UserRound className="size-4" />
+            <PulseIcon name="invite" soft="ink" className="size-4" />
           )}
         </span>
         <div>
@@ -485,6 +686,8 @@ function VillaSection({
               showAssignees={showAssignees}
               assignees={assigneesFor(villa.id)}
               hideBucketBadge={hideBucketBadge}
+              canEdit={canEditCore(villa)}
+              showMasterInfo={showMasterInfo}
             />
           </li>
         ))}

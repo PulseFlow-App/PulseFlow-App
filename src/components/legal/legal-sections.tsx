@@ -6,7 +6,7 @@ import {
 } from "@/lib/legal/audiences";
 
 /** Bump when Terms or Privacy substantive text changes. */
-export const LEGAL_LAST_UPDATED = "15 September 2026";
+export const LEGAL_LAST_UPDATED = "18 October 2026";
 
 export function LegalIntro({
   kind,
@@ -39,9 +39,9 @@ export function LegalIntro({
         ,{" "}
         <a
           className="font-semibold text-primary"
-          href="https://pulseflow.site"
+          href="https://www.pulseflow.site"
         >
-          pulseflow.site
+          www.pulseflow.site
         </a>
         , and related sites or apps. By creating an account or using the Service
         as {label}, you agree to these Terms.
@@ -60,8 +60,11 @@ export function LegalIntro({
         app.pulseflow.site
       </a>
       ,{" "}
-      <a className="font-semibold text-primary" href="https://pulseflow.site">
-        pulseflow.site
+      <a
+        className="font-semibold text-primary"
+        href="https://www.pulseflow.site"
+      >
+        www.pulseflow.site
       </a>
       , and related sites or apps (the “Service”) as {label}.
     </p>
@@ -74,26 +77,171 @@ export function TermsSummary() {
       <h2 className="font-display text-lg font-bold">Summary</h2>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
-          {brand.name} is operations software for properties that are rented,
-          managed, and maintained. It is not a landlord, employer, payment
-          processor, escrow, insurer, or travel agency.
+          {brand.name} is a digital helper for property operations: owners,
+          managers, field staff, cleaners, vendors, and stay guests. We help
+          teams coordinate work and information. We do{" "}
+          <strong className="text-ink">not</strong> rent properties, broker
+          stays, act as a landlord or host, or provide hospitality services
+          ourselves.
         </li>
         <li>
-          Keep your login secure and use accurate registration details. You are
-          responsible for activity under your account.
+          We never collect, hold, or process rent, deposits, guest stay fees, or
+          other money paid for a property. Those payments stay between hosts and
+          guests (or employers and staff) outside the app. Any paid plan we
+          offer is only for software access (Company / Pro), not for property
+          bookings.
         </li>
         <li>
-          Personal workspaces are for solo use. Company workspaces support teams;
-          company billing applies to the company owner when paid plans are
-          active.
+          We currently operate the Service with a focus on Thailand. A public
+          demo is launching in Thailand (including Koh Phangan). Features may
+          expand to other regions later; local rental law always remains your
+          responsibility.
+        </li>
+        <li>
+          Keep your login secure. You are responsible for activity under your
+          account and for data you invite others to see.
         </li>
         <li>
           Do not misuse chat, upload harmful or unlawful content, scrape the
-          Service, or process data you are not authorized to handle.
+          Service, or process data you are not authorized to handle. We may
+          suspend accounts that create risk for other users.
+        </li>
+      </ul>
+    </section>
+  );
+}
+
+function TermsWhatWeAre() {
+  return (
+    <section className="space-y-2">
+      <h2 className="font-display text-lg font-bold">
+        What {brand.name} is — and is not
+      </h2>
+      <p className="text-muted">
+        {brand.name} is software that helps all sides of property operations stay
+        aligned: status, tasks, jobs, bills for work expenses, contacts, team
+        chat, guest stay coordination, house guides, master handoff notes,
+        maintenance logs, reports, reputation tools, and optional AI agent
+        helpers. Think of us as a shared notebook and workflow tool — not as a
+        party to anyone’s rental or employment relationship.
+      </p>
+      <ul className="list-disc space-y-1 pl-5 text-muted">
+        <li>
+          <strong className="text-ink">We are:</strong> a software platform and
+          helper for owners, managers, cleaning teams, field staff, vendors
+          invited into workflows, and stay guests invited by a host.
         </li>
         <li>
-          We may update these Terms and suspend accounts that create risk for
-          other users or the Service.
+          <strong className="text-ink">We are not:</strong> a landlord, property
+          manager, travel agency, booking marketplace, escrow, insurer, bank,
+          payment processor for stays, employer of your staff, or provider of
+          on-site rental or cleaning services.
+        </li>
+        <li>
+          Listing a property, inviting a guest, or recording a deposit in the
+          app does <strong className="text-ink">not</strong> mean {brand.name}{" "}
+          is renting that property or receiving money for it.
+        </li>
+      </ul>
+    </section>
+  );
+}
+
+function TermsThailandAndDemo() {
+  return (
+    <section className="space-y-2">
+      <h2 className="font-display text-lg font-bold">
+        Thailand focus & public demo
+      </h2>
+      <p className="text-muted">
+        The Service is operated with Thailand as the primary launch market. Our
+        public demo accounts and soft launch activities are aimed at users in
+        Thailand (including Koh Phangan and nearby areas). You may still create
+        an account from elsewhere, but support, content examples, and rollout
+        priorities currently centre on Thailand. You remain solely responsible
+        for complying with Thai law and any other law that applies to your
+        properties, guests, and staff.
+      </p>
+      <ul className="list-disc space-y-1 pl-5 text-muted">
+        <li>
+          Demo seats are for exploration. Demo data can be reset; do not put
+          real secrets or production credentials only into demo.
+        </li>
+        <li>
+          Real accounts are for your own operations. You control who you invite
+          and what they can see.
+        </li>
+      </ul>
+    </section>
+  );
+}
+
+function TermsNoPropertyPayments() {
+  return (
+    <section className="space-y-2">
+      <h2 className="font-display text-lg font-bold">
+        No payments for properties or stays
+      </h2>
+      <p className="text-muted">
+        {brand.name} does not accept, route, hold, or refund money for rent,
+        guest stays, security deposits, damage claims, vendor invoices for
+        property work paid by guests, or similar property-related transfers.
+        Hosts tell guests how to pay (bank transfer, cash, or other methods
+        outside the Service). Guests may upload receipt photos and use Support
+        commands such as <strong className="text-ink">/deposit</strong> so the
+        host can confirm receipt — that is record-keeping only.
+      </p>
+      <ul className="list-disc space-y-1 pl-5 text-muted">
+        <li>
+          Expense “bills” inside the app are operational records (for example a
+          cleaner submitting a receipt to an owner). They are not card checkout
+          for guests paying for a stay.
+        </li>
+        <li>
+          If we charge fees, they are only for software subscriptions (for
+          example Company Full or Pro / Connect your agent), processed by a
+          payment provider such as Stripe. Those fees are never rent or deposit
+          money.
+        </li>
+      </ul>
+    </section>
+  );
+}
+
+function TermsFeaturesSafety() {
+  return (
+    <section className="space-y-2">
+      <h2 className="font-display text-lg font-bold">
+        Features & how we keep you safer
+      </h2>
+      <p className="text-muted">
+        Depending on your role and plan, the Service may include property
+        inventory with photos and details; quick-fill from listing links or
+        notes; stay dates and status; team assignment; tasks and service jobs;
+        contacts; team chat; guest Support chat; house guides for guests; master
+        info handoff files for the ops team; maintenance logs; reports and
+        exports; endorsements and talent search; push notifications; passkeys;
+        and optional Connect your agent (in-app chat or an external MCP client
+        with a connection key).
+      </p>
+      <ul className="list-disc space-y-1 pl-5 text-muted">
+        <li>
+          Access is role-based. Guests do not see team chat or master ops files.
+          Staff see assigned work, not every company secret by default.
+        </li>
+        <li>
+          Master info and similar handoff notes are for your internal team. You
+          decide whether managers may view a property’s master file.
+        </li>
+        <li>
+          Agent connection keys never include your database password. You can
+          revoke a key anytime. You remain responsible for actions taken with an
+          active key.
+        </li>
+        <li>
+          We use encrypted transport (HTTPS), authenticated sessions, and
+          provider access controls. No system is perfectly secure — use strong
+          passwords or passkeys, and invite only people you trust.
         </li>
       </ul>
     </section>
@@ -108,21 +256,22 @@ export function TermsGuestSection() {
       </h2>
       <p className="text-muted">
         If you were invited as a stay guest, your host (the property owner or
-        manager) runs the rental. {brand.name} helps you request dates, receive
-        quotes, confirm stays, view briefings, chat in Support, and track
-        deposits. Your host sets price, deposit rules, and payment instructions.
+        manager) runs the rental. {brand.name} only helps you request dates,
+        receive quotes, confirm stays, view house guides and briefings, chat in
+        Support, and track deposit status. Your host — not {brand.name} — sets
+        price, deposit rules, house rules, and how you pay.
       </p>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
           <strong className="text-ink">Quotes:</strong> submit dates and a note;
           your host sends a total price, optional deposit, timing, and how to
-          pay.
+          pay outside the app.
         </li>
         <li>
-          <strong className="text-ink">Deposits:</strong> paid directly to your
-          host outside the app. Open Support, send{" "}
-          <strong className="text-ink">/deposit</strong>, and attach a receipt;
-          your host confirms when received.
+          <strong className="text-ink">Deposits & stay money:</strong> paid
+          directly to your host. {brand.name} never receives that money. Open
+          Support, send <strong className="text-ink">/deposit</strong>, and
+          attach a receipt so your host can confirm.
         </li>
         <li>
           <strong className="text-ink">Cancellation:</strong> at least 3 days
@@ -132,13 +281,12 @@ export function TermsGuestSection() {
         </li>
         <li>
           <strong className="text-ink">Host cancellation:</strong> your host may
-          cancel a confirmed stay from their Guests panel. If a before-arrival
-          deposit stays unpaid or unconfirmed, they may cancel to protect the
-          booking.
+          cancel a confirmed stay. If a before-arrival deposit stays unpaid or
+          unconfirmed, they may cancel to protect the booking.
         </li>
         <li>
-          Refunds, house rules, and local rental law are between you and your
-          host. {brand.name} does not hold guest payments or mediate disputes.
+          Refunds, disputes, and local rental law are between you and your host.
+          {brand.name} does not mediate payment disputes or hold guest funds.
         </li>
       </ul>
     </section>
@@ -150,35 +298,38 @@ export function TermsOwnerSection() {
     <section className="space-y-2">
       <h2 className="font-display text-lg font-bold">Owners & managers</h2>
       <p className="text-muted">
-        You operate properties (homes, offices, and other rentable units), invite
-        team members and stay guests, and are responsible for rental or lease
-        agreements, pricing, deposits, refunds, and local compliance.
+        You operate properties and invite teammates and stay guests. You — not{" "}
+        {brand.name} — are responsible for rental or lease agreements, licensing,
+        pricing, collecting deposits and rent, refunds, taxes, and local
+        compliance in Thailand or wherever your property sits.
       </p>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
-          Respond to date requests with clear quotes, deposit timing, and payment
-          instructions. Confirm deposits in Guests or Support after checking
-          receipts.
+          Respond to date requests with clear quotes, deposit timing, and
+          off-platform payment instructions. Confirm deposits after you actually
+          receive funds.
         </li>
         <li>
-          Send briefings, manage confirmed stays, and cancel bookings from Guests
-          when needed. Notify guests through the app.
+          Keep house guides accurate for guests. Use master info, maintenance
+          logs, and reports for internal handoffs — treat sensitive codes as
+          confidential.
         </li>
         <li>
-          Guest-to-host payments happen off-platform. Document what guests paid;
-          they see deposits under Bills.
-        </li>
-        <li>
-          You may cancel if a before-arrival deposit remains unpaid or
-          unconfirmed.
+          Guest-to-host payments happen outside {brand.name}. Document what
+          guests paid; guests may see deposit status under Bills.
         </li>
         <li>
           You are responsible for vetting staff, supervising work, and lawful
-          processing of guest and team data you store in the Service.
+          processing of guest and team data you store.
         </li>
         <li>
-          Company billing, when live, is your responsibility as company owner.
-          Managers and field staff are not billed personally.
+          Company software billing (when live) is the company owner’s
+          responsibility. Managers and field staff are not billed for seats.
+        </li>
+        <li>
+          Managers typically share operational access with owners, except
+          organisation settings, full company property inventory edits, and
+          property access assignment, as configured in the product.
         </li>
       </ul>
     </section>
@@ -192,27 +343,28 @@ export function TermsEmployeeSection() {
       <p className="text-muted">
         If you join as cleaning team (cleaner role), you use the field app for
         assigned properties, jobs, and expense bills. Your employer or client
-        (the company owner or manager) sets access and work expectations.
+        (the company owner or manager) sets access and work expectations.{" "}
+        {brand.name} only helps coordinate that work.
       </p>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
-          Complete assigned jobs and update property status only for properties
-          you are allowed to access.
+          Complete assigned jobs and update status only for properties you may
+          access.
         </li>
         <li>
           Submit bills and receipts for work-related expenses according to your
-          team’s rules.
+          team’s rules. Those are ops records — not guest stay payments.
         </li>
         <li>
           Team chat, endorsements, and the talent directory are optional company
-          features controlled by you and your organization.
+          features.
         </li>
         <li>
-          {brand.name} is not your employer. Pay, supervision, and safety on site
+          {brand.name} is not your employer. Pay, supervision, and site safety
           are between you and the property team that invited you.
         </li>
         <li>
-          Do not share guest stay Support messages or host payment details; guest
+          Do not share guest Support messages or host payment details; guest
           chat is separate from team chat.
         </li>
       </ul>
@@ -226,29 +378,61 @@ export function TermsStaffSection() {
       <h2 className="font-display text-lg font-bold">Field staff</h2>
       <p className="text-muted">
         If you join as staff, you use the field app for assigned properties,
-        tasks, jobs, team chat, and bills. Your company owner or manager controls
-        invites, property access, and work assignments.
+        tasks, jobs, team chat, and bills. Your company owner or manager
+        controls invites, property access, and assignments. {brand.name} is a
+        helper for that coordination — not a party to your work contract.
       </p>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
-          Work only on properties and tasks assigned to you. Confirm jobs and
-          keep status updates accurate for your team.
+          Work only on properties and tasks assigned to you. Keep status updates
+          accurate.
         </li>
         <li>
-          Submit expenses with clear descriptions and receipts when your team
-          requires them.
+          Submit expenses with clear descriptions and receipts when required.
         </li>
         <li>
-          You may opt into the talent directory and public reputation pages in
-          Settings; listing is voluntary.
+          You may opt into the talent directory and public reputation pages;
+          listing is voluntary and can be turned off.
         </li>
         <li>
-          {brand.name} coordinates operations but is not your employer and is
-          not a party to any work contract with the property team.
+          Guest stay tools (Support, deposits, briefings) are for invited
+          guests, not your daily staff screens.
+        </li>
+      </ul>
+    </section>
+  );
+}
+
+function TermsAgentSection() {
+  return (
+    <section className="space-y-2">
+      <h2 className="font-display text-lg font-bold">Connect your agent</h2>
+      <p className="text-muted">
+        Owners and managers may use in-app agent chat or connect an external
+        agent (for example via an MCP client) with a personal connection key
+        created in Settings. Agents can help with operational tasks in your
+        workspace; they never receive your database credentials.
+      </p>
+      <ul className="list-disc space-y-1 pl-5 text-muted">
+        <li>
+          Typical capabilities include reading team, properties, tasks, jobs,
+          and bills; creating tasks and jobs; adding a property; updating house
+          guide fields; and marking a task done — only in your current
+          workspace and within the key’s scopes.
         </li>
         <li>
-          Guest stay tools (Support, deposits, briefings) are for invited guests,
-          not your daily staff screens.
+          Field staff and stay guests cannot create a connection key or use
+          owner agent chat.
+        </li>
+        <li>
+          You are responsible for actions taken while a key is active. Keep keys
+          secret, revoke them anytime, and review agent output before relying on
+          it.
+        </li>
+        <li>
+          Pro / Connect your agent pricing, when billing is live, is described
+          in the app and on the marketing site. That fee is for software access
+          only.
         </li>
       </ul>
     </section>
@@ -258,14 +442,20 @@ export function TermsStaffSection() {
 export function TermsCommonSections() {
   return (
     <>
+      <TermsWhatWeAre />
+      <TermsThailandAndDemo />
+      <TermsNoPropertyPayments />
+      <TermsFeaturesSafety />
+      <TermsAgentSection />
+
       <section className="space-y-2">
         <h2 className="font-display text-lg font-bold">Your content & data</h2>
         <p className="text-muted">
           You retain ownership of properties, tasks, contacts, messages, bills,
-          photos, and other data you submit. You grant us a limited license to
-          host and process it to operate, secure, and improve the Service. You
-          are responsible for its legality and for privacy and employment rules
-          when inviting others.
+          photos, house guides, master info, maintenance logs, and other data
+          you submit. You grant us a limited license to host and process it to
+          operate, secure, and improve the Service. You are responsible for its
+          legality and for privacy and employment rules when inviting others.
         </p>
       </section>
 
@@ -274,19 +464,23 @@ export function TermsCommonSections() {
         <p className="text-muted">
           You may not reverse engineer the Service except where allowed by law,
           probe or disrupt systems, impersonate others, spam, upload malware, or
-          use the Service for unlawful activity. We may remove content or suspend
-          accounts that violate these rules.
+          use the Service for unlawful activity (including facilitating illegal
+          rentals or fraud). We may remove content or suspend accounts that
+          violate these rules or put other users at risk.
         </p>
       </section>
 
       <section className="space-y-2">
-        <h2 className="font-display text-lg font-bold">Billing & referrals</h2>
+        <h2 className="font-display text-lg font-bold">
+          Software billing & referrals
+        </h2>
         <p className="text-muted">
-          New company workspaces receive about 90 days (roughly 3 months) of full
-          features while billing is rolling out. Personal workspaces stay free for
-          solo use. When paid company plans are active, company owners subscribe
-          through Stripe for gated company features; referral rewards may unlock
-          extended Full access as described in the app. Fees are non-refundable
+          Personal workspaces stay free for solo use. New company workspaces may
+          receive a trial of full features while billing rolls out. When paid
+          company plans are active, company owners subscribe through a payment
+          provider (for example Stripe) for gated company software features —
+          never for guest stay money. Referral rewards may unlock extended Full
+          access as described in the app. Software fees are non-refundable
           except where required by law or stated in a written offer.
         </p>
       </section>
@@ -294,13 +488,14 @@ export function TermsCommonSections() {
       <section className="space-y-2">
         <h2 className="font-display text-lg font-bold">Disclaimers & liability</h2>
         <p className="text-muted">
-          The Service is provided “as is”. {brand.name} coordinates operations; it
+          The Service is provided “as is”. {brand.name} helps you coordinate; it
           is not legal, tax, accounting, or insurance advice, and it does not
-          guarantee occupancy, staff performance, or payment between hosts and
-          guests. To the fullest extent permitted by law, our aggregate liability
-          for claims relating to the Service is limited to the fees you paid us
-          for the Service in the prior twelve months (or USD 100 if you paid
-          none).
+          guarantee occupancy, staff performance, guest behaviour, or payment
+          between hosts and guests. We do not verify that a listing is licensed
+          or that a stay is lawful. To the fullest extent permitted by law, our
+          aggregate liability for claims relating to the Service is limited to
+          the software fees you paid us in the prior twelve months (or USD 100
+          if you paid none).
         </p>
       </section>
 
@@ -309,8 +504,8 @@ export function TermsCommonSections() {
         <p className="text-muted">
           We may update these Terms, suspend access for breach or risk, or
           discontinue features. You may stop using the Service at any time.
-          Continued use after we post changes means you accept the updated Terms.
-          We will show a revised “Last updated” date on this page.
+          Continued use after we post changes means you accept the updated
+          Terms. We will show a revised “Last updated” date on this page.
         </p>
       </section>
 
@@ -333,19 +528,29 @@ export function PrivacySummary() {
       <h2 className="font-display text-lg font-bold">Summary</h2>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
-          We collect account, operations, and technical data needed to run the
-          Service.
+          We collect account, operations, and technical data needed to run a
+          safe helper platform for property teams and invited guests — not to
+          process rent or deposit payments.
         </li>
         <li>
-          We use data to authenticate you, deliver features, send notifications,
-          secure the Service, and improve the product.
+          We use data to authenticate you, deliver features (including house
+          guides, master info, reports, chat, and optional agents), send
+          notifications, secure the Service, and improve the product.
         </li>
         <li>
-          We share data with infrastructure providers (for example hosting,
-          database, and email), Stripe when billing is enabled, teammates
-          according to role, and authorities when required by law.
+          We share data with infrastructure providers (hosting, database, email,
+          file storage), Stripe only when software billing is enabled, teammates
+          according to role, an agent you connect with your key, and authorities
+          when required by law.
         </li>
-        <li>We do not sell your personal information.</li>
+        <li>
+          We do not sell your personal information. We do not sell guest or
+          property data to advertisers.
+        </li>
+        <li>
+          Primary operations and demo launch focus on Thailand; data may still
+          be processed in regions where our providers operate.
+        </li>
       </ul>
     </section>
   );
@@ -357,17 +562,19 @@ export function PrivacyGuestSection() {
       <h2 className="font-display text-lg font-bold">Stay guests</h2>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
-          We store date requests, quotes, confirmed stays, deposit status,
-          briefings, and Support chat for your stay (including{" "}
+          We store date requests, quotes, confirmed stays, deposit status
+          (record only — not card data for the stay), briefings, house-guide
+          views, and Support chat (including{" "}
           <strong className="text-ink">/deposit</strong> and{" "}
-          <strong className="text-ink">/cancel</strong> messages).
+          <strong className="text-ink">/cancel</strong>).
         </li>
         <li>
-          Receipt images you attach in Support are stored in our cloud storage.
+          Receipt images you attach in Support are stored in our cloud storage so
+          your host can confirm payment they received outside the app.
         </li>
         <li>
-          Your host and their property team can see booking and Support data for
-          your stay. Other guests cannot.
+          Your host and their authorized property team can see booking and
+          Support data for your stay. Other guests cannot.
         </li>
         <li>
           Push notifications may alert you to booking, deposit, and briefing
@@ -384,9 +591,10 @@ export function PrivacyOwnerSection() {
       <h2 className="font-display text-lg font-bold">Owners & managers</h2>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
-          We process property inventory, tasks, contacts, team chat, bills,
-          reports, guest stays, and company billing metadata for your
-          organization.
+          We process property inventory (including photos, listing links, and
+          details), tasks, jobs, contacts, team chat, expense bills, reports and
+          handoff snapshots, guest stays, house guides, master info,
+          maintenance logs, and company software-billing metadata.
         </li>
         <li>
           When you invite staff or guests, we store invite and join records tied
@@ -397,8 +605,14 @@ export function PrivacyOwnerSection() {
           authorized owners and managers in your workspace.
         </li>
         <li>
-          Stripe customer and subscription IDs are stored on the organization when
-          billing is enabled; card numbers are handled by Stripe, not by us.
+          Stripe customer and subscription IDs are stored on the organization
+          when software billing is enabled; card numbers for those subscriptions
+          are handled by Stripe, not by us. We never store card numbers for guest
+          stay payments because we do not take those payments.
+        </li>
+        <li>
+          If you use Connect your agent, we store a hash of your connection key,
+          scopes, and tool activity in your workspace.
         </li>
       </ul>
     </section>
@@ -411,19 +625,19 @@ export function PrivacyEmployeeSection() {
       <h2 className="font-display text-lg font-bold">Cleaning team</h2>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
-          We store your profile, assigned properties, job confirmations, and bills
-          you submit for your organization.
+          We store your profile, assigned properties, job confirmations, and
+          bills you submit for your organization.
         </li>
         <li>
           Receipt photos you upload for expenses are stored in cloud storage.
         </li>
         <li>
-          Owners and managers in your company can see work and bill data according
-          to role permissions.
+          Owners and managers in your company can see work and bill data
+          according to role permissions.
         </li>
         <li>
-          Guest stay Support chat and deposit receipts are not part of your staff
-          workflow unless you are also invited as a guest separately.
+          Guest stay Support chat and deposit receipts are not part of your
+          staff workflow unless you are also invited as a guest separately.
         </li>
       </ul>
     </section>
@@ -470,7 +684,8 @@ export function PrivacyCommonSections() {
           </li>
           <li>
             Operations data: properties, tasks, jobs, contacts, bills, messages,
-            photos, guest stays, and related records you or your teammates create.
+            photos, guest stays, house guides, master info, maintenance logs,
+            reports, and related records you or your teammates create.
           </li>
           <li>
             Technical data: device and browser type, IP address, app version, log
@@ -480,6 +695,29 @@ export function PrivacyCommonSections() {
             Optional push subscription tokens if you enable notifications, and
             demo-session cookies when you use public demo seats.
           </li>
+          <li>
+            We do not collect bank-card numbers for guest rent or deposits. We
+            do not receive those payments.
+          </li>
+        </ul>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="font-display text-lg font-bold">
+          How we use data (safety first)
+        </h2>
+        <ul className="list-disc space-y-1 pl-5 text-muted">
+          <li>Authenticate you and enforce role-based access</li>
+          <li>
+            Deliver the features you use and keep workspaces isolated from each
+            other
+          </li>
+          <li>Send notifications you enable</li>
+          <li>
+            Detect abuse, secure accounts, and keep the Service reliable for
+            teams in Thailand and elsewhere
+          </li>
+          <li>Improve the product with aggregated or de-identified insights</li>
         </ul>
       </section>
 
@@ -500,9 +738,35 @@ export function PrivacyCommonSections() {
           We use trusted processors to run the Service, including cloud hosting
           and content delivery (for example Vercel), database and authentication
           (for example Supabase), file storage for photos and receipts, email
-          delivery, and Stripe for paid company subscriptions when billing is
+          delivery, and Stripe for paid software subscriptions when billing is
           enabled. Providers process data only to provide their services to us.
+          They are not paid with your guests’ rent or deposits through us.
         </p>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="font-display text-lg font-bold">
+          Connect your agent (privacy)
+        </h2>
+        <ul className="list-disc space-y-1 pl-5 text-muted">
+          <li>
+            If you create a connection key, we store a hash of the key, a label,
+            scopes, and usage metadata. The full key is shown once when you
+            create it.
+          </li>
+          <li>
+            When the agent calls {brand.name}, we process the operational data
+            those tools read or write — scoped to your current workspace.
+          </li>
+          <li>
+            We do not give the agent your database credentials. You can revoke
+            the key at any time in Settings.
+          </li>
+          <li>
+            Third-party agent clients (such as your editor) process your prompts
+            on their systems under their own privacy terms.
+          </li>
+        </ul>
       </section>
 
       <section className="space-y-2">
@@ -510,8 +774,11 @@ export function PrivacyCommonSections() {
         <p className="text-muted">
           We retain data while your organization is active and for a reasonable
           period afterward for backups, dispute handling, and legal compliance.
-          We use encrypted transport (HTTPS) and access controls. No method is
-          100% secure; use strong passwords and limit invites.
+          We use encrypted transport (HTTPS), access controls, and
+          role-separated views so guests, staff, and owners do not see each
+          other’s private channels by default. No method is 100% secure; use
+          strong passwords or passkeys, limit invites, and protect master codes
+          and connection keys.
         </p>
       </section>
 
@@ -519,7 +786,11 @@ export function PrivacyCommonSections() {
         <h2 className="font-display text-lg font-bold">Your choices & requests</h2>
         <ul className="list-disc space-y-1 pl-5 text-muted">
           <li>Update profile and organization settings in the app</li>
-          <li>Manage company billing via the billing portal when available</li>
+          <li>
+            Manage company software billing via the billing portal when
+            available
+          </li>
+          <li>Disconnect agent connection keys in Settings</li>
           <li>
             Email{" "}
             <a
@@ -537,20 +808,22 @@ export function PrivacyCommonSections() {
 
       <section className="space-y-2">
         <h2 className="font-display text-lg font-bold">
-          International use & children
+          Thailand, international use & children
         </h2>
         <p className="text-muted">
-          Data may be processed outside your home country through our providers.
-          The Service is for business and rental operations and is not directed at
-          children under 16. Do not create an account for a child under 16.
+          We operate with Thailand as our primary market and demo launch
+          region. Data may still be processed outside Thailand in regions where
+          our providers operate. The Service is for business and property
+          operations and is not directed at children under 16. Do not create an
+          account for a child under 16.
         </p>
       </section>
 
       <section className="space-y-2">
         <h2 className="font-display text-lg font-bold">Changes</h2>
         <p className="text-muted">
-          We may update this Policy and post a revised “Last updated” date on this
-          page. Continued use means you accept the updated Policy.
+          We may update this Policy and post a revised “Last updated” date on
+          this page. Continued use means you accept the updated Policy.
         </p>
       </section>
     </>
@@ -632,12 +905,13 @@ export function LegalDocumentFooter({
       <section className="space-y-2">
         <h2 className="font-display text-lg font-bold">Operator & contact</h2>
         <p className="text-muted">
-          The Service is operated under the {brand.name} brand at{" "}
+          The Service is operated under the {brand.name} brand, with current
+          operations and demo launch focused on Thailand, at{" "}
           <a
             className="font-semibold text-primary"
-            href="https://pulseflow.site"
+            href="https://www.pulseflow.site"
           >
-            pulseflow.site
+            www.pulseflow.site
           </a>{" "}
           and{" "}
           <a

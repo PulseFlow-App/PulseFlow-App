@@ -18,11 +18,15 @@ export function VillaListCard({
   showAssignees,
   assignees,
   hideBucketBadge = false,
+  canEdit = false,
+  showMasterInfo = false,
 }: {
   villa: VillaListItem;
   showAssignees: boolean;
   assignees: string[];
   hideBucketBadge?: boolean;
+  canEdit?: boolean;
+  showMasterInfo?: boolean;
 }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -32,11 +36,11 @@ export function VillaListCard({
     villaFactCount(villa) > 0;
 
   return (
-    <Card className="overflow-hidden p-0 transition hover:bg-[#FBF9F6]">
-      <div className="flex gap-3 p-3">
+    <Card className="overflow-hidden p-0 transition hover:bg-canvas-deep/40">
+      <div className="relative flex gap-3 p-3">
         <Link
-          href={`/villas/${villa.id}`}
-          className="relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl bg-[#F0EDE6] sm:size-24"
+          href={`/villas/${villa.id}/stats`}
+          className="relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl bg-canvas-deep sm:size-24"
           aria-label={villa.name}
         >
           {villa.photo_url ? (
@@ -52,57 +56,51 @@ export function VillaListCard({
           )}
         </Link>
 
-        <div className="min-w-0 flex-1">
-          <Link href={`/villas/${villa.id}`} className="block">
-            <div className="mb-1 flex flex-wrap items-center gap-1.5">
-              {!hideBucketBadge ? (
-                <span
-                  className={
-                    villa.bucket === "company"
-                      ? "rounded-full bg-secondary-soft px-2 py-0.5 text-[10px] font-semibold text-secondary-dark"
-                      : "rounded-full bg-[#F0EDE6] px-2 py-0.5 text-[10px] font-semibold text-muted"
-                  }
-                >
-                  {villa.orgLabel}
-                </span>
-              ) : null}
-              <StatusPill status={villa.status} />
-            </div>
-            <h3 className="font-display text-base font-bold leading-snug text-ink">
-              {villa.name}
-            </h3>
-            {villa.area ? (
-              <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted">
-                <PulseIcon name="map" className="size-3" />
-                {villa.area}
-              </p>
+        <div className="min-w-0 flex-1 pr-10">
+          <div className="mb-1 flex flex-wrap items-center gap-1.5">
+            {!hideBucketBadge ? (
+              <span
+                className={
+                  villa.bucket === "company"
+                    ? "rounded-full bg-secondary-soft px-2 py-0.5 text-[10px] font-semibold text-secondary-dark"
+                    : "rounded-full bg-canvas-deep px-2 py-0.5 text-[10px] font-semibold text-muted"
+                }
+              >
+                {villa.orgLabel}
+              </span>
             ) : null}
-            <p className="mt-1.5 text-[11px] leading-snug text-muted">
-              {t("villas.checkIn")} {formatShortDate(villa.check_in)}
-              {" · "}
-              {t("villas.checkOut")} {formatShortDate(villa.check_out)}
+            <StatusPill status={villa.status} />
+          </div>
+          <h3 className="font-display text-base font-bold leading-snug text-ink">
+            {villa.name}
+          </h3>
+          {villa.area ? (
+            <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted">
+              <PulseIcon name="map" className="size-3" />
+              {villa.area}
             </p>
-            {showAssignees ? (
-              <p className="mt-1 truncate text-[11px] text-muted">
-                <span className="font-semibold text-ink">
-                  {assignees.length
-                    ? assignees.join(", ")
-                    : t("tasks.unassigned")}
-                </span>
-              </p>
-            ) : null}
-          </Link>
+          ) : null}
+          <p className="mt-1.5 text-[11px] leading-snug text-muted">
+            {t("villas.checkIn")} {formatShortDate(villa.check_in)}
+            {" · "}
+            {t("villas.checkOut")} {formatShortDate(villa.check_out)}
+          </p>
+          {showAssignees ? (
+            <p className="mt-1 truncate text-[11px] text-muted">
+              <span className="font-semibold text-ink">
+                {assignees.length
+                  ? assignees.join(", ")
+                  : t("tasks.unassigned")}
+              </span>
+            </p>
+          ) : null}
 
           {hasExtra ? (
             <button
               type="button"
               className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-primary"
               aria-expanded={open}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setOpen((v) => !v);
-              }}
+              onClick={() => setOpen((v) => !v)}
             >
               {open ? t("villas.cardLess") : t("villas.cardMore")}
               <ChevronDown
@@ -113,6 +111,34 @@ export function VillaListCard({
               />
             </button>
           ) : null}
+        </div>
+
+        <div className="absolute right-2 top-2 flex flex-col gap-0.5">
+          {canEdit ? (
+            <Link
+              href={`/villas/${villa.id}`}
+              className="rounded-lg p-2 text-muted hover:bg-sand"
+              aria-label={t("villas.editProperty")}
+            >
+              <PulseIcon name="edit" className="size-4" />
+            </Link>
+          ) : null}
+          {showMasterInfo ? (
+            <Link
+              href={`/villas/${villa.id}?section=master`}
+              className="rounded-lg p-2 text-muted hover:bg-sand"
+              aria-label={t("villas.masterInfoIcon")}
+            >
+              <PulseIcon name="document" className="size-4" />
+            </Link>
+          ) : null}
+          <Link
+            href={`/villas/${villa.id}/stats`}
+            className="rounded-lg p-2 text-muted hover:bg-sand"
+            aria-label={t("villas.propertyStats")}
+          >
+            <PulseIcon name="clipboard" className="size-4" />
+          </Link>
         </div>
       </div>
 
@@ -130,40 +156,25 @@ export function VillaListCard({
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
-              onClick={(e) => e.stopPropagation()}
             >
               <ExternalLink className="size-3.5" />
               {t("villas.locationLink")}
             </a>
           ) : null}
-          <Link
-            href={`/villas/${villa.id}`}
-            className="block text-sm font-semibold text-ink underline decoration-black/15 underline-offset-2"
-          >
-            {t("villas.openProperty")}
-          </Link>
         </div>
       ) : null}
     </Card>
   );
 }
 
-function villaFactCount(villa: VillaListItem) {
+function villaFactCount(villa: VillaListItem): number {
   let n = 0;
-  if (villa.property_type) n += 1;
   if (villa.bedrooms != null) n += 1;
   if (villa.bathrooms != null) n += 1;
   if (villa.max_guests != null) n += 1;
   if (villa.sq_m != null) n += 1;
-  if (villa.has_pool) n += 1;
-  if (villa.has_garden) n += 1;
-  if (villa.has_wifi) n += 1;
-  if (villa.pet_friendly) n += 1;
-  if (villa.parking && villa.parking !== "none") n += 1;
-  if (villa.kitchen && villa.kitchen !== "none") n += 1;
-  if (villa.aircon && villa.aircon !== "none") n += 1;
-  if (villa.view) n += 1;
-  if (villa.setting) n += 1;
-  if (villa.floors != null) n += 1;
+  if (villa.has_pool != null) n += 1;
+  if (villa.has_wifi != null) n += 1;
+  if (villa.property_type) n += 1;
   return n;
 }

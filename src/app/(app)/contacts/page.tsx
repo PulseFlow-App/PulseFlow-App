@@ -543,7 +543,6 @@ function OrderForm({
       <WorkScheduleFields
         value={schedule}
         onChange={setSchedule}
-        dateLabel={t("common.when")}
       />
       <div>
         <Label>Details</Label>

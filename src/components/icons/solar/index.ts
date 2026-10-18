@@ -34,3 +34,4 @@ export { SolarLogout } from "./logout";
 export { SolarHeadphones } from "./headphones";
 export { SolarDocumentText } from "./document-text";
 export { SolarMedalStar } from "./medal-star";
+export { SolarPen } from "./pen";

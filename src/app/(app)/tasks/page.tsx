@@ -22,6 +22,7 @@ import {
   schedulePayloadFromResolved,
 } from "@/lib/work-schedule";
 import type { MessageKey } from "@/lib/i18n";
+import { ReportsEntryLink } from "@/components/reports/reports-entry-link";
 
 type Filter = "all" | "mine" | "urgent";
 
@@ -105,10 +106,6 @@ export default function TasksPage() {
       return;
     }
     const resolved = resolveWorkSchedule(schedule);
-    if (schedule.schedule_mode === "slots" && !resolved.time_slots?.length) {
-      setError(t("schedule.needVisit"));
-      return;
-    }
     setSaving(true);
     try {
       await data.createTask({
@@ -156,19 +153,22 @@ export default function TasksPage() {
           <h1 className="type-title">{t("tasks.title")}</h1>
           <p className="type-meta mt-1">{t("tasks.openCount", { count: openCount })}</p>
         </div>
-        <Button
-          size="xs"
-          className="shrink-0"
-          onClick={() => setShowForm((v) => !v)}
-        >
-          {showForm ? (
-            t("common.cancel")
-          ) : (
-            <>
-              <Plus className="size-3.5" strokeWidth={2.4} /> {t("tasks.add")}
-            </>
-          )}
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <ReportsEntryLink />
+          <Button
+            size="xs"
+            className="shrink-0"
+            onClick={() => setShowForm((v) => !v)}
+          >
+            {showForm ? (
+              t("common.cancel")
+            ) : (
+              <>
+                <Plus className="size-3.5" strokeWidth={2.4} /> {t("tasks.add")}
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-2">
@@ -226,7 +226,6 @@ export default function TasksPage() {
           <WorkScheduleFields
             value={schedule}
             onChange={setSchedule}
-            dateLabel={t("tasks.day")}
           />
           <div>
             <Label>{t("tasks.assignee")}</Label>

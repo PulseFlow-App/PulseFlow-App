@@ -10,6 +10,8 @@ import { hasDemoUserCookie, isSupabaseConfigured } from "@/lib/env";
 export function useIsDemoMode() {
   const [demo, setDemo] = useState(() => {
     if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") return true;
+    // Cookie demo seats work on production even when DEMO_MODE=false.
+    if (typeof document !== "undefined" && hasDemoUserCookie()) return true;
     if (process.env.NEXT_PUBLIC_DEMO_MODE === "false") return false;
     return !isSupabaseConfigured();
   });

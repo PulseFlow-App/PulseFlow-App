@@ -5,11 +5,13 @@ export type WorkRecurrence = "once" | "daily" | "weekdays";
 
 export type WorkScheduleInput = {
   schedule_mode: ScheduleMode;
-  /** YYYY-MM-DD start (or only) day */
+  /** YYYY-MM-DD start day */
   date: string;
+  /** YYYY-MM-DD end day (inclusive). Empty = same as start. */
+  endDate: string;
   time_start: string;
   time_end: string;
-  /** Discrete visit times when mode is slots */
+  /** Discrete visit times when mode is slots (legacy) */
   visitTimes: string[];
   recurrence: WorkRecurrence;
   /** How many calendar days in the series (daily/weekdays). Ignored for once. */
@@ -26,10 +28,13 @@ export type WorkScheduleFields = {
   date: string | null;
 };
 
-export function emptyWorkSchedule(defaults?: Partial<WorkScheduleInput>): WorkScheduleInput {
+export function emptyWorkSchedule(
+  defaults?: Partial<WorkScheduleInput>,
+): WorkScheduleInput {
   return {
     schedule_mode: "window",
     date: "",
+    endDate: "",
     time_start: "",
     time_end: "",
     visitTimes: [],
@@ -43,33 +48,33 @@ function normalizeTime(value: string): string {
   return value.trim().slice(0, 5);
 }
 
+function daySpanInclusive(start: string, end: string): number | null {
+  if (!start || !end || end <= start) return null;
+  const a = new Date(`${start}T12:00:00`);
+  const b = new Date(`${end}T12:00:00`);
+  if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) return null;
+  const days = Math.round((b.getTime() - a.getTime()) / 86_400_000) + 1;
+  return days >= 2 ? Math.min(60, days) : null;
+}
+
 /** Normalize form state into DB-ready schedule fields. */
 export function resolveWorkSchedule(input: WorkScheduleInput): WorkScheduleFields {
   const date = input.date.trim() || null;
-  const recurrence =
+  const span = date ? daySpanInclusive(date, input.endDate.trim()) : null;
+
+  let recurrence: WorkRecurrence =
     input.recurrence === "once" || !date ? "once" : input.recurrence;
-  const recurrence_count =
+  let recurrence_count: number | null =
     recurrence === "once"
       ? null
       : Math.min(60, Math.max(1, Math.round(input.recurrenceCount) || 7));
 
-  if (input.schedule_mode === "slots") {
-    const slots = Array.from(
-      new Set(
-        input.visitTimes
-          .map(normalizeTime)
-          .filter((t) => /^\d{2}:\d{2}$/.test(t)),
-      ),
-    ).sort();
-    return {
-      schedule_mode: "slots",
-      time_slots: slots.length ? slots : null,
-      recurrence,
-      recurrence_count,
-      time_start: slots[0] ?? null,
-      time_end: null,
-      date,
-    };
+  // Start + end day without an explicit repeat → daily across the range.
+  if (span != null && recurrence === "once") {
+    recurrence = "daily";
+    recurrence_count = span;
+  } else if (span != null && recurrence !== "once") {
+    recurrence_count = span;
   }
 
   const time_start = normalizeTime(input.time_start) || null;

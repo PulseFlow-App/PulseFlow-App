@@ -18,19 +18,19 @@ import {
   quickSourcesFromVilla,
   quickSourcesPayload,
 } from "@/components/villas/villa-quick-sources";
+import {
+  VillaExpandSection,
+  applyVillaEnrichment,
+} from "@/components/villas/villa-form-sections";
 import { useData } from "@/lib/data/use-app-data";
-import type { CleaningStatus, VillaStatus } from "@/lib/design-tokens";
+import type { VillaStatus } from "@/lib/design-tokens";
 import { canDeleteVilla, canEditVillaCore, isStaffApp } from "@/lib/roles";
 import { isValidLocationUrl, normalizeLocationUrl } from "@/lib/utils";
 import { formatWorkWindow } from "@/lib/notifications";
 import { formatOrderWhen } from "@/lib/service-orders";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
-import {
-  labelCleaningStatus,
-  labelRole,
-  labelVillaStatus,
-} from "@/lib/i18n/labels";
+import { labelRole, labelVillaStatus } from "@/lib/i18n/labels";
 import { HouseGuideEditor } from "@/components/villas/house-guide-editor";
 import { VillaMasterInfoEditor } from "@/components/villas/villa-master-info-editor";
 import { VillaMaintenanceLog } from "@/components/villas/villa-maintenance-log";
@@ -64,17 +64,16 @@ export default function VillaDetailPage({
       (!staff || o.staff_profile_id === data.profile?.id),
   );
   const villaTasks = data.tasks.filter(
-    (t) =>
-      t.villa_id === id &&
-      t.status === "open" &&
-      (!staff || t.assigned_to === data.profile?.id),
+    (task) =>
+      task.villa_id === id &&
+      task.status === "open" &&
+      (!staff || task.assigned_to === data.profile?.id),
   );
   const isPersonal =
     villaItem?.bucket === "personal" ||
     (data.profile?.personal_org_id != null &&
       villa?.org_id === data.profile.personal_org_id &&
       data.profile.org_id !== data.profile.personal_org_id);
-  // Owners/managers edit company cores; anyone can fully manage their personal list.
   const canEditCore =
     Boolean(isPersonal) ||
     (data.profile ? canEditVillaCore(data.profile.role) : false);
@@ -87,7 +86,6 @@ export default function VillaDetailPage({
     : false;
 
   const [status, setStatus] = useState<VillaStatus>("available");
-  const [cleaning, setCleaning] = useState<CleaningStatus>("not_needed");
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [notes, setNotes] = useState("");
@@ -103,6 +101,7 @@ export default function VillaDetailPage({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [openMaster, setOpenMaster] = useState(false);
   const photo = useVillaPhotoUpload(data.uploadVillaPhoto);
 
   const team = useMemo(
@@ -125,7 +124,6 @@ export default function VillaDetailPage({
   useEffect(() => {
     if (!villa) return;
     setStatus(villa.status);
-    setCleaning(villa.cleaning_status);
     setCheckIn(villa.check_in ?? "");
     setCheckOut(villa.check_out ?? "");
     setNotes(villa.notes ?? "");
@@ -136,14 +134,26 @@ export default function VillaDetailPage({
     photo.setPhotoUrl(villa.photo_url ?? null);
     setDetails(detailsToForm(villa));
     setQuickSources(quickSourcesFromVilla(villa));
-    // Only hydrate when opening a villa - re-syncing on every server refresh
-    // would wipe a just-uploaded photo before Save.
   }, [villa?.id]);
 
   useEffect(() => {
     if (!villa?.id) return;
     setAssigneeIds(storedAssigneeKey ? storedAssigneeKey.split(",") : []);
   }, [villa?.id, storedAssigneeKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const section = new URLSearchParams(window.location.search).get("section");
+    if (section !== "master") return;
+    setOpenMaster(true);
+    const timer = window.setTimeout(() => {
+      document.getElementById("villa-master")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [villa?.id, data.ready]);
 
   if (!data.ready) return <LoadingState />;
   if (!villa) {
@@ -170,7 +180,6 @@ export default function VillaDetailPage({
       const photoUrl = await photo.waitForPhoto();
       await data.updateVilla(villa.id, {
         status,
-        cleaning_status: cleaning,
         check_in: checkIn || null,
         check_out: checkOut || null,
         notes: notes || null,
@@ -214,69 +223,71 @@ export default function VillaDetailPage({
       </Link>
 
       <Card className="space-y-4 p-5">
-        {photo.displayUrl || villa.photo_url || canEditCore ? (
-          <div className="space-y-2">
-            <VillaPhotoThumb
-              src={photo.displayUrl ?? villa.photo_url}
-              alt={villa.name}
-            />
-            {canEditCore ? (
-              <div>
-                <Label>Property photo</Label>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = "";
-                    photo.pickPhoto(file);
-                  }}
-                />
-                <p className="mt-1 text-xs text-muted">
-                  Upload from your gallery or take a photo. Employees see this
-                  when accepting jobs at this property.
-                </p>
-                {photo.photoBusy ? (
-                  <p className="mt-1 text-xs font-semibold text-muted">
-                    {t("villas.photoUploading")}
-                  </p>
-                ) : null}
-                {photo.displayUrl ? (
-                  <button
-                    type="button"
-                    className="mt-1 text-xs font-semibold text-danger"
-                    onClick={() => photo.removePhoto()}
-                  >
-                    Remove photo
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
         {canEditCore ? (
           <>
+            <div>
+              <Label>{t("villas.propertyName")}</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-ink">
+                {t("villas.photoSection")}
+              </p>
+              <VillaPhotoThumb
+                src={photo.displayUrl ?? villa.photo_url}
+                alt={villa.name}
+              />
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  photo.pickPhoto(file);
+                }}
+              />
+              {photo.photoBusy ? (
+                <p className="text-xs font-semibold text-muted">
+                  {t("villas.photoUploading")}
+                </p>
+              ) : null}
+              {photo.displayUrl ? (
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-danger"
+                  onClick={() => photo.removePhoto()}
+                >
+                  Remove photo
+                </button>
+              ) : null}
+            </div>
+
             <VillaQuickSources
               value={quickSources}
               onChange={setQuickSources}
-              name={name}
-              area={area}
-              onNameChange={setName}
-              onAreaChange={setArea}
               uploadDoc={data.uploadVillaPhoto}
-              onPlacePick={(place) => {
-                setLocationUrl(place.mapsUrl);
-                if (place.area) setArea(place.area);
-                if (!name.trim()) setName(place.label);
+              onEnrich={(enrichment) => {
+                const next = applyVillaEnrichment(enrichment, {
+                  name,
+                  area,
+                  description,
+                  locationUrl,
+                  details,
+                });
+                setName(next.name);
+                setArea(next.area);
+                setDescription(next.description);
+                setLocationUrl(next.locationUrl);
+                setDetails(next.details);
               }}
             />
+
             <div>
               <Label>{t("villas.locationLink")}</Label>
               <Input
                 value={locationUrl}
                 onChange={(e) => setLocationUrl(e.target.value)}
-                placeholder="https://maps.google.com/?q=..."
                 inputMode="url"
               />
             </div>
@@ -288,10 +299,17 @@ export default function VillaDetailPage({
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
+
             <VillaDetailsFields value={details} onChange={setDetails} />
           </>
         ) : (
           <div>
+            {(photo.displayUrl || villa.photo_url) && (
+              <VillaPhotoThumb
+                src={photo.displayUrl ?? villa.photo_url}
+                alt={villa.name}
+              />
+            )}
             <h1 className="font-display text-2xl font-bold text-ink">
               {villa.name}
             </h1>
@@ -325,51 +343,6 @@ export default function VillaDetailPage({
                   {t("villas.openListing")}
                 </a>
               ) : null}
-              {villa.drive_url ? (
-                <a
-                  href={villa.drive_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
-                >
-                  <ExternalLink className="size-3.5" />
-                  {t("villas.openDrive")}
-                </a>
-              ) : null}
-              {villa.info_doc_url ? (
-                <a
-                  href={villa.info_doc_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
-                >
-                  <ExternalLink className="size-3.5" />
-                  {villa.info_doc_name || t("villas.openInfoDoc")}
-                </a>
-              ) : null}
-            </div>
-            {villa.source_notes ? (
-              <p className="mt-3 whitespace-pre-wrap rounded-xl bg-canvas-deep px-3 py-2 text-sm text-ink">
-                <LocalizedText text={villa.source_notes} />
-              </p>
-            ) : null}
-            <div className="mt-4 space-y-3">
-              <div>
-                <Label>Location link</Label>
-                <Input
-                  value={locationUrl}
-                  onChange={(e) => setLocationUrl(e.target.value)}
-                  inputMode="url"
-                />
-              </div>
-              <div>
-                <Label>{t("villas.description")}</Label>
-                <Textarea
-                  rows={3}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
             </div>
           </div>
         )}
@@ -380,13 +353,6 @@ export default function VillaDetailPage({
               Belongs to
             </p>
             <p className="mt-0.5 font-semibold text-ink">{villaItem.orgLabel}</p>
-            {isPersonal ? (
-              <p className="mt-1 text-xs text-muted">
-                Personal / side work. To put this on another company&apos;s
-                books, that owner must register on PulseFlow and invite you -
-                then merge it below.
-              </p>
-            ) : null}
           </div>
         ) : null}
 
@@ -407,164 +373,152 @@ export default function VillaDetailPage({
           </Button>
         ) : null}
 
-        {isOwner && !isPersonal && data.orgKind === "company" ? (
+        <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-canvas-deep/40 p-3">
+          <p className="text-sm font-semibold text-ink">
+            {t("villas.opsSection")}
+          </p>
+          {isOwner && !isPersonal && data.orgKind === "company" ? (
+            <div>
+              <Label>{t("villas.assignedTo")}</Label>
+              <ul className="mt-2 space-y-2">
+                {team.map((person) => {
+                  const checked = assigneeIds.includes(person.id);
+                  return (
+                    <li key={person.id}>
+                      <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-card px-3 py-2.5 text-sm">
+                        <input
+                          type="checkbox"
+                          className="size-5 shrink-0 accent-primary"
+                          checked={checked}
+                          onChange={() => {
+                            setAssigneeIds((prev) =>
+                              checked
+                                ? prev.filter((x) => x !== person.id)
+                                : [...prev, person.id],
+                            );
+                          }}
+                        />
+                        <span className="font-semibold text-ink">
+                          {person.full_name}
+                        </span>
+                        <span className="text-muted">
+                          {labelRole(t, person.role)}
+                        </span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+
           <div>
-            <Label>{t("villas.assignedTo")}</Label>
-            <p className="mb-2 text-xs text-muted">
-              Who can see and update this property
-            </p>
-            <ul className="space-y-2">
-              {team.map((person) => {
-                const checked = assigneeIds.includes(person.id);
-                return (
-                  <li key={person.id}>
-                    <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-canvas-deep px-3 py-2.5 text-sm">
-                      <input
-                        type="checkbox"
-                        className="size-5 shrink-0 accent-primary"
-                        checked={checked}
-                        onChange={() => {
-                          setAssigneeIds((prev) =>
-                            checked
-                              ? prev.filter((x) => x !== person.id)
-                              : [...prev, person.id],
-                          );
-                        }}
-                      />
-                      <span className="font-semibold text-ink">
-                        {person.full_name}
-                      </span>
-                      <span className="text-muted">
-                        {labelRole(t, person.role)}
-                      </span>
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
-            {team.length === 0 ? (
-              <p className="text-sm text-muted">
-                Invite a manager or staff member first.
-              </p>
-            ) : null}
+            <Label htmlFor="status">{t("villas.status")}</Label>
+            <Select
+              id="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value as VillaStatus)}
+            >
+              <option value="available">
+                {labelVillaStatus(t, "available")}
+              </option>
+              <option value="occupied">
+                {labelVillaStatus(t, "occupied")}
+              </option>
+              <option value="turnover">
+                {labelVillaStatus(t, "turnover")}
+              </option>
+              <option value="maintenance">
+                {labelVillaStatus(t, "maintenance")}
+              </option>
+            </Select>
           </div>
-        ) : null}
 
-        <div>
-          <Label htmlFor="status">{t("villas.status")}</Label>
-          <Select
-            id="status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as VillaStatus)}
-          >
-            <option value="available">
-              {labelVillaStatus(t, "available")}
-            </option>
-            <option value="occupied">
-              {labelVillaStatus(t, "occupied")}
-            </option>
-            <option value="turnover">
-              {labelVillaStatus(t, "turnover")}
-            </option>
-            <option value="maintenance">
-              {labelVillaStatus(t, "maintenance")}
-            </option>
-          </Select>
-        </div>
-
-        {staff ? (
-          <div className="space-y-2 rounded-2xl bg-canvas-deep px-3 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-              {t("villas.yourJobsHere")}
-            </p>
-            {villaJobs.length === 0 && villaTasks.length === 0 ? (
-              <p className="text-sm text-muted">{t("villas.noJobsHere")}</p>
-            ) : null}
-            {villaJobs.map((o) => (
-              <p key={o.id} className="text-sm font-semibold text-ink">
-                <LocalizedText text={o.service_type} />
-                {formatOrderWhen(o) ? ` · ${formatOrderWhen(o)}` : ""}
+          {staff ? (
+            <div className="space-y-2 rounded-2xl bg-card px-3 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                {t("villas.yourJobsHere")}
               </p>
-            ))}
-            {villaTasks.map((t) => (
-              <p key={t.id} className="text-sm text-ink">
-                {t.title}
-                {formatWorkWindow(t.due_date, t.time_start, t.time_end, {
-                  schedule_mode: t.schedule_mode,
-                  time_slots: t.time_slots,
-                  recurrence: t.recurrence,
-                  recurrence_count: t.recurrence_count,
-                })
-                  ? ` · ${formatWorkWindow(t.due_date, t.time_start, t.time_end, {
-                      schedule_mode: t.schedule_mode,
-                      time_slots: t.time_slots,
-                      recurrence: t.recurrence,
-                      recurrence_count: t.recurrence_count,
-                    })}`
-                  : ""}
-              </p>
-            ))}
-            <p className="text-xs text-muted">
-              {t("villas.staffHint")}
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="check_in">{t("villas.checkIn")}</Label>
-              <Input
-                id="check_in"
-                type="date"
-                value={checkIn}
-                onChange={(e) => setCheckIn(e.target.value)}
-              />
+              {villaJobs.length === 0 && villaTasks.length === 0 ? (
+                <p className="text-sm text-muted">{t("villas.noJobsHere")}</p>
+              ) : null}
+              {villaJobs.map((o) => (
+                <p key={o.id} className="text-sm font-semibold text-ink">
+                  <LocalizedText text={o.service_type} />
+                  {formatOrderWhen(o) ? ` · ${formatOrderWhen(o)}` : ""}
+                </p>
+              ))}
+              {villaTasks.map((task) => (
+                <p key={task.id} className="text-sm text-ink">
+                  {task.title}
+                  {formatWorkWindow(
+                    task.due_date,
+                    task.time_start,
+                    task.time_end,
+                    {
+                      schedule_mode: task.schedule_mode,
+                      time_slots: task.time_slots,
+                      recurrence: task.recurrence,
+                      recurrence_count: task.recurrence_count,
+                    },
+                  )
+                    ? ` · ${formatWorkWindow(
+                        task.due_date,
+                        task.time_start,
+                        task.time_end,
+                        {
+                          schedule_mode: task.schedule_mode,
+                          time_slots: task.time_slots,
+                          recurrence: task.recurrence,
+                          recurrence_count: task.recurrence_count,
+                        },
+                      )}`
+                    : ""}
+                </p>
+              ))}
+              <p className="text-xs text-muted">{t("villas.staffHint")}</p>
             </div>
-            <div>
-              <Label htmlFor="check_out">{t("villas.checkOut")}</Label>
-              <Input
-                id="check_out"
-                type="date"
-                value={checkOut}
-                onChange={(e) => setCheckOut(e.target.value)}
-              />
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="check_in">{t("villas.checkIn")}</Label>
+                <Input
+                  id="check_in"
+                  type="date"
+                  value={checkIn}
+                  onChange={(e) => setCheckIn(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="check_out">{t("villas.checkOut")}</Label>
+                <Input
+                  id="check_out"
+                  type="date"
+                  value={checkOut}
+                  onChange={(e) => setCheckOut(e.target.value)}
+                />
+              </div>
             </div>
+          )}
+
+          <div>
+            <Label htmlFor="notes">{t("common.notes")}</Label>
+            <Textarea
+              id="notes"
+              rows={4}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
           </div>
-        )}
-
-        <div>
-          <Label htmlFor="cleaning">{t("villas.cleaning")}</Label>
-          <Select
-            id="cleaning"
-            value={cleaning}
-            onChange={(e) => setCleaning(e.target.value as CleaningStatus)}
-          >
-            <option value="not_needed">
-              {labelCleaningStatus(t, "not_needed")}
-            </option>
-            <option value="in_progress">
-              {labelCleaningStatus(t, "in_progress")}
-            </option>
-            <option value="done">
-              {labelCleaningStatus(t, "done")}
-            </option>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="notes">{t("common.notes")}</Label>
-          <Textarea
-            id="notes"
-            rows={4}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
         </div>
 
         {error || photo.photoError ? (
           <p className="text-sm text-danger">{error ?? photo.photoError}</p>
         ) : null}
         {saved ? (
-          <p className="text-sm font-semibold text-secondary">{t("common.saved")}</p>
+          <p className="text-sm font-semibold text-secondary">
+            {t("common.saved")}
+          </p>
         ) : null}
 
         <Button
@@ -590,9 +544,27 @@ export default function VillaDetailPage({
         ) : null}
       </Card>
 
-      {canEditCore && !staff ? <HouseGuideEditor villaId={id} /> : null}
-      <VillaMasterInfoEditor villaId={id} />
-      <VillaMaintenanceLog villaId={id} />
+      {canEditCore && !staff ? (
+        <VillaExpandSection title={t("villas.houseGuideSection")}>
+          <HouseGuideEditor villaId={id} embed />
+        </VillaExpandSection>
+      ) : null}
+
+      <div id="villa-master">
+        <VillaExpandSection
+          title={t("villas.masterInfoTitle")}
+          defaultOpen={openMaster}
+        >
+          <VillaMasterInfoEditor villaId={id} embed />
+        </VillaExpandSection>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-sm font-semibold text-ink">
+          {t("villas.maintTitle")}
+        </p>
+        <VillaMaintenanceLog villaId={id} />
+      </div>
 
       <ConfirmDialog
         open={confirmDelete}

@@ -1410,7 +1410,62 @@ export const demoVillaMasterInfo: VillaMasterInfo[] = [
     tax_notes: "Land tax paid annually in March. Folder with receipt in Drive.",
     handoff_notes:
       "If I'm offline: check occupancy on Home, send guest guide, book Nok for turnovers.",
+    allow_manager_view: true,
     updated_at: daysAgo(2) + "T10:00:00.000Z",
+  },
+  {
+    id: "77777777-7777-4777-8777-7777777777d2",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.lotus,
+    utilities_notes:
+      "PEA meter left of gate (account L-4821). Water: private well + UV filter under kitchen sink. Internet: True Fiber ONU in media cabinet.",
+    service_providers_notes:
+      "Pool & garden: Nok Cleaning (weekly Fri). AC: Island Cool · last service Aug. Plumber: Dee · contact in app.",
+    access_notes:
+      "Guest gate/Wi‑Fi in house guide. Master lockbox under planter (code 9173). Pool pump shed: key on kitchen hook marked Pool. Breaker panel: laundry closet.",
+    key_contacts_notes:
+      "Srithanu security 08:00-22:00 · +66 89 000 1122. Neighbor Kai (right) has spare house key.",
+    tax_notes:
+      "Land tax due March · receipt PDF in Drive → Lotus → Tax. Building insurance renews 1 Nov.",
+    handoff_notes:
+      "Occupied stay first: check Home for dates, open house guide for guest codes, then book Nok if checkout is tomorrow. Pool chemicals in shed shelf B.",
+    allow_manager_view: true,
+    updated_at: daysAgo(1) + "T09:00:00.000Z",
+  },
+  {
+    id: "77777777-7777-4777-8777-7777777777d3",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.palm,
+    utilities_notes:
+      "PEA meter rear wall. Water: municipal + rooftop tank (float valve). Gas: LPG for hob — spare tank in shed.",
+    service_providers_notes:
+      "Deep clean: Mai. Pool: Island Pool Parts. Gardener: weekly Wed.",
+    access_notes:
+      "Alarm: 4455 disarm (owner only — not for guests). Bike lock key with laundry keys.",
+    key_contacts_notes:
+      "Haad Yao community WhatsApp in Drive. Emergency clinic 10 min drive.",
+    tax_notes: "Owner keeps tax file offline · ask Alex before sharing numbers.",
+    handoff_notes:
+      "Turnover tomorrow: strip beds, book Mai, confirm pool filter ran overnight.",
+    allow_manager_view: true,
+    updated_at: daysAgo(3) + "T11:00:00.000Z",
+  },
+  {
+    id: "77777777-7777-4777-8777-7777777777d4",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.coral,
+    utilities_notes:
+      "Shared PEA for bungalow row — meter C3. Water included in community fee.",
+    service_providers_notes:
+      "Community maintenance desk · Thong Sala. Pest control quarterly (last: June).",
+    access_notes:
+      "Side gate padlock 2201. No alarm. Tool cupboard key with Mai.",
+    key_contacts_notes: "Community manager Joy · +66 81 555 0199.",
+    tax_notes: null,
+    handoff_notes:
+      "Long-stay guest — quiet hours matter. Extra towels in left cupboard.",
+    allow_manager_view: true,
+    updated_at: daysAgo(5) + "T08:00:00.000Z",
   },
 ];
 

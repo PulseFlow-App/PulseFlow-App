@@ -31,7 +31,9 @@ export function VillaDetailsFields({
     <div className="space-y-3">
       <div>
         <p className="text-sm font-semibold text-ink">{t("villas.details")}</p>
-        <p className="text-xs text-muted">{t("villas.detailsHint")}</p>
+        {t("villas.detailsHint") ? (
+          <p className="text-xs text-muted">{t("villas.detailsHint")}</p>
+        ) : null}
       </div>
 
       <EnumField
