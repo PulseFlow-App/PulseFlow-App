@@ -209,27 +209,30 @@ export default function VillasPage() {
             <p className="type-meta mt-1">{villasSubtitle}</p>
           ) : null}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          {!showAdd ? <ReportsEntryLink /> : null}
-          {canAdd && !showAdd ? (
-            <Button
-              size="xs"
-              className="shrink-0"
-              onClick={() => {
-                setScope(defaultScope);
-                setCompanyOrgId(
-                  ownedCompanies.find((o) => o.id === data.profile?.org_id)
-                    ?.id ??
-                    ownedCompanies[0]?.id ??
-                    "",
-                );
-                setShowAdd(true);
-              }}
-            >
-              <Plus className="size-3.5" strokeWidth={2.4} /> {t("villas.addNew")}
-            </Button>
-          ) : null}
-        </div>
+        {!showAdd ? (
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            {canAdd ? (
+              <Button
+                size="xs"
+                className="shrink-0"
+                onClick={() => {
+                  setScope(defaultScope);
+                  setCompanyOrgId(
+                    ownedCompanies.find((o) => o.id === data.profile?.org_id)
+                      ?.id ??
+                      ownedCompanies[0]?.id ??
+                      "",
+                  );
+                  setShowAdd(true);
+                }}
+              >
+                <Plus className="size-3.5" strokeWidth={2.4} />{" "}
+                {t("villas.addNew")}
+              </Button>
+            ) : null}
+            <ReportsEntryLink />
+          </div>
+        ) : null}
       </div>
 
       {canManageDates && pendingDateRequests > 0 && !showAdd ? (

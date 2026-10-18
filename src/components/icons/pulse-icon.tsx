@@ -28,6 +28,8 @@ import {
   SolarMapPoint,
   SolarMedalStar,
   SolarPen,
+  SolarChart2,
+  SolarCalendarAdd,
   SolarSettings,
   SolarShield,
   SolarStar,
@@ -85,6 +87,8 @@ export type PulseIconName =
   | "support"
   | "document"
   | "edit"
+  | "chart"
+  | "order"
   | "logout"
   | "medal";
 
@@ -126,6 +130,8 @@ const registry: Record<
   support: { Icon: SolarHeadphones, soft: "sky" },
   document: { Icon: SolarDocumentText, soft: "sky" },
   edit: { Icon: SolarPen, soft: "action" },
+  chart: { Icon: SolarChart2, soft: "sun" },
+  order: { Icon: SolarCalendarAdd, soft: "action" },
   logout: { Icon: SolarLogout, soft: "danger" },
   medal: { Icon: SolarMedalStar, soft: "sun" },
 };

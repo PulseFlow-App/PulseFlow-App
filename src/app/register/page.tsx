@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { PulseIcon } from "@/components/icons/pulse-icon";
-import { AppVersionMark } from "@/components/layout/app-version-mark";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
@@ -305,7 +304,6 @@ export default function RegisterPage() {
             Sign in
           </Link>
         </p>
-        <AppVersionMark className="mt-6" />
       </div>
     </div>
   );

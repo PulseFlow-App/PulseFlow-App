@@ -137,7 +137,7 @@ export function VillaListCard({
             className="rounded-lg p-2 text-muted hover:bg-sand"
             aria-label={t("villas.propertyStats")}
           >
-            <PulseIcon name="clipboard" className="size-4" />
+            <PulseIcon name="chart" className="size-4" />
           </Link>
         </div>
       </div>

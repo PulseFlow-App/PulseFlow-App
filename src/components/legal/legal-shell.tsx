@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { AppVersionMark } from "@/components/layout/app-version-mark";
 
 export function LegalShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -29,7 +28,6 @@ export function LegalShell({ children }: { children: React.ReactNode }) {
           <ArrowLeft className="size-4" /> Back
         </button>
         {children}
-        <AppVersionMark className="mt-8 pb-2" />
       </div>
     </div>
   );

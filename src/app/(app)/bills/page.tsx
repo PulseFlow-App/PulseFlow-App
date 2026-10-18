@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
@@ -116,6 +116,7 @@ export default function BillsPage() {
   const [filterCategory, setFilterCategory] = useState<"" | BillCategory>("");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -275,36 +276,37 @@ export default function BillsPage() {
             {showFinance ? t("bills.financeSubtitle") : t("bills.subtitle")}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <ReportsEntryLink />
-        <Button
-          type="button"
-          size="xs"
-          className="shrink-0"
-          onClick={() => {
-            setShowForm((open) => {
-              const next = !open;
-              if (next) {
+        {!showForm ? (
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            <Button
+              type="button"
+              size="xs"
+              className="shrink-0"
+              onClick={() => {
+                setShowForm(true);
                 requestAnimationFrame(() => {
                   formRef.current?.scrollIntoView({
                     behavior: "smooth",
                     block: "start",
                   });
                 });
-              }
-              return next;
-            });
-          }}
-        >
-          {showForm ? (
-            t("common.cancel")
-          ) : (
-            <>
-              <Plus className="size-3.5" strokeWidth={2.4} /> {t("common.add")}
-            </>
-          )}
-        </Button>
-        </div>
+              }}
+            >
+              <Plus className="size-3.5" strokeWidth={2.4} /> {t("common.addNew")}
+            </Button>
+            <ReportsEntryLink />
+          </div>
+        ) : (
+          <Button
+            type="button"
+            size="xs"
+            variant="ghost"
+            className="shrink-0"
+            onClick={() => setShowForm(false)}
+          >
+            {t("common.cancel")}
+          </Button>
+        )}
       </div>
 
       {showForm ? (
@@ -405,98 +407,7 @@ export default function BillsPage() {
         </div>
       ) : null}
 
-      {showFinance ? (
-        <Card className="space-y-3 p-4">
-          <p className="text-sm font-semibold text-ink">{t("bills.filters")}</p>
-          <div>
-            <Label>{t("bills.period")}</Label>
-            <Select
-              value={period}
-              onChange={(e) => setPeriod(e.target.value as PeriodKey)}
-            >
-              <option value="this_month">{t("bills.period.thisMonth")}</option>
-              <option value="last_30">{t("bills.period.last30")}</option>
-              <option value="last_90">{t("bills.period.last90")}</option>
-              <option value="custom">{t("bills.period.custom")}</option>
-              <option value="all">{t("bills.period.all")}</option>
-            </Select>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>{t("bills.currency")}</Label>
-              <DisplayCurrencySelect aria-label={t("bills.currency")} />
-            </div>
-            <div>
-              <Label>{t("bills.villa")}</Label>
-              <Select
-                value={filterVilla}
-                onChange={(e) => setFilterVilla(e.target.value)}
-              >
-                <option value="">{t("bills.allVillas")}</option>
-                {data.villas.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.name}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </div>
-          {period === "custom" ? (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>{t("bills.from")}</Label>
-                <Input
-                  type="date"
-                  value={customFrom}
-                  onChange={(e) => setCustomFrom(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>{t("bills.to")}</Label>
-                <Input
-                  type="date"
-                  value={customTo}
-                  onChange={(e) => setCustomTo(e.target.value)}
-                />
-              </div>
-            </div>
-          ) : null}
-          <div>
-            <Label>{t("bills.category")}</Label>
-            <div className="mt-1.5 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setFilterCategory("")}
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs font-semibold",
-                  filterCategory === ""
-                    ? "bg-primary text-white"
-                    : "bg-canvas-deep text-ink",
-                )}
-              >
-                {t("bills.allCategories")}
-              </button>
-              {BILL_CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() =>
-                    setFilterCategory((prev) => (prev === cat ? "" : cat))
-                  }
-                  className={cn(
-                    "rounded-full px-3 py-1 text-xs font-semibold",
-                    filterCategory === cat
-                      ? "bg-primary text-white"
-                      : "bg-canvas-deep text-ink",
-                  )}
-                >
-                  {categoryLabel(cat)}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Card>
-      ) : null}
+
 
       {showFinance ? (
         <div className="space-y-2">
@@ -587,6 +498,146 @@ export default function BillsPage() {
             aria-label={t("bills.currency")}
             className="max-w-[9rem]"
           />
+        </Card>
+      ) : null}
+
+
+      {showFinance ? (
+        <Card className="overflow-hidden p-0">
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((open) => !open)}
+            className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-sand/60"
+            aria-expanded={filtersOpen}
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-ink">
+                {t("bills.filters")}
+              </p>
+              {!filtersOpen ? (
+                <p className="type-meta mt-0.5 truncate">
+                  {period === "this_month"
+                    ? t("bills.period.thisMonth")
+                    : period === "last_30"
+                      ? t("bills.period.last30")
+                      : period === "last_90"
+                        ? t("bills.period.last90")
+                        : period === "custom"
+                          ? t("bills.period.custom")
+                          : t("bills.period.all")}
+                  {" · "}
+                  {filterVilla
+                    ? (data.villas.find((v) => v.id === filterVilla)?.name ??
+                      t("bills.allVillas"))
+                    : t("bills.allVillas")}
+                  {filterCategory
+                    ? ` · ${categoryLabel(filterCategory)}`
+                    : ""}
+                </p>
+              ) : (
+                <p className="type-meta mt-0.5">{t("bills.filtersHide")}</p>
+              )}
+            </div>
+            <ChevronDown
+              className={cn(
+                "size-4 shrink-0 text-muted transition",
+                filtersOpen && "rotate-180",
+              )}
+            />
+          </button>
+          {filtersOpen ? (
+            <div className="space-y-3 border-t border-[var(--color-border)] px-4 py-3">
+              <div>
+                <Label>{t("bills.period")}</Label>
+                <Select
+                  value={period}
+                  onChange={(e) => setPeriod(e.target.value as PeriodKey)}
+                >
+                  <option value="this_month">
+                    {t("bills.period.thisMonth")}
+                  </option>
+                  <option value="last_30">{t("bills.period.last30")}</option>
+                  <option value="last_90">{t("bills.period.last90")}</option>
+                  <option value="custom">{t("bills.period.custom")}</option>
+                  <option value="all">{t("bills.period.all")}</option>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>{t("bills.currency")}</Label>
+                  <DisplayCurrencySelect aria-label={t("bills.currency")} />
+                </div>
+                <div>
+                  <Label>{t("bills.villa")}</Label>
+                  <Select
+                    value={filterVilla}
+                    onChange={(e) => setFilterVilla(e.target.value)}
+                  >
+                    <option value="">{t("bills.allVillas")}</option>
+                    {data.villas.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.name}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+              {period === "custom" ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{t("bills.from")}</Label>
+                    <Input
+                      type="date"
+                      value={customFrom}
+                      onChange={(e) => setCustomFrom(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>{t("bills.to")}</Label>
+                    <Input
+                      type="date"
+                      value={customTo}
+                      onChange={(e) => setCustomTo(e.target.value)}
+                    />
+                  </div>
+                </div>
+              ) : null}
+              <div>
+                <Label>{t("bills.category")}</Label>
+                <div className="mt-1.5 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFilterCategory("")}
+                    className={cn(
+                      "rounded-full px-3 py-1 text-xs font-semibold",
+                      filterCategory === ""
+                        ? "bg-primary text-white"
+                        : "bg-canvas-deep text-ink",
+                    )}
+                  >
+                    {t("bills.allCategories")}
+                  </button>
+                  {BILL_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() =>
+                        setFilterCategory((prev) => (prev === cat ? "" : cat))
+                      }
+                      className={cn(
+                        "rounded-full px-3 py-1 text-xs font-semibold",
+                        filterCategory === cat
+                          ? "bg-primary text-white"
+                          : "bg-canvas-deep text-ink",
+                      )}
+                    >
+                      {categoryLabel(cat)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null}
         </Card>
       ) : null}
 

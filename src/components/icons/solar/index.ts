@@ -35,3 +35,5 @@ export { SolarHeadphones } from "./headphones";
 export { SolarDocumentText } from "./document-text";
 export { SolarMedalStar } from "./medal-star";
 export { SolarPen } from "./pen";
+export { SolarChart2 } from "./chart-2";
+export { SolarCalendarAdd } from "./calendar-add";

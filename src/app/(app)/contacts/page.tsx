@@ -7,14 +7,12 @@ import {
   Phone,
   MessageCircle,
   Plus,
-  Pencil,
   Trash2,
-  CalendarPlus,
-  Star,
   X,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { StarsPicker } from "@/components/endorsements/stars";
@@ -157,22 +155,27 @@ export default function ContactsPage() {
           </p>
         </div>
         {canEdit ? (
-          <Button size="sm" onClick={() => setCreating(true)}>
-            <Plus className="size-4" /> {t("common.add")}
+          <Button size="xs" className="shrink-0" onClick={() => setCreating(true)}>
+            <Plus className="size-3.5" strokeWidth={2.4} /> {t("common.addNew")}
           </Button>
         ) : null}
       </div>
 
       {showTalentBrowse ? (
-        <Card className="flex items-center justify-between gap-3 p-4">
-          <div>
+        <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <p className="font-display text-sm font-bold text-ink">
               {t("talent.title")}
             </p>
             <p className="text-xs text-muted">{t("talent.subtitle")}</p>
           </div>
-          <Link href="/talent">
-            <Button size="sm" variant="secondary">
+          <Link href="/talent" className="shrink-0 self-stretch sm:self-auto">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="w-full min-w-[10.5rem] px-5 sm:w-auto"
+            >
+              <PulseIcon name="search" className="size-4" surface="inverse" />
               {t("talent.browseLink")}
             </Button>
           </Link>
@@ -285,15 +288,15 @@ export default function ContactsPage() {
                       <div className="flex gap-1">
                         <button
                           type="button"
-                          className="rounded-lg p-2 text-muted hover:bg-sand"
+                          className="rounded-lg p-2 text-muted transition hover:bg-sand active:scale-[0.96]"
                           onClick={() => setEditing(contact)}
                           aria-label="Edit"
                         >
-                          <Pencil className="size-4" />
+                          <PulseIcon name="edit" className="size-4" />
                         </button>
                         <button
                           type="button"
-                          className="rounded-lg p-2 text-danger hover:bg-sand"
+                          className="rounded-lg p-2 text-danger transition hover:bg-sand active:scale-[0.96]"
                           onClick={() => void data.deleteContact(contact.id)}
                           aria-label="Delete"
                         >
@@ -310,9 +313,10 @@ export default function ContactsPage() {
                           setReviewing(null);
                           setOrdering(contact);
                         }}
-                        className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-primary/10 px-3 py-2 text-sm font-semibold text-primary"
+                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-pill)] bg-sky px-3 py-2.5 text-sm font-semibold text-white shadow-[0_6px_16px_rgba(33,158,188,0.28)] transition hover:brightness-95 active:scale-[0.98]"
                       >
-                        <CalendarPlus className="size-4" /> {t("contacts.order")}
+                        <PulseIcon name="order" className="size-4" surface="inverse" />{" "}
+                        {t("contacts.order")}
                       </button>
                     ) : null}
                     {canReview && contact.linked_profile_id ? (
@@ -322,9 +326,9 @@ export default function ContactsPage() {
                           setOrdering(null);
                           setReviewing(contact);
                         }}
-                        className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-primary-soft px-3 py-2 text-sm font-semibold text-primary"
+                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-pill)] bg-primary px-3 py-2.5 text-sm font-semibold text-white shadow-[0_6px_16px_rgba(242,106,54,0.28)] transition hover:bg-primary-dark active:scale-[0.98]"
                       >
-                        <Star className="size-4" />
+                        <PulseIcon name="star" className="size-4" surface="inverse" />
                         {reviewedThisWeek.has(contact.linked_profile_id)
                           ? t("contacts.reviewDone")
                           : t("contacts.review")}
@@ -333,7 +337,7 @@ export default function ContactsPage() {
                     {contact.phone ? (
                       <a
                         href={`tel:${contact.phone}`}
-                        className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-secondary/10 px-3 py-2 text-sm font-semibold text-secondary"
+                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-card px-3 py-2.5 text-sm font-semibold text-ink shadow-[var(--shadow-soft)] transition hover:bg-sand active:scale-[0.98]"
                       >
                         <Phone className="size-4" /> Call
                       </a>

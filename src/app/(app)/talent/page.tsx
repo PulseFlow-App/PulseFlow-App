@@ -130,39 +130,39 @@ export default function TalentPage() {
     );
   }
 
+  const fieldClass =
+    "rounded-[var(--radius-control)] px-2.5 py-1.5 text-sm leading-tight sm:px-3";
+
   return (
-    <div className="space-y-4 animate-rise pb-4">
+    <div className="space-y-3 animate-rise pb-4">
       <div>
-        <h1 className="font-display text-2xl font-bold text-ink">
-          {t("talent.title")}
-        </h1>
-        <p className="text-sm text-muted">{t("talent.subtitle")}</p>
+        <h1 className="type-title">{t("talent.title")}</h1>
+        <p className="type-meta mt-0.5">{t("talent.subtitle")}</p>
       </div>
 
-      <Card className="space-y-3 p-4">
-        <div className="flex items-center gap-2.5 rounded-2xl bg-canvas-deep px-3">
-          <Search
-            className="size-4 shrink-0 text-muted"
-            aria-hidden
-          />
+      <Card className="space-y-2 p-3">
+        <div className="flex items-center gap-2 rounded-[var(--radius-control)] bg-canvas-deep px-2.5">
+          <Search className="size-3.5 shrink-0 text-muted" aria-hidden />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("talent.searchPlaceholder")}
-            className="bg-transparent px-0 focus:ring-0"
+            className={cn(fieldClass, "bg-transparent px-0 focus:ring-0")}
             aria-label={t("talent.searchPlaceholder")}
           />
         </div>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-1.5">
           <Input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder={t("talent.filterLocation")}
+            className={fieldClass}
           />
           <Select
             value={country}
             onChange={(e) => setCountry(e.target.value)}
             aria-label={t("talent.filterCountry")}
+            className={fieldClass}
           >
             <option value="">{t("talent.allCountries")}</option>
             {countries.map((c) => (
@@ -172,12 +172,12 @@ export default function TalentPage() {
             ))}
           </Select>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1">
           <button
             type="button"
             onClick={() => setSkill("")}
             className={cn(
-              "rounded-full px-3 py-1.5 text-xs font-semibold transition",
+              "rounded-full px-2 py-0.5 text-[11px] font-semibold leading-tight transition active:scale-[0.98]",
               !skill ? "bg-primary text-white" : "bg-canvas-deep text-ink",
             )}
           >
@@ -189,7 +189,7 @@ export default function TalentPage() {
               type="button"
               onClick={() => setSkill(s === skill ? "" : s)}
               className={cn(
-                "rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                "rounded-full px-2 py-0.5 text-[11px] font-semibold leading-tight transition active:scale-[0.98]",
                 skill === s ? "bg-primary text-white" : "bg-canvas-deep text-ink",
               )}
             >
@@ -197,37 +197,37 @@ export default function TalentPage() {
             </button>
           ))}
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="secondary" onClick={useNearMe}>
-            <MapPin className="size-4" />
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Button size="xs" variant="secondary" onClick={useNearMe}>
+            <MapPin className="size-3.5" />
             {near ? t("talent.nearMeOn") : t("talent.nearMe")}
           </Button>
           {near ? (
-            <Button size="sm" variant="ghost" onClick={() => setNear(null)}>
+            <Button size="xs" variant="ghost" onClick={() => setNear(null)}>
               {t("talent.clearNear")}
             </Button>
           ) : null}
-          <div className="ms-auto flex gap-1 rounded-full bg-canvas-deep p-1">
+          <div className="ms-auto flex gap-0.5 rounded-full bg-canvas-deep p-0.5">
             <button
               type="button"
               onClick={() => setView("list")}
               className={cn(
-                "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold",
+                "inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold",
                 view === "list" ? "bg-white text-ink shadow-sm" : "text-muted",
               )}
             >
-              <List className="size-3.5" />
+              <List className="size-3" />
               {t("talent.viewList")}
             </button>
             <button
               type="button"
               onClick={() => setView("map")}
               className={cn(
-                "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold",
+                "inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold",
                 view === "map" ? "bg-white text-ink shadow-sm" : "text-muted",
               )}
             >
-              <MapIcon className="size-3.5" />
+              <MapIcon className="size-3" />
               {t("talent.viewMap")}
             </button>
           </div>
