@@ -437,8 +437,8 @@ export default function VillasPage() {
             ) : null}
 
             {!staff ? (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="min-w-0 overflow-hidden">
                   <Label>{t("villas.checkIn")}</Label>
                   <Input
                     type="date"
@@ -446,7 +446,7 @@ export default function VillasPage() {
                     onChange={(e) => setCheckIn(e.target.value)}
                   />
                 </div>
-                <div>
+                <div className="min-w-0 overflow-hidden">
                   <Label>{t("villas.checkOut")}</Label>
                   <Input
                     type="date"

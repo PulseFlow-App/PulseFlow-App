@@ -1977,7 +1977,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (task) requireOrgWrite(task.org_id);
       if (status === "done" && !canCompleteTaskDirectly(profile.role)) {
         throw new Error(
-          "Submit this task for verification — owners mark done directly.",
+          "Submit this task for verification - owners mark done directly.",
         );
       }
       const completed_at =
@@ -3544,12 +3544,15 @@ export function useSupabaseData(enabled: boolean): AppData {
           deposit.amount && deposit.currency
             ? ` · ${formatDepositQuoteLine(deposit.amount, deposit.currency)}`
             : "";
-        const quoteBody = `${formatStayQuoteLine({
+        const quoteLine = `${formatStayQuoteLine({
           amount: quotedAmount,
           currency: quotedCurrency,
           checkIn: request.check_in,
           checkOut: request.check_out,
-        })}${depositLine}. ${paymentNote}`;
+        })}${depositLine}`;
+        const quoteBody = paymentNote
+          ? `${quoteLine}. ${paymentNote}`
+          : quoteLine;
         await insertNotifications(
           supabase,
           [
@@ -3561,6 +3564,7 @@ export function useSupabaseData(enabled: boolean): AppData {
               href: "/villas",
               entity_id: requestId,
               audience_profile_ids: [request.guest_profile_id],
+              dedupe_key: `stay_quote:${requestId}`,
             }),
           ].map((n) => toInsertRow(n)),
         );
@@ -3575,6 +3579,7 @@ export function useSupabaseData(enabled: boolean): AppData {
               body: `${villa?.name ?? "Property"} · your date request was declined`,
               href: "/villas",
               entity_id: requestId,
+              dedupe_key: `stay_decline:${requestId}`,
               audience_profile_ids: [request.guest_profile_id],
             }),
           ].map((n) => toInsertRow(n)),

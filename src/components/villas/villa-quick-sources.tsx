@@ -36,6 +36,8 @@ type Props = {
   /** Apply parsed listing facts into the rest of the property form. */
   onEnrich?: (enrichment: VillaEnrichment) => void;
   uploadDoc: (file: File) => Promise<string | null>;
+  /** Hide the section title when wrapped in VillaExpandSection. */
+  embedded?: boolean;
 };
 
 function AcceptTick({
@@ -76,6 +78,7 @@ export function VillaQuickSources({
   onChange,
   onEnrich,
   uploadDoc,
+  embedded = false,
 }: Props) {
   const { t, locale } = useI18n();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -258,15 +261,25 @@ export function VillaQuickSources({
   };
 
   return (
-    <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-canvas-deep/60 p-3">
-      <div>
-        <p className="text-sm font-semibold text-ink">
-          {t("villas.quickSources")}
-        </p>
-        {t("villas.quickSourcesHint") ? (
-          <p className="text-xs text-muted">{t("villas.quickSourcesHint")}</p>
-        ) : null}
-      </div>
+    <div
+      className={
+        embedded
+          ? "space-y-3"
+          : "space-y-3 rounded-2xl border border-[var(--color-border)] bg-canvas-deep/60 p-3"
+      }
+    >
+      {!embedded ? (
+        <div>
+          <p className="text-sm font-semibold text-ink">
+            {t("villas.quickSources")}
+          </p>
+          {t("villas.quickSourcesHint") ? (
+            <p className="text-xs text-muted">{t("villas.quickSourcesHint")}</p>
+          ) : null}
+        </div>
+      ) : t("villas.quickSourcesHint") ? (
+        <p className="text-xs text-muted">{t("villas.quickSourcesHint")}</p>
+      ) : null}
 
       <div>
         <Label>{t("villas.listingUrl")}</Label>

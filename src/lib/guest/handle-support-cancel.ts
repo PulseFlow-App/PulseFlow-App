@@ -23,7 +23,7 @@ export function resolveSupportCancelAction(input: {
 
   if (canGuestSelfCancelStay(input.stay)) {
     throw new Error(
-      "You can still cancel from Home until 3 days before check-in — no need to message Support.",
+      "You can still cancel from Home until 3 days before check-in - no need to message Support.",
     );
   }
   if (input.stay.status === "completed" || input.stay.status === "cancelled") {
@@ -32,7 +32,7 @@ export function resolveSupportCancelAction(input: {
 
   return {
     kind: "guest_request",
-    displayBody: `/cancel — ${input.villaName} · ${dateLine}`,
+    displayBody: `/cancel - ${input.villaName} · ${dateLine}`,
     notifications: [
       makeNotification({
         org_id: input.stay.org_id,

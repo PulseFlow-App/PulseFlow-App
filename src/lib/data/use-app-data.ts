@@ -862,7 +862,7 @@ function useDemoData(): AppData {
       if (!task) throw new Error("Task not found.");
       if (status === "done" && !canCompleteTaskDirectly(profile.role)) {
         throw new Error(
-          "Submit this task for verification — owners mark done directly.",
+          "Submit this task for verification - owners mark done directly.",
         );
       }
       updateDemoStore((s) => ({
@@ -2011,12 +2011,15 @@ function useDemoData(): AppData {
           deposit.amount && deposit.currency
             ? ` · ${formatDepositQuoteLine(deposit.amount, deposit.currency)}`
             : "";
-        const quoteBody = `${formatStayQuoteLine({
+        const quoteLine = `${formatStayQuoteLine({
           amount: quotedAmount,
           currency: quotedCurrency,
           checkIn: request.check_in,
           checkOut: request.check_out,
-        })}${depositLine}. ${paymentNote}`;
+        })}${depositLine}`;
+        const quoteBody = paymentNote
+          ? `${quoteLine}. ${paymentNote}`
+          : quoteLine;
         demoPushNotifications([
           makeNotification({
             org_id: profile.org_id,
@@ -2026,6 +2029,7 @@ function useDemoData(): AppData {
             href: "/villas",
             entity_id: requestId,
             audience_profile_ids: [request.guest_profile_id],
+            dedupe_key: `stay_quote:${requestId}`,
           }),
         ]);
       } else {
@@ -2038,6 +2042,7 @@ function useDemoData(): AppData {
             href: "/villas",
             entity_id: requestId,
             audience_profile_ids: [request.guest_profile_id],
+            dedupe_key: `stay_decline:${requestId}`,
           }),
         ]);
       }

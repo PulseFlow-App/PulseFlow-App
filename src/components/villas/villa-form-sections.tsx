@@ -90,7 +90,8 @@ export function applyVillaEnrichment(
   // Guard: never let a long blurb overwrite the property name field.
   const nameOk =
     cleanedName.length >= 2 &&
-    cleanedName.length <= 48 &&
+    cleanedName.length <= 36 &&
+    cleanedName.split(/\s+/).length <= 5 &&
     !/[.!?]/.test(cleanedName.slice(0, -1));
 
   return {

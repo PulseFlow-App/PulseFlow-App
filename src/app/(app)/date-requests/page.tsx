@@ -188,6 +188,7 @@ export default function DateRequestsPage() {
                             min={0}
                             value={quotedPrice}
                             onChange={(e) => setQuotedPrice(e.target.value)}
+                            className="bg-white"
                           />
                         </div>
                         <div>
@@ -199,7 +200,7 @@ export default function DateRequestsPage() {
                                 normalizeBillCurrency(e.target.value),
                               )
                             }
-                            className="min-w-[6.5rem]"
+                            className="min-w-[6.5rem] bg-white"
                           >
                             {BILL_CURRENCIES.map((code) => (
                               <option key={code} value={code}>
@@ -218,7 +219,7 @@ export default function DateRequestsPage() {
                             inputMode="decimal"
                             value={depositAmount}
                             onChange={(e) => setDepositAmount(e.target.value)}
-                            placeholder={t("dateRequests.depositAmountPh")}
+                            className="bg-white"
                           />
                         </div>
                         <div className="flex flex-col justify-end">
@@ -249,7 +250,7 @@ export default function DateRequestsPage() {
                                       : "bg-white text-ink"
                                   }`}
                                 >
-                                  {t(`guest.depositTiming.${value}`)}
+                                  {t(`dateRequests.depositTiming.${value}`)}
                                 </button>
                               ))}
                             </div>
@@ -261,8 +262,8 @@ export default function DateRequestsPage() {
                         <Textarea
                           value={paymentNote}
                           onChange={(e) => setPaymentNote(e.target.value)}
-                          placeholder={t("dateRequests.paymentNotePh")}
                           rows={3}
+                          className="bg-white"
                         />
                       </div>
                       <div className="flex flex-wrap gap-2">

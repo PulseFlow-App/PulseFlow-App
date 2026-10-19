@@ -31,10 +31,7 @@ export function notificationVisibleTo(
 
   if (role === "guest") {
     if (!inAudience(n.audience_profile_ids)) return false;
-    if (n.kind === "guest_update") return true;
-    // Support thread only — team chat uses /messages?channel=…
-    if (n.kind === "message" && n.href === "/messages") return true;
-    return false;
+    return isGuestFacingNotification(n);
   }
   if (!n.audience_profile_ids) return true;
   return n.audience_profile_ids.includes(profileId);
@@ -45,7 +42,16 @@ export function isGuestFacingNotification(
   n: Pick<AppNotification, "kind" | "href">,
 ): boolean {
   if (n.kind === "guest_update") return true;
-  return n.kind === "message" && n.href === "/messages";
+  if (n.kind !== "message") return false;
+  const href = n.href ?? "";
+  // Support chat, or stay browse/quote (also covers legacy fallback when
+  // guest_update is missing from the DB kind check constraint).
+  return (
+    href === "/messages" ||
+    href === "/villas" ||
+    href.startsWith("/villas?") ||
+    href.startsWith("/date-requests")
+  );
 }
 
 export function unreadNotifications(

@@ -216,14 +216,16 @@ export function GuestVillasBrowse({
             {v.area ? <p className="text-sm text-muted">{v.area}</p> : null}
             <VillaFacts villa={v} className="mt-1" />
             {quoted ? (
-              <StayQuoteCard
-                request={quoted}
-                busy={quoteBusy}
-                onConfirm={() => void confirmQuote(quoted.id)}
-                onDecline={() =>
-                  setConfirm({ kind: "decline-quote", requestId: quoted.id })
-                }
-              />
+              <div className="relative z-10">
+                <StayQuoteCard
+                  request={quoted}
+                  busy={quoteBusy}
+                  onConfirm={() => void confirmQuote(quoted.id)}
+                  onDecline={() =>
+                    setConfirm({ kind: "decline-quote", requestId: quoted.id })
+                  }
+                />
+              </div>
             ) : pending ? (
               <div className="space-y-2">
                 <p className="text-sm text-muted">
@@ -259,7 +261,9 @@ export function GuestVillasBrowse({
             ) : accepted ? (
               <Button
                 type="button"
+                className="relative z-10 w-full"
                 busy={quoteBusy}
+                reflectGlobalBusy={false}
                 onClick={() => void confirmQuote(accepted.id)}
               >
                 {t("guest.quoteConfirm")}

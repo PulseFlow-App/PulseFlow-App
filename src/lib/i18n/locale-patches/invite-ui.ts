@@ -1,7 +1,7 @@
 import type { Dictionary } from "../dictionaries/en";
 import type { Locale } from "../types";
 
-/** Invite / join / merge profile UI — overrides English stubs in locale dictionaries. */
+/** Invite / join / merge profile UI - overrides English stubs in locale dictionaries. */
 export const inviteUiPatches: Record<
   Exclude<Locale, "en">,
   Partial<Dictionary>
@@ -9,17 +9,17 @@ export const inviteUiPatches: Record<
   de: {
     "guest.joinTitle": "Du bist als Gast eingeladen",
     "guest.joinHint":
-      "Neu hier? Konto erstellen. Schon bei Pulse Flow mit einem anderen Unternehmen? Dieselbe E-Mail nutzen — wir fügen diesen Host zu demselben Profil hinzu.",
+      "Neu hier? Konto erstellen. Schon bei Pulse Flow mit einem anderen Unternehmen? Dieselbe E-Mail nutzen - wir fügen diesen Host zu demselben Profil hinzu.",
     "guest.joinContinue": "Weiter",
     "join.staffTitle": "Du bist zum Team eingeladen",
     "join.staffHint":
       "Neu hier? Daten ausfüllen. Schon bei einem anderen Unternehmen? Dieselbe E-Mail nutzen, damit beide Firmen unter einem Login bleiben.",
     "join.accountNote":
-      "Ein Profil kann mehreren Unternehmen gehören. Wir ersetzen dein erstes Unternehmen nie — wir fügen das neue hinzu.",
+      "Ein Profil kann mehreren Unternehmen gehören. Wir ersetzen dein erstes Unternehmen nie - wir fügen das neue hinzu.",
     "join.passwordLabel": "Passwort",
     "join.passwordConfirm": "Passwort bestätigen",
     "join.signedInHint":
-      "Du bist als {email} angemeldet. {org} zu diesem Konto hinzufügen — du behältst beide Unternehmen.",
+      "Du bist als {email} angemeldet. {org} zu diesem Konto hinzufügen - du behältst beide Unternehmen.",
     "join.addToAccount": "Dieses Unternehmen zu meinem Konto hinzufügen",
     "join.addingToAccount": "Wird hinzugefügt…",
     "join.orNewAccount": "Oder unten eine andere E-Mail erstellen / verwenden.",
@@ -60,17 +60,17 @@ export const inviteUiPatches: Record<
   fr: {
     "guest.joinTitle": "Vous êtes invité en tant qu’invité",
     "guest.joinHint":
-      "Nouveau ? Créez un compte. Déjà sur Pulse Flow avec une autre entreprise ? Utilisez le même e-mail — nous ajouterons cet hôte au même profil.",
+      "Nouveau ? Créez un compte. Déjà sur Pulse Flow avec une autre entreprise ? Utilisez le même e-mail - nous ajouterons cet hôte au même profil.",
     "guest.joinContinue": "Continuer",
     "join.staffTitle": "Vous êtes invité dans l’équipe",
     "join.staffHint":
       "Nouveau ? Remplissez vos infos. Déjà dans une autre entreprise ? Utilisez le même e-mail pour garder les deux sous un seul login.",
     "join.accountNote":
-      "Un profil peut appartenir à plusieurs entreprises. Nous ne remplaçons jamais la première — nous ajoutons la nouvelle.",
+      "Un profil peut appartenir à plusieurs entreprises. Nous ne remplaçons jamais la première - nous ajoutons la nouvelle.",
     "join.passwordLabel": "Mot de passe",
     "join.passwordConfirm": "Confirmer le mot de passe",
     "join.signedInHint":
-      "Connecté en tant que {email}. Ajoutez {org} à ce compte — vous conservez les deux entreprises.",
+      "Connecté en tant que {email}. Ajoutez {org} à ce compte - vous conservez les deux entreprises.",
     "join.addToAccount": "Ajouter cette entreprise à mon compte",
     "join.addingToAccount": "Ajout…",
     "join.orNewAccount": "Ou créez / utilisez un autre e-mail ci-dessous.",
@@ -111,17 +111,17 @@ export const inviteUiPatches: Record<
   es: {
     "guest.joinTitle": "Estás invitado como huésped",
     "guest.joinHint":
-      "¿Nuevo? Crea una cuenta. ¿Ya en Pulse Flow con otra empresa? Usa el mismo correo — añadiremos este anfitrión al mismo perfil.",
+      "¿Nuevo? Crea una cuenta. ¿Ya en Pulse Flow con otra empresa? Usa el mismo correo - añadiremos este anfitrión al mismo perfil.",
     "guest.joinContinue": "Continuar",
     "join.staffTitle": "Estás invitado al equipo",
     "join.staffHint":
       "¿Nuevo? Completa tus datos. ¿Ya en otra empresa? Usa el mismo correo para mantener ambas en un solo inicio de sesión.",
     "join.accountNote":
-      "Un perfil puede pertenecer a varias empresas. Nunca reemplazamos la primera — añadimos la nueva.",
+      "Un perfil puede pertenecer a varias empresas. Nunca reemplazamos la primera - añadimos la nueva.",
     "join.passwordLabel": "Contraseña",
     "join.passwordConfirm": "Confirmar contraseña",
     "join.signedInHint":
-      "Has iniciado sesión como {email}. Añade {org} a esta cuenta — conservarás ambas empresas.",
+      "Has iniciado sesión como {email}. Añade {org} a esta cuenta - conservarás ambas empresas.",
     "join.addToAccount": "Añadir esta empresa a mi cuenta",
     "join.addingToAccount": "Añadiendo…",
     "join.orNewAccount": "O crea / usa otro correo abajo.",
@@ -162,17 +162,17 @@ export const inviteUiPatches: Record<
   it: {
     "guest.joinTitle": "Sei invitato come ospite",
     "guest.joinHint":
-      "Nuovo? Crea un account. Già su Pulse Flow con un’altra azienda? Usa la stessa email — aggiungeremo questo host allo stesso profilo.",
+      "Nuovo? Crea un account. Già su Pulse Flow con un’altra azienda? Usa la stessa email - aggiungeremo questo host allo stesso profilo.",
     "guest.joinContinue": "Continua",
     "join.staffTitle": "Sei invitato nel team",
     "join.staffHint":
       "Nuovo? Compila i tuoi dati. Già in un’altra azienda? Usa la stessa email così entrambe restano con un solo accesso.",
     "join.accountNote":
-      "Un profilo può appartenere a più aziende. Non sostituiamo mai la prima — aggiungiamo la nuova.",
+      "Un profilo può appartenere a più aziende. Non sostituiamo mai la prima - aggiungiamo la nuova.",
     "join.passwordLabel": "Password",
     "join.passwordConfirm": "Conferma password",
     "join.signedInHint":
-      "Accesso come {email}. Aggiungi {org} a questo account — terrai entrambe le aziende.",
+      "Accesso come {email}. Aggiungi {org} a questo account - terrai entrambe le aziende.",
     "join.addToAccount": "Aggiungi questa azienda al mio account",
     "join.addingToAccount": "Aggiunta…",
     "join.orNewAccount": "Oppure crea / usa un’altra email qui sotto.",
@@ -213,17 +213,17 @@ export const inviteUiPatches: Record<
   th: {
     "guest.joinTitle": "คุณได้รับเชิญในฐานะแขก",
     "guest.joinHint":
-      "ใหม่ที่นี่? สร้างบัญชี หากมี Pulse Flow กับบริษัทอื่นแล้ว ใช้ อีเมลเดิม — เราจะเพิ่มโฮสต์นี้ในโปรไฟล์เดียวกัน",
+      "ใหม่ที่นี่? สร้างบัญชี หากมี Pulse Flow กับบริษัทอื่นแล้ว ใช้ อีเมลเดิม - เราจะเพิ่มโฮสต์นี้ในโปรไฟล์เดียวกัน",
     "guest.joinContinue": "ดำเนินการต่อ",
     "join.staffTitle": "คุณได้รับเชิญเข้าทีม",
     "join.staffHint":
       "ใหม่ที่นี่? กรอกข้อมูล หากอยู่กับบริษัทอื่นแล้ว ใช้ อีเมลเดิมเพื่อให้ทั้งสองบริษัทใช้ล็อกอินเดียว",
     "join.accountNote":
-      "โปรไฟล์หนึ่งสามารถอยู่หลายบริษัทได้ เราไม่แทนที่บริษัทแรก — เราเพิ่มบริษัทใหม่",
+      "โปรไฟล์หนึ่งสามารถอยู่หลายบริษัทได้ เราไม่แทนที่บริษัทแรก - เราเพิ่มบริษัทใหม่",
     "join.passwordLabel": "รหัสผ่าน",
     "join.passwordConfirm": "ยืนยันรหัสผ่าน",
     "join.signedInHint":
-      "คุณลงชื่อเข้าใช้เป็น {email} เพิ่ม {org} ในบัญชีนี้ — คุณจะมีทั้งสองบริษัท",
+      "คุณลงชื่อเข้าใช้เป็น {email} เพิ่ม {org} ในบัญชีนี้ - คุณจะมีทั้งสองบริษัท",
     "join.addToAccount": "เพิ่มบริษัทนี้ในบัญชีของฉัน",
     "join.addingToAccount": "กำลังเพิ่ม…",
     "join.orNewAccount": "หรือสร้าง / ใช้อีเมลอื่นด้านล่าง",
@@ -264,17 +264,17 @@ export const inviteUiPatches: Record<
   my: {
     "guest.joinTitle": "ဧည့်သည်အဖြစ် ဖိတ်ကြားထားသည်",
     "guest.joinHint":
-      "အသစ်လား? အကောင့်ဖန်တီးပါ။ အခြားကုမ္ပဏီနှင့် Pulse Flow ရှိပြီးသားဆိုရင် အီးမေးလ်တူသုံးပါ — ဤအိမ်ရှင်ကို တူညီသော ပရိုဖိုင်သို့ ထည့်ပါမည်။",
+      "အသစ်လား? အကောင့်ဖန်တီးပါ။ အခြားကုမ္ပဏီနှင့် Pulse Flow ရှိပြီးသားဆိုရင် အီးမေးလ်တူသုံးပါ - ဤအိမ်ရှင်ကို တူညီသော ပရိုဖိုင်သို့ ထည့်ပါမည်။",
     "guest.joinContinue": "ဆက်လုပ်ရန်",
     "join.staffTitle": "အဖွဲ့သို့ ဖိတ်ကြားထားသည်",
     "join.staffHint":
       "အသစ်လား? အချက်အလက်ဖြည့်ပါ။ အခြားကုမ္ပဏီရှိပြီးသားဆိုရင် အီးမေးလ်တူသုံးပြီး ကုမ္ပဏီနှစ်ခုကို login တစ်ခုတည်းဖြင့် ထားပါ။",
     "join.accountNote":
-      "ပရိုဖိုင်တစ်ခုသည် ကုမ္ပဏီများစွာနှင့် ချိတ်ဆက်နိုင်သည်။ ပထမကုမ္ပဏီကို မအစားထိုးပါ — အသစ်ကို ထည့်ပါသည်။",
+      "ပရိုဖိုင်တစ်ခုသည် ကုမ္ပဏီများစွာနှင့် ချိတ်ဆက်နိုင်သည်။ ပထမကုမ္ပဏီကို မအစားထိုးပါ - အသစ်ကို ထည့်ပါသည်။",
     "join.passwordLabel": "စကားဝှက်",
     "join.passwordConfirm": "စကားဝှက် အတည်ပြုရန်",
     "join.signedInHint":
-      "{email} ဖြင့် ဝင်ရောက်ထားသည်။ {org} ကို ဤအကောင့်သို့ ထည့်ပါ — ကုမ္ပဏီနှစ်ခုလုံး ထားရှိမည်။",
+      "{email} ဖြင့် ဝင်ရောက်ထားသည်။ {org} ကို ဤအကောင့်သို့ ထည့်ပါ - ကုမ္ပဏီနှစ်ခုလုံး ထားရှိမည်။",
     "join.addToAccount": "ဤကုမ္ပဏီကို ကျွန်ုပ်၏ အကောင့်သို့ ထည့်ရန်",
     "join.addingToAccount": "ထည့်နေသည်…",
     "join.orNewAccount": "သို့မဟုတ် အောက်တွင် အီးမေးလ်အသစ် ဖန်တီး / သုံးပါ။",
@@ -315,17 +315,17 @@ export const inviteUiPatches: Record<
   he: {
     "guest.joinTitle": "הוזמנת כאורח",
     "guest.joinHint":
-      "חדש כאן? צור חשבון. כבר ב-Pulse Flow עם חברה אחרת? השתמש באותו אימייל — נוסיף את המארח הזה לאותו פרופיל.",
+      "חדש כאן? צור חשבון. כבר ב-Pulse Flow עם חברה אחרת? השתמש באותו אימייל - נוסיף את המארח הזה לאותו פרופיל.",
     "guest.joinContinue": "המשך",
     "join.staffTitle": "הוזמנת לצוות",
     "join.staffHint":
       "חדש כאן? מלא את הפרטים. כבר בחברה אחרת? השתמש באותו אימייל כדי ששתי החברות יישארו תחת התחברות אחת.",
     "join.accountNote":
-      "פרופיל אחד יכול להיות שייך לכמה חברות. לעולם לא מחליפים את החברה הראשונה — מוסיפים את החדשה.",
+      "פרופיל אחד יכול להיות שייך לכמה חברות. לעולם לא מחליפים את החברה הראשונה - מוסיפים את החדשה.",
     "join.passwordLabel": "סיסמה",
     "join.passwordConfirm": "אימות סיסמה",
     "join.signedInHint":
-      "מחובר כ-{email}. הוסף את {org} לחשבון הזה — תשמור על שתי החברות.",
+      "מחובר כ-{email}. הוסף את {org} לחשבון הזה - תשמור על שתי החברות.",
     "join.addToAccount": "הוסף את החברה הזו לחשבון שלי",
     "join.addingToAccount": "מוסיף…",
     "join.orNewAccount": "או צור / השתמש באימייל אחר למטה.",
@@ -366,17 +366,17 @@ export const inviteUiPatches: Record<
   ar: {
     "guest.joinTitle": "أنت مدعو كضيف",
     "guest.joinHint":
-      "جديد هنا؟ أنشئ حسابًا. لديك بالفعل Pulse Flow مع شركة أخرى؟ استخدم نفس البريد — سنضيف هذا المضيف إلى نفس الملف.",
+      "جديد هنا؟ أنشئ حسابًا. لديك بالفعل Pulse Flow مع شركة أخرى؟ استخدم نفس البريد - سنضيف هذا المضيف إلى نفس الملف.",
     "guest.joinContinue": "متابعة",
     "join.staffTitle": "أنت مدعو إلى الفريق",
     "join.staffHint":
       "جديد هنا؟ أدخل بياناتك. لديك شركة أخرى؟ استخدم نفس البريد ليبقى كلاهما بتسجيل دخول واحد.",
     "join.accountNote":
-      "يمكن لملف واحد أن ينتمي لعدة شركات. لا نستبدل شركتك الأولى أبدًا — نضيف الجديدة.",
+      "يمكن لملف واحد أن ينتمي لعدة شركات. لا نستبدل شركتك الأولى أبدًا - نضيف الجديدة.",
     "join.passwordLabel": "كلمة المرور",
     "join.passwordConfirm": "تأكيد كلمة المرور",
     "join.signedInHint":
-      "أنت مسجّل الدخول كـ {email}. أضف {org} إلى هذا الحساب — ستحتفظ بالشركتين.",
+      "أنت مسجّل الدخول كـ {email}. أضف {org} إلى هذا الحساب - ستحتفظ بالشركتين.",
     "join.addToAccount": "أضف هذه الشركة إلى حسابي",
     "join.addingToAccount": "جارٍ الإضافة…",
     "join.orNewAccount": "أو أنشئ / استخدم بريدًا آخر أدناه.",
@@ -417,17 +417,17 @@ export const inviteUiPatches: Record<
   ru: {
     "guest.joinTitle": "Вас пригласили как гостя",
     "guest.joinHint":
-      "Впервые здесь? Создайте аккаунт. Уже в Pulse Flow с другой компанией? Используйте тот же email — мы добавим этого хоста к тому же профилю.",
+      "Впервые здесь? Создайте аккаунт. Уже в Pulse Flow с другой компанией? Используйте тот же email - мы добавим этого хоста к тому же профилю.",
     "guest.joinContinue": "Продолжить",
     "join.staffTitle": "Вас пригласили в команду",
     "join.staffHint":
       "Впервые здесь? Заполните данные. Уже в другой компании? Используйте тот же email, чтобы обе компании остались под одним входом.",
     "join.accountNote":
-      "Один профиль может относиться к нескольким компаниям. Мы никогда не заменяем первую — добавляем новую.",
+      "Один профиль может относиться к нескольким компаниям. Мы никогда не заменяем первую - добавляем новую.",
     "join.passwordLabel": "Пароль",
     "join.passwordConfirm": "Подтвердите пароль",
     "join.signedInHint":
-      "Вы вошли как {email}. Добавьте {org} к этому аккаунту — обе компании останутся у вас.",
+      "Вы вошли как {email}. Добавьте {org} к этому аккаунту - обе компании останутся у вас.",
     "join.addToAccount": "Добавить эту компанию в мой аккаунт",
     "join.addingToAccount": "Добавление…",
     "join.orNewAccount": "Или создайте / используйте другой email ниже.",
@@ -460,7 +460,7 @@ export const inviteUiPatches: Record<
       "Добавление компании таким способом недоступно в демо-режиме.",
     "guest.mergeEmailTitle": "Проверьте почту",
     "guest.mergeEmailHint":
-      "Профиль для {email} уже существует. Мы отправили ссылку, чтобы добавить {org}. Откройте её и введите пароль. Если проигнорировать — ничего не изменится.",
+      "Профиль для {email} уже существует. Мы отправили ссылку, чтобы добавить {org}. Откройте её и введите пароль. Если проигнорировать - ничего не изменится.",
     "guest.mergeEmailFallback":
       "Не удалось отправить письмо в этой среде. Подтвердите по этой ссылке:",
     "guest.mergeOpenLink": "Добавить эту компанию",
@@ -468,17 +468,17 @@ export const inviteUiPatches: Record<
   tr: {
     "guest.joinTitle": "Misafir olarak davet edildiniz",
     "guest.joinHint":
-      "Yeni misiniz? Hesap oluşturun. Pulse Flow’da başka bir şirketle zaten var mısınız? Aynı e-postayı kullanın — bu ev sahibini aynı profile ekleriz.",
+      "Yeni misiniz? Hesap oluşturun. Pulse Flow’da başka bir şirketle zaten var mısınız? Aynı e-postayı kullanın - bu ev sahibini aynı profile ekleriz.",
     "guest.joinContinue": "Devam",
     "join.staffTitle": "Ekibe davet edildiniz",
     "join.staffHint":
       "Yeni misiniz? Bilgilerinizi doldurun. Başka bir şirkette zaten var mısınız? İkisini de tek girişte tutmak için aynı e-postayı kullanın.",
     "join.accountNote":
-      "Bir profil birden fazla şirkete ait olabilir. İlk şirketinizi asla değiştirmez — yenisini ekleriz.",
+      "Bir profil birden fazla şirkete ait olabilir. İlk şirketinizi asla değiştirmez - yenisini ekleriz.",
     "join.passwordLabel": "Şifre",
     "join.passwordConfirm": "Şifreyi onayla",
     "join.signedInHint":
-      "{email} olarak giriş yaptınız. {org} şirketini bu hesaba ekleyin — her iki şirketi de korursunuz.",
+      "{email} olarak giriş yaptınız. {org} şirketini bu hesaba ekleyin - her iki şirketi de korursunuz.",
     "join.addToAccount": "Bu şirketi hesabıma ekle",
     "join.addingToAccount": "Ekleniyor…",
     "join.orNewAccount": "Veya aşağıda başka bir e-posta oluşturun / kullanın.",

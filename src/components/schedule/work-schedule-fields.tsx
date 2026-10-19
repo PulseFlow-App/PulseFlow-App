@@ -31,8 +31,8 @@ export function WorkScheduleFields({ value, onChange }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="min-w-0 overflow-hidden">
           <Label>{t("schedule.startDay")}</Label>
           <Input
             type="date"
@@ -40,7 +40,7 @@ export function WorkScheduleFields({ value, onChange }: Props) {
             onChange={(e) => set({ date: e.target.value })}
           />
         </div>
-        <div>
+        <div className="min-w-0 overflow-hidden">
           <Label>{t("schedule.endDay")}</Label>
           <Input
             type="date"
@@ -51,8 +51,8 @@ export function WorkScheduleFields({ value, onChange }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="min-w-0 overflow-hidden">
           <Label>{t("common.from")}</Label>
           <Input
             type="time"
@@ -60,7 +60,7 @@ export function WorkScheduleFields({ value, onChange }: Props) {
             onChange={(e) => set({ time_start: e.target.value })}
           />
         </div>
-        <div>
+        <div className="min-w-0 overflow-hidden">
           <Label>{t("common.until")}</Label>
           <Input
             type="time"

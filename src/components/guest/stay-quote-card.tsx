@@ -162,11 +162,24 @@ export function StayQuoteCard({
         </div>
       ) : null}
       {onConfirm && onDecline ? (
-        <div className="flex flex-wrap gap-2 pt-1">
-          <Button type="button" busy={busy} onClick={onConfirm}>
+        <div className="relative z-10 flex flex-col gap-2 pt-2">
+          <Button
+            type="button"
+            className="w-full"
+            busy={busy}
+            reflectGlobalBusy={false}
+            onClick={onConfirm}
+          >
             {t("guest.quoteConfirm")}
           </Button>
-          <Button type="button" variant="ghost" disabled={busy} onClick={onDecline}>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            disabled={busy}
+            reflectGlobalBusy={false}
+            onClick={onDecline}
+          >
             {t("guest.quoteDecline")}
           </Button>
         </div>

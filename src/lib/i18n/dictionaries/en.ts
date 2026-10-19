@@ -371,7 +371,7 @@ const en = {
   "schedule.visits": "Visit times",
   "schedule.windowHint": "On site between these hours (e.g. 09:00–18:00).",
   "schedule.visitsHint":
-    "Come only at these clock times — not during the hours in between (e.g. 09:00 and 18:00).",
+    "Come only at these clock times - not during the hours in between (e.g. 09:00 and 18:00).",
   "schedule.addVisit": "Add time",
   "schedule.repeat": "Repeat",
   "schedule.repeat.once": "Once",
@@ -425,7 +425,7 @@ const en = {
   "tasks.reviewOfferSubmit": "Submit",
   "tasks.reviewOfferNo": "Not now",
   "tasks.reviewOfferSomeone": "this teammate",
-  "tasks.reviewOfferOptional": "Optional — you can skip.",
+  "tasks.reviewOfferOptional": "Optional - you can skip.",
   "tasks.reviewOfferJobNote": "Note about this job (optional)",
   "tasks.reviewOfferJobNotePlaceholder":
     "How did this job or task go?",
@@ -747,14 +747,14 @@ const en = {
   "settings.mcpCopyOnce": "Copy this key now. For your safety, we only show it once.",
   "settings.mcpCopy": "Copy key",
   "settings.mcpCopied": "Copied",
-  "settings.mcpCopyFailed": "Could not copy — select the key manually.",
+  "settings.mcpCopyFailed": "Could not copy - select the key manually.",
   "settings.mcpEmpty": "No agent connections yet.",
   "settings.mcpRevoke": "Disconnect",
   "settings.mcpRevokeConfirm":
     "Disconnect this agent? It will lose access until you create a new key.",
   "settings.mcpConfigTitle": "Copy this MCP config",
   "settings.mcpConfigHint":
-    "This block is the whole connection. Create a key above first, then press Copy config so your key is already inside. You do not download Pulse — npx fetches the agent bridge.",
+    "This block is the whole connection. Create a key above first, then press Copy config so your key is already inside. You do not download Pulse - npx fetches the agent bridge.",
   "settings.mcpConfigPlatform.mac": "Mac",
   "settings.mcpConfigPlatform.windows": "Windows",
   "settings.mcpConfigLauncherNote":
@@ -1113,9 +1113,9 @@ const en = {
   "guest.supportHint":
     "Message the property owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
   "guest.supportCmdDeposit":
-    "/deposit — submit your deposit payment (attach receipt).",
+    "/deposit - submit your deposit payment (attach receipt).",
   "guest.supportCmdCancel":
-    "/cancel — cancel a booking with the property owner (within 3 days of check-in).",
+    "/cancel - cancel a booking with the property owner (within 3 days of check-in).",
   "guest.supportCmdDepositHost":
     "Record that the guest paid the deposit (optional amount).",
   "guest.supportCmdRefund":
@@ -1148,8 +1148,8 @@ const en = {
   "guest.yourDeposit": "Your deposit",
   "guest.depositDue": "Due",
   "guest.depositPaid": "Paid",
-  "guest.depositTiming.before_arrival": "To be paid before arrival",
-  "guest.depositTiming.on_arrival": "To be paid on arrival",
+  "guest.depositTiming.before_arrival": "In advance (before arrival)",
+  "guest.depositTiming.on_arrival": "In person (on arrival)",
   "guest.depositHowToPay": "How to pay",
   "guest.depositHowToPayHint":
     "Open Support chat and send /deposit along with your receipt and wait for confirmation. If a before-arrival deposit stays unpaid, your host may cancel the booking.",
@@ -1192,7 +1192,7 @@ const en = {
   "guest.viewProof": "View photo",
   "guest.villasTitle": "Properties",
   "guest.villasHint":
-    "Browse properties from this host and request dates — your host will send a price quote.",
+    "Browse properties from this host and request dates - your host will send a price quote.",
   "guest.villasHost": "Hosted by {name}",
   "guest.villasEmpty": "No company properties to show.",
   "guest.villaUnavailable": "This property is not available for new date requests right now.",
@@ -1209,7 +1209,7 @@ const en = {
   "guest.requestSent": "Request sent to your host.",
   "guest.requestPending": "Pending request: {from} → {to}",
   "guest.requestPrice": "Your price offer",
-  "guest.requestPriceHint": "Optional — your host sets the final total and deposit.",
+  "guest.requestPriceHint": "Optional - your host sets the final total and deposit.",
   "guest.requestPricePh": "e.g. 15000",
   "guest.requestPendingPrice": "Your offer: {amount}",
   "guest.quoteTitle": "Confirmed price",
@@ -1221,7 +1221,7 @@ const en = {
   "guest.quoteDeclineTitle": "Decline quote?",
   "guest.quoteDeclineConfirm":
     "This will cancel the date request. Your host will need a new request if you change your mind.",
-  "guest.quoteConfirmed": "Stay confirmed — see you soon!",
+  "guest.quoteConfirmed": "Stay confirmed - see you soon!",
   "guest.requestCancel": "Cancel request",
   "guest.requestCancelTitle": "Cancel request?",
   "guest.requestCancelConfirm":
@@ -1230,22 +1230,22 @@ const en = {
   "guest.quotePayment": "How to pay",
   "guest.quoteDeposit": "Deposit: {amount}",
   "guest.depositManualHint":
-    "After you pay a deposit in person, your host records it under Guests — you will see it here under Bills.",
+    "After you pay a deposit in person, your host records it under Guests - you will see it here under Bills.",
   "guest.guideEditTitle": "House guide (guest-facing)",
   "guest.guideSave": "Save house guide",
   "guest.joinTitle": "You're invited as a guest",
   "guest.joinHint":
-    "New here? Create an account. Already on Pulse Flow with another company? Use that email — we'll add this host to the same profile.",
+    "New here? Create an account. Already on Pulse Flow with another company? Use that email - we'll add this host to the same profile.",
   "guest.joinContinue": "Continue",
   "join.staffTitle": "You're invited to the team",
   "join.staffHint":
     "New here? Fill in your details. Already on another company? Use that email so both companies stay on one login.",
   "join.accountNote":
-    "One profile can belong to several companies. We never replace your first company — we add the new one.",
+    "One profile can belong to several companies. We never replace your first company - we add the new one.",
   "join.passwordLabel": "Password",
   "join.passwordConfirm": "Confirm password",
   "join.signedInHint":
-    "You're signed in as {email}. Add {org} to this account — you'll keep both companies.",
+    "You're signed in as {email}. Add {org} to this account - you'll keep both companies.",
   "join.addToAccount": "Add this company to my account",
   "join.addingToAccount": "Adding…",
   "join.orNewAccount": "Or create / use a different email below.",
@@ -1281,19 +1281,20 @@ const en = {
   "dateRequests.pendingMany":
     "{count} guests are waiting for a yes or no.",
   "dateRequests.guestOffer": "Guest offered {amount}",
-  "dateRequests.confirmPrice": "Set price for guest",
-  "dateRequests.totalPrice": "Total price for these dates",
+  "dateRequests.confirmPrice": "Set the stay total and deposit",
+  "dateRequests.totalPrice": "Stay total",
   "dateRequests.paymentNote": "Payment instructions",
-  "dateRequests.paymentNotePh":
-    "Explain to the guest how to transfer money to your bank account.",
+  "dateRequests.paymentNotePh": "",
   "dateRequests.depositHint":
-    "When you add a deposit on a quote, choose in-advance or in-person. For in-advance, the guest pays via support chat and you confirm under Guests. For in-person, explain your rules in support chat.",
-  "dateRequests.depositAmount": "Deposit amount",
+    "When you add a deposit on a quote, choose in-advance or in-person. For in-advance, the guest pays via instructions provided. For in-person, explain your rules in support chat.",
+  "dateRequests.depositAmount": "Deposit",
   "dateRequests.depositAmountHint":
-    "Optional. Uses the same currency as the total above.",
-  "dateRequests.depositAmountPh": "e.g. 5000",
+    "Optional. Uses the same currency as the stay total. Guest accepts both before the booking.",
+  "dateRequests.depositAmountPh": "",
   "dateRequests.depositQuoted": "Deposit {amount}",
-  "dateRequests.depositWhen": "When should the guest pay?",
+  "dateRequests.depositWhen": "Deposit payment",
+  "dateRequests.depositTiming.before_arrival": "In advance",
+  "dateRequests.depositTiming.on_arrival": "In person",
   "dateRequests.sendQuote": "Send quote to guest",
   "dateRequests.acceptConfirm": "Send quote to guest",
   "dateRequests.priceRequired": "Enter the total stay price before sending the quote.",
@@ -1363,7 +1364,7 @@ const en = {
   "guests.cancelConfirm":
     "Cancel {guest}'s stay at {villa} ({from} → {to})?",
   "guests.cancelButton": "Cancel booking",
-  "guests.cancelSaved": "Booking cancelled — guest notified.",
+  "guests.cancelSaved": "Booking cancelled - guest notified.",
 
   "language.title": "Language",
   "language.choose": "App language",

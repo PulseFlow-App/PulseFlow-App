@@ -1,8 +1,9 @@
 "use client";
 
-import { Input, Label, Select } from "@/components/ui/input";
+import { Input, Label } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import {
   PROPERTY_TYPES,
   VILLA_AIRCON,
@@ -13,6 +14,11 @@ import {
   type TriSelect,
   type VillaDetailsForm,
 } from "@/lib/villas/property-details";
+
+const BEDROOM_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+const BATHROOM_OPTIONS = [1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6] as const;
+const GUEST_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16] as const;
+const FLOOR_OPTIONS = [1, 2, 3, 4, 5] as const;
 
 export function VillaDetailsFields({
   value,
@@ -36,7 +42,7 @@ export function VillaDetailsFields({
         ) : null}
       </div>
 
-      <EnumField
+      <ChipEnumField
         label={t("villas.propertyType")}
         value={value.property_type}
         unsetLabel={t("villas.unset")}
@@ -47,51 +53,56 @@ export function VillaDetailsFields({
         onChange={(v) => set("property_type", v)}
       />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <NumberField
-          label={t("villas.sqm")}
+      <div className="min-w-0">
+        <Label>{t("villas.sqm")}</Label>
+        <Input
+          type="number"
+          inputMode="decimal"
+          min="0"
+          step="1"
           value={value.sq_m}
-          onChange={(v) => set("sq_m", v)}
-          step="1"
-        />
-        <NumberField
-          label={t("villas.bedrooms")}
-          value={value.bedrooms}
-          onChange={(v) => set("bedrooms", v)}
-          step="1"
-        />
-        <NumberField
-          label={t("villas.bathrooms")}
-          value={value.bathrooms}
-          onChange={(v) => set("bathrooms", v)}
-          step="0.5"
-        />
-        <NumberField
-          label={t("villas.maxGuests")}
-          value={value.max_guests}
-          onChange={(v) => set("max_guests", v)}
-          step="1"
-        />
-        <NumberField
-          label={t("villas.floors")}
-          value={value.floors}
-          onChange={(v) => set("floors", v)}
-          step="1"
-        />
-        <EnumField
-          label={t("villas.setting")}
-          value={value.setting}
-          unsetLabel={t("villas.unset")}
-          options={VILLA_SETTINGS.map((id) => ({
-            id,
-            label: t(`villas.setting.${id}` as MessageKey),
-          }))}
-          onChange={(v) => set("setting", v)}
+          onChange={(e) => set("sq_m", e.target.value)}
         />
       </div>
 
+      <CountChipField
+        label={t("villas.bedrooms")}
+        value={value.bedrooms}
+        options={BEDROOM_OPTIONS}
+        onChange={(v) => set("bedrooms", v)}
+      />
+      <CountChipField
+        label={t("villas.bathrooms")}
+        value={value.bathrooms}
+        options={BATHROOM_OPTIONS}
+        onChange={(v) => set("bathrooms", v)}
+      />
+      <CountChipField
+        label={t("villas.maxGuests")}
+        value={value.max_guests}
+        options={GUEST_OPTIONS}
+        onChange={(v) => set("max_guests", v)}
+      />
+      <CountChipField
+        label={t("villas.floors")}
+        value={value.floors}
+        options={FLOOR_OPTIONS}
+        onChange={(v) => set("floors", v)}
+      />
+
+      <ChipEnumField
+        label={t("villas.setting")}
+        value={value.setting}
+        unsetLabel={t("villas.unset")}
+        options={VILLA_SETTINGS.map((id) => ({
+          id,
+          label: t(`villas.setting.${id}` as MessageKey),
+        }))}
+        onChange={(v) => set("setting", v)}
+      />
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <TriField
+        <TriChipField
           label={t("villas.pool")}
           value={value.has_pool}
           yes={t("villas.yes")}
@@ -99,7 +110,7 @@ export function VillaDetailsFields({
           unset={t("villas.unset")}
           onChange={(v) => set("has_pool", v)}
         />
-        <TriField
+        <TriChipField
           label={t("villas.garden")}
           value={value.has_garden}
           yes={t("villas.yes")}
@@ -107,7 +118,7 @@ export function VillaDetailsFields({
           unset={t("villas.unset")}
           onChange={(v) => set("has_garden", v)}
         />
-        <EnumField
+        <ChipEnumField
           label={t("villas.parking")}
           value={value.parking}
           unsetLabel={t("villas.unset")}
@@ -117,7 +128,7 @@ export function VillaDetailsFields({
           }))}
           onChange={(v) => set("parking", v)}
         />
-        <EnumField
+        <ChipEnumField
           label={t("villas.kitchen")}
           value={value.kitchen}
           unsetLabel={t("villas.unset")}
@@ -127,7 +138,7 @@ export function VillaDetailsFields({
           }))}
           onChange={(v) => set("kitchen", v)}
         />
-        <EnumField
+        <ChipEnumField
           label={t("villas.aircon")}
           value={value.aircon}
           unsetLabel={t("villas.unset")}
@@ -137,7 +148,7 @@ export function VillaDetailsFields({
           }))}
           onChange={(v) => set("aircon", v)}
         />
-        <EnumField
+        <ChipEnumField
           label={t("villas.view")}
           value={value.view}
           unsetLabel={t("villas.unset")}
@@ -147,7 +158,7 @@ export function VillaDetailsFields({
           }))}
           onChange={(v) => set("view", v)}
         />
-        <TriField
+        <TriChipField
           label={t("villas.wifi")}
           value={value.has_wifi}
           yes={t("villas.yes")}
@@ -155,7 +166,7 @@ export function VillaDetailsFields({
           unset={t("villas.unset")}
           onChange={(v) => set("has_wifi", v)}
         />
-        <TriField
+        <TriChipField
           label={t("villas.pets")}
           value={value.pet_friendly}
           yes={t("villas.yes")}
@@ -168,33 +179,52 @@ export function VillaDetailsFields({
   );
 }
 
-function NumberField({
+function CountChipField({
   label,
   value,
+  options,
   onChange,
-  step,
 }: {
   label: string;
   value: string;
+  options: readonly number[];
   onChange: (value: string) => void;
-  step: string;
 }) {
+  const selected = value.trim();
+  const known = options.some((n) => String(n) === selected);
   return (
     <div className="min-w-0">
       <Label>{label}</Label>
-      <Input
-        type="number"
-        inputMode="decimal"
-        min="0"
-        step={step}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((n) => {
+          const id = String(n);
+          const active = selected === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onChange(active ? "" : id)}
+              className={cn(
+                "min-w-9 rounded-full px-3 py-1.5 text-sm font-semibold transition",
+                active
+                  ? "bg-primary text-white"
+                  : "bg-canvas-deep text-ink hover:bg-sky/20",
+              )}
+              aria-pressed={active}
+            >
+              {id}
+            </button>
+          );
+        })}
+      </div>
+      {selected && !known ? (
+        <p className="mt-1 text-xs text-muted">{selected}</p>
+      ) : null}
     </div>
   );
 }
 
-function TriField({
+function TriChipField({
   label,
   value,
   yes,
@@ -209,24 +239,40 @@ function TriField({
   unset: string;
   onChange: (value: TriSelect) => void;
 }) {
+  const options: { id: TriSelect; label: string }[] = [
+    { id: "", label: unset },
+    { id: "yes", label: yes },
+    { id: "no", label: no },
+  ];
   return (
     <div className="min-w-0">
       <Label>{label}</Label>
-      <Select
-        value={value}
-        onChange={(e) => onChange(e.target.value as TriSelect)}
-        aria-label={label}
-        title={label}
-      >
-        <option value="">{unset}</option>
-        <option value="yes">{yes}</option>
-        <option value="no">{no}</option>
-      </Select>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((opt) => {
+          const active = value === opt.id;
+          return (
+            <button
+              key={opt.id || "unset"}
+              type="button"
+              onClick={() => onChange(opt.id)}
+              className={cn(
+                "rounded-full px-3 py-1.5 text-sm font-semibold transition",
+                active
+                  ? "bg-primary text-white"
+                  : "bg-canvas-deep text-ink hover:bg-sky/20",
+              )}
+              aria-pressed={active}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-function EnumField<T extends string>({
+function ChipEnumField<T extends string>({
   label,
   value,
   unsetLabel,
@@ -239,24 +285,43 @@ function EnumField<T extends string>({
   options: { id: T; label: string }[];
   onChange: (value: "" | T) => void;
 }) {
-  const selectedLabel =
-    options.find((opt) => opt.id === value)?.label ?? unsetLabel;
   return (
     <div className="min-w-0">
       <Label>{label}</Label>
-      <Select
-        value={value}
-        onChange={(e) => onChange(e.target.value as "" | T)}
-        aria-label={label}
-        title={selectedLabel}
-      >
-        <option value="">{unsetLabel}</option>
-        {options.map((opt) => (
-          <option key={opt.id} value={opt.id}>
-            {opt.label}
-          </option>
-        ))}
-      </Select>
+      <div className="flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          className={cn(
+            "rounded-full px-3 py-1.5 text-sm font-semibold transition",
+            value === ""
+              ? "bg-primary text-white"
+              : "bg-canvas-deep text-ink hover:bg-sky/20",
+          )}
+          aria-pressed={value === ""}
+        >
+          {unsetLabel}
+        </button>
+        {options.map((opt) => {
+          const active = value === opt.id;
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => onChange(active ? "" : opt.id)}
+              className={cn(
+                "rounded-full px-3 py-1.5 text-sm font-semibold transition",
+                active
+                  ? "bg-primary text-white"
+                  : "bg-canvas-deep text-ink hover:bg-sky/20",
+              )}
+              aria-pressed={active}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

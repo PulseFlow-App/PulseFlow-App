@@ -21,12 +21,12 @@ export const arLocalePatch: Partial<Dictionary> = {
   "demo.villa.lotus.notes": "طلب الضيوف مناشف إضافية.",
   "demo.villa.palm.desc": "فيلا عائلية بالقرب من شاطئ هاد ياو.",
   "demo.villa.palm.notes": "تنظيف عميق قبل تسجيل الوصول غداً.",
-  "demo.villa.jungle.desc": "ملاذ هادئ على التل — مكيف الهواء بانتظار الإصلاح.",
+  "demo.villa.jungle.desc": "ملاذ هادئ على التل - مكيف الهواء بانتظار الإصلاح.",
   "demo.villa.jungle.notes": "استبدال ضاغط المكيف مجدول.",
   "demo.villa.sunset.desc": "فيلا بشرفة مطلة على الغروب.",
   "demo.villa.sunset.notes": "المغادرة غداً الساعة 11:00.",
   "demo.villa.cliff.desc": "استوديو مدمج لحجوزات العملاء الجانبيين.",
-  "demo.villa.cliff.notes": "عميل جانبي — ليس في مخزون الشركة.",
+  "demo.villa.cliff.notes": "عميل جانبي - ليس في مخزون الشركة.",
 
   "demo.contact.nokNotes": "مفضل للتسليمات · على PulseFlow",
   "demo.contact.somchaiNotes": "طوارئ على مدار الساعة",
@@ -66,7 +66,7 @@ export const arLocalePatch: Partial<Dictionary> = {
   "demo.notif.billSubmittedBody": "مستلزمات تنظيف للتسليم · ฿1,250",
 
   "demo.msg.morningPalm":
-    "صباح الخير — يجب أن تكون فيلا بالم جاهزة للضيوف بحلول ظهر الغد.",
+    "صباح الخير - يجب أن تكون فيلا بالم جاهزة للضيوف بحلول ظهر الغد.",
   "demo.msg.onIt":
     "قيد التنفيذ. فريق التنظيف هناك بالفعل. سأحدّثكم عند الانتهاء.",
   "demo.msg.acConfirmed": "تم تأكيد فني التكييف لجونغل ريتريت الساعة 14:00.",
@@ -122,7 +122,7 @@ export const arLocalePatch: Partial<Dictionary> = {
     "الفريق: افتحوا واضغطوا قرأت ووافقت لتأكيد استلام المهمة.",
 
   "demo.guest.ownerNotices":
-    "مرحباً! سخان المسبح يعمل من الساعة 16:00. المغادرة 11:00 — اتركوا المفاتيح على طاولة المطبخ.",
+    "مرحباً! سخان المسبح يعمل من الساعة 16:00. المغادرة 11:00 - اتركوا المفاتيح على طاولة المطبخ.",
   "demo.guest.briefing.keysTitle": "البوابة والمفاتيح",
   "demo.guest.briefing.keysBody":
     "رمز البوابة الجانبية 4821#. اتركوا المفاتيح على طاولة المطبخ عند المغادرة.",

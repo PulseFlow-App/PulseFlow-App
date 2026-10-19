@@ -246,7 +246,7 @@ export function demoPropertyPhoto(slug: keyof typeof VILLA_IDS) {
   return propertyPhoto(slug);
 }
 
-/** @deprecated Prefer demoPropertyPhoto — kept for non-property thumbnails only. */
+/** @deprecated Prefer demoPropertyPhoto - kept for non-property thumbnails only. */
 function villaPhoto(name: string, tone: string) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${tone}" offset="0%"/><stop stop-color="#023047" stop-opacity=".35" offset="100%"/></linearGradient></defs><rect width="640" height="400" fill="url(#g)"/><text x="320" y="210" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="26" font-weight="700">${name}</text></svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
@@ -449,7 +449,7 @@ export const demoVillas: Villa[] = [
     name: "Bamboo Nest",
     area: "Srithanu",
     location_url: "https://maps.google.com/?q=Srithanu+Koh+Phangan",
-    description: "Bamboo loft for yoga guests — quiet lane behind Srithanu.",
+    description: "Bamboo loft for yoga guests - quiet lane behind Srithanu.",
     photo_url: propertyPhoto("bamboo"),
     listing_url: null,
     drive_url: null,
@@ -597,7 +597,7 @@ export const demoVillas: Villa[] = [
       view: "garden",
     }),
   },
-  // Commercial listing — office for rent (not a villa).
+  // Commercial listing - office for rent (not a villa).
   {
     id: VILLA_IDS.office,
     org_id: DEMO_ORG_ID,
@@ -605,7 +605,7 @@ export const demoVillas: Villa[] = [
     area: "Thong Sala",
     location_url: "https://maps.google.com/?q=Thong+Sala+Koh+Phangan",
     description:
-      "Ground-floor office for rent near the pier. Desk space for 4, fiber Wi-Fi, meeting table, street parking. Commercial lease — not a guest stay.",
+      "Ground-floor office for rent near the pier. Desk space for 4, fiber Wi-Fi, meeting table, street parking. Commercial lease - not a guest stay.",
     photo_url: propertyPhoto("office"),
     listing_url: null,
     drive_url: null,
@@ -1437,11 +1437,11 @@ export const demoVillaMasterInfo: VillaMasterInfo[] = [
     org_id: DEMO_ORG_ID,
     villa_id: VILLA_IDS.palm,
     utilities_notes:
-      "PEA meter rear wall. Water: municipal + rooftop tank (float valve). Gas: LPG for hob — spare tank in shed.",
+      "PEA meter rear wall. Water: municipal + rooftop tank (float valve). Gas: LPG for hob - spare tank in shed.",
     service_providers_notes:
       "Deep clean: Mai. Pool: Island Pool Parts. Gardener: weekly Wed.",
     access_notes:
-      "Alarm: 4455 disarm (owner only — not for guests). Bike lock key with laundry keys.",
+      "Alarm: 4455 disarm (owner only - not for guests). Bike lock key with laundry keys.",
     key_contacts_notes:
       "Haad Yao community WhatsApp in Drive. Emergency clinic 10 min drive.",
     tax_notes: "Owner keeps tax file offline · ask Alex before sharing numbers.",
@@ -1455,7 +1455,7 @@ export const demoVillaMasterInfo: VillaMasterInfo[] = [
     org_id: DEMO_ORG_ID,
     villa_id: VILLA_IDS.coral,
     utilities_notes:
-      "Shared PEA for bungalow row — meter C3. Water included in community fee.",
+      "Shared PEA for bungalow row - meter C3. Water included in community fee.",
     service_providers_notes:
       "Community maintenance desk · Thong Sala. Pest control quarterly (last: June).",
     access_notes:
@@ -1463,7 +1463,7 @@ export const demoVillaMasterInfo: VillaMasterInfo[] = [
     key_contacts_notes: "Community manager Joy · +66 81 555 0199.",
     tax_notes: null,
     handoff_notes:
-      "Long-stay guest — quiet hours matter. Extra towels in left cupboard.",
+      "Long-stay guest - quiet hours matter. Extra towels in left cupboard.",
     allow_manager_view: true,
     updated_at: daysAgo(5) + "T08:00:00.000Z",
   },

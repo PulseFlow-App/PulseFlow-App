@@ -45,7 +45,7 @@ export function resolveSupportDepositAction(input: {
     return {
       kind: "guest_signal",
       displayBody: amountLine
-        ? `/deposit — ${amountLine}`
+        ? `/deposit - ${amountLine}`
         : "/deposit",
       notifications: [
         makeNotification({

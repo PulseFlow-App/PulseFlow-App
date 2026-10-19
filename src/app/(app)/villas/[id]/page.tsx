@@ -284,25 +284,28 @@ export default function VillaDetailPage({
               </div>
             </div>
 
-            <VillaQuickSources
-              value={quickSources}
-              onChange={setQuickSources}
-              uploadDoc={data.uploadVillaPhoto}
-              onEnrich={(enrichment) => {
-                const next = applyVillaEnrichment(enrichment, {
-                  name,
-                  area,
-                  description,
-                  locationUrl,
-                  details,
-                });
-                setName(next.name);
-                setArea(next.area);
-                setDescription(next.description);
-                setLocationUrl(next.locationUrl);
-                setDetails(next.details);
-              }}
-            />
+            <VillaExpandSection title={t("villas.quickSources")}>
+              <VillaQuickSources
+                embedded
+                value={quickSources}
+                onChange={setQuickSources}
+                uploadDoc={data.uploadVillaPhoto}
+                onEnrich={(enrichment) => {
+                  const next = applyVillaEnrichment(enrichment, {
+                    name,
+                    area,
+                    description,
+                    locationUrl,
+                    details,
+                  });
+                  setName(next.name);
+                  setArea(next.area);
+                  setDescription(next.description);
+                  setLocationUrl(next.locationUrl);
+                  setDetails(next.details);
+                }}
+              />
+            </VillaExpandSection>
 
             <div>
               <Label>{t("villas.locationLink")}</Label>
@@ -478,8 +481,8 @@ export default function VillaDetailPage({
               <p className="text-xs text-muted">{t("villas.staffHint")}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <div className="min-w-0 overflow-hidden">
                 <Label htmlFor="check_in">{t("villas.checkIn")}</Label>
                 <Input
                   id="check_in"
@@ -488,7 +491,7 @@ export default function VillaDetailPage({
                   onChange={(e) => setCheckIn(e.target.value)}
                 />
               </div>
-              <div>
+              <div className="min-w-0 overflow-hidden">
                 <Label htmlFor="check_out">{t("villas.checkOut")}</Label>
                 <Input
                   id="check_out"

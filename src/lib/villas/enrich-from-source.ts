@@ -242,6 +242,9 @@ function mergeEnrichment(
 const MARKETING_RE =
   /\b(stunning|beautiful|amazing|gorgeous|breathtaking|luxury|luxurious|paradise|dream(?:y)?|unforgettable|perfect|ideal|cozy|charming|incredible|wonderful|delightful|spectacular|fabulous|exquisite|magnificent|romantic|magical|must[- ]see|instagram(?:mable)?|oasis|nestled|heart of|you'll love|you will love|book now|don't miss|unique opportunity|once in a lifetime|escape to|welcome to|discover|indulge|serene|tranquil gem|hidden gem|best[- ]in[- ]class)\b/i;
 
+const TITLE_STOP =
+  /\s+(?:with|featuring|including|offers?|boasts?|offers\s+a|has\s+a|and\s+a)\s+/i;
+
 /** Short listing title only — never the marketing blurb that follows. */
 export function cleanPropertyName(raw: string | null | undefined): string | undefined {
   if (!raw?.trim()) return undefined;
@@ -258,24 +261,52 @@ export function cleanPropertyName(raw: string | null | undefined): string | unde
     .trim();
 
   // "Name - long description…" or "Name | …"
-  const dashSplit = s.match(/^(.{2,48}?)\s*[|\-–—]\s+(.{12,})$/);
+  const dashSplit = s.match(/^(.{2,40}?)\s*[|\-–—·•]\s+(.{8,})$/);
   if (dashSplit?.[1]) s = dashSplit[1].trim();
 
   // "Name. Rest of the listing copy…"
-  const sentenceSplit = s.match(/^(.{2,48}?)[.!?]\s+\S/);
+  const sentenceSplit = s.match(/^(.{2,40}?)[.!?]\s+\S/);
   if (sentenceSplit?.[1]) s = sentenceSplit[1].trim();
 
-  // Hard cap — if still a paragraph, keep a short title-sized head.
-  if (s.length > 48) {
-    const cut = s.slice(0, 48).replace(/\s+\S*$/, "").trim();
+  // Airbnb-style: "Maduewan Home with Private Pool…" / "… in Srithanu"
+  if (TITLE_STOP.test(s)) {
+    s = s.split(TITLE_STOP)[0]?.trim() ?? s;
+  }
+  const commaSplit = s.match(/^(.{2,36}?),\s+(.+)$/);
+  if (commaSplit?.[1] && commaSplit[1].split(/\s+/).length <= 5) {
+    s = commaSplit[1].trim();
+  }
+  s = s.replace(/\s+in\s+[A-Z][\w'’.\s-]{1,40}$/u, "").trim();
+
+  // Prefer "Villa X" / "X Home" style spans when the line is still long.
+  const named = s.match(
+    /\b((?:Villa|House|Home|Bungalow|Apartment|Studio)\s+[A-Z][\w'’.-]*(?:\s+[A-Z][\w'’.-]*){0,3})\b/,
+  ) ?? s.match(
+    /\b([A-Z][\w'’.-]+(?:\s+[A-Z][\w'’.-]+){0,3}\s+(?:Villa|House|Home|Bungalow|Apartment|Studio))\b/,
+  );
+  if (named?.[1] && (s.length > 36 || s.split(/\s+/).length > 5)) {
+    s = named[1].trim();
+  }
+
+  s = s.replace(/^["'“”]+|["'“”]+$/g, "").trim();
+  s = s.replace(/^(?:the|a|an)\s+/i, "").trim();
+
+  // Title-sized only — never a paragraph head.
+  const words = s.split(/\s+/).filter(Boolean);
+  if (words.length > 5) s = words.slice(0, 4).join(" ");
+  if (s.length > 36) {
+    const cut = s.slice(0, 36).replace(/\s+\S*$/, "").trim();
     if (cut.length < 3) return undefined;
     s = cut;
   }
 
-  s = s.replace(/^["'“”]+|["'“”]+$/g, "").trim();
-  if (s.length < 2 || s.length > 48) return undefined;
+  if (s.length < 2 || s.length > 36) return undefined;
   if (MARKETING_RE.test(s)) return undefined;
-  if (/\bguests?\b|\bbedrooms?\b|\bbaths?\b|\bsleeps?\b/i.test(s)) {
+  if (/\bguests?\b|\bbedrooms?\b|\bbaths?\b|\bsleeps?\b|\bm²\b|\bsqm\b/i.test(s)) {
+    return undefined;
+  }
+  // Reject sentence-like leftovers ("Enjoy your stay near…").
+  if (/^(enjoy|experience|discover|welcome|stay|book|located)\b/i.test(s)) {
     return undefined;
   }
   return s;

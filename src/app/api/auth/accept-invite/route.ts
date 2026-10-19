@@ -198,7 +198,7 @@ async function startMergeRequest(
   const text = [
     `A Pulse Flow profile already exists for ${input.email}.`,
     ``,
-    `${orgName} invited you as a ${roleLabel}. Confirm to add this company to your existing account — you keep both companies on one login.`,
+    `${orgName} invited you as a ${roleLabel}. Confirm to add this company to your existing account - you keep both companies on one login.`,
     ``,
     `Open this link, then enter your password to confirm:`,
     mergeUrl,
@@ -208,7 +208,7 @@ async function startMergeRequest(
   const html = `
     <p>A Pulse Flow profile already exists for <strong>${input.email}</strong>.</p>
     <p><strong>${orgName}</strong> invited you as a ${roleLabel}. Confirm to add this company to your existing account. You keep both companies on one login.</p>
-    <p><a href="${mergeUrl}">Confirm and add company</a> — you will need your password.</p>
+    <p><a href="${mergeUrl}">Confirm and add company</a> - you will need your password.</p>
     <p>If you do not open the link, this request is ignored.</p>
   `;
 

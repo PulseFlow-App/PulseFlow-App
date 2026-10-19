@@ -1,5 +1,5 @@
 /**
- * Dense screenshot pack — layered on top of seed-enrichment.
+ * Dense screenshot pack - layered on top of seed-enrichment.
  */
 import type {
   Bill,
@@ -621,7 +621,7 @@ export const denseMessages: Message[] = [
     id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeeb3",
     org_id: DEMO_ORG_ID,
     sender_id: DEMO_EMPLOYEE_ID,
-    body: "Feedback: guest at Coral loved the welcome fruit — keep doing that.",
+    body: "Feedback: guest at Coral loved the welcome fruit - keep doing that.",
     created_at: daysAgo(0) + "T09:20:00.000Z",
     service_order_id: null,
     channel: "request",
@@ -631,7 +631,7 @@ export const denseMessages: Message[] = [
     id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeeb4",
     org_id: DEMO_ORG_ID,
     sender_id: DEMO_OWNER_ID,
-    body: "Please check this sink photo — is this the same leak as morning?",
+    body: "Please check this sink photo - is this the same leak as morning?",
     created_at: daysAgo(0) + "T10:05:00.000Z",
     service_order_id: null,
     channel: "photo",
@@ -651,7 +651,7 @@ export const denseMessages: Message[] = [
     id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeeb6",
     org_id: DEMO_ORG_ID,
     sender_id: DEMO_CLEANER_ID,
-    body: "Pool strip after shock — chlorine looks good.",
+    body: "Pool strip after shock - chlorine looks good.",
     created_at: daysAgo(0) + "T15:48:00.000Z",
     service_order_id: null,
     channel: "photo",
@@ -671,7 +671,7 @@ export const denseMessages: Message[] = [
     id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeeb8",
     org_id: DEMO_ORG_ID,
     sender_id: DEMO_CLEANER_ID,
-    body: "On it — 20 mins. Rain starting near Srithanu.",
+    body: "On it - 20 mins. Rain starting near Srithanu.",
     created_at: daysAgo(0) + "T08:46:00.000Z",
     service_order_id: null,
     channel: "general",
@@ -701,7 +701,7 @@ export const denseMessages: Message[] = [
     id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeebb",
     org_id: DEMO_ORG_ID,
     sender_id: DEMO_EMPLOYEE_ID,
-    body: "Yes — bottom drawer left · 4 packs AA.",
+    body: "Yes - bottom drawer left · 4 packs AA.",
     created_at: daysAgo(1) + "T16:55:00.000Z",
     service_order_id: null,
     channel: "request",
