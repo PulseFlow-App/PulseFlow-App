@@ -17,15 +17,15 @@ export function VillaListCard({
   villa,
   showAssignees,
   assignees,
-  hideBucketBadge = false,
   canEdit = false,
-  showMasterInfo = false,
 }: {
   villa: VillaListItem;
   showAssignees: boolean;
   assignees: string[];
+  /** @deprecated Company label is shown above grouped lists — unused. */
   hideBucketBadge?: boolean;
   canEdit?: boolean;
+  /** @deprecated Master + stats share one note icon to the stats page. */
   showMasterInfo?: boolean;
 }) {
   const { t } = useI18n();
@@ -37,40 +37,32 @@ export function VillaListCard({
 
   return (
     <Card className="overflow-hidden p-0 transition hover:bg-canvas-deep/40">
-      <div className="relative flex gap-3 p-3">
-        <Link
-          href={`/villas/${villa.id}/stats`}
-          className="relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl bg-canvas-deep sm:size-24"
-          aria-label={villa.name}
-        >
-          {villa.photo_url ? (
-            <VillaPhoto
-              src={villa.photo_url}
-              alt=""
-              className="size-full rounded-none"
-            />
-          ) : (
-            <span className="flex size-full items-center justify-center text-[11px] font-semibold text-muted">
-              {t("villas.photo")}
-            </span>
-          )}
-        </Link>
-
-        <div className="min-w-0 flex-1 pr-10">
-          <div className="mb-1 flex flex-wrap items-center gap-1.5">
-            {!hideBucketBadge ? (
-              <span
-                className={
-                  villa.bucket === "company"
-                    ? "rounded-full bg-secondary-soft px-2 py-0.5 text-[10px] font-semibold text-secondary-dark"
-                    : "rounded-full bg-canvas-deep px-2 py-0.5 text-[10px] font-semibold text-muted"
-                }
-              >
-                {villa.orgLabel}
+      <div className="relative flex gap-3 p-3 pt-3.5">
+        <div className="flex w-[4.5rem] shrink-0 flex-col gap-1.5 sm:w-24">
+          <Link
+            href={`/villas/${villa.id}/stats`}
+            className="relative aspect-square overflow-hidden rounded-xl bg-canvas-deep"
+            aria-label={villa.name}
+          >
+            {villa.photo_url ? (
+              <VillaPhoto
+                src={villa.photo_url}
+                alt=""
+                className="size-full rounded-none"
+              />
+            ) : (
+              <span className="flex size-full items-center justify-center text-[11px] font-semibold text-muted">
+                {t("villas.photo")}
               </span>
-            ) : null}
-            <StatusPill status={villa.status} />
-          </div>
+            )}
+          </Link>
+          <StatusPill
+            status={villa.status}
+            className="w-full justify-center px-1.5 py-0.5 text-[10px] leading-tight"
+          />
+        </div>
+
+        <div className="min-w-0 flex-1 pr-9">
           <h3 className="font-display text-base font-bold leading-snug text-ink">
             {villa.name}
           </h3>
@@ -113,31 +105,22 @@ export function VillaListCard({
           ) : null}
         </div>
 
-        <div className="absolute right-2 top-2 flex flex-col gap-0.5">
+        <div className="absolute right-0.5 top-0.5 flex flex-col items-end gap-0.5">
           {canEdit ? (
             <Link
               href={`/villas/${villa.id}`}
-              className="rounded-lg p-2 text-muted hover:bg-sand"
+              className="rounded-lg p-1.5 text-muted hover:bg-sand"
               aria-label={t("villas.editProperty")}
             >
               <PulseIcon name="edit" className="size-4" />
             </Link>
           ) : null}
-          {showMasterInfo ? (
-            <Link
-              href={`/villas/${villa.id}?section=master`}
-              className="rounded-lg p-2 text-muted hover:bg-sand"
-              aria-label={t("villas.masterInfoIcon")}
-            >
-              <PulseIcon name="document" className="size-4" />
-            </Link>
-          ) : null}
           <Link
             href={`/villas/${villa.id}/stats`}
-            className="rounded-lg p-2 text-muted hover:bg-sand"
-            aria-label={t("villas.propertyStats")}
+            className="rounded-lg p-1.5 text-sky hover:bg-sky/10"
+            aria-label={t("villas.propertyNotes")}
           >
-            <PulseIcon name="chart" className="size-4" />
+            <PulseIcon name="document" className="size-4" />
           </Link>
         </div>
       </div>

@@ -217,7 +217,7 @@ export function VillaMasterInfoEditor(props: Props) {
       {saved ? (
         <p className="text-sm font-semibold text-secondary">{t("common.saved")}</p>
       ) : null}
-      {props.villaId && !props.embed && canEdit ? (
+      {props.villaId && canEdit ? (
         <Button size="sm" onClick={() => void save()} busy={saving}>
           {t("common.save")}
         </Button>

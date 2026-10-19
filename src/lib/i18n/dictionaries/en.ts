@@ -184,6 +184,7 @@ const en = {
   "villas.locationLink": "Location link",
   "villas.locationLinkHint":
     "Paste a Google Maps / Apple Maps pin link for the exact spot.",
+  "villas.propertyNotes": "Master info & stats",
   "home.addProperty": "Add property",
   "villas.cardMore": "More details",
   "villas.cardLess": "Less",

@@ -261,6 +261,27 @@ export default function VillaDetailPage({
                   Remove photo
                 </button>
               ) : null}
+              <div>
+                <Label htmlFor="status">{t("villas.status")}</Label>
+                <Select
+                  id="status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as VillaStatus)}
+                >
+                  <option value="available">
+                    {labelVillaStatus(t, "available")}
+                  </option>
+                  <option value="occupied">
+                    {labelVillaStatus(t, "occupied")}
+                  </option>
+                  <option value="turnover">
+                    {labelVillaStatus(t, "turnover")}
+                  </option>
+                  <option value="maintenance">
+                    {labelVillaStatus(t, "maintenance")}
+                  </option>
+                </Select>
+              </div>
             </div>
 
             <VillaQuickSources
@@ -411,28 +432,6 @@ export default function VillaDetailPage({
               </ul>
             </div>
           ) : null}
-
-          <div>
-            <Label htmlFor="status">{t("villas.status")}</Label>
-            <Select
-              id="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as VillaStatus)}
-            >
-              <option value="available">
-                {labelVillaStatus(t, "available")}
-              </option>
-              <option value="occupied">
-                {labelVillaStatus(t, "occupied")}
-              </option>
-              <option value="turnover">
-                {labelVillaStatus(t, "turnover")}
-              </option>
-              <option value="maintenance">
-                {labelVillaStatus(t, "maintenance")}
-              </option>
-            </Select>
-          </div>
 
           {staff ? (
             <div className="space-y-2 rounded-2xl bg-card px-3 py-3">

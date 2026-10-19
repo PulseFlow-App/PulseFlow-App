@@ -328,6 +328,26 @@ export default function VillasPage() {
                 alt="New property preview"
               />
             ) : null}
+            <div>
+              <Label>{t("villas.status")}</Label>
+              <Select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as VillaStatus)}
+              >
+                <option value="available">
+                  {labelVillaStatus(t, "available")}
+                </option>
+                <option value="occupied">
+                  {labelVillaStatus(t, "occupied")}
+                </option>
+                <option value="turnover">
+                  {labelVillaStatus(t, "turnover")}
+                </option>
+                <option value="maintenance">
+                  {labelVillaStatus(t, "maintenance")}
+                </option>
+              </Select>
+            </div>
           </div>
 
           <VillaQuickSources
@@ -416,27 +436,6 @@ export default function VillasPage() {
               </div>
             ) : null}
 
-            <div>
-              <Label>{t("villas.status")}</Label>
-              <Select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as VillaStatus)}
-              >
-                <option value="available">
-                  {labelVillaStatus(t, "available")}
-                </option>
-                <option value="occupied">
-                  {labelVillaStatus(t, "occupied")}
-                </option>
-                <option value="turnover">
-                  {labelVillaStatus(t, "turnover")}
-                </option>
-                <option value="maintenance">
-                  {labelVillaStatus(t, "maintenance")}
-                </option>
-              </Select>
-            </div>
-
             {!staff ? (
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -506,7 +505,7 @@ export default function VillasPage() {
                   return;
                 }
                 if (!isValidLocationUrl(locationUrl)) {
-                  setError("Add a valid location / maps link.");
+                  setError(t("villas.locationRequired"));
                   return;
                 }
                 setSaving(true);

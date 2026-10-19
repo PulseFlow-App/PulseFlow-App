@@ -5,10 +5,11 @@ import Link from "next/link";
 import { ArrowLeft, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/empty-state";
+import { VillaMasterInfoEditor } from "@/components/villas/villa-master-info-editor";
+import { VillaMaintenanceLog } from "@/components/villas/villa-maintenance-log";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import { canUseManagerReporting } from "@/lib/billing/reporting";
-import { formatShortDate } from "@/lib/utils";
 
 export default function VillaStatsPage({
   params,
@@ -130,6 +131,10 @@ export default function VillaStatsPage({
   const taskTotal = stats.openTasks + stats.doneTasks || 1;
   const jobTotal = stats.pendingJobs + stats.doneJobs || 1;
 
+  const master = data.villaMasterInfo.find((g) => g.villa_id === id);
+  const canEditMaster =
+    data.profile?.role === "owner" || data.profile?.role === "manager";
+
   return (
     <div className="space-y-4 animate-rise">
       <div className="flex items-start justify-between gap-3">
@@ -141,7 +146,6 @@ export default function VillaStatsPage({
             <ArrowLeft className="size-4" /> {t("common.back")}
           </Link>
           <h1 className="type-title mt-2">{villa.name}</h1>
-          <p className="type-meta mt-1">{t("villas.propertyStats")}</p>
         </div>
         {canReport ? (
           <Link
@@ -153,6 +157,24 @@ export default function VillaStatsPage({
           </Link>
         ) : null}
       </div>
+
+      <Card className="space-y-3 p-4">
+        <div>
+          <p className="text-sm font-semibold text-ink">
+            {t("villas.masterInfoTitle")}
+          </p>
+          <p className="mt-0.5 text-xs text-muted">{t("villas.masterInfoHint")}</p>
+        </div>
+        {canEditMaster ? (
+          <VillaMasterInfoEditor villaId={id} embed />
+        ) : master ? (
+          <MasterInfoReadOnly master={master} />
+        ) : (
+          <p className="text-sm text-muted">{t("villas.statsEmpty")}</p>
+        )}
+      </Card>
+
+      <p className="text-sm font-semibold text-ink">{t("villas.propertyStats")}</p>
 
       <Card className="space-y-3 p-4">
         <p className="text-sm font-semibold text-ink">{t("villas.statsOccupancy")}</p>
@@ -235,36 +257,54 @@ export default function VillaStatsPage({
         <p className="text-xs text-muted">{stats.billCount} bills</p>
       </Card>
 
-      <Card className="space-y-3 p-4">
+      <div className="space-y-2">
         <p className="text-sm font-semibold text-ink">
           {t("villas.statsMaintenance")}
         </p>
-        {stats.maint.length === 0 ? (
-          <p className="text-sm text-muted">{t("villas.statsEmpty")}</p>
-        ) : (
-          <ul className="space-y-2">
-            {stats.maint.slice(0, 8).map((entry) => (
-              <li
-                key={entry.id}
-                className="flex items-start justify-between gap-3 rounded-xl bg-canvas-deep px-3 py-2"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-ink">
-                    {entry.item}
-                  </p>
-                  {entry.vendor ? (
-                    <p className="truncate text-xs text-muted">{entry.vendor}</p>
-                  ) : null}
-                </div>
-                <span className="shrink-0 text-xs text-muted">
-                  {formatShortDate(entry.logged_on)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+        <VillaMaintenanceLog villaId={id} />
+      </div>
     </div>
+  );
+}
+
+function MasterInfoReadOnly({
+  master,
+}: {
+  master: {
+    utilities_notes: string | null;
+    service_providers_notes: string | null;
+    access_notes: string | null;
+    key_contacts_notes: string | null;
+    tax_notes: string | null;
+    handoff_notes: string | null;
+  };
+}) {
+  const { t } = useI18n();
+  const rows: { label: string; value: string | null }[] = [
+    { label: t("villas.masterUtilities"), value: master.utilities_notes },
+    { label: t("villas.masterProviders"), value: master.service_providers_notes },
+    { label: t("villas.masterAccess"), value: master.access_notes },
+    { label: t("villas.masterContacts"), value: master.key_contacts_notes },
+    { label: t("villas.masterTax"), value: master.tax_notes },
+    { label: t("villas.masterHandoff"), value: master.handoff_notes },
+  ];
+  const filled = rows.filter((r) => r.value?.trim());
+  if (filled.length === 0) {
+    return <p className="text-sm text-muted">{t("villas.statsEmpty")}</p>;
+  }
+  return (
+    <ul className="space-y-2">
+      {filled.map((row) => (
+        <li key={row.label} className="rounded-xl bg-canvas-deep px-3 py-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+            {row.label}
+          </p>
+          <p className="mt-0.5 whitespace-pre-wrap text-sm text-ink">
+            {row.value}
+          </p>
+        </li>
+      ))}
+    </ul>
   );
 }
 

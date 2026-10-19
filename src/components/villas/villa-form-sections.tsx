@@ -86,8 +86,15 @@ export function applyVillaEnrichment(
   if (enrichment.aircon) details.aircon = enrichment.aircon;
   if (enrichment.view) details.view = enrichment.view;
 
+  const cleanedName = enrichment.name?.trim() ?? "";
+  // Guard: never let a long blurb overwrite the property name field.
+  const nameOk =
+    cleanedName.length >= 2 &&
+    cleanedName.length <= 48 &&
+    !/[.!?]/.test(cleanedName.slice(0, -1));
+
   return {
-    name: enrichment.name?.trim() || current.name,
+    name: nameOk ? cleanedName : current.name,
     area: enrichment.area?.trim() || current.area,
     description: enrichment.description?.trim() || current.description,
     locationUrl: enrichment.location_url?.trim() || current.locationUrl,

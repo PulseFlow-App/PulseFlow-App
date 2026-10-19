@@ -242,6 +242,45 @@ function mergeEnrichment(
 const MARKETING_RE =
   /\b(stunning|beautiful|amazing|gorgeous|breathtaking|luxury|luxurious|paradise|dream(?:y)?|unforgettable|perfect|ideal|cozy|charming|incredible|wonderful|delightful|spectacular|fabulous|exquisite|magnificent|romantic|magical|must[- ]see|instagram(?:mable)?|oasis|nestled|heart of|you'll love|you will love|book now|don't miss|unique opportunity|once in a lifetime|escape to|welcome to|discover|indulge|serene|tranquil gem|hidden gem|best[- ]in[- ]class)\b/i;
 
+/** Short listing title only — never the marketing blurb that follows. */
+export function cleanPropertyName(raw: string | null | undefined): string | undefined {
+  if (!raw?.trim()) return undefined;
+  let s = decodeHtml(raw).trim();
+  s = s.split(/\n/)[0]?.trim() ?? "";
+  if (!s || /^https?:/i.test(s)) return undefined;
+
+  // Drop marketplace / site branding after a separator.
+  s = s
+    .replace(
+      /\s*[|\-–—·•]\s*(Airbnb|Booking\.com|Booking|VRBO|Expedia|HomeAway|Tripadvisor|Google)\b.*$/i,
+      "",
+    )
+    .trim();
+
+  // "Name - long description…" or "Name | …"
+  const dashSplit = s.match(/^(.{2,48}?)\s*[|\-–—]\s+(.{12,})$/);
+  if (dashSplit?.[1]) s = dashSplit[1].trim();
+
+  // "Name. Rest of the listing copy…"
+  const sentenceSplit = s.match(/^(.{2,48}?)[.!?]\s+\S/);
+  if (sentenceSplit?.[1]) s = sentenceSplit[1].trim();
+
+  // Hard cap — if still a paragraph, keep a short title-sized head.
+  if (s.length > 48) {
+    const cut = s.slice(0, 48).replace(/\s+\S*$/, "").trim();
+    if (cut.length < 3) return undefined;
+    s = cut;
+  }
+
+  s = s.replace(/^["'“”]+|["'“”]+$/g, "").trim();
+  if (s.length < 2 || s.length > 48) return undefined;
+  if (MARKETING_RE.test(s)) return undefined;
+  if (/\bguests?\b|\bbedrooms?\b|\bbaths?\b|\bsleeps?\b/i.test(s)) {
+    return undefined;
+  }
+  return s;
+}
+
 function stripMarketing(s: string): string {
   return s
     .replace(new RegExp(MARKETING_RE.source, "gi"), "")
@@ -432,16 +471,8 @@ export function enrichFromPlainText(text: string): VillaEnrichment {
   if (pType) out.property_type = pType;
 
   const firstLine = raw.split(/\n/).map((l) => l.trim()).find(Boolean);
-  // Don't treat a long marketing paragraph as the property name.
-  if (
-    firstLine &&
-    firstLine.length <= 60 &&
-    !/^https?:/i.test(firstLine) &&
-    !MARKETING_RE.test(firstLine) &&
-    !/\bguests?\b|\bbedrooms?\b|\bbaths?\b/i.test(firstLine)
-  ) {
-    out.name = firstLine.replace(/^["']|["']$/g, "");
-  }
+  const name = cleanPropertyName(firstLine);
+  if (name) out.name = name;
 
   return finalizeEnrichment(out, raw);
 }
@@ -565,14 +596,8 @@ export function enrichFromHtml(html: string, pageUrl?: string): VillaEnrichment 
   const pType = detectPropertyType(scanText);
   if (pType) out.property_type = pType;
 
-  if (title) {
-    const cleanedName = decodeHtml(title)
-      .replace(/\s*[|\-–].*$/, "")
-      .trim();
-    if (cleanedName && !MARKETING_RE.test(cleanedName)) {
-      out.name = cleanedName || out.name;
-    }
-  }
+  const fromTitle = cleanPropertyName(title);
+  if (fromTitle) out.name = fromTitle;
   if (description) {
     out = mergeEnrichment(out, parseListingStats(decodeHtml(description)));
   }

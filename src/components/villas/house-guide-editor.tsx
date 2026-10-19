@@ -199,7 +199,7 @@ export function HouseGuideEditor(props: Props) {
       {saved ? (
         <p className="text-sm font-semibold text-secondary">{t("common.saved")}</p>
       ) : null}
-      {props.villaId && !props.embed ? (
+      {props.villaId && canEdit ? (
         <Button type="button" busy={saving} onClick={() => void save()}>
           {saving ? `${t("guest.guideSave")}…` : t("guest.guideSave")}
         </Button>

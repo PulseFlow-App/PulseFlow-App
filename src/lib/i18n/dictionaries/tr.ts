@@ -1243,6 +1243,7 @@ const tr: Dictionary = {
   "villas.enrichApplied": "Details partially filled - review, edit or add below",
   "villas.enrichDocAttached": "Document attached. Paste listing text to auto-fill fields.",
   "villas.propertyStats": "Property stats",
+  "villas.propertyNotes": "Master info & stats",
   "villas.masterInfoIcon": "Master info",
   "villas.editProperty": "Edit property",
   "villas.downloadReports": "Download reports",
