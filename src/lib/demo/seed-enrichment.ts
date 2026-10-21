@@ -58,8 +58,11 @@ const PROPERTY_PHOTO_BY_ID: Record<string, string> = {
 export const STAY_LOTUS_UPCOMING = "77777777-7777-4777-8777-777777777781";
 export const STAY_PALM_DONE = "77777777-7777-4777-8777-777777777782";
 export const STAY_CORAL_ACTIVE = "77777777-7777-4777-8777-777777777783";
+export const STAY_BAMBOO_UPCOMING = "77777777-7777-4777-8777-777777777786";
 export const DEPOSIT_PALM = "77777777-7777-4777-8777-777777777784";
 export const DEPOSIT_CORAL = "77777777-7777-4777-8777-777777777785";
+export const DEPOSIT_LOTUS_DUE = "77777777-7777-4777-8777-777777777787";
+export const DEPOSIT_BAMBOO_DUE = "77777777-7777-4777-8777-777777777788";
 export const ORDER_POOL = "77777777-7777-4777-8777-777777777786";
 export const ORDER_GARDEN = "77777777-7777-4777-8777-777777777787";
 export const ORDER_DONE = "77777777-7777-4777-8777-777777777788";
@@ -567,6 +570,17 @@ export const extraGuestStays: GuestStay[] = [
     created_at: daysAgo(2) + "T12:00:00.000Z",
   },
   {
+    id: STAY_BAMBOO_UPCOMING,
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.bamboo,
+    guest_profile_id: DEMO_GUEST_ID,
+    check_in: daysFromNow(10),
+    check_out: daysFromNow(14),
+    status: "upcoming",
+    owner_notices: "Yoga retreat confirmed. Deposit due in person on arrival.",
+    created_at: daysAgo(5) + "T15:30:00.000Z",
+  },
+  {
     id: STAY_PALM_DONE,
     org_id: DEMO_ORG_ID,
     villa_id: VILLA_IDS.palm,
@@ -591,6 +605,31 @@ export const extraGuestStays: GuestStay[] = [
 ];
 
 export const extraGuestDeposits: GuestDeposit[] = [
+  {
+    id: DEPOSIT_LOTUS_DUE,
+    org_id: DEMO_ORG_ID,
+    stay_id: STAY_LOTUS_UPCOMING,
+    amount: 10000,
+    currency: "THB",
+    status: "due",
+    refunded_amount: 0,
+    notes:
+      "Kasikorn Thai 123-4-56789-0 · Pulse Flow Co., Ltd. Transfer the deposit, then send your slip in Support with /deposit.",
+    deposit_timing: "before_arrival",
+    created_at: daysAgo(2) + "T12:30:00.000Z",
+  },
+  {
+    id: DEPOSIT_BAMBOO_DUE,
+    org_id: DEMO_ORG_ID,
+    stay_id: STAY_BAMBOO_UPCOMING,
+    amount: 3000,
+    currency: "THB",
+    status: "due",
+    refunded_amount: 0,
+    notes: "Pay deposit in cash to the caretaker on arrival.",
+    deposit_timing: "on_arrival",
+    created_at: daysAgo(5) + "T15:45:00.000Z",
+  },
   {
     id: DEPOSIT_PALM,
     org_id: DEMO_ORG_ID,
@@ -655,6 +694,25 @@ export const extraGuestCharges: GuestCharge[] = [
 
 export const extraStayDateRequests: StayDateRequest[] = [
   {
+    id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaab0",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.sunset,
+    guest_profile_id: DEMO_GUEST_ID,
+    check_in: daysFromNow(30),
+    check_out: daysFromNow(37),
+    note: "Anniversary stay · pool heater if possible",
+    status: "pending",
+    guest_price_amount: null,
+    guest_price_currency: null,
+    quoted_price_amount: null,
+    quoted_price_currency: null,
+    quoted_deposit_amount: null,
+    quoted_deposit_currency: null,
+    quoted_deposit_timing: null,
+    payment_note: null,
+    created_at: daysAgo(0) + "T08:00:00.000Z",
+  },
+  {
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaab1",
     org_id: DEMO_ORG_ID,
     villa_id: VILLA_IDS.palm,
@@ -670,7 +728,8 @@ export const extraStayDateRequests: StayDateRequest[] = [
     quoted_deposit_amount: 10000,
     quoted_deposit_currency: "THB",
     quoted_deposit_timing: "before_arrival",
-    payment_note: "Transfer to company account · send slip in Support",
+    payment_note:
+      "Kasikorn Thai 123-4-56789-0 · Pulse Flow Co., Ltd. Transfer the deposit, then send your slip in Support with /deposit.",
     created_at: daysAgo(3) + "T09:00:00.000Z",
   },
   {
@@ -689,7 +748,7 @@ export const extraStayDateRequests: StayDateRequest[] = [
     quoted_deposit_amount: 3000,
     quoted_deposit_currency: "THB",
     quoted_deposit_timing: "on_arrival",
-    payment_note: "Pay deposit in cash on arrival",
+    payment_note: "Pay deposit in cash to the caretaker on arrival.",
     created_at: daysAgo(5) + "T15:00:00.000Z",
   },
   {
@@ -946,6 +1005,32 @@ export const extraNotifications: AppNotification[] = [
       created_at: daysAgo(2) + "T16:00:00.000Z",
     }),
     id: "55555555-5555-4555-8555-5555555555a5",
+  },
+  {
+    ...makeNotification({
+      org_id: DEMO_ORG_ID,
+      kind: "guest_update",
+      title: "New date request",
+      body: "Cliff Studio · guest waiting for stay total and deposit",
+      href: "/date-requests",
+      entity_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+      audience_profile_ids: [DEMO_OWNER_ID, DEMO_EMPLOYEE_ID],
+      created_at: daysAgo(1) + "T11:05:00.000Z",
+    }),
+    id: "55555555-5555-4555-8555-5555555555a6",
+  },
+  {
+    ...makeNotification({
+      org_id: DEMO_ORG_ID,
+      kind: "guest_update",
+      title: "New date request",
+      body: "Sunset Deck · anniversary week · set price and deposit",
+      href: "/date-requests",
+      entity_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaab0",
+      audience_profile_ids: [DEMO_OWNER_ID, DEMO_EMPLOYEE_ID],
+      created_at: daysAgo(0) + "T08:05:00.000Z",
+    }),
+    id: "55555555-5555-4555-8555-5555555555a7",
   },
 ];
 

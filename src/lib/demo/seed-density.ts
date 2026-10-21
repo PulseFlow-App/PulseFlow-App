@@ -45,7 +45,6 @@ export const ORDER_PEST = "77777777-7777-4777-8777-7777777777b2";
 export const ORDER_WINDOW = "77777777-7777-4777-8777-7777777777b3";
 export const ORDER_HANDY = "77777777-7777-4777-8777-7777777777b4";
 export const ORDER_DEEP = "77777777-7777-4777-8777-7777777777b5";
-export const DEPOSIT_LOTUS_HELD = "77777777-7777-4777-8777-7777777777b6";
 export const DEPOSIT_REEF = "77777777-7777-4777-8777-7777777777b7";
 
 export const denseTasks: Task[] = [
@@ -720,18 +719,6 @@ export const denseMessages: Message[] = [
 ];
 
 export const denseGuestDeposits: GuestDeposit[] = [
-  {
-    id: DEPOSIT_LOTUS_HELD,
-    org_id: DEMO_ORG_ID,
-    stay_id: DEMO_STAY_ID,
-    amount: 10000,
-    currency: "THB",
-    status: "held",
-    refunded_amount: 0,
-    notes: "Primary stay deposit · deductions logged separately.",
-    deposit_timing: "on_arrival",
-    created_at: daysAgo(5) + "T12:30:00.000Z",
-  },
   {
     id: DEPOSIT_REEF,
     org_id: DEMO_ORG_ID,

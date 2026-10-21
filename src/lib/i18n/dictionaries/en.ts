@@ -1088,8 +1088,8 @@ const en = {
   "guest.checkout": "Checkout checklist",
   "guest.photosTitle": "Arrival and departure photos",
   "guest.photosHint": "",
-  "guest.photoNote": "Notes (optional)",
-  "guest.photoNotePh": "Explain any issues…",
+  "guest.photoNote": "Explain your issues",
+  "guest.photoNotePh": "",
   "guest.arrival": "Arrival",
   "guest.departure": "Departure",
   "guest.addPhoto": "Add photo",
@@ -1110,8 +1110,7 @@ const en = {
   "guest.hideBrowseVillas": "Hide properties",
   "guest.browseVillas": "Browse properties",
   "guest.supportTitle": "Support",
-  "guest.supportHint":
-    "Message the property owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
+  "guest.supportHint": "Chat with the property owner and manager",
   "guest.supportCmdDeposit":
     "/deposit - submit your deposit payment (attach receipt).",
   "guest.supportCmdCancel":
@@ -1120,13 +1119,14 @@ const en = {
     "Record that the guest paid the deposit (optional amount).",
   "guest.supportCmdRefund":
     "Record a deposit refund after cancel. Attach transfer proof.",
-  "guest.supportCommandsList": "Support commands",
+  "guest.supportCommandsList": "Useful commands",
+  "guest.supportUsefulCommands": "Useful commands",
   "guest.supportNoStay":
     "Support chat opens once you have a confirmed stay.",
   "guest.supportNeedStay":
     "Support chat is only available after your host confirms your stay.",
   "guest.supportEmpty": "Say hello - your host will see it here.",
-  "guest.supportPlaceholder": "Write a message…",
+  "guest.supportPlaceholder": "",
   "guest.supportAttachReceipt": "Attach receipt",
   "guest.supportRemoveReceipt": "Remove receipt",
   "guest.supportReceipt": "Receipt",
@@ -1138,7 +1138,7 @@ const en = {
   "guest.hostInboxHint": "Guests message you here (not team chat). Reply from the guest demo or stay tools.",
   "guest.messagesCount": "messages",
   "guest.billsTitle": "Deposit & bills",
-  "guest.billsHint": "Guest-facing deposit and deductions for this stay.",
+  "guest.billsHint": "",
   "guest.billsNoStay": "No stay linked yet.",
   "guest.deposit": "Security deposit",
   "guest.depositStatus.due": "Due",
@@ -1151,8 +1151,10 @@ const en = {
   "guest.depositTiming.before_arrival": "In advance (before arrival)",
   "guest.depositTiming.on_arrival": "In person (on arrival)",
   "guest.depositHowToPay": "How to pay",
-  "guest.depositHowToPayHint":
-    "Open Support chat and send /deposit along with your receipt and wait for confirmation. If a before-arrival deposit stays unpaid, your host may cancel the booking.",
+  "guest.depositHowToPayHint": "",
+  "guest.depositHowToPayWait":
+    "Wait for the company owner instructions on how to pay",
+  "guest.depositHowToPayOnArrival": "Pay on arrival",
   "guest.openSupportChat": "Open Support chat",
   "guest.openLocation": "Open location in maps",
   "guest.cancelBookingTitle": "Cancel booking",

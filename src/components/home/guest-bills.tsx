@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DisplayCurrencySelect } from "@/components/billing/display-currency-select";
@@ -11,6 +10,9 @@ import { formatMoney, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { isDepositPaid } from "@/lib/guest/deposit-from-quote";
+import { depositHowToPayFromDeposit } from "@/lib/guest/deposit-how-to-pay";
+import { isConfirmedStayStatus } from "@/lib/guest/confirmed-stay";
+import type { GuestDeposit, GuestStay } from "@/lib/types";
 
 export function GuestBillsView() {
   const data = useData();
@@ -44,54 +46,42 @@ export function GuestBillsView() {
     ? convertToDisplay(Number(deposit.refunded_amount), deposit.currency)
     : 0;
   const remaining = Math.max(0, held - deducted - refunded);
-  const depositDue = deposit?.status === "due";
+
+  const otherDueDeposits = data.guestStays
+    .filter(
+      (s) =>
+        s.id !== stay.id &&
+        isConfirmedStayStatus(s.status) &&
+        s.guest_profile_id === data.profile?.id,
+    )
+    .flatMap((s) => {
+      const d = data.guestDeposits.find(
+        (dep) => dep.stay_id === s.id && dep.status === "due",
+      );
+      return d ? [{ stay: s, deposit: d }] : [];
+    });
 
   return (
     <div className="space-y-4 animate-rise">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-ink">
-            {t("guest.billsTitle")}
-          </h1>
-          <p className="text-sm text-muted">{t("guest.billsHint")}</p>
-        </div>
+        <h1 className="font-display text-2xl font-bold text-ink">
+          {t("guest.billsTitle")}
+        </h1>
         <DisplayCurrencySelect
           aria-label={t("bills.currency")}
-          className="max-w-[9rem] shrink-0"
+          className="max-w-[9rem] shrink-0 bg-white"
+          selectClassName="py-2 text-sm font-semibold"
         />
       </div>
 
       {deposit ? (
-        depositDue ? (
-          <Card className="space-y-2 border border-amber-200 bg-amber-50 p-5">
-            <p className="text-xs font-bold uppercase tracking-wide text-amber-800">
-              {t("guest.yourDeposit")}
-            </p>
-            <p className="font-display text-3xl font-bold text-ink">
-              {formatMoney(held, displayCurrency)}
-            </p>
-            <p className="text-sm font-semibold text-amber-900">
-              {t("guest.depositDue")}
-              {deposit.deposit_timing ? (
-                <>
-                  {" · "}
-                  {t(`guest.depositTiming.${deposit.deposit_timing}`)}
-                </>
-              ) : null}
-            </p>
-            <div className="space-y-1 pt-1">
-              <p className="text-xs font-bold uppercase tracking-wide text-muted">
-                {t("guest.depositHowToPay")}
-              </p>
-              <p className="text-sm text-ink">{t("guest.depositHowToPayHint")}</p>
-              <Link
-                href="/messages"
-                className="inline-block text-sm font-bold text-primary"
-              >
-                {t("guest.openSupportChat")} →
-              </Link>
-            </div>
-          </Card>
+        deposit.status === "due" ? (
+          <DueDepositCard
+            deposit={deposit}
+            amount={held}
+            displayCurrency={displayCurrency}
+            villaLabel={villaLabelForStay(stay, data)}
+          />
         ) : (
           <Card className="space-y-2 bg-gradient-to-br from-primary to-primary-dark p-5 text-white">
             <p className="text-xs font-bold uppercase tracking-wide text-white/80">
@@ -129,6 +119,19 @@ export function GuestBillsView() {
       ) : (
         <Card className="p-4 text-sm text-muted">{t("guest.noDeposit")}</Card>
       )}
+
+      {otherDueDeposits.map(({ stay: dueStay, deposit: dueDeposit }) => (
+        <DueDepositCard
+          key={dueDeposit.id}
+          deposit={dueDeposit}
+          amount={convertToDisplay(
+            Number(dueDeposit.amount),
+            dueDeposit.currency,
+          )}
+          displayCurrency={displayCurrency}
+          villaLabel={villaLabelForStay(dueStay, data)}
+        />
+      ))}
 
       <div className="space-y-2">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
@@ -172,5 +175,62 @@ export function GuestBillsView() {
         )}
       </div>
     </div>
+  );
+}
+
+function villaLabelForStay(
+  stay: GuestStay,
+  data: ReturnType<typeof useData>,
+) {
+  const villa =
+    data.allOrgVillas.find((v) => v.id === stay.villa_id) ??
+    data.villas.find((v) => v.id === stay.villa_id);
+  return villa?.name ?? null;
+}
+
+function DueDepositCard({
+  deposit,
+  amount,
+  displayCurrency,
+  villaLabel,
+}: {
+  deposit: GuestDeposit;
+  amount: number;
+  displayCurrency: string;
+  villaLabel: string | null;
+}) {
+  const { t } = useI18n();
+  const howToPay = depositHowToPayFromDeposit(deposit);
+  return (
+    <Card className="space-y-2 border border-sun/40 bg-sun/10 p-5">
+      <p className="text-xs font-bold uppercase tracking-wide text-ink">
+        {t("guest.yourDeposit")}
+        {villaLabel ? ` · ${villaLabel}` : null}
+      </p>
+      <p className="font-display text-3xl font-bold text-ink">
+        {formatMoney(amount, displayCurrency)}
+      </p>
+      <p className="text-sm font-semibold text-ink">
+        {t("guest.depositDue")}
+        {deposit.deposit_timing ? (
+          <>
+            {" · "}
+            {t(`guest.depositTiming.${deposit.deposit_timing}`)}
+          </>
+        ) : null}
+      </p>
+      <div className="space-y-1 pt-1">
+        <p className="text-xs font-bold uppercase tracking-wide text-muted">
+          {t("guest.depositHowToPay")}
+        </p>
+        <p className="text-sm text-ink">
+          {howToPay.kind === "notes" ? (
+            <LocalizedText text={howToPay.text} />
+          ) : (
+            t(howToPay.key)
+          )}
+        </p>
+      </div>
+    </Card>
   );
 }

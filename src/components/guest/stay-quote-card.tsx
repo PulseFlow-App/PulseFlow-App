@@ -1,14 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/provider";
+import { LocalizedText } from "@/components/i18n/localized-text";
 import { DisplayCurrencySelect } from "@/components/billing/display-currency-select";
 import { useDisplayCurrency } from "@/lib/billing/use-display-currency";
 import { formatShortDate, formatMoney } from "@/lib/utils";
 import type { GuestDeposit, StayDateRequest } from "@/lib/types";
 import { nightsBetween } from "@/lib/guest/stay-pricing";
+import {
+  depositHowToPayFromDeposit,
+  depositHowToPayFromQuote,
+} from "@/lib/guest/deposit-how-to-pay";
 
 export function StayQuoteCard({
   request,
@@ -58,6 +62,9 @@ export function StayQuoteCard({
   const depositTiming =
     deposit?.deposit_timing ?? request.quoted_deposit_timing;
   const showDeposit = depositDisplay != null && (deposit || hasQuotedDeposit);
+  const howToPay = deposit
+    ? depositHowToPayFromDeposit(deposit)
+    : depositHowToPayFromQuote(request);
 
   if (isAccepted) {
     return (
@@ -106,13 +113,13 @@ export function StayQuoteCard({
                 <p className="text-xs font-bold uppercase tracking-wide text-muted">
                   {t("guest.depositHowToPay")}
                 </p>
-                <p className="text-sm text-ink">{t("guest.depositHowToPayHint")}</p>
-                <Link
-                  href="/messages"
-                  className="inline-block text-sm font-bold text-primary"
-                >
-                  {t("guest.openSupportChat")} →
-                </Link>
+                <p className="text-sm text-ink">
+                  {howToPay.kind === "notes" ? (
+                    <LocalizedText text={howToPay.text} />
+                  ) : (
+                    t(howToPay.key)
+                  )}
+                </p>
               </div>
             ) : null}
           </div>

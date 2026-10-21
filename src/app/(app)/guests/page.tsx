@@ -358,6 +358,11 @@ export default function GuestsPage() {
                     })
                   : t("guests.depositNone")}
               </p>
+              {deposit?.deposit_timing ? (
+                <p className="mt-1 text-xs font-semibold text-muted">
+                  {t(`guest.depositTiming.${deposit.deposit_timing}`)}
+                </p>
+              ) : null}
             </div>
             <div className="grid grid-cols-[1fr_auto] gap-2">
               <div>

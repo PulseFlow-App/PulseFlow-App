@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SupportMessageBubble } from "@/components/guest/support-message-bubble";
+import { VillaExpandSection } from "@/components/villas/villa-form-sections";
 import { useData } from "@/lib/data/use-app-data";
 import { cn, formatShortDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
@@ -153,13 +154,21 @@ export function GuestSupportChat() {
 
   return (
     <div className="flex min-h-[70dvh] flex-col animate-rise">
-      <div className="mb-3">
-        <h1 className="font-display text-2xl font-bold text-ink">
-          {t("guest.supportTitle")}
-        </h1>
-        <p className="text-sm leading-relaxed text-muted">
-          {t("guest.supportHint")}
-        </p>
+      <div className="mb-3 space-y-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-ink">
+            {t("guest.supportTitle")}
+          </h1>
+          <p className="text-sm leading-relaxed text-muted">
+            {t("guest.supportHint")}
+          </p>
+        </div>
+        <VillaExpandSection title={t("guest.supportUsefulCommands")}>
+          <ul className="space-y-2 text-sm leading-relaxed text-ink">
+            <li>{t("guest.supportCmdDeposit")}</li>
+            <li>{t("guest.supportCmdCancel")}</li>
+          </ul>
+        </VillaExpandSection>
       </div>
 
       <Card className="flex flex-1 flex-col gap-3 p-3">
@@ -249,30 +258,33 @@ export function GuestSupportChat() {
               <Button
                 type="button"
                 variant="ghost"
-                className="shrink-0 px-3"
+                size="xs"
+                className="size-9 shrink-0 px-0 text-sky hover:bg-sky-soft/50 hover:text-ink"
                 disabled={sending}
                 onClick={() => fileRef.current?.click()}
                 aria-label={t("guest.supportAttachReceipt")}
               >
-                <Paperclip className="size-4" />
+                <Paperclip className="size-3.5" strokeWidth={2.25} />
               </Button>
               <Input
                 ref={inputRef}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
-                placeholder={t("guest.supportPlaceholder")}
                 onKeyDown={onInputKeyDown}
                 aria-autocomplete="list"
                 aria-expanded={commandSuggestions.length > 0}
                 disabled={sending}
+                className="min-w-0 flex-1"
               />
               <Button
                 type="button"
+                size="xs"
+                className="size-9 shrink-0 px-0"
                 disabled={sending || !canSubmit}
                 onClick={() => void send()}
                 aria-label={t("guest.send")}
               >
-                <Send className="size-4" />
+                <Send className="size-3.5" strokeWidth={2.25} />
               </Button>
             </div>
           </div>

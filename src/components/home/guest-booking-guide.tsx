@@ -289,6 +289,7 @@ export function GuestBookingGuide() {
               </Button>
               <Button
                 type="button"
+                variant="secondary"
                 className="rounded-full"
                 onClick={() => fileRef.current?.click()}
               >
@@ -309,7 +310,6 @@ export function GuestBookingGuide() {
                 id="stay-photo-note"
                 value={photoNote}
                 onChange={(e) => setPhotoNote(e.target.value)}
-                placeholder={t("guest.photoNotePh")}
               />
             </div>
             {photoError ? (

@@ -114,6 +114,7 @@ function createFreshDemoStore(): DemoStore {
           ? {
               ...d,
               status: "held" as const,
+              deposit_timing: "on_arrival" as const,
               notes:
                 "Held at check-in · glass + remote + late checkout logged as cuts.",
             }
@@ -155,7 +156,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v25";
+const STORE_KEY = "pulseflow_demo_store_v27";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -167,7 +168,11 @@ let scheduleSynced = false;
 /** Replace em/en dashes so cached demo copy stays clean. */
 function plainDash(value: string | null | undefined) {
   if (value == null) return value as null | undefined;
-  return value.replaceAll("-", "-").replaceAll("-", "-");
+  return value
+    .replaceAll("\u2014", " - ")
+    .replaceAll("\u2013", "-")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 function repairDemoCompanyBilling(orgs: Organization[]): Organization[] {
@@ -323,12 +328,8 @@ function normalizeStore(store: DemoStore): DemoStore {
     guestDeposits: fresh.guestDeposits,
     guestCharges: fresh.guestCharges,
     stayPhotos: fresh.stayPhotos,
-    stayDateRequests: [
-      ...fresh.stayDateRequests,
-      ...(store.stayDateRequests ?? []).filter(
-        (r) => !fresh.stayDateRequests.some((f) => f.id === r.id),
-      ),
-    ],
+    // Always refresh guest/quote seed so owner Date requests + Guests match latest UX.
+    stayDateRequests: fresh.stayDateRequests,
   };
 }
 

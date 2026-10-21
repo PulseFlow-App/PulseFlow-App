@@ -896,8 +896,7 @@ const he: Dictionary = {
   "guest.nav.support": "Support",
   "guest.nav.bills": "Bills",
   "guest.supportTitle": "Support",
-  "guest.supportHint":
-    "Message the property owner or manager. Type /deposit when you paid your deposit in advance (attach your receipt). Type /cancel when you wish to cancel your booking within 3 days of check-in.",
+  "guest.supportHint": "Chat with the property owner and manager",
   "guest.supportCmdDeposit":
     "/deposit - submit your deposit payment (attach receipt).",
   "guest.supportCmdCancel":
@@ -906,11 +905,12 @@ const he: Dictionary = {
     "Record that the guest paid the deposit (optional amount).",
   "guest.supportCmdRefund":
     "Record a deposit refund after cancel. Attach transfer proof.",
-  "guest.supportCommandsList": "Support commands",
+  "guest.supportCommandsList": "Useful commands",
+  "guest.supportUsefulCommands": "Useful commands",
   "guest.supportNoStay": "Support chat opens once you have a confirmed stay.",
   "guest.supportNeedStay": "Support chat is only available after your host confirms your stay.",
   "guest.supportEmpty": "Say hello - your host will see it here.",
-  "guest.supportPlaceholder": "Write a message…",
+  "guest.supportPlaceholder": "",
   "guest.supportAttachReceipt": "Attach receipt",
   "guest.supportRemoveReceipt": "Remove receipt",
   "guest.supportReceipt": "Receipt",
@@ -922,7 +922,7 @@ const he: Dictionary = {
   "guest.hostInboxHint": "Guests message you here (not team chat). Reply from the guest demo or stay tools.",
   "guest.messagesCount": "messages",
   "guest.billsTitle": "Deposit & bills",
-  "guest.billsHint": "Guest-facing deposit and deductions for this stay.",
+  "guest.billsHint": "",
   "guest.billsNoStay": "No stay linked yet.",
   "guest.deposit": "Security deposit",
   "guest.depositStatus.held": "Held",
@@ -935,8 +935,11 @@ const he: Dictionary = {
   "guest.depositTiming.before_arrival": "To be paid before arrival",
   "guest.depositTiming.on_arrival": "To be paid on arrival",
   "guest.depositHowToPay": "How to pay",
-  "guest.depositHowToPayHint":
-    "Open Support chat and send /deposit along with your receipt and wait for confirmation.",
+  "guest.depositHowToPayHint": "",
+  "guest.depositHowToPayWait":
+    "Wait for the company owner instructions on how to pay",
+  "guest.depositHowToPayOnArrival": "Pay on arrival",
+
   "guest.openSupportChat": "Open Support chat",
   "guest.openLocation": "Open location in maps",
   "guest.cancelBookingTitle": "Cancel booking",
@@ -1306,8 +1309,8 @@ const he: Dictionary = {
   "guest.otherBookings": "Other bookings",
   "guest.expandPhoto": "Expand photo",
   "guest.closePhoto": "Close photo",
-  "guest.photoNote": "Notes (optional)",
-  "guest.photoNotePh": "Explain any issues…",
+  "guest.photoNote": "Explain your issues",
+  "guest.photoNotePh": "",
   "settings.userGuide": "User guide",
   "villas.acceptListing": "Apply listing",
   "villas.acceptPaste": "Apply pasted text",
