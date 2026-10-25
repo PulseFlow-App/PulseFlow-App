@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PulseMark } from "@/components/brand/pulse-mark";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -282,6 +283,12 @@ export default function JoinPage({
         </div>
         <div className="mb-6 text-center">
           <PulseMark className="mx-auto mb-3 size-12" />
+          <div className="pf-icon-well mx-auto mb-3 size-11">
+            <PulseIcon
+              name={isGuestInvite ? "guests" : "invite"}
+              className="size-6"
+            />
+          </div>
           <h1 className="font-display text-2xl font-bold text-ink">
             {isGuestInvite ? t("guest.joinTitle") : t("join.staffTitle")}
           </h1>

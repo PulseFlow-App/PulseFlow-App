@@ -276,7 +276,7 @@ const he: Dictionary = {
   "status.bill.paid": "שולם",
   "tasks.title": "משימות",
   "tasks.openCount": "{count} פתוחות",
-  "tasks.add": "הוסף",
+  "tasks.add": "הוסף חדש",
   "tasks.filter.all": "הכל",
   "tasks.filter.mine": "שלי",
   "tasks.filter.urgent": "דחוף",

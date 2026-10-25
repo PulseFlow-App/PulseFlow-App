@@ -48,6 +48,8 @@ export const DEMO_CLEANER_ID = "33333333-3333-4333-8333-333333333344";
 export const DEMO_GUEST_ID = "33333333-3333-4333-8333-333333333355";
 export const DEMO_STAY_ID = "77777777-7777-4777-8777-777777777771";
 export const DEMO_DEPOSIT_ID = "77777777-7777-4777-8777-777777777772";
+export const DEMO_INVITE_STAFF_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01";
+export const DEMO_INVITE_GUEST_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa02";
 
 export const demoOrg: Organization = {
   id: DEMO_ORG_ID,
@@ -1608,6 +1610,37 @@ export const demoStayDateRequests: StayDateRequest[] = [
   },
 ];
 
+export const demoInvites: Invite[] = [
+  {
+    id: DEMO_INVITE_STAFF_ID,
+    token: "demostaffinvite01token",
+    org_id: DEMO_ORG_ID,
+    role: "staff",
+    full_name: null,
+    email: null,
+    phone: null,
+    job_title: "Pool tech",
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(2) + "T10:00:00.000Z",
+    used_at: null,
+    used_by: null,
+  },
+  {
+    id: DEMO_INVITE_GUEST_ID,
+    token: "demoguestinvite02token",
+    org_id: DEMO_ORG_ID,
+    role: "guest",
+    full_name: null,
+    email: null,
+    phone: null,
+    job_title: null,
+    created_by: DEMO_OWNER_ID,
+    created_at: daysAgo(1) + "T14:00:00.000Z",
+    used_at: null,
+    used_by: null,
+  },
+];
+
 export const demoVillaAssignments: VillaAssignment[] = [
   {
     id: "ffffffff-ffff-4fff-8fff-fffffffffff1",
@@ -1663,7 +1696,7 @@ export function createFreshDemoStore(): DemoStore {
     tasks: structuredClone(demoTasks),
     bills: structuredClone(demoBills),
     messages: structuredClone(demoMessages),
-    invites: [],
+    invites: structuredClone(demoInvites),
     villaAssignments: structuredClone(demoVillaAssignments),
     memberships: structuredClone(demoMemberships),
     endorsements: structuredClone(demoEndorsements),

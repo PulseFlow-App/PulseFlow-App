@@ -78,7 +78,7 @@ Actions:
 
 **Pulse Flow note:** Company billing and B2B ops → **Organization** enrollment is the safer long-term choice if a company entity exists.
 
-**Decision:** Individual / Organization — legal name: `_____`
+**Decision:** Individual — legal name: Anastasia Boltrushevich
 
 ---
 
@@ -516,7 +516,7 @@ Need App Store listing?
 | Step                      | Choice                         | Owner | Date       |
 | ------------------------- | ------------------------------ | ----- | ---------- |
 | 0 Distribution            | D Native                       |       | 2026-10-16 |
-| 1 Enrollment              |                                |       |            |
+| 1 Enrollment              | Individual — Anastasia Boltrushevich | Anastasia Boltrushevich | 2026-10-21 |
 | 2 Support URL             | `/support` shipped             |       | 2026-10-16 |
 | 4 Billing                 |                                |       |            |
 | 5 Account deletion design | In-app Settings → Delete       |       | 2026-10-16 |

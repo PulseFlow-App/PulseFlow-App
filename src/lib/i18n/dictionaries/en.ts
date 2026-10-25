@@ -355,7 +355,7 @@ const en = {
 
   "tasks.title": "Tasks",
   "tasks.openCount": "{count} open",
-  "tasks.add": "Add",
+  "tasks.add": "Add new",
   "tasks.filter.all": "all",
   "tasks.filter.mine": "mine",
   "tasks.filter.urgent": "urgent",

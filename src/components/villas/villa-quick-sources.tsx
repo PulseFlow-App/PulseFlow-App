@@ -471,7 +471,7 @@ export function CompanySelectField({
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="h-10 w-full appearance-none rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-card px-4 pr-10 text-sm font-semibold text-ink"
+          className="h-10 w-full appearance-none rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-card px-4 pe-10 text-sm font-semibold text-ink"
         >
           {companies.map((o) => (
             <option key={o.id} value={o.id}>
@@ -480,7 +480,10 @@ export function CompanySelectField({
           ))}
           <option value="personal">{personalLabel}</option>
         </select>
-        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
+        <ChevronDown
+          className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted"
+          aria-hidden
+        />
       </div>
     </div>
   );

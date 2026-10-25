@@ -1,4 +1,5 @@
 import { forwardRef } from "react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /** Shared control chrome — same padding/type for Input, Textarea, Select. */
@@ -47,9 +48,18 @@ export function Select({
   ...props
 }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <select className={cn(controlClass, "appearance-none", className)} {...props}>
-      {children}
-    </select>
+    <div className="relative w-full max-w-full min-w-0">
+      <select
+        className={cn(controlClass, "appearance-none pe-10", className)}
+        {...props}
+      >
+        {children}
+      </select>
+      <ChevronDown
+        className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted"
+        aria-hidden
+      />
+    </div>
   );
 }
 

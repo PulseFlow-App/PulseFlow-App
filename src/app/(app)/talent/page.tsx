@@ -345,7 +345,7 @@ export default function TalentPage() {
                     </p>
                   </div>
                   <Link href={`/u/${person.share_slug}`}>
-                    <Button size="sm" variant="ghost">
+                    <Button size="sm" variant="secondary">
                       {t("talent.viewProfile")}
                     </Button>
                   </Link>

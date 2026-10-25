@@ -6,6 +6,7 @@ import { Copy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/empty-state";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { useData } from "@/lib/data/use-app-data";
 import { canInviteAnyone } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
@@ -64,10 +65,13 @@ export default function InvitesPage() {
   return (
     <div className="space-y-4 animate-rise">
       <div>
-        <h1 className="font-display text-2xl font-bold text-ink">
+        <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-ink">
+          <span className="pf-icon-well size-10">
+            <PulseIcon name="invite" className="size-5" />
+          </span>
           {t("nav.invites")}
         </h1>
-        <p className="text-sm text-muted">{t("settings.inviteHint")}</p>
+        <p className="mt-2 text-sm text-muted">{t("settings.inviteHint")}</p>
       </div>
 
       <Card className="space-y-4 p-5">

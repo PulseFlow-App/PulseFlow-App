@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Copy, QrCode, RotateCcw, Trash2, Users, UserPlus, BedDouble } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, Copy, QrCode, RotateCcw, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
+import { PulseIcon, type PulseIconName } from "@/components/icons/pulse-icon";
 import { useData } from "@/lib/data/use-app-data";
 import type { UserRole } from "@/lib/design-tokens";
 import {
@@ -22,7 +23,7 @@ import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { Invite } from "@/lib/types";
 
-type FlipKind = "anyone" | "staff" | "guest";
+type FlipKind = "staff" | "guest";
 
 type Props = {
   referralCode: string;
@@ -43,12 +44,21 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [qrToken, setQrToken] = useState<string | null>(null);
+  const [anyoneUrl, setAnyoneUrl] = useState("");
 
   const staffRoles = useMemo(
     () =>
       profile ? invitableStaffRoles(profile.role, data.orgKind) : [],
     [profile, data.orgKind],
   );
+
+  useEffect(() => {
+    setAnyoneUrl(
+      referralRegisterUrl(window.location.origin, referralCode, {
+        src: "app_invite_anyone",
+      }),
+    );
+  }, [referralCode]);
 
   if (!profile) return null;
 
@@ -112,42 +122,85 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
     }
   };
 
-  const cards: {
+  const flipCards: {
     kind: FlipKind;
     show: boolean;
-    icon: typeof UserPlus;
+    icon: PulseIconName;
     titleKey: MessageKey;
     hintKey: MessageKey;
   }[] = [
     {
-      kind: "anyone",
-      show: showAnyone,
-      icon: UserPlus,
-      titleKey: "invite.card.anyone",
-      hintKey: "invite.card.anyoneHint",
-    },
-    {
       kind: "staff",
       show: showStaff,
-      icon: Users,
+      icon: "contacts",
       titleKey: "invite.card.staff",
       hintKey: "invite.card.staffHint",
     },
     {
       kind: "guest",
       show: showGuest,
-      icon: BedDouble,
+      icon: "guests",
       titleKey: "invite.card.guest",
       hintKey: "invite.card.guestHint",
     },
   ];
 
+  const gridCols =
+    Number(showAnyone) + Number(showStaff) + Number(showGuest) >= 3
+      ? "sm:grid-cols-3"
+      : "sm:grid-cols-2";
+
   return (
     <div className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-3">
-        {cards
+      <div className={cn("grid gap-3", gridCols)}>
+        {showAnyone ? (
+          <Card className="flex flex-col space-y-3 p-4">
+            <div className="pf-icon-well size-9">
+              <PulseIcon name="invite" className="size-5" />
+            </div>
+            <div>
+              <p className="font-display text-base font-bold leading-snug text-ink">
+                {t("invite.card.anyone")}
+              </p>
+              <p className="mt-1 text-xs leading-snug text-muted">
+                {t("invite.card.anyoneHint")}
+              </p>
+            </div>
+            {anyoneUrl ? (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                  {t("settings.scanToJoin")}
+                </p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  alt={t("invite.card.anyone")}
+                  className="mx-auto rounded-2xl border border-black/5 bg-card"
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                    anyoneUrl,
+                  )}`}
+                  width={200}
+                  height={200}
+                  loading="lazy"
+                />
+                <Button
+                  size="sm"
+                  className="w-full"
+                  variant="secondary"
+                  onClick={() => void copyText(anyoneUrl, "anyone")}
+                >
+                  <Copy className="size-4" />
+                  {copied === "anyone"
+                    ? t("plan.referralCopied")
+                    : t("invite.copyLink")}
+                </Button>
+              </>
+            ) : null}
+          </Card>
+        ) : null}
+
+        {flipCards
           .filter((c) => c.show)
-          .map(({ kind, icon: Icon, titleKey, hintKey }) => {
+          .map(({ kind, icon, titleKey, hintKey }) => {
             const flipped = open === kind;
             return (
               <div key={kind} className="[perspective:1200px]">
@@ -164,7 +217,7 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                   >
                     <Card className="flex h-full min-h-[12.5rem] flex-col space-y-2 p-4 hover:border-primary/30">
                       <div className="pf-icon-well size-9">
-                        <Icon className="size-4" strokeWidth={2} />
+                        <PulseIcon name={icon} className="size-5" />
                       </div>
                       <p className="font-display text-base font-bold leading-snug text-ink">
                         {t(titleKey)}
@@ -172,8 +225,9 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                       <p className="flex-1 text-xs leading-snug text-muted">
                         {t(hintKey)}
                       </p>
-                      <p className="text-[11px] font-semibold text-primary">
+                      <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
                         {t("invite.tapToFlip")}
+                        <ChevronDown className="size-3.5" aria-hidden />
                       </p>
                     </Card>
                   </button>
@@ -193,32 +247,6 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                           {t("invite.flipBack")}
                         </button>
                       </div>
-
-                      {kind === "anyone" ? (
-                        <div className="mt-auto space-y-2">
-                          <p className="text-xs text-muted">
-                            {t("invite.anyoneBackHint")}
-                          </p>
-                          <Button
-                            size="sm"
-                            className="w-full"
-                            variant="secondary"
-                            onClick={() => {
-                              const url = referralRegisterUrl(
-                                window.location.origin,
-                                referralCode,
-                                { src: "app_invite_anyone" },
-                              );
-                              void copyText(url, "anyone");
-                            }}
-                          >
-                            <Copy className="size-4" />
-                            {copied === "anyone"
-                              ? t("plan.referralCopied")
-                              : t("invite.copyLink")}
-                          </Button>
-                        </div>
-                      ) : null}
 
                       {kind === "staff" ? (
                         <div className="space-y-2">
@@ -322,14 +350,22 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
             return (
               <div key={inv.id} className="space-y-2">
                 <div className="flex items-center justify-between gap-2 text-sm">
-                  <div>
-                    <p className="font-semibold text-ink">
-                      {t(`roles.${inv.role}` as MessageKey)}
-                      {inv.job_title ? ` · ${inv.job_title}` : ""}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {t("settings.waitingToJoin")}
-                    </p>
+                  <div className="flex min-w-0 items-start gap-2">
+                    <div className="pf-icon-well mt-0.5 size-8 shrink-0">
+                      <PulseIcon
+                        name={inv.role === "guest" ? "guests" : "contacts"}
+                        className="size-4"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-ink">
+                        {t(`roles.${inv.role}` as MessageKey)}
+                        {inv.job_title ? ` · ${inv.job_title}` : ""}
+                      </p>
+                      <p className="text-xs text-muted">
+                        {t("settings.waitingToJoin")}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-1">
                     <Button

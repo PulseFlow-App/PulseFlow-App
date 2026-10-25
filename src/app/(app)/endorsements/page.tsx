@@ -3,11 +3,12 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Copy, Trophy } from "lucide-react";
+import { Copy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label, Textarea } from "@/components/ui/input";
 import { LoadingState, EmptyState } from "@/components/ui/empty-state";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { StarsDisplay, StarsPicker } from "@/components/endorsements/stars";
 import { useData } from "@/lib/data/use-app-data";
 import {
@@ -103,8 +104,9 @@ function EndorsementsPageInner() {
           </p>
         </div>
         <Link href="/leaderboard">
-          <Button size="sm" variant="ghost">
-            <Trophy className="size-4" /> Board
+          <Button size="sm" variant="secondary">
+            <PulseIcon name="trophy" surface="nav" className="size-4" />
+            {t("endorsements.board")}
           </Button>
         </Link>
       </div>
@@ -270,7 +272,7 @@ function EndorsementsPageInner() {
                 rel="noreferrer"
                 className="flex-1"
               >
-                <Button size="sm" variant="ghost" className="w-full">
+                <Button size="sm" variant="secondary" className="w-full">
                   Open
                 </Button>
               </Link>

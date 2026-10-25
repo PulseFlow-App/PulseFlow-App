@@ -156,7 +156,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v27";
+const STORE_KEY = "pulseflow_demo_store_v28";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -234,7 +234,12 @@ function normalizeStore(store: DemoStore): DemoStore {
     memberships: store.memberships?.length
       ? store.memberships
       : fresh.memberships,
-    invites: store.invites ?? [],
+    invites: [
+      ...fresh.invites,
+      ...(store.invites ?? []).filter(
+        (i) => !fresh.invites.some((f) => f.id === i.id),
+      ),
+    ],
     villas: enrichDemoVillas(
       [
         ...fresh.villas,

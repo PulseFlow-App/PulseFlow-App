@@ -663,20 +663,19 @@ export default function GuestsPage() {
             </div>
             <div>
               <Label htmlFor="brief-cat">{t("guests.category")}</Label>
-              <select
+              <Select
                 id="brief-cat"
                 value={category}
                 onChange={(e) =>
                   setCategory(e.target.value as GuestBriefingCategory)
                 }
-                className="w-full appearance-none rounded-2xl border-0 bg-canvas-deep px-4 py-3 text-sm text-ink outline-none ring-primary/25 focus:ring-2"
               >
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>
                     {t(`guests.cat.${c}` as MessageKey)}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             {error ? (
               <p className="text-sm font-semibold text-danger">{error}</p>
