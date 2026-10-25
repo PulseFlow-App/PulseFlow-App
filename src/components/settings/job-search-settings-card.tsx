@@ -1,16 +1,27 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Briefcase, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input, Label, Textarea } from "@/components/ui/input";
+import { Input, Label, Select, Textarea } from "@/components/ui/input";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { useData } from "@/lib/data/use-app-data";
 import { isDemoMode } from "@/lib/supabase/client";
 import { canListInTalentSearch, TALENT_SKILLS } from "@/lib/talent";
+import {
+  findTalentCountry,
+  findTalentPlace,
+  placesForCountry,
+  TALENT_COUNTRIES,
+} from "@/lib/talent/places";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import {
+  geoErrorMessageKey,
+  getDevicePosition,
+} from "@/lib/geo/device-position";
 
 export function JobSearchSettingsCard() {
   const data = useData();
@@ -35,8 +46,16 @@ export function JobSearchSettingsCard() {
     setVisible(Boolean(profile.job_search_visible));
     setSkills(profile.job_search_skills ?? []);
     setBio(profile.job_search_bio ?? "");
-    setLocation(profile.job_search_location ?? "");
-    setCountry(profile.job_search_country ?? "");
+    setLocation(
+      findTalentPlace(profile.job_search_location)?.canonical ??
+        profile.job_search_location ??
+        "",
+    );
+    setCountry(
+      findTalentCountry(profile.job_search_country)?.canonical ??
+        profile.job_search_country ??
+        "",
+    );
     setLat(profile.job_search_lat ?? null);
     setLng(profile.job_search_lng ?? null);
   }, [
@@ -58,6 +77,8 @@ export function JobSearchSettingsCard() {
     [t],
   );
 
+  const placeChoices = useMemo(() => placesForCountry(country), [country]);
+
   if (!eligible || !profile) return null;
 
   const toggleSkill = (skill: string) => {
@@ -67,25 +88,23 @@ export function JobSearchSettingsCard() {
   };
 
   const pinHere = () => {
-    if (!navigator.geolocation) {
-      setError(t("talent.geoUnavailable"));
-      return;
-    }
     setPinning(true);
     setError(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLat(pos.coords.latitude);
-        setLng(pos.coords.longitude);
-        setPinning(false);
+    setMessage(null);
+    void getDevicePosition()
+      .then((pos) => {
+        setLat(pos.lat);
+        setLng(pos.lng);
         setMessage(t("talent.pinSet"));
-      },
-      () => {
-        setPinning(false);
-        setError(t("talent.geoDenied"));
-      },
-      { enableHighAccuracy: true, timeout: 15000 },
-    );
+      })
+      .catch((err: unknown) => {
+        const key =
+          err && typeof err === "object" && "code" in err
+            ? geoErrorMessageKey(err as GeolocationPositionError)
+            : "talent.geoUnavailable";
+        setError(t(key));
+      })
+      .finally(() => setPinning(false));
   };
 
   const save = async () => {
@@ -126,9 +145,7 @@ export function JobSearchSettingsCard() {
   return (
     <Card className="space-y-4 p-5">
       <div className="flex items-start gap-3">
-        <div className="pf-icon-well size-10">
-          <Briefcase className="size-5" />
-        </div>
+        <PulseIcon name="search" className="mt-0.5 size-6 shrink-0" />
         <div>
           <h2 className="font-display text-lg font-bold text-ink">
             {t("talent.settingsTitle")}
@@ -178,22 +195,68 @@ export function JobSearchSettingsCard() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <Label htmlFor="job-search-location">{t("talent.settingsLocation")}</Label>
-          <Input
-            id="job-search-location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder={t("talent.settingsLocationPlaceholder")}
-          />
+          <Label htmlFor="job-search-country">{t("talent.settingsCountry")}</Label>
+          <Select
+            id="job-search-country"
+            value={
+              findTalentCountry(country)?.canonical ??
+              (country ? country : "")
+            }
+            onChange={(e) => {
+              const next = e.target.value;
+              setCountry(next);
+              const place = findTalentPlace(location);
+              const countryDef = findTalentCountry(next);
+              if (
+                place &&
+                countryDef &&
+                place.countryId !== countryDef.id
+              ) {
+                setLocation("");
+              }
+            }}
+          >
+            <option value="">{t("talent.allCountries")}</option>
+            {TALENT_COUNTRIES.map((c) => (
+              <option key={c.id} value={c.canonical}>
+                {t(c.labelKey)}
+              </option>
+            ))}
+            {country && !findTalentCountry(country) ? (
+              <option value={country}>{country}</option>
+            ) : null}
+          </Select>
         </div>
         <div>
-          <Label htmlFor="job-search-country">{t("talent.settingsCountry")}</Label>
-          <Input
-            id="job-search-country"
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            placeholder={t("talent.settingsCountryPlaceholder")}
-          />
+          <Label htmlFor="job-search-location">{t("talent.settingsLocation")}</Label>
+          <Select
+            id="job-search-location"
+            value={
+              findTalentPlace(location)?.canonical ??
+              (location ? location : "")
+            }
+            onChange={(e) => {
+              const next = e.target.value;
+              setLocation(next);
+              const place = findTalentPlace(next);
+              if (place) {
+                const countryDef = TALENT_COUNTRIES.find(
+                  (c) => c.id === place.countryId,
+                );
+                if (countryDef) setCountry(countryDef.canonical);
+              }
+            }}
+          >
+            <option value="">{t("talent.placeSuggestions")}</option>
+            {placeChoices.map((p) => (
+              <option key={p.id} value={p.canonical}>
+                {t(p.labelKey)}
+              </option>
+            ))}
+            {location && !findTalentPlace(location) ? (
+              <option value={location}>{location}</option>
+            ) : null}
+          </Select>
         </div>
       </div>
 

@@ -7,10 +7,37 @@ import {
   normalizeTalentSkills,
   type TalentSearchResult,
 } from "@/lib/talent";
+import {
+  matchesTalentCountry,
+  matchesTalentPlace,
+} from "@/lib/talent/places";
 import { canBrowseTalent } from "@/lib/roles";
 import type { UserRole } from "@/lib/design-tokens";
 import type { Endorsement, Organization, Profile } from "@/lib/types";
 import { getDemoStore } from "@/lib/demo/store";
+
+function collectPlaceFacets(
+  profiles: Array<{
+    job_search_country?: string | null;
+    job_search_location?: string | null;
+  }>,
+) {
+  const countries = [
+    ...new Set(
+      profiles
+        .map((p) => p.job_search_country?.trim())
+        .filter((c): c is string => Boolean(c)),
+    ),
+  ].sort((a, b) => a.localeCompare(b));
+  const locations = [
+    ...new Set(
+      profiles
+        .map((p) => p.job_search_location?.trim())
+        .filter((c): c is string => Boolean(c)),
+    ),
+  ].sort((a, b) => a.localeCompare(b));
+  return { countries, locations };
+}
 
 function averageStars(endorsements: Endorsement[], profileId: string) {
   const mine = endorsements.filter((e) => e.to_profile_id === profileId);
@@ -87,14 +114,13 @@ export async function GET(request: Request) {
     }
     if (country) {
       profiles = profiles.filter((p) =>
-        (p.job_search_country ?? "").toLowerCase().includes(country),
+        matchesTalentCountry(country, p.job_search_country),
       );
     }
     if (location) {
-      profiles = profiles.filter((p) => {
-        const hay = `${p.job_search_location ?? ""} ${p.job_search_country ?? ""}`.toLowerCase();
-        return hay.includes(location);
-      });
+      profiles = profiles.filter((p) =>
+        matchesTalentPlace(location, p.job_search_location, p.job_search_country),
+      );
     }
     if (q) {
       profiles = profiles.filter((p) => {
@@ -124,15 +150,18 @@ export async function GET(request: Request) {
       }
       return a.full_name.localeCompare(b.full_name);
     });
-    const countries = [
-      ...new Set(
-        store.profiles
-          .filter((p) => p.job_search_visible && p.job_search_country)
-          .map((p) => p.job_search_country!.trim())
-          .filter(Boolean),
+    const facets = collectPlaceFacets(
+      store.profiles.filter(
+        (p) =>
+          p.job_search_visible &&
+          (p.role === "cleaner" || p.role === "staff" || p.role === "manager"),
       ),
-    ].sort((a, b) => a.localeCompare(b));
-    return NextResponse.json({ results, countries });
+    );
+    return NextResponse.json({
+      results,
+      countries: facets.countries,
+      locations: facets.locations,
+    });
   }
 
   const supabase = await createClient();
@@ -177,10 +206,6 @@ export async function GET(request: Request) {
   if (skill) {
     query = query.contains("job_search_skills", [skill]);
   }
-  if (country) {
-    query = query.ilike("job_search_country", `%${country}%`);
-  }
-
   const { data: rows, error } = await query;
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -195,9 +220,14 @@ export async function GET(request: Request) {
   }));
 
   const filtered = profiles.filter((p) => {
-    if (location) {
-      const hay = `${p.job_search_location ?? ""} ${p.job_search_country ?? ""}`.toLowerCase();
-      if (!hay.includes(location)) return false;
+    if (country && !matchesTalentCountry(country, p.job_search_country)) {
+      return false;
+    }
+    if (
+      location &&
+      !matchesTalentPlace(location, p.job_search_location, p.job_search_country)
+    ) {
+      return false;
     }
     if (!q) return true;
     const hay = [
@@ -238,19 +268,22 @@ export async function GET(request: Request) {
     return a.full_name.localeCompare(b.full_name);
   });
 
-  const { data: countryRows } = await admin
+  const { data: facetRows } = await admin
     .from("profiles")
-    .select("job_search_country")
+    .select("job_search_country, job_search_location")
     .eq("job_search_visible", true)
-    .not("job_search_country", "is", null);
+    .in("role", ["cleaner", "staff", "manager"]);
 
-  const countries = [
-    ...new Set(
-      ((countryRows as { job_search_country: string | null }[]) ?? [])
-        .map((r) => r.job_search_country?.trim())
-        .filter((c): c is string => Boolean(c)),
-    ),
-  ].sort((a, b) => a.localeCompare(b));
+  const facets = collectPlaceFacets(
+    (facetRows as Array<{
+      job_search_country: string | null;
+      job_search_location: string | null;
+    }> | null) ?? [],
+  );
 
-  return NextResponse.json({ results, countries });
+  return NextResponse.json({
+    results,
+    countries: facets.countries,
+    locations: facets.locations,
+  });
 }

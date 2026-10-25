@@ -156,7 +156,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v28";
+const STORE_KEY = "pulseflow_demo_store_v29";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -1099,6 +1099,7 @@ export function demoCreateServiceOrder(
     recurrence_count,
     status: "pending_ack",
     agreed_at: null,
+    completed_at: null,
     chat_message_id: msgId,
     task_id: taskId,
     created_at: now,
@@ -1231,7 +1232,9 @@ export function demoCompleteServiceOrder(actor: Profile, orderId: string) {
   updateDemoStore((s) => ({
     ...s,
     serviceOrders: s.serviceOrders.map((o) =>
-      o.id === orderId ? { ...o, status: "done" as const } : o,
+      o.id === orderId
+        ? { ...o, status: "done" as const, completed_at: now }
+        : o,
     ),
     tasks: s.tasks.map((t) => {
       if (t.id !== order.task_id) return t;
@@ -1541,6 +1544,7 @@ export function demoReopenServiceOrder(
             ...o,
             status: "pending_ack" as const,
             agreed_at: null,
+            completed_at: null,
             staff_profile_id: assigneeId,
             chat_message_id: msgId,
           }

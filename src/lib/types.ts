@@ -236,6 +236,8 @@ export type ServiceOrder = {
   recurrence_count: number | null;
   status: ServiceOrderStatus;
   agreed_at: string | null;
+  /** When status became done (Mark job done). */
+  completed_at: string | null;
   chat_message_id: string | null;
   task_id: string | null;
   created_at: string;

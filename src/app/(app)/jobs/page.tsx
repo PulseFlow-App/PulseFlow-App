@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label, Select } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { AgreeButton } from "@/components/jobs/agree-button";
+import { JobProgressTimeline } from "@/components/jobs/job-progress-timeline";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { writeStoredReviewOffer } from "@/components/tasks/review-offer-banner";
 import { useData } from "@/lib/data/use-app-data";
@@ -15,7 +16,6 @@ import {
   canCancelServiceOrder,
   canAgreeServiceOrder,
   canReopenServiceOrder,
-  formatOrderWhen,
   orderReachabilityLabel,
 } from "@/lib/service-orders";
 import {
@@ -26,11 +26,9 @@ import {
 } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
-import { LocalizedText } from "@/components/i18n/localized-text";
 import { TaskRow } from "@/components/tasks/task-row";
 import { reviewOfferHref } from "@/lib/tasks/review-offer";
 import { weekKey } from "@/lib/endorsements";
-import type { MessageKey } from "@/lib/i18n";
 
 function CancelOrderButton({ orderId }: { orderId: string }) {
   const data = useData();
@@ -290,6 +288,27 @@ export default function JobsPage() {
                   data.allProfiles.find((p) => p.id === order.staff_profile_id)
                 )?.full_name
               : null;
+            const progressProfiles = [
+              ...data.profiles,
+              ...data.allProfiles.filter(
+                (p) => !data.profiles.some((x) => x.id === p.id),
+              ),
+            ];
+            const showReview =
+              !staff &&
+              canReviewPeople &&
+              order.status === "done" &&
+              !!order.staff_profile_id &&
+              order.staff_profile_id !== data.profile?.id &&
+              !reviewedThisWeek.has(order.staff_profile_id);
+            const showActions =
+              Boolean(order.details) ||
+              !staff ||
+              pendingForMe ||
+              (staff && order.status === "agreed") ||
+              showReview ||
+              (!staff && canCancel) ||
+              (!staff && canReopen);
             return (
               <Card
                 key={order.id}
@@ -305,105 +324,77 @@ export default function JobsPage() {
                     className="rounded-none"
                   />
                 ) : null}
-                <div className="space-y-3 p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-semibold text-ink">
-                        <LocalizedText text={order.service_type} />
+                <JobProgressTimeline
+                  order={order}
+                  profiles={progressProfiles}
+                  bills={data.bills}
+                />
+                {showActions ? (
+                  <div className="space-y-3 border-t border-black/5 p-4">
+                    {order.details ? (
+                      <p className="text-sm text-muted">{order.details}</p>
+                    ) : null}
+                    {!staff ? (
+                      <p className="text-xs font-semibold text-muted">
+                        {orderReachabilityLabel(order, t)}
                       </p>
-                      <p className="text-sm text-muted">
-                        {order.location_label ?? t("tasks.villa")}
-                        {staffName ? ` · ${staffName}` : ""}
-                      </p>
-                    </div>
-                    <span
-                      className={cn(
-                        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
-                        order.status === "pending_ack"
-                          ? "bg-warning/20 text-warning-dark"
-                          : order.status === "agreed"
-                            ? "bg-secondary/15 text-secondary-dark"
-                            : order.status === "cancelled"
-                              ? "bg-danger/10 text-danger"
-                              : "bg-canvas-deep text-muted",
-                      )}
-                    >
-                      {t(`order.status.${order.status}` as MessageKey)}
-                    </span>
-                  </div>
-                  {formatOrderWhen(order) ? (
-                    <p className="text-sm font-semibold text-ink">
-                      {formatOrderWhen(order)}
-                    </p>
-                  ) : null}
-                  {order.details ? (
-                    <p className="text-sm text-muted">{order.details}</p>
-                  ) : null}
-                  {!staff ? (
-                    <p className="text-xs font-semibold text-muted">
-                      {orderReachabilityLabel(order, t)}
-                    </p>
-                  ) : null}
-                  {pendingForMe ? <AgreeButton orderId={order.id} /> : null}
-                  {staff && order.status === "agreed" ? (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="w-full"
-                      onClick={() => void data.completeServiceOrder(order.id)}
-                    >
-                      {t("jobs.markDone")}
-                    </Button>
-                  ) : null}
-                  {!staff &&
-                  canReviewPeople &&
-                  order.status === "done" &&
-                  order.staff_profile_id &&
-                  order.staff_profile_id !== data.profile?.id &&
-                  !reviewedThisWeek.has(order.staff_profile_id) ? (
-                    <Button
-                      size="sm"
-                      className="w-full"
-                      onClick={() => {
-                        const doer =
-                          data.profiles.find(
-                            (p) => p.id === order.staff_profile_id,
-                          ) ??
-                          data.allProfiles.find(
-                            (p) => p.id === order.staff_profile_id,
+                    ) : null}
+                    {pendingForMe ? <AgreeButton orderId={order.id} /> : null}
+                    {staff && order.status === "agreed" ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="w-full"
+                        onClick={() => void data.completeServiceOrder(order.id)}
+                      >
+                        {t("jobs.markDone")}
+                      </Button>
+                    ) : null}
+                    {showReview ? (
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        onClick={() => {
+                          const doer =
+                            data.profiles.find(
+                              (p) => p.id === order.staff_profile_id,
+                            ) ??
+                            data.allProfiles.find(
+                              (p) => p.id === order.staff_profile_id,
+                            );
+                          const href = reviewOfferHref(
+                            doer,
+                            order.staff_profile_id!,
                           );
-                        const href = reviewOfferHref(
-                          doer,
-                          order.staff_profile_id!,
-                        );
-                        writeStoredReviewOffer(order.id, {
-                          name:
-                            doer?.full_name?.trim() ||
-                            staffName ||
-                            t("tasks.reviewOfferSomeone"),
-                          href,
-                          toProfileId: order.staff_profile_id!,
-                          workLabel: [
-                            order.service_type,
-                            order.location_label,
-                          ]
-                            .filter(Boolean)
-                            .join(" · "),
-                        });
-                      }}
-                    >
-                      <Star className="size-4" />
-                      {t("contacts.review")}
-                      {staffName ? ` · ${staffName}` : ""}
-                    </Button>
-                  ) : null}
-                  {!staff && canCancel ? (
-                    <CancelOrderButton orderId={order.id} />
-                  ) : null}
-                  {!staff && canReopen ? (
-                    <ReopenOrderPanel orderId={order.id} />
-                  ) : null}
-                </div>
+                          writeStoredReviewOffer(order.id, {
+                            name:
+                              doer?.full_name?.trim() ||
+                              staffName ||
+                              t("tasks.reviewOfferSomeone"),
+                            href,
+                            toProfileId: order.staff_profile_id!,
+                            workLabel: [
+                              order.service_type,
+                              order.location_label,
+                            ]
+                              .filter(Boolean)
+                              .join(" · "),
+                          });
+                        }}
+                      >
+                        <Star className="size-4" />
+                        {t("contacts.review")}
+                        {staffName ? ` · ${staffName}` : ""}
+                      </Button>
+                    ) : null}
+                    {!staff && canCancel ? (
+                      <CancelOrderButton orderId={order.id} />
+                    ) : null}
+                    {!staff && canReopen ? (
+                      <ReopenOrderPanel orderId={order.id} />
+                    ) : null}
+                  </div>
+                ) : null}
               </Card>
             );
           })

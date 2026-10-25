@@ -173,10 +173,17 @@ export default function ReportsPage() {
       }),
       displayCurrency,
     });
-    const w = window.open("", "_blank", "noopener,noreferrer");
-    if (!w) return;
-    w.document.write(html);
-    w.document.close();
+    // Blob URL (not about:blank + document.write): noopener returns null and
+    // leaves an empty tab, so we cannot write into that window.
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, "_blank");
+    if (!w) {
+      URL.revokeObjectURL(url);
+      return;
+    }
+    w.opener = null;
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
   };
 
   const saveSnapshot = async () => {
@@ -317,13 +324,17 @@ export default function ReportsPage() {
       </Card>
 
       <Card className="space-y-3 p-4">
-        <h2 className="font-display text-base font-bold text-ink">
-          {t("reports.handoffTitle")}
-        </h2>
+        <div>
+          <h2 className="font-display text-base font-bold text-ink">
+            {t("reports.handoffTitle")}
+          </h2>
+          <p className="mt-1 text-sm text-muted">{t("reports.handoffHint")}</p>
+        </div>
         <Input
           value={snapshotLabel}
           onChange={(e) => setSnapshotLabel(e.target.value)}
           placeholder={t("reports.snapshotPlaceholder")}
+          aria-label={t("reports.snapshotLabel")}
         />
         <Button
           className="w-full"
@@ -333,6 +344,11 @@ export default function ReportsPage() {
         >
           {t("reports.saveSnapshot")}
         </Button>
+        {snapshots.length > 0 ? (
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+            {t("reports.savedSnapshots")}
+          </p>
+        ) : null}
         {snapshots.length === 0 ? (
           <EmptyState title={t("reports.noSnapshots")} />
         ) : (
@@ -344,7 +360,7 @@ export default function ReportsPage() {
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">
-                    {snapshot.label || "Handoff"}
+                    {snapshot.label || t("reports.handoffTitle")}
                   </p>
                   <p className="text-xs text-muted">
                     {formatShortDate(snapshot.created_at)}

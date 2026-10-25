@@ -995,6 +995,7 @@ export const demoServiceOrders: ServiceOrder[] = [
     chat_message_id: ORDER_MSG_PENDING,
     task_id: NOK_TASK_PENDING,
     created_at: daysAgo(0) + "T09:00:00.000Z",
+    completed_at: null,
   },
   {
     id: ORDER_AGREED_ID,
@@ -1018,6 +1019,7 @@ export const demoServiceOrders: ServiceOrder[] = [
     chat_message_id: ORDER_MSG_AGREED,
     task_id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc1",
     created_at: daysAgo(1) + "T18:00:00.000Z",
+    completed_at: null,
   },
   {
     id: "77777777-7777-4777-8777-777777777773",
@@ -1041,6 +1043,7 @@ export const demoServiceOrders: ServiceOrder[] = [
     chat_message_id: null,
     task_id: null,
     created_at: daysAgo(0) + "T08:00:00.000Z",
+    completed_at: null,
   },
 ];
 
@@ -1086,6 +1089,20 @@ export const demoBills: Bill[] = [
     submitted_by: DEMO_EMPLOYEE_ID,
     receipt_photo_url: null,
     created_at: daysAgo(4) + "T11:00:00.000Z",
+  },
+  {
+    id: "dddddddd-dddd-4ddd-8ddd-ddddddddddd4",
+    org_id: DEMO_ORG_ID,
+    villa_id: VILLA_IDS.palm,
+    description: "Pool filter cartridge · Palm Villa",
+    amount: 800,
+    currency: "THB",
+    status: "pending",
+    category: "maintenance",
+    due_date: daysFromNow(1),
+    submitted_by: DEMO_CLEANER_ID,
+    receipt_photo_url: "https://placehold.co/400x300/png?text=Receipt",
+    created_at: daysAgo(1) + "T12:10:00.000Z",
   },
 ];
 

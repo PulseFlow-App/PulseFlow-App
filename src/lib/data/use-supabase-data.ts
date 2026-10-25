@@ -578,7 +578,12 @@ export function useSupabaseData(enabled: boolean): AppData {
       })),
     );
     setServiceOrders(
-      ((ordersRes.data as ServiceOrder[]) ?? []).map(withScheduleDefaults),
+      ((ordersRes.data as ServiceOrder[]) ?? []).map((o) =>
+        withScheduleDefaults({
+          ...o,
+          completed_at: o.completed_at ?? null,
+        }),
+      ),
     );
     setStayDateRequests(
       dateRequestsRes.error
@@ -1518,6 +1523,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         .update({
           status: "pending_ack",
           agreed_at: null,
+          completed_at: null,
           staff_profile_id: assigneeId,
           chat_message_id: msg?.id ?? order.chat_message_id,
         })
@@ -1566,9 +1572,10 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!order) throw new Error("Order not found.");
       requireOrgWrite(order.org_id);
 
+      const completedAt = new Date().toISOString();
       const { error } = await supabase
         .from("service_orders")
-        .update({ status: "done" })
+        .update({ status: "done", completed_at: completedAt })
         .eq("id", orderId);
       if (error) throw error;
       if (order.task_id) {

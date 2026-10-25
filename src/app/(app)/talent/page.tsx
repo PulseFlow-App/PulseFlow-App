@@ -3,11 +3,12 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { List, Map as MapIcon, MapPin, Search, UserRound } from "lucide-react";
+import { List, Map as MapIcon, MapPin, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/empty-state";
+import { PulseIcon } from "@/components/icons/pulse-icon";
 import { StarsDisplay } from "@/components/endorsements/stars";
 import { useData } from "@/lib/data/use-app-data";
 import { canBrowseTalent } from "@/lib/roles";
@@ -16,9 +17,21 @@ import {
   TALENT_SKILLS,
   type TalentSearchResult,
 } from "@/lib/talent";
+import {
+  countryLabelKey,
+  findTalentCountry,
+  findTalentPlace,
+  placeLabelKey,
+  placesForCountry,
+  TALENT_COUNTRIES,
+} from "@/lib/talent/places";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import {
+  geoErrorMessageKey,
+  getDevicePosition,
+} from "@/lib/geo/device-position";
 
 const TalentMap = dynamic(
   () =>
@@ -41,10 +54,12 @@ export default function TalentPage() {
   const [location, setLocation] = useState("");
   const [country, setCountry] = useState("");
   const [countries, setCountries] = useState<string[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
   const [near, setNear] = useState<{ lat: number; lng: number } | null>(null);
   const [view, setView] = useState<"list" | "map">("list");
   const [results, setResults] = useState<TalentSearchResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [locating, setLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canBrowse = data.profile
@@ -73,11 +88,13 @@ export default function TalentPage() {
       const payload = (await res.json()) as {
         results?: TalentSearchResult[];
         countries?: string[];
+        locations?: string[];
         error?: string;
       };
       if (!res.ok) throw new Error(payload.error ?? "Search failed");
       setResults(payload.results ?? []);
       if (payload.countries) setCountries(payload.countries);
+      if (payload.locations) setLocations(payload.locations);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("common.error"));
       setResults([]);
@@ -101,20 +118,79 @@ export default function TalentPage() {
     [t],
   );
 
-  const useNearMe = () => {
-    if (!navigator.geolocation) {
-      setError(t("talent.geoUnavailable"));
-      return;
-    }
-    setError(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setNear({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setView("map");
-      },
-      () => setError(t("talent.geoDenied")),
-      { enableHighAccuracy: true, timeout: 15000 },
+  const labelCountry = useCallback(
+    (value: string) => {
+      const key = countryLabelKey(value);
+      return key ? t(key) : value;
+    },
+    [t],
+  );
+
+  const labelPlace = useCallback(
+    (value: string) => {
+      const key = placeLabelKey(value);
+      return key ? t(key) : value;
+    },
+    [t],
+  );
+
+  const countryOptions = useMemo(() => {
+    const fromCatalog = TALENT_COUNTRIES.map((c) => c.canonical);
+    const merged = [...new Set([...fromCatalog, ...countries])];
+    return merged.sort((a, b) =>
+      labelCountry(a).localeCompare(labelCountry(b), undefined, {
+        sensitivity: "base",
+      }),
     );
+  }, [countries, labelCountry]);
+
+  const placeOptions = useMemo(() => {
+    const catalog = placesForCountry(country).map((p) => p.canonical);
+    const extra = locations.filter((loc) => {
+      if (findTalentPlace(loc)) return false;
+      if (!country) return true;
+      // Keep unknown live locations when country filter is empty or matches.
+      return true;
+    });
+    const merged = [...new Set([...catalog, ...extra])];
+    if (country) {
+      const countryDef = findTalentCountry(country);
+      return merged
+        .filter((loc) => {
+          const place = findTalentPlace(loc);
+          if (place) return place.countryId === countryDef?.id;
+          // Custom location strings stay visible under any country pick.
+          return locations.includes(loc);
+        })
+        .sort((a, b) =>
+          labelPlace(a).localeCompare(labelPlace(b), undefined, {
+            sensitivity: "base",
+          }),
+        );
+    }
+    return merged.sort((a, b) =>
+      labelPlace(a).localeCompare(labelPlace(b), undefined, {
+        sensitivity: "base",
+      }),
+    );
+  }, [country, locations, labelPlace]);
+
+  const useNearMe = () => {
+    setError(null);
+    setLocating(true);
+    void getDevicePosition()
+      .then((pos) => {
+        setNear(pos);
+        setView("map");
+      })
+      .catch((err: unknown) => {
+        const key =
+          err && typeof err === "object" && "code" in err
+            ? geoErrorMessageKey(err as GeolocationPositionError)
+            : "talent.geoUnavailable";
+        setError(t(key));
+      })
+      .finally(() => setLocating(false));
   };
 
   if (!data.ready || !data.profile) return <LoadingState />;
@@ -152,26 +228,58 @@ export default function TalentPage() {
           />
         </div>
         <div className="grid grid-cols-2 gap-1.5">
-          <Input
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder={t("talent.filterLocation")}
-            className={fieldClass}
-          />
           <Select
             value={country}
-            onChange={(e) => setCountry(e.target.value)}
+            onChange={(e) => {
+              const next = e.target.value;
+              setCountry(next);
+              if (location) {
+                const place = findTalentPlace(location);
+                const countryDef = findTalentCountry(next);
+                if (
+                  place &&
+                  countryDef &&
+                  place.countryId !== countryDef.id
+                ) {
+                  setLocation("");
+                }
+              }
+            }}
             aria-label={t("talent.filterCountry")}
             className={fieldClass}
           >
             <option value="">{t("talent.allCountries")}</option>
-            {countries.map((c) => (
+            {countryOptions.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {labelCountry(c)}
+              </option>
+            ))}
+          </Select>
+          <Select
+            value={location}
+            onChange={(e) => {
+              const next = e.target.value;
+              setLocation(next);
+              const place = findTalentPlace(next);
+              if (place) {
+                const countryDef = TALENT_COUNTRIES.find(
+                  (c) => c.id === place.countryId,
+                );
+                if (countryDef) setCountry(countryDef.canonical);
+              }
+            }}
+            aria-label={t("talent.filterLocation")}
+            className={fieldClass}
+          >
+            <option value="">{t("talent.allPlaces")}</option>
+            {placeOptions.map((loc) => (
+              <option key={loc} value={loc}>
+                {labelPlace(loc)}
               </option>
             ))}
           </Select>
         </div>
+        <p className="text-[11px] text-muted">{t("talent.placeSuggestions")}</p>
         <div className="flex flex-wrap gap-1">
           <button
             type="button"
@@ -198,9 +306,18 @@ export default function TalentPage() {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
-          <Button size="xs" variant="secondary" onClick={useNearMe}>
+          <Button
+            size="xs"
+            variant="secondary"
+            busy={locating}
+            onClick={useNearMe}
+          >
             <MapPin className="size-3.5" />
-            {near ? t("talent.nearMeOn") : t("talent.nearMe")}
+            {locating
+              ? t("talent.geoBusy")
+              : near
+                ? t("talent.nearMeOn")
+                : t("talent.nearMe")}
           </Button>
           {near ? (
             <Button size="xs" variant="ghost" onClick={() => setNear(null)}>
@@ -257,9 +374,7 @@ export default function TalentPage() {
               <li key={person.id}>
                 <Card className="space-y-3 p-4">
                   <div className="flex items-start gap-3">
-                    <div className="pf-icon-well size-11">
-                      <UserRound className="size-5" />
-                    </div>
+                    <PulseIcon name="contacts" className="size-6 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="font-display text-lg font-bold text-ink">
                         {person.full_name}

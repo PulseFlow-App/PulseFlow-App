@@ -310,21 +310,17 @@ label {
   box-shadow: var(--shadow-soft);
 }
 
-/* Minimal icon well — orange fill, ink border + ink stroke icons */
+/* Icon mark — dual-tone Solar only, no orange tile or ink border */
 .pf-icon-well {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border-radius: 0.75rem;
-  background: var(--color-primary);
+  border-radius: 0;
+  background: none;
   color: var(--color-ink);
-  border: 2px solid var(--color-ink);
+  border: 0;
   box-shadow: none;
-}
-
-.pf-icon-well svg {
-  stroke: currentColor;
 }
 
 .lift-shadow {

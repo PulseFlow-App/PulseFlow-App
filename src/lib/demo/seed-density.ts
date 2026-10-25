@@ -385,6 +385,7 @@ export const denseServiceOrders: ServiceOrder[] = [
     chat_message_id: null,
     task_id: "cccccccc-cccc-4ccc-8ccc-ccccccccccb3",
     created_at: daysAgo(0) + "T07:05:00.000Z",
+    completed_at: null,
   },
   {
     id: ORDER_PEST,
@@ -408,6 +409,7 @@ export const denseServiceOrders: ServiceOrder[] = [
     chat_message_id: null,
     task_id: "cccccccc-cccc-4ccc-8ccc-ccccccccccb4",
     created_at: daysAgo(0) + "T09:05:00.000Z",
+    completed_at: null,
   },
   {
     id: ORDER_WINDOW,
@@ -431,6 +433,7 @@ export const denseServiceOrders: ServiceOrder[] = [
     chat_message_id: null,
     task_id: "cccccccc-cccc-4ccc-8ccc-ccccccccccb5",
     created_at: daysAgo(1) + "T11:10:00.000Z",
+    completed_at: null,
   },
   {
     id: ORDER_HANDY,
@@ -454,6 +457,7 @@ export const denseServiceOrders: ServiceOrder[] = [
     chat_message_id: null,
     task_id: "cccccccc-cccc-4ccc-8ccc-ccccccccccb6",
     created_at: daysAgo(0) + "T07:35:00.000Z",
+    completed_at: null,
   },
   {
     id: ORDER_DEEP,
@@ -477,6 +481,7 @@ export const denseServiceOrders: ServiceOrder[] = [
     chat_message_id: null,
     task_id: "cccccccc-cccc-4ccc-8ccc-ccccccccccb7",
     created_at: daysAgo(0) + "T08:05:00.000Z",
+    completed_at: null,
   },
 ];
 

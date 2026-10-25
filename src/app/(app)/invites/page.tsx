@@ -66,9 +66,7 @@ export default function InvitesPage() {
     <div className="space-y-4 animate-rise">
       <div>
         <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-ink">
-          <span className="pf-icon-well size-10">
-            <PulseIcon name="invite" className="size-5" />
-          </span>
+          <PulseIcon name="invite" className="size-6 shrink-0" />
           {t("nav.invites")}
         </h1>
         <p className="mt-2 text-sm text-muted">{t("settings.inviteHint")}</p>

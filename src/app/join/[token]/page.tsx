@@ -283,12 +283,10 @@ export default function JoinPage({
         </div>
         <div className="mb-6 text-center">
           <PulseMark className="mx-auto mb-3 size-12" />
-          <div className="pf-icon-well mx-auto mb-3 size-11">
-            <PulseIcon
-              name={isGuestInvite ? "guests" : "invite"}
-              className="size-6"
-            />
-          </div>
+          <PulseIcon
+            name={isGuestInvite ? "guests" : "invite"}
+            className="mx-auto mb-3 block size-7"
+          />
           <h1 className="font-display text-2xl font-bold text-ink">
             {isGuestInvite ? t("guest.joinTitle") : t("join.staffTitle")}
           </h1>

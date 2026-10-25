@@ -421,6 +421,7 @@ export const extraServiceOrders: ServiceOrder[] = [
     chat_message_id: null,
     task_id: "cccccccc-cccc-4ccc-8ccc-cccccccccca3",
     created_at: daysAgo(0) + "T08:15:00.000Z",
+    completed_at: null,
   },
   {
     id: ORDER_GARDEN,
@@ -444,6 +445,7 @@ export const extraServiceOrders: ServiceOrder[] = [
     chat_message_id: null,
     task_id: "cccccccc-cccc-4ccc-8ccc-cccccccccca4",
     created_at: daysAgo(1) + "T16:05:00.000Z",
+    completed_at: null,
   },
   {
     id: ORDER_DONE,
@@ -467,6 +469,7 @@ export const extraServiceOrders: ServiceOrder[] = [
     chat_message_id: null,
     task_id: "cccccccc-cccc-4ccc-8ccc-cccccccccca7",
     created_at: daysAgo(3) + "T09:10:00.000Z",
+    completed_at: daysAgo(2) + "T10:00:00.000Z",
   },
 ];
 

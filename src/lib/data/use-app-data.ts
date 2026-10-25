@@ -789,6 +789,7 @@ function useDemoData(): AppData {
             recurrence_count,
             status: "pending_ack" as const,
             agreed_at: null,
+            completed_at: null,
             chat_message_id: msgId,
             task_id: taskId,
             created_at: now,

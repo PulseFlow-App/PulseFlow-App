@@ -155,9 +155,7 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
       <div className={cn("grid gap-3", gridCols)}>
         {showAnyone ? (
           <Card className="flex flex-col space-y-3 p-4">
-            <div className="pf-icon-well size-9">
-              <PulseIcon name="invite" className="size-5" />
-            </div>
+            <PulseIcon name="invite" className="size-6 shrink-0" />
             <div>
               <p className="font-display text-base font-bold leading-snug text-ink">
                 {t("invite.card.anyone")}
@@ -216,9 +214,7 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                     className="absolute inset-0 w-full text-left [backface-visibility:hidden]"
                   >
                     <Card className="flex h-full min-h-[12.5rem] flex-col space-y-2 p-4 hover:border-primary/30">
-                      <div className="pf-icon-well size-9">
-                        <PulseIcon name={icon} className="size-5" />
-                      </div>
+                      <PulseIcon name={icon} className="size-6 shrink-0" />
                       <p className="font-display text-base font-bold leading-snug text-ink">
                         {t(titleKey)}
                       </p>
@@ -351,12 +347,10 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
               <div key={inv.id} className="space-y-2">
                 <div className="flex items-center justify-between gap-2 text-sm">
                   <div className="flex min-w-0 items-start gap-2">
-                    <div className="pf-icon-well mt-0.5 size-8 shrink-0">
-                      <PulseIcon
-                        name={inv.role === "guest" ? "guests" : "contacts"}
-                        className="size-4"
-                      />
-                    </div>
+                    <PulseIcon
+                      name={inv.role === "guest" ? "guests" : "contacts"}
+                      className="mt-0.5 size-5 shrink-0"
+                    />
                     <div className="min-w-0">
                       <p className="font-semibold text-ink">
                         {t(`roles.${inv.role}` as MessageKey)}
