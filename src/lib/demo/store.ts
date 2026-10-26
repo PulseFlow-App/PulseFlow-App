@@ -97,6 +97,7 @@ function createFreshDemoStore(): DemoStore {
       ...structuredClone(denseServiceOrders),
     ],
     guestStays: [...base.guestStays, ...structuredClone(extraGuestStays)],
+    calendarBookings: [...(base.calendarBookings ?? [])],
     houseGuides: [...base.houseGuides, ...structuredClone(extraHouseGuides)],
     villaMasterInfo: [...(base.villaMasterInfo ?? [])],
     villaMaintenanceLogs: [...(base.villaMaintenanceLogs ?? [])],
@@ -156,7 +157,7 @@ function uniqueShareSlug(base: string, profiles: Profile[]) {
   return slug;
 }
 
-const STORE_KEY = "pulseflow_demo_store_v29";
+const STORE_KEY = "pulseflow_demo_store_v30";
 const USER_KEY = "pulseflow_demo_user";
 
 type Listener = () => void;
@@ -324,6 +325,12 @@ function normalizeStore(store: DemoStore): DemoStore {
     guestStays: [
       ...fresh.guestStays,
       ...(store.guestStays ?? []).filter((s) => !seedStayIds.has(s.id)),
+    ],
+    calendarBookings: [
+      ...(fresh.calendarBookings ?? []),
+      ...(store.calendarBookings ?? []).filter(
+        (b) => !(fresh.calendarBookings ?? []).some((f) => f.id === b.id),
+      ),
     ],
     houseGuides: fresh.houseGuides,
     villaMasterInfo: fresh.villaMasterInfo ?? [],

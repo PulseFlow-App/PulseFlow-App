@@ -122,6 +122,11 @@ export function AppMenuButton() {
       icon: "jobs",
     });
     manage.push({
+      href: "/bookings",
+      label: t("nav.bookings"),
+      icon: "occupied",
+    });
+    manage.push({
       href: "/company",
       label: t("nav.company"),
       icon: "properties",

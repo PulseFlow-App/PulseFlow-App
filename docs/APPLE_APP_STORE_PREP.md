@@ -449,7 +449,7 @@ Must-have if shipping an App Store binary:
 8. [ ] Privacy questionnaire filled to match real data  
 9. [ ] If free-companion billing: **strip** Stripe upgrade CTAs from iOS build  
 10. [ ] If IAP billing: StoreKit products + server receipt/entitlement sync  
-11. [ ] Screenshots + description that match real features (no Airbnb-API claims, etc.)  
+11. [ ] Screenshots + description that match real features (iCal calendar **import** from Airbnb/Booking.com export links is OK to mention; do **not** claim a full Airbnb/Booking.com API or channel manager)  
 12. [ ] Counsel pass on Terms/Privacy  
 13. [ ] Native iOS app (not bare WebView) — aligns with Step 0D 
 

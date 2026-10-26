@@ -176,12 +176,14 @@ export function normalizeVillaRow<T extends Villa>(villa: T): T {
     info_doc_url: villa.info_doc_url ?? null,
     info_doc_name: villa.info_doc_name ?? null,
     source_notes: villa.source_notes ?? null,
+    ical_import_url: villa.ical_import_url ?? null,
+    ical_synced_at: villa.ical_synced_at ?? null,
   };
 }
 
 export function isMissingVillaQuickSourceColumn(message: string | undefined) {
   if (!message) return false;
-  return /(listing_url|drive_url|info_doc_url|info_doc_name|source_notes).*(column|schema cache)|(column|schema cache).*(listing_url|drive_url|info_doc_url|info_doc_name|source_notes)/i.test(
+  return /(listing_url|drive_url|info_doc_url|info_doc_name|source_notes|ical_import_url|ical_synced_at).*(column|schema cache)|(column|schema cache).*(listing_url|drive_url|info_doc_url|info_doc_name|source_notes|ical_import_url|ical_synced_at)/i.test(
     message,
   );
 }
@@ -193,6 +195,8 @@ export function omitVillaQuickSources<T extends object>(row: T): T {
   delete next.info_doc_url;
   delete next.info_doc_name;
   delete next.source_notes;
+  delete next.ical_import_url;
+  delete next.ical_synced_at;
   return next;
 }
 

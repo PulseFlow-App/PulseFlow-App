@@ -20,6 +20,7 @@ export type VillaQuickSourcesValue = {
   source_notes: string;
   info_doc_url: string | null;
   info_doc_name: string | null;
+  ical_import_url: string;
 };
 
 export const EMPTY_VILLA_QUICK_SOURCES: VillaQuickSourcesValue = {
@@ -28,6 +29,7 @@ export const EMPTY_VILLA_QUICK_SOURCES: VillaQuickSourcesValue = {
   source_notes: "",
   info_doc_url: null,
   info_doc_name: null,
+  ical_import_url: "",
 };
 
 type Props = {
@@ -36,6 +38,9 @@ type Props = {
   /** Apply parsed listing facts into the rest of the property form. */
   onEnrich?: (enrichment: VillaEnrichment) => void;
   uploadDoc: (file: File) => Promise<string | null>;
+  /** Pull Airbnb / Booking.com iCal into the bookings calendar. */
+  onSyncCalendar?: (feedUrl: string) => Promise<void>;
+  icalSyncedAt?: string | null;
   /** Hide the section title when wrapped in VillaExpandSection. */
   embedded?: boolean;
 };
@@ -78,6 +83,8 @@ export function VillaQuickSources({
   onChange,
   onEnrich,
   uploadDoc,
+  onSyncCalendar,
+  icalSyncedAt = null,
   embedded = false,
 }: Props) {
   const { t, locale } = useI18n();
@@ -94,6 +101,9 @@ export function VillaQuickSources({
   const [voiceSupported, setVoiceSupported] = useState(true);
   const [enrichError, setEnrichError] = useState<string | null>(null);
   const [enrichNote, setEnrichNote] = useState<string | null>(null);
+  const [icalBusy, setIcalBusy] = useState(false);
+  const [icalError, setIcalError] = useState<string | null>(null);
+  const [icalNote, setIcalNote] = useState<string | null>(null);
 
   const set = (patch: Partial<VillaQuickSourcesValue>) =>
     onChange({ ...value, ...patch });
@@ -299,6 +309,69 @@ export function VillaQuickSources({
       </div>
 
       <div>
+        <Label>{t("villas.icalUrl")}</Label>
+        <p className="mt-0.5 text-xs text-muted">{t("villas.icalUrlHint")}</p>
+        <div className="mt-1 flex items-center gap-2">
+          <Input
+            value={value.ical_import_url}
+            onChange={(e) => {
+              setIcalError(null);
+              setIcalNote(null);
+              set({ ical_import_url: e.target.value });
+            }}
+            placeholder="https://www.airbnb.com/calendar/ical/…"
+            className="min-w-0 flex-1 pl-4"
+            autoComplete="off"
+          />
+          {onSyncCalendar ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="shrink-0"
+              reflectGlobalBusy={false}
+              busy={icalBusy}
+              disabled={!value.ical_import_url.trim()}
+              onClick={() => {
+                void (async () => {
+                  setIcalBusy(true);
+                  setIcalError(null);
+                  setIcalNote(null);
+                  try {
+                    await onSyncCalendar(value.ical_import_url.trim());
+                    setIcalNote(t("villas.icalSyncOk"));
+                  } catch (e) {
+                    setIcalError(
+                      e instanceof Error ? e.message : t("villas.icalSyncFail"),
+                    );
+                  } finally {
+                    setIcalBusy(false);
+                  }
+                })();
+              }}
+            >
+              {icalBusy ? t("common.saving") : t("villas.icalSync")}
+            </Button>
+          ) : null}
+        </div>
+        {icalSyncedAt ? (
+          <p className="mt-1 text-xs text-muted">
+            {t("villas.icalSyncedAt", {
+              when: new Date(icalSyncedAt).toLocaleString(locale),
+            })}
+          </p>
+        ) : null}
+        {icalNote ? (
+          <p className="mt-1 text-xs font-semibold text-secondary-dark">
+            {icalNote}
+          </p>
+        ) : null}
+        {icalError ? (
+          <p className="mt-1 text-xs text-danger">{icalError}</p>
+        ) : null}
+      </div>
+
+      <div>
         <Label>{t("villas.infoDoc")}</Label>
         <input
           ref={fileRef}
@@ -495,6 +568,7 @@ export function quickSourcesFromVilla(villa: {
   source_notes?: string | null;
   info_doc_url?: string | null;
   info_doc_name?: string | null;
+  ical_import_url?: string | null;
 }): VillaQuickSourcesValue {
   return {
     listing_url: villa.listing_url ?? "",
@@ -502,6 +576,7 @@ export function quickSourcesFromVilla(villa: {
     source_notes: villa.source_notes ?? "",
     info_doc_url: villa.info_doc_url ?? null,
     info_doc_name: villa.info_doc_name ?? null,
+    ical_import_url: villa.ical_import_url ?? "",
   };
 }
 
@@ -514,5 +589,6 @@ export function quickSourcesPayload(value: VillaQuickSourcesValue) {
     info_doc_name: value.info_doc_url
       ? value.info_doc_name?.trim() || null
       : null,
+    ical_import_url: value.ical_import_url.trim() || null,
   };
 }

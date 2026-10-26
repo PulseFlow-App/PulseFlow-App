@@ -6,7 +6,7 @@ import {
 } from "@/lib/legal/audiences";
 
 /** Bump when Terms or Privacy substantive text changes. */
-export const LEGAL_LAST_UPDATED = "18 October 2026";
+export const LEGAL_LAST_UPDATED = "26 October 2026";
 
 export function LegalIntro({
   kind,
@@ -217,12 +217,15 @@ function TermsFeaturesSafety() {
       <p className="text-muted">
         Depending on your role and plan, the Service may include property
         inventory with photos and details; quick-fill from listing links or
-        notes; stay dates and status; team assignment; tasks and service jobs;
-        contacts; team chat; guest Support chat; house guides for guests; master
-        info handoff files for the ops team; maintenance logs; reports and
-        exports; endorsements and talent search; push notifications; passkeys;
-        and optional Connect your agent (in-app chat or an external MCP client
-        with a connection key).
+        notes; stay dates and status; a bookings calendar; optional import of
+        occupancy from third-party calendar export links (for example Airbnb,
+        Booking.com, or VRBO iCal feeds you paste); download of service jobs as
+        calendar files; team assignment; tasks and service jobs; contacts; team
+        chat; guest Support chat; house guides for guests; master info handoff
+        files for the ops team; maintenance logs; reports and exports;
+        endorsements and talent search; push notifications; passkeys; and
+        optional Connect your agent (in-app chat or an external MCP client with
+        a connection key).
       </p>
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
@@ -232,6 +235,13 @@ function TermsFeaturesSafety() {
         <li>
           Master info and similar handoff notes are for your internal team. You
           decide whether managers may view a property’s master file.
+        </li>
+        <li>
+          Calendar import uses private export links you provide. Those feeds are
+          not a booking engine or payment channel. Treat feed URLs as secrets;
+          anyone with the link may read blocked or reserved nights. Pulse Flow
+          is not affiliated with Airbnb, Booking.com, or VRBO and does not
+          replace their listings or guest checkout.
         </li>
         <li>
           Agent connection keys never include your database password. You can
@@ -313,6 +323,15 @@ export function TermsOwnerSection() {
           Keep house guides accurate for guests. Use master info, maintenance
           logs, and reports for internal handoffs - treat sensitive codes as
           confidential.
+        </li>
+        <li>
+          If you connect a third-party calendar export (Airbnb, Booking.com,
+          VRBO, or similar), you authorize {brand.name} to fetch that feed and
+          show occupancy blocks in your workspace. You are responsible for
+          keeping the link private, for the accuracy of dates on the source
+          platform, and for double-booking risk if feeds are stale or incomplete.
+          Guests still book and pay on the channel; {brand.name} does not process
+          those bookings or channel fees.
         </li>
         <li>
           Guest-to-host payments happen outside {brand.name}. Document what
@@ -592,9 +611,10 @@ export function PrivacyOwnerSection() {
       <ul className="list-disc space-y-1 pl-5 text-muted">
         <li>
           We process property inventory (including photos, listing links, and
-          details), tasks, jobs, contacts, team chat, expense bills, reports and
-          handoff snapshots, guest stays, house guides, master info,
-          maintenance logs, and company software-billing metadata.
+          details), optional calendar-export URLs and imported occupancy blocks,
+          tasks, jobs, contacts, team chat, expense bills, reports and handoff
+          snapshots, guest stays, house guides, master info, maintenance logs,
+          and company software-billing metadata.
         </li>
         <li>
           When you invite staff or guests, we store invite and join records tied
@@ -685,7 +705,8 @@ export function PrivacyCommonSections() {
           <li>
             Operations data: properties, tasks, jobs, contacts, bills, messages,
             photos, guest stays, house guides, master info, maintenance logs,
-            reports, and related records you or your teammates create.
+            reports, optional calendar-export URLs and imported occupancy
+            blocks, and related records you or your teammates create.
           </li>
           <li>
             Technical data: device and browser type, IP address, app version, log

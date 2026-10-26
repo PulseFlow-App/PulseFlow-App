@@ -108,6 +108,12 @@ import { resolveSupportCancelAction } from "@/lib/guest/handle-support-cancel";
 import { resolveSupportRefundAction } from "@/lib/guest/handle-support-refund";
 import { capitalizeLabel } from "@/lib/format-label";
 import { pickVillaDetails } from "@/lib/villas/property-details";
+import {
+  fetchIcalText,
+  pickPulseStayDates,
+  planIcalSync,
+} from "@/lib/calendar/sync-villa-ical";
+import { normalizeIcalUrl } from "@/lib/calendar/parse-ics";
 
 export type { AppData } from "@/lib/data/types";
 import type { AppData } from "@/lib/data/types";
@@ -494,6 +500,14 @@ function useDemoData(): AppData {
     return [];
   }, [store.stayDateRequests, profile]);
 
+  const calendarBookings = useMemo(() => {
+    if (!profile || profile.role === "guest") return [];
+    const villaIds = new Set(visibleVillas.map((v) => v.id));
+    return (store.calendarBookings ?? []).filter(
+      (b) => villaIds.has(b.villa_id) && b.status !== "cancelled",
+    );
+  }, [store.calendarBookings, visibleVillas, profile]);
+
   return {
     ready: hydrated,
     profile,
@@ -520,6 +534,7 @@ function useDemoData(): AppData {
     unreadNotificationCount,
     unreadMessageCount,
     guestStays,
+    calendarBookings,
     activeStay,
     houseGuides,
     villaMasterInfo,
@@ -658,6 +673,8 @@ function useDemoData(): AppData {
             info_doc_url: input.info_doc_url ?? null,
             info_doc_name: input.info_doc_name?.trim() || null,
             source_notes: input.source_notes?.trim() || null,
+            ical_import_url: input.ical_import_url?.trim() || null,
+            ical_synced_at: null,
             status: input.status ?? "available",
             check_in: input.check_in || null,
             check_out: input.check_out || null,
@@ -2241,6 +2258,88 @@ function useDemoData(): AppData {
           },
         ],
       }));
+    },
+    syncVillaCalendar: async (input) => {
+      assertDemoWritable();
+      if (!profile || (profile.role !== "owner" && profile.role !== "manager")) {
+        throw new Error("Only owners or managers can sync calendars.");
+      }
+      const villa = store.villas.find((v) => v.id === input.villaId);
+      if (!villa) throw new Error("Property not found.");
+      const feedUrl =
+        normalizeIcalUrl(input.feedUrl || "") ||
+        normalizeIcalUrl(villa.ical_import_url || "");
+      if (!feedUrl) {
+        throw new Error(
+          "Paste an Airbnb or Booking.com calendar export URL first.",
+        );
+      }
+      const icsText = await fetchIcalText(feedUrl);
+      const existing = (store.calendarBookings ?? []).filter(
+        (b) => b.villa_id === villa.id,
+      );
+      const plan = planIcalSync({
+        orgId: villa.org_id,
+        villaId: villa.id,
+        feedUrl,
+        icsText,
+        existing,
+      });
+      const inserted = plan.toInsert.map((row) => ({
+        ...row,
+        id: uid("cal"),
+      }));
+      updateDemoStore((s) => {
+        const others = (s.calendarBookings ?? []).filter(
+          (b) => b.villa_id !== villa.id,
+        );
+        const kept = (s.calendarBookings ?? [])
+          .filter((b) => b.villa_id === villa.id)
+          .map((b) => {
+            if (plan.toCancelIds.includes(b.id)) {
+              return {
+                ...b,
+                status: "cancelled" as const,
+                last_seen_at: plan.syncedAt,
+              };
+            }
+            const upd = plan.toUpdate.find((u) => u.id === b.id);
+            return upd ? { ...b, ...upd.patch } : b;
+          });
+        const nextBookings = [...others, ...kept, ...inserted];
+        const active = nextBookings.filter(
+          (b) => b.villa_id === villa.id && b.status !== "cancelled",
+        );
+        const pulse = pickPulseStayDates(active);
+        return {
+          ...s,
+          calendarBookings: nextBookings,
+          villas: s.villas.map((v) =>
+            v.id === villa.id
+              ? {
+                  ...v,
+                  ical_import_url: feedUrl,
+                  ical_synced_at: plan.syncedAt,
+                  ...(pulse.check_in
+                    ? {
+                        check_in: pulse.check_in,
+                        check_out: pulse.check_out,
+                        status: "occupied" as const,
+                      }
+                    : {}),
+                  updated_at: plan.syncedAt,
+                }
+              : v,
+          ),
+        };
+      });
+      return {
+        imported: inserted.length,
+        updated: plan.toUpdate.length,
+        cancelled: plan.toCancelIds.length,
+        events: plan.toInsert.length + existing.length - plan.toCancelIds.length,
+        syncedAt: plan.syncedAt,
+      };
     },
   };
 }

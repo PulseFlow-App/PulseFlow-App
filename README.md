@@ -44,6 +44,8 @@ App: [app.pulseflow.site](https://app.pulseflow.site) · Guides by role: [`docs/
 | Team thread (not guest support) | **Messages** |
 | Confirmed stays, deposits, briefings | **Guests** |
 | Accept/decline guest date requests & send price quotes | **Date requests** (menu) |
+| Month grid + Airbnb / Booking.com calendar import | **Bookings calendar** (menu); paste Export calendar URL on each **Property** → Sync |
+| Download a job (or this week) to Google / Apple Calendar | **Jobs** → Add to calendar |
 | CSV exports, weekly summary, handoffs | **Reports & handoffs** (menu) — needs active trial/Full |
 | Find opted-in field talent | **Staff search** (menu) |
 | Invite staff, managers, guests | **Invites** / Settings flip cards |

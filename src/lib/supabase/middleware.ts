@@ -86,7 +86,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && (pathname === "/login" || pathname === "/" || pathname === "/register")) {
+  // Real session on /login?demo=* must reach the login page so the user can
+  // switch into a demo seat (marketing "Open demo" while already signed in).
+  const demoPrefill = Boolean(request.nextUrl.searchParams.get("demo"));
+  if (
+    user &&
+    (pathname === "/" ||
+      pathname === "/register" ||
+      (pathname === "/login" && !demoPrefill))
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/home";
     return NextResponse.redirect(url);

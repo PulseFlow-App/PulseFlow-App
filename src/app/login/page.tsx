@@ -103,18 +103,37 @@ export default function LoginPage() {
       fromQuery === "staff" ||
       fromQuery === "guest"
     ) {
-      setDemoRole(
+      const role =
         fromQuery === "staff"
           ? "employee"
-          : (fromQuery as "owner" | "manager" | "employee" | "guest"),
-      );
+          : (fromQuery as "owner" | "manager" | "employee" | "guest");
+      setDemoRole(role);
+
+      const account = DEMO_ACCOUNTS.find((a) => a.role === role);
+      if (!account) return;
+
+      // Marketing demo links must work even if a real account is already signed in:
+      // clear that session, then enter the requested demo seat.
+      void (async () => {
+        try {
+          if (!isDemoMode()) {
+            await createClient().auth.signOut();
+          }
+          const profile = demoLogin(account.email, DEMO_PASSWORD);
+          if (!profile) return;
+          router.replace("/home");
+          router.refresh();
+        } catch {
+          /* Prefill still available if auto-enter fails */
+        }
+      })();
       return;
     }
     setDemoRole(null);
     if (isDemoMode()) {
       demoLogout();
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (isDemoMode()) return;

@@ -9,6 +9,7 @@ import type {
   GuestCharge,
   GuestDeposit,
   GuestStay,
+  VillaCalendarBooking,
   HouseGuide,
   Invite,
   VillaMaintenanceLog,
@@ -57,6 +58,8 @@ export type AppData = {
   unreadMessageCount: number;
   /** Guest stay loop */
   guestStays: GuestStay[];
+  /** Airbnb / Booking.com / iCal occupancy blocks */
+  calendarBookings: VillaCalendarBooking[];
   activeStay: GuestStay | null;
   houseGuides: HouseGuide[];
   villaMasterInfo: VillaMasterInfo[];
@@ -121,6 +124,8 @@ export type AppData = {
         | "info_doc_url"
         | "info_doc_name"
         | "source_notes"
+        | "ical_import_url"
+        | "ical_synced_at"
         | "property_type"
         | "sq_m"
         | "bedrooms"
@@ -150,6 +155,7 @@ export type AppData = {
     info_doc_url?: string | null;
     info_doc_name?: string | null;
     source_notes?: string | null;
+    ical_import_url?: string | null;
     status?: Villa["status"];
     check_in?: string | null;
     check_out?: string | null;
@@ -325,4 +331,18 @@ export type AppData = {
     note?: string | null;
     stay_id?: string;
   }) => Promise<void>;
+  /**
+   * Pull Airbnb / Booking.com / VRBO iCal export into calendar bookings.
+   * Saves feedUrl on the villa when provided.
+   */
+  syncVillaCalendar: (input: {
+    villaId: string;
+    feedUrl?: string | null;
+  }) => Promise<{
+    imported: number;
+    updated: number;
+    cancelled: number;
+    events: number;
+    syncedAt: string;
+  }>;
 };

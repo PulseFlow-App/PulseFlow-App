@@ -13,6 +13,7 @@ import type {
   GuestCharge,
   GuestDeposit,
   GuestStay,
+  VillaCalendarBooking,
   HouseGuide,
   Invite,
   MessageWithSender,
@@ -242,6 +243,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     unreadNotificationCount: 0,
     unreadMessageCount: 0,
     guestStays: [],
+    calendarBookings: [],
     activeStay: null,
     houseGuides: [],
     villaMasterInfo: [],
@@ -309,6 +311,9 @@ export function useSupabaseData(enabled: boolean): AppData {
     confirmStayDateRequest: async () => undefined,
     cancelStayDateRequest: async () => undefined,
     addStayPhoto: async () => undefined,
+    syncVillaCalendar: async () => {
+      throw new Error("Connect Supabase to sync calendars.");
+    },
   };
 
   const [ready, setReady] = useState(!enabled);
@@ -334,6 +339,9 @@ export function useSupabaseData(enabled: boolean): AppData {
     [],
   );
   const [guestStays, setGuestStays] = useState<GuestStay[]>([]);
+  const [calendarBookings, setCalendarBookings] = useState<
+    VillaCalendarBooking[]
+  >([]);
   const [houseGuides, setHouseGuides] = useState<HouseGuide[]>([]);
   const [villaMasterInfo, setVillaMasterInfo] = useState<VillaMasterInfo[]>([]);
   const [villaMaintenanceLogs, setVillaMaintenanceLogs] = useState<
@@ -404,6 +412,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       ordersRes,
       dateRequestsRes,
       guestStaysRes,
+      calendarBookingsRes,
       houseGuidesRes,
       supportMessagesRes,
       guestBriefingsRes,
@@ -481,6 +490,14 @@ export function useSupabaseData(enabled: boolean): AppData {
             .select("*")
             .in("org_id", orgIds)
             .order("created_at", { ascending: false }),
+      isGuest
+        ? Promise.resolve({ data: [], error: null })
+        : supabase
+            .from("villa_calendar_bookings")
+            .select("*")
+            .in("org_id", orgIds)
+            .neq("status", "cancelled")
+            .order("check_in", { ascending: true }),
       supabase.from("house_guides").select("*").in("org_id", orgIds),
       isGuest
         ? supabase
@@ -613,6 +630,13 @@ export function useSupabaseData(enabled: boolean): AppData {
         : guestStaysRes.error
           ? []
           : ((guestStaysRes.data as GuestStay[]) ?? []),
+    );
+    setCalendarBookings(
+      calendarBookingsRes.error && missingGuestTable(calendarBookingsRes.error)
+        ? []
+        : calendarBookingsRes.error
+          ? []
+          : ((calendarBookingsRes.data as VillaCalendarBooking[]) ?? []),
     );
     setHouseGuides(
       houseGuidesRes.error
@@ -1053,6 +1077,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     unreadNotificationCount,
     unreadMessageCount,
     guestStays: scopedGuestStays,
+    calendarBookings,
     activeStay,
     houseGuides,
     villaMasterInfo,
@@ -1734,6 +1759,8 @@ export function useSupabaseData(enabled: boolean): AppData {
         info_doc_url: input.info_doc_url ?? null,
         info_doc_name: input.info_doc_name?.trim() || null,
         source_notes: input.source_notes?.trim() || null,
+        ical_import_url: input.ical_import_url?.trim() || null,
+        ical_synced_at: null,
         status: input.status ?? "available",
         cleaning_status: input.cleaning_status ?? "not_needed",
         check_in: input.check_in || null,
@@ -3764,6 +3791,42 @@ export function useSupabaseData(enabled: boolean): AppData {
         throw error;
       }
       await refresh();
+    },
+    syncVillaCalendar: async (input) => {
+      if (!profile || (profile.role !== "owner" && profile.role !== "manager")) {
+        throw new Error("Only owners or managers can sync calendars.");
+      }
+      const villa = villas.find((v) => v.id === input.villaId);
+      if (!villa) throw new Error("Property not found.");
+      requireOrgWrite(villa.org_id);
+
+      const res = await fetch("/api/calendar/sync-ical", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          villaId: input.villaId,
+          feedUrl: input.feedUrl?.trim() || undefined,
+        }),
+      });
+      const payload = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        imported?: number;
+        updated?: number;
+        cancelled?: number;
+        events?: number;
+        syncedAt?: string;
+      };
+      if (!res.ok) {
+        throw new Error(payload.error || "Calendar sync failed.");
+      }
+      await refresh();
+      return {
+        imported: payload.imported ?? 0,
+        updated: payload.updated ?? 0,
+        cancelled: payload.cancelled ?? 0,
+        events: payload.events ?? 0,
+        syncedAt: payload.syncedAt ?? new Date().toISOString(),
+      };
     },
   };
 }

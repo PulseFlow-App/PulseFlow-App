@@ -170,6 +170,10 @@ export type Villa = {
   info_doc_name: string | null;
   /** Pasted listing text or freeform notes from chat / email */
   source_notes: string | null;
+  /** Private Airbnb / Booking.com / VRBO iCal export URL */
+  ical_import_url: string | null;
+  /** Last successful pull of ical_import_url */
+  ical_synced_at: string | null;
   status: VillaStatus;
   check_in: string | null;
   check_out: string | null;
@@ -377,6 +381,30 @@ export type GuestStay = {
   check_out: string;
   status: GuestStayStatus;
   owner_notices: string | null;
+  created_at: string;
+};
+
+/** Channel / iCal occupancy block on a villa (Airbnb, Booking.com, …). */
+export type VillaCalendarSource =
+  | "ical"
+  | "airbnb"
+  | "booking"
+  | "vrbo"
+  | "manual";
+
+export type VillaCalendarBookingStatus = "booked" | "blocked" | "cancelled";
+
+export type VillaCalendarBooking = {
+  id: string;
+  org_id: string;
+  villa_id: string;
+  external_uid: string;
+  source: VillaCalendarSource;
+  summary: string | null;
+  check_in: string;
+  check_out: string;
+  status: VillaCalendarBookingStatus;
+  last_seen_at: string;
   created_at: string;
 };
 

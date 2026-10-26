@@ -52,6 +52,8 @@ Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll chec
 - **Team chat** - company thread with @mentions (not guest support)  
 - **Guests panel** (footer) - confirmed stays, record security deposit, send briefings (guest must tick as read), shortcut to date requests + support  
 - **Date requests** - accept/decline guest stay dates; accept books villa dates and creates the stay  
+- **Bookings calendar** - month grid of direct stays + Airbnb / Booking.com / VRBO nights; paste each listing’s private Export calendar (.ics) URL on the property → Sync  
+- **Jobs → calendar** - download a job (or this week’s jobs) as `.ics` for Google / Apple Calendar  
 - **Reports / exports** - CSV (bills, tasks, villas, jobs, occupancy), printable weekly ops, handoff snapshots  
 - **Talent directory** - browse opted-in field talent by skills / place / map  
 - **Endorsements + leaderboard** - weekly stars for the team  
@@ -72,7 +74,7 @@ Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll chec
 
 ### Same as owner (ops)
 
-Home, villas (edit), house guides, tasks, contacts + Order, jobs, bills finance, team chat, Guests panel (deposit + briefings), date requests accept/decline, talent browse, endorsements, **Connect your agent**, reports when company is entitled, invite staff / guests / anyone, referral progress, Face ID, push, rename own display name.
+Home, villas (edit), house guides, tasks, contacts + Order, jobs, bills finance, team chat, Guests panel (deposit + briefings), date requests accept/decline, **Bookings calendar** + Airbnb/Booking.com iCal sync, talent browse, endorsements, **Connect your agent**, reports when company is entitled, invite staff / guests / anyone, referral progress, Face ID, push, rename own display name.
 
 ### Different from owner
 
@@ -164,6 +166,8 @@ Legend: ● yes · ◐ limited · ○ no
 | Set guest deposit (Guests) | ● | ● | ○ | ○ | ○ |
 | Guest briefings | ● send | ● send | ○ | ● read | ○ |
 | Date requests | ● accept | ● accept | ○ | ● request | ○ |
+| Bookings calendar + OTA iCal import | ● | ● | ○ | ○ | ◐ |
+| Jobs → .ics download | ● | ● | ● | ○ | ○ |
 | Team chat | ● | ● | ● | ○ | ○ |
 | Support chat (host↔guest) | ● | ● | ○ | ●* | ○ |
 | Talent browse | ● | ● | ○ | ○ | ○ |
@@ -188,7 +192,8 @@ Legend: ● yes · ◐ limited · ○ no
 ## Coming later (do not sell as live)
 
 - Soft auto-archive of completed stays; richer host tools  
-- Google Sheets / iCal / LINE-WhatsApp ops bridges (see `INTEGRATIONS_ROADMAP.md`)  
+- Google Sheets sync; **subscribe** feed out to Google / Apple Calendar; LINE/WhatsApp ops alerts (see `INTEGRATIONS_ROADMAP.md`)  
+- Full channel-manager / PMS APIs (Hostaway, Guesty) — basic Airbnb/Booking.com **iCal import is already live**  
 - Long-term tenant screening / e-lease (not Pulse Flow’s vacation-ops focus)  
 - Full accounting product, “integrate with everything”
 
@@ -200,6 +205,8 @@ Legend: ● yes · ◐ limited · ○ no
 |-------|--------|
 | Role gates | `src/lib/roles.ts` |
 | Guest stay + deposit + briefings | `src/app/(app)/guests/`, migrations `023`–`025` |
+| Bookings calendar + OTA iCal import | `src/app/(app)/bookings/`, `src/lib/calendar/`, migration `055` |
+| Jobs → calendar (.ics export) | `src/lib/export/job-calendar.ts`, Jobs page |
 | Company vs personal | `docs/COMPANY_FEATURES.md` |
 | Reports | `src/app/(app)/reports/`, `src/lib/export/ops-export.ts` |
 | Push | `src/lib/push/`, Settings → Phone alerts |

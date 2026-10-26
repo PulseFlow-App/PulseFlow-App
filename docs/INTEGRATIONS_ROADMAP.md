@@ -1,6 +1,6 @@
 # Integrations & guest app - future steps
 
-Status as of 2026-08-29. **CSV exports are done** (Reports). Everything below is parked for later.
+Status as of 2026-10-26. **CSV exports**, **Airbnb / Booking.com iCal import**, and **jobs → .ics download** are live. Everything below is parked for later.
 
 ---
 
@@ -23,6 +23,21 @@ Available to entitled company owners and managers:
 
 Code: `src/lib/export/ops-export.ts`, `src/app/(app)/reports/page.tsx`.
 
+### Airbnb / Booking.com / VRBO calendar **import**
+
+- Paste each listing’s private Export calendar (.ics) URL on the property → Sync
+- Pulls reserved / blocked nights into `villa_calendar_bookings`
+- Month grid at `/bookings` (Menu → Bookings calendar; link from Guests)
+- Updates villa check-in / check-out pulse from the next open block
+
+Code: `src/lib/calendar/`, `src/app/api/calendar/sync-ical/`, migration `055_villa_calendar_import.sql`.
+
+### Jobs → calendar download
+
+- Per appointment or “this week” `.ics` download on Jobs (opens in Google / Apple Calendar)
+
+Code: `src/lib/export/job-calendar.ts`, Jobs page.
+
 ---
 
 ## Near term (integrations)
@@ -33,11 +48,11 @@ Code: `src/lib/export/ops-export.ts`, `src/app/(app)/reports/page.tsx`.
 - Or scheduled nightly dump to a sheet they own
 - Highest ROI after CSV for budget-minded owners
 
-### 2. iCal feed
+### 2. iCal **subscribe** feed (export out)
 
 - Subscribe link for Google / Apple Calendar
 - Events: check-in, check-out, booked jobs
-- Reduces missed turnovers without another login
+- Complements the existing OTA **import** and jobs `.ics` download
 
 ### 3. Bookkeeper pack (light)
 
@@ -62,11 +77,11 @@ Code: `src/lib/export/ops-export.ts`, `src/app/(app)/reports/page.tsx`.
 
 ## Later / if demanded
 
-### 6. Channel / PMS
+### 6. Channel / PMS APIs
 
 - Pull reservations → auto check-in/out + cleaning jobs
-- Candidates: Hostaway, Guesty, or Airbnb iCal **import**
-- Only after export + Sheets + calendar feel solid
+- Candidates: Hostaway, Guesty (full API)
+- Basic Airbnb / Booking.com **iCal import** is already live; PMS APIs only if users outgrow feeds
 
 ### Avoid early
 
@@ -76,53 +91,26 @@ Code: `src/lib/export/ops-export.ts`, `src/app/(app)/reports/page.tsx`.
 
 ### Positioning
 
-> Pulse Flow runs the day-to-day. Your budget stays in Sheets/Xero - we export and sync the spend and schedule so you don’t retype receipts.
+> Pulse Flow runs the day-to-day. Your budget stays in Sheets/Xero - we export and sync the spend and schedule so you don’t retype receipts. Channel bookings stay on Airbnb / Booking.com; paste their calendar export to see nights in the app.
 
 ---
 
-## Guest app MVP (in progress)
+## Guest app
 
-Lean loop agreed:
-
-**invite → stay home + house guide → support chat → guest bills/deposit → company villas to request again**
-
-### Shipped (needs migration `022`)
-
-- `guest` role (DB + types + RLS-ready invites)
-- Settings flip cards: Invite anyone / Invite staff / Invite guest
-- Owner & manager: all three; staff/cleaner/guest: anyone only
-- Join page copy for staff vs guest
-- Guest home placeholder + guest bottom nav (Stay / Villas / Support / Bills)
-
-### Next guest steps (build in order)
-
-1. **Stay home** - current villa, dates, status notices from owner/manager
-2. **House guide** - Wi‑Fi, gates, bins, quiet hours, checkout checklist (owner-editable)
-3. **Support chat** - one thread per stay with **owner/manager only** (never cleaners)
-4. **Guest bills / deposit** - guest-facing bills only (deposit held → deductions with photo → refund); arrival/departure photo set optional
-5. **Company villas browse** - photos, area, sleeps; **Request dates** → owner/manager (no public booking engine yet)
-6. Soft-expire guest access after checkout but keep deposit history + “book again”
-
-### Guest access rules
-
-- Join via stay invite link only (not open signup as guest)
-- No contacts directory, talent, endorsements, or internal ops bills
-- Emergency phone note ok; app for everything else
+Guest stay loop (invite → stay home + house guide → support → deposits → request dates) is largely shipped. Soft-expire after checkout and richer host tools remain later.
 
 ---
 
-## Related migrations to run
+## Related migrations
 
 | Migration | Purpose |
 |-----------|---------|
-| `020_job_search_location.sql` | Talent location |
-| `021_endorsements_manager.sql` | Managers can endorse |
-| `022_guest_role.sql` | Guest role + invites |
+| `055_villa_calendar_import.sql` | Villa iCal URL + `villa_calendar_bookings` |
 
 ---
 
 ## When continuing
 
-1. Confirm migrations applied on Supabase  
-2. Pick next slice: **guest stay home + house guide**, or **Google Sheets sync**  
-3. Keep CSV as the baseline; don’t block guest MVP on Sheets/iCal
+1. Confirm migration `055` applied on Supabase  
+2. Next slice: **Google Sheets sync** or **iCal subscribe** (export out)  
+3. Keep CSV as the baseline for bookkeepers  

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Star, Trash2 } from "lucide-react";
+import { CalendarPlus, Star, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label, Select } from "@/components/ui/input";
@@ -29,6 +29,13 @@ import { useI18n } from "@/lib/i18n/provider";
 import { TaskRow } from "@/components/tasks/task-row";
 import { reviewOfferHref } from "@/lib/tasks/review-offer";
 import { weekKey } from "@/lib/endorsements";
+import {
+  buildJobCalendarIcs,
+  downloadIcs,
+  orderHasCalendarSchedule,
+  ordersInLocalWeek,
+} from "@/lib/export/job-calendar";
+import type { ServiceOrder } from "@/lib/types";
 
 function CancelOrderButton({ orderId }: { orderId: string }) {
   const data = useData();
@@ -237,6 +244,50 @@ export default function JobsPage() {
     });
   }, [data.tasks, data.profile, staff]);
 
+  const assigneeNameByOrderId = useMemo(() => {
+    const map: Record<string, string | null> = {};
+    for (const order of myOrders) {
+      if (!order.staff_profile_id) {
+        map[order.id] = null;
+        continue;
+      }
+      map[order.id] =
+        (
+          data.profiles.find((p) => p.id === order.staff_profile_id) ??
+          data.allProfiles.find((p) => p.id === order.staff_profile_id)
+        )?.full_name ?? null;
+    }
+    return map;
+  }, [myOrders, data.profiles, data.allProfiles]);
+
+  const exportOrderToCalendar = (order: ServiceOrder) => {
+    if (!orderHasCalendarSchedule(order)) return;
+    const ics = buildJobCalendarIcs([order], {
+      calendarName: t("jobs.calendarName"),
+      assigneeNameByOrderId,
+    });
+    const stamp = (order.scheduled_date || "job").slice(0, 10);
+    downloadIcs(`pulseflow-job-${stamp}.ics`, ics);
+  };
+
+  const exportWeekToCalendar = () => {
+    const weekOrders = ordersInLocalWeek(
+      myOrders.filter(
+        (o) => o.status !== "cancelled" && orderHasCalendarSchedule(o),
+      ),
+    );
+    if (weekOrders.length === 0) {
+      window.alert(t("jobs.exportWeekEmpty"));
+      return;
+    }
+    const ics = buildJobCalendarIcs(weekOrders, {
+      calendarName: t("jobs.calendarName"),
+      assigneeNameByOrderId,
+    });
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadIcs(`pulseflow-jobs-week-${stamp}.ics`, ics);
+  };
+
   if (!data.ready || !data.profile) return <LoadingState />;
 
   return (
@@ -250,11 +301,26 @@ export default function JobsPage() {
             {staff ? t("jobs.subtitleStaff") : t("jobs.subtitleOwner")}
           </p>
         </div>
-        {booker ? (
-          <Link href="/contacts">
-            <Button size="sm">{t("jobs.orderStaff")}</Button>
-          </Link>
-        ) : null}
+        <div className="flex shrink-0 flex-col items-stretch gap-2 sm:flex-row">
+          {myOrders.some(orderHasCalendarSchedule) ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={exportWeekToCalendar}
+              title={t("jobs.exportWeekHint")}
+            >
+              <CalendarPlus className="size-4" />
+              {t("jobs.exportWeek")}
+            </Button>
+          ) : null}
+          {booker ? (
+            <Link href="/contacts">
+              <Button size="sm" className="w-full">
+                {t("jobs.orderStaff")}
+              </Button>
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       <section className="space-y-2">
@@ -301,12 +367,14 @@ export default function JobsPage() {
               !!order.staff_profile_id &&
               order.staff_profile_id !== data.profile?.id &&
               !reviewedThisWeek.has(order.staff_profile_id);
+            const canAddToCalendar = orderHasCalendarSchedule(order);
             const showActions =
               Boolean(order.details) ||
               !staff ||
               pendingForMe ||
               (staff && order.status === "agreed") ||
               showReview ||
+              canAddToCalendar ||
               (!staff && canCancel) ||
               (!staff && canReopen);
             return (
@@ -348,6 +416,18 @@ export default function JobsPage() {
                         onClick={() => void data.completeServiceOrder(order.id)}
                       >
                         {t("jobs.markDone")}
+                      </Button>
+                    ) : null}
+                    {canAddToCalendar ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="w-full"
+                        onClick={() => exportOrderToCalendar(order)}
+                        title={t("jobs.exportWeekHint")}
+                      >
+                        <CalendarPlus className="size-4" />
+                        {t("jobs.addToCalendar")}
                       </Button>
                     ) : null}
                     {showReview ? (

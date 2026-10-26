@@ -65,6 +65,7 @@ const en = {
   "nav.invites": "Invites",
   "nav.company": "Company",
   "nav.dateRequests": "Date requests",
+  "nav.bookings": "Bookings calendar",
   "nav.menuManage": "Manage",
   "nav.menuAccount": "Account",
   "publicProfile.loading": "Loading profile…",
@@ -213,6 +214,13 @@ const en = {
   "villas.listingUrl": "Listing link (Airbnb)",
   "villas.listingUrlPh": "",
   "villas.listingUrlHint": "",
+  "villas.icalUrl": "Calendar export (Airbnb / Booking.com)",
+  "villas.icalUrlHint":
+    "In Airbnb or Booking.com: Calendar → Sync calendars → Export. Paste that private .ics link here, then Sync.",
+  "villas.icalSync": "Sync",
+  "villas.icalSyncOk": "Bookings pulled into Pulse Flow.",
+  "villas.icalSyncFail": "Could not sync calendar.",
+  "villas.icalSyncedAt": "Last synced {when}",
   "villas.driveUrl": "Photo / docs folder",
   "villas.driveUrlPh": "",
   "villas.driveUrlHint": "",
@@ -475,6 +483,12 @@ const en = {
   "jobs.progress.billPending": "Receipt {amount} · pending your approval",
   "jobs.progress.show": "Progress",
   "jobs.progress.hide": "Hide progress",
+  "jobs.addToCalendar": "Add to calendar",
+  "jobs.exportWeek": "This week → calendar",
+  "jobs.exportWeekEmpty": "No dated jobs this week to export.",
+  "jobs.exportWeekHint":
+    "Downloads an .ics file that opens in Google Calendar or Apple Calendar.",
+  "jobs.calendarName": "Pulse Flow jobs",
 
   "order.status.pending_ack": "Awaiting Read & agreed",
   "order.status.agreed": "Confirmed",
@@ -1309,6 +1323,33 @@ const en = {
   "dateRequests.sendQuote": "Send quote to guest",
   "dateRequests.acceptConfirm": "Send quote to guest",
   "dateRequests.priceRequired": "Enter the total stay price before sending the quote.",
+
+  "bookings.title": "Bookings calendar",
+  "bookings.subtitle":
+    "Direct stays and Airbnb / Booking.com nights pulled from each property’s calendar export.",
+  "bookings.connectFeed": "Connect calendar",
+  "bookings.emptyVillas": "No properties yet",
+  "bookings.emptyVillasHint": "Add a property, then paste its Airbnb or Booking.com calendar link.",
+  "bookings.allProperties": "All properties",
+  "bookings.feedLinked": "calendar linked",
+  "bookings.feedsLinked":
+    "{count} property with calendar linked|{count} properties with calendar linked",
+  "bookings.noFeedsYet":
+    "No calendar feeds yet — open a property → Quick fill → paste Export calendar URL → Sync.",
+  "bookings.prevMonth": "Previous month",
+  "bookings.nextMonth": "Next month",
+  "bookings.dayEmpty": "Nothing booked this day",
+  "bookings.dayEmptyHint": "Sync an Airbnb or Booking.com calendar, or confirm a guest stay.",
+  "bookings.directStay": "Direct stay (app guest)",
+  "bookings.blocked": "Blocked",
+  "bookings.badgeDirect": "App",
+  "bookings.badgeChannel": "Calendar",
+  "bookings.openProperty": "Open property",
+  "bookings.source.ical": "Calendar booking",
+  "bookings.source.airbnb": "Airbnb",
+  "bookings.source.booking": "Booking.com",
+  "bookings.source.vrbo": "VRBO",
+  "bookings.source.manual": "Manual block",
 
   "guests.title": "Guests",
   "guests.subtitle":

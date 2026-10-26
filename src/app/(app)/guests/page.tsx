@@ -273,9 +273,14 @@ export default function GuestsPage() {
 
   return (
     <div className="space-y-4 animate-rise">
-      <div>
-        <h1 className="type-title">{t("guests.title")}</h1>
-        <p className="type-meta mt-1">{t("guests.subtitle")}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="type-title">{t("guests.title")}</h1>
+          <p className="type-meta mt-1">{t("guests.subtitle")}</p>
+        </div>
+        <Link href="/bookings" className="shrink-0 text-sm font-semibold text-primary">
+          {t("nav.bookings")}
+        </Link>
       </div>
 
       {pendingDates > 0 ? (

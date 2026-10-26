@@ -290,6 +290,17 @@ export default function VillaDetailPage({
                 value={quickSources}
                 onChange={setQuickSources}
                 uploadDoc={data.uploadVillaPhoto}
+                icalSyncedAt={villa.ical_synced_at}
+                onSyncCalendar={async (feedUrl) => {
+                  await data.syncVillaCalendar({
+                    villaId: villa.id,
+                    feedUrl,
+                  });
+                  setQuickSources((prev) => ({
+                    ...prev,
+                    ical_import_url: feedUrl,
+                  }));
+                }}
                 onEnrich={(enrichment) => {
                   const next = applyVillaEnrichment(enrichment, {
                     name,
