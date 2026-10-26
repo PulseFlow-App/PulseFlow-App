@@ -6,9 +6,9 @@ export const MARKETING_URL = "https://pulseflow.site";
 
 export const OG_IMAGE = {
   url: "/og-image.jpg",
-  width: 1024,
-  height: 665,
-  alt: "Pulse Flow - Run everything in one pulse. Property operations for owners and managers.",
+  width: 1200,
+  height: 630,
+  alt: "Pulse Flow — The pulse of your rental operations. Property management without the chat chaos.",
 } as const;
 
 export function appUrl(path = ""): string {
