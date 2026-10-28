@@ -43,16 +43,19 @@ import {
   SolarWifiRouter,
 } from "@/components/icons/solar";
 
-/** Horizon palette accents for dual-tone icons. */
+/**
+ * Horizon dual-tone fills — CSS vars so frost/dark remap (globals.css).
+ * Soft = calm sky/action wash; ink = structure that follows --color-ink.
+ */
 export const pulseIconTone = {
-  action: "#f26a36",
-  sky: "#219ebc",
-  skySoft: "#8ecae6",
-  success: "#2a9d8f",
-  sun: "#ffb703",
-  danger: "#e63946",
-  ink: "#023047",
-  white: "#ffffff",
+  action: "var(--icon-soft-action)",
+  sky: "var(--icon-soft-sky)",
+  skySoft: "var(--icon-soft-sky)",
+  success: "var(--icon-soft-success)",
+  sun: "var(--icon-soft-sun)",
+  danger: "var(--icon-soft-danger)",
+  ink: "var(--icon-ink)",
+  white: "var(--icon-soft-white)",
 } as const;
 
 export type PulseIconTone = keyof typeof pulseIconTone;
@@ -171,7 +174,8 @@ export function PulseIcon({
     <Icon
       soft={softFill}
       ink={ink}
-      className={cn("shrink-0", className)}
+      softOpacity={surface === "inverse" ? 1 : 0.92}
+      className={cn("shrink-0 pf-icon-well", className)}
       {...props}
     />
   );
