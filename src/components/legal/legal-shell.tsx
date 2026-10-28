@@ -23,9 +23,9 @@ export function LegalShell({ children }: { children: React.ReactNode }) {
         <button
           type="button"
           onClick={goBack}
-          className="sticky top-[max(0.5rem,env(safe-area-inset-top))] z-20 mb-4 inline-flex items-center gap-1 rounded-full bg-white px-3 py-2 text-sm font-semibold text-ink soft-shadow"
+          className="sticky top-[max(0.5rem,env(safe-area-inset-top))] z-20 mb-4 inline-flex h-8 items-center gap-1 rounded-full border border-[var(--color-border)] bg-card px-2.5 text-xs font-semibold text-ink"
         >
-          <ArrowLeft className="size-4" /> Back
+          <ArrowLeft className="size-3.5" strokeWidth={2} aria-hidden /> Back
         </button>
         {children}
       </div>

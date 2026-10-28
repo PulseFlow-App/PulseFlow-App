@@ -18,9 +18,17 @@ type BottomSheetProps = {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  /** Tighter header / close; centered higher so dense lists fit without scroll. */
+  compact?: boolean;
 };
 
-export function BottomSheet({ open, title, onClose, children }: BottomSheetProps) {
+export function BottomSheet({
+  open,
+  title,
+  onClose,
+  children,
+  compact = false,
+}: BottomSheetProps) {
   const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -78,7 +86,14 @@ export function BottomSheet({ open, title, onClose, children }: BottomSheetProps
   if (!open || !mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center sm:p-4">
+    <div
+      className={cn(
+        "fixed inset-0 z-[90] flex justify-center",
+        compact
+          ? "items-center p-3 sm:p-4"
+          : "items-end sm:items-center sm:p-4",
+      )}
+    >
       <button
         type="button"
         className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]"
@@ -91,30 +106,50 @@ export function BottomSheet({ open, title, onClose, children }: BottomSheetProps
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative z-10 flex max-h-[min(88dvh,40rem)] w-full max-w-lg flex-col",
-          "rounded-t-[1.5rem] bg-card shadow-[0_-8px_40px_rgba(2,48,71,0.18)]",
-          "animate-rise sm:rounded-[1.5rem]",
-          "pb-[max(1rem,env(safe-area-inset-bottom))] pt-3",
+          "relative z-10 flex w-full flex-col bg-card",
+          "shadow-[0_-8px_40px_rgba(2,48,71,0.18)] animate-rise",
+          compact
+            ? "max-h-[min(92dvh,34rem)] max-w-sm rounded-2xl pb-3 pt-2"
+            : "max-h-[min(88dvh,40rem)] max-w-lg rounded-t-[1.25rem] pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:rounded-[1.25rem]",
         )}
       >
-        <div className="mx-auto mb-2 h-1 w-10 shrink-0 rounded-full bg-[var(--color-border)] sm:hidden" />
-        <div className="flex items-start justify-between gap-3 px-5 pb-2">
+        {!compact ? (
+          <div className="mx-auto mb-2 h-1 w-10 shrink-0 rounded-full bg-[var(--color-border)] sm:hidden" />
+        ) : null}
+        <div
+          className={cn(
+            "flex items-center justify-between gap-2",
+            compact ? "px-3 pb-1" : "px-5 pb-2",
+          )}
+        >
           <h2
             id={titleId}
-            className="font-display text-lg font-bold leading-snug text-ink"
+            className={cn(
+              "font-display font-bold leading-snug text-ink",
+              compact ? "text-sm" : "text-lg",
+            )}
           >
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-canvas-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className={cn(
+              "inline-flex shrink-0 items-center justify-center rounded-full text-ink hover:bg-canvas-deep",
+              "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+              compact ? "size-7" : "size-11",
+            )}
             aria-label={t("welcome.sheetClose")}
           >
-            <X className="size-5" aria-hidden />
+            <X className={compact ? "size-3.5" : "size-5"} aria-hidden />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">
+        <div
+          className={cn(
+            "min-h-0 flex-1 overflow-y-auto overscroll-contain",
+            compact ? "px-3 pb-1" : "px-5 pb-4",
+          )}
+        >
           {children}
         </div>
       </div>

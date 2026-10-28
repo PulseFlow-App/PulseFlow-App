@@ -59,8 +59,8 @@ function InlineLanguageButton() {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "inline-flex h-9 max-w-[7.5rem] items-center gap-1 rounded-full px-2.5",
-          "border border-[var(--color-border)] bg-card text-ink soft-shadow",
+          "relative z-10 inline-flex h-8 max-w-[7rem] items-center gap-1 rounded-full px-2",
+          "border border-[var(--color-border)] bg-card text-ink",
           "hover:bg-canvas-deep",
           "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
         )}
@@ -76,8 +76,9 @@ function InlineLanguageButton() {
         open={open}
         title={t("language.title")}
         onClose={() => setOpen(false)}
+        compact
       >
-        <ul className="space-y-1.5" role="listbox" aria-label={t("language.choose")}>
+        <ul className="space-y-0.5" role="listbox" aria-label={t("language.choose")}>
           {LOCALES.map((code) => {
             const selected = code === locale;
             const meta = LOCALE_META[code];
@@ -92,22 +93,21 @@ function InlineLanguageButton() {
                     setOpen(false);
                   }}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-start transition",
-                    "border border-[var(--color-border)]",
+                    "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-start transition",
                     selected
-                      ? "bg-primary-soft text-ink ring-1 ring-primary/30"
-                      : "bg-card text-ink hover:bg-canvas-deep",
+                      ? "bg-primary-soft text-ink ring-1 ring-primary/25"
+                      : "text-ink hover:bg-canvas-deep",
                     "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                   )}
                 >
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-display text-sm font-bold leading-snug">
-                      {meta.native}
+                  <span className="min-w-0 flex-1 truncate font-display text-sm font-semibold leading-snug">
+                    {meta.native}
+                    <span className="ms-1.5 font-sans text-[11px] font-medium text-muted">
+                      {meta.label}
                     </span>
-                    <span className="block text-xs text-muted">{meta.label}</span>
                   </span>
                   {selected ? (
-                    <Check className="size-4 shrink-0 text-primary" aria-hidden />
+                    <Check className="size-3.5 shrink-0 text-primary" aria-hidden />
                   ) : null}
                 </button>
               </li>

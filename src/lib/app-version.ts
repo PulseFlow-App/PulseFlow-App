@@ -1,11 +1,30 @@
 /**
- * Release stamp shown in footers / update checks.
- * Bump only when asked — not on every push or deploy.
+ * Marketing / footer release stamp.
+ * Bump APP_VERSION + APP_UPDATED_AT only when you intentionally ship a named
+ * release — not on every Vercel deploy. Deploy detection for the refresh modal
+ * uses BUILD_ID (git SHA), not these values.
  */
 export const APP_VERSION = "1.0.0";
 
 /** Human-readable release date (manual). */
 export const APP_UPDATED_AT = "18 Oct 2026";
+
+/**
+ * Per-deploy id baked into the client at build time (see next.config.ts).
+ * Changes on every Vercel deploy so /api/version can detect a stale tab.
+ */
+export const CLIENT_BUILD_ID =
+  process.env.NEXT_PUBLIC_BUILD_ID?.trim() || "dev";
+
+/** Server-side deploy id for /api/version (same source as CLIENT_BUILD_ID on Vercel). */
+export function resolveServerBuildId(): string {
+  return (
+    process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
+    process.env.VERCEL_DEPLOYMENT_ID?.trim() ||
+    process.env.NEXT_PUBLIC_BUILD_ID?.trim() ||
+    "dev"
+  );
+}
 
 export function formatAppVersion(version = APP_VERSION, updatedAt = APP_UPDATED_AT) {
   return `v${version} · ${updatedAt}`;

@@ -14,8 +14,6 @@ export type OrgBilling = Pick<
   | "kind"
   | "trial_ends_at"
   | "subscription_status"
-  | "stripe_customer_id"
-  | "stripe_subscription_id"
   | "billing_email"
   | "referral_bonus_ends_at"
   | "referral_year_claimed"
@@ -31,7 +29,7 @@ export function isCompanyEntitled(
 ): boolean {
   if (!org) return false;
   if (org.kind === "personal") return true;
-  // Paid active always. "trialing" alone is not enough — require an unexpired trial.
+  // Paid active always. "trialing" alone is not enough; require an unexpired trial.
   if (org.subscription_status === "active") return true;
   if (
     org.subscription_status === "trialing" &&

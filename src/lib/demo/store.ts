@@ -938,8 +938,6 @@ export function getPublicProfileBySlug(slug: string) {
     orgs: store.orgs.map((o) => ({
       ...o,
       billing_email: null,
-      stripe_customer_id: null,
-      stripe_subscription_id: null,
     })),
     tasksDone: store.tasks.filter(
       (t) => t.assigned_to === profile.id && t.status === "done",

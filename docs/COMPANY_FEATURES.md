@@ -15,7 +15,7 @@ landing (`pulseflow-site`) under “why subscribe”.
 | WhatsApp / LINE deep links from contacts | No* | Yes |
 | Endorsements (weekly reputation) | No | Yes |
 | Leaderboard | No | Yes |
-| Billing / Stripe | Never | Owner pays after trial |
+| Billing / App Store | Never | Owner pays after trial |
 
 \* Personal contacts are call-only so the phone book stays simple.
 

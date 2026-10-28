@@ -155,15 +155,15 @@ export function WelcomeScreen() {
           <Link
             href="/login"
             className={cn(
-              "inline-flex h-9 shrink-0 items-center justify-center rounded-full px-2.5",
-              "text-xs font-semibold text-ink sm:text-sm",
+              "inline-flex h-8 shrink-0 items-center justify-center rounded-full px-2",
+              "text-xs font-semibold text-ink",
               "hover:bg-canvas-deep",
               "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
             )}
           >
             {t("welcome.signIn")}
           </Link>
-          <ThemeIconToggle className="shrink-0" />
+          <ThemeIconToggle className="relative z-10 shrink-0" />
         </header>
 
         <main className="flex flex-1 flex-col gap-8">

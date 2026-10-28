@@ -32,10 +32,14 @@ const AppearanceContext = createContext<AppearanceContextValue>({
 });
 
 export function AppearanceProvider({ children }: { children: React.ReactNode }) {
-  const [appearance, setAppearanceState] = useState<Appearance>(() => {
-    if (typeof window === "undefined") return DEFAULT_APPEARANCE;
-    return readStoredAppearance();
-  });
+  const [appearance, setAppearanceState] = useState<Appearance>(DEFAULT_APPEARANCE);
+
+  // Sync from localStorage after mount (SSR can't read it; boot script already painted).
+  useEffect(() => {
+    const stored = readStoredAppearance();
+    setAppearanceState(stored);
+    applyAppearance(stored);
+  }, []);
 
   useEffect(() => {
     applyAppearance(appearance);

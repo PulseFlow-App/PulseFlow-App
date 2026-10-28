@@ -44,7 +44,7 @@ import {
 } from "@/components/icons/solar";
 
 /**
- * Horizon dual-tone fills — CSS vars so frost/dark remap (globals.css).
+ * Horizon dual-tone fills - CSS vars so frost/dark remap (globals.css).
  * Soft = calm sky/action wash; ink = structure that follows --color-ink.
  */
 export const pulseIconTone = {
@@ -56,6 +56,8 @@ export const pulseIconTone = {
   danger: "var(--icon-soft-danger)",
   ink: "var(--icon-ink)",
   white: "var(--icon-soft-white)",
+  navInk: "var(--icon-nav-ink)",
+  navSoft: "var(--icon-nav-soft)",
 } as const;
 
 export type PulseIconTone = keyof typeof pulseIconTone;
@@ -107,39 +109,39 @@ const registry: Record<
   home: { Icon: SolarHomeSmile, soft: "action" },
   homeAlt: { Icon: SolarHome2, soft: "action" },
   properties: { Icon: SolarBuildings2, soft: "sky" },
-  tasks: { Icon: SolarChecklist, soft: "success" },
+  tasks: { Icon: SolarChecklist, soft: "sky" },
   guests: { Icon: SolarBed, soft: "sky" },
-  bills: { Icon: SolarBillList, soft: "sun" },
-  contacts: { Icon: SolarUsersGroup, soft: "action" },
+  bills: { Icon: SolarBillList, soft: "sky" },
+  contacts: { Icon: SolarUsersGroup, soft: "sky" },
   jobs: { Icon: SolarCalendarMark, soft: "sky" },
   chat: { Icon: SolarChatDots, soft: "action" },
-  map: { Icon: SolarMapPoint, soft: "action" },
-  key: { Icon: SolarKeyMinimal, soft: "sun" },
+  map: { Icon: SolarMapPoint, soft: "sky" },
+  key: { Icon: SolarKeyMinimal, soft: "sky" },
   wifi: { Icon: SolarWifiRouter, soft: "sky" },
   settings: { Icon: SolarSettings, soft: "sky" },
   bell: { Icon: SolarBell, soft: "action" },
   occupied: { Icon: SolarBed, soft: "action" },
-  available: { Icon: SolarCheckCircle, soft: "success" },
-  turnover: { Icon: SolarStars, soft: "sun" },
+  available: { Icon: SolarCheckCircle, soft: "sky" },
+  turnover: { Icon: SolarStars, soft: "sky" },
   maintenance: { Icon: SolarHammer, soft: "danger" },
-  wallet: { Icon: SolarWalletMoney, soft: "sun" },
+  wallet: { Icon: SolarWalletMoney, soft: "sky" },
   clipboard: { Icon: SolarClipboardList, soft: "sky" },
-  clipboardCheck: { Icon: SolarClipboardCheck, soft: "success" },
+  clipboardCheck: { Icon: SolarClipboardCheck, soft: "sky" },
   magic: { Icon: SolarMagicWand, soft: "action" },
   search: { Icon: SolarMagnifier, soft: "sky" },
-  star: { Icon: SolarStar, soft: "sun" },
-  trophy: { Icon: SolarCupStar, soft: "sun" },
+  star: { Icon: SolarStar, soft: "sky" },
+  trophy: { Icon: SolarCupStar, soft: "sky" },
   guide: { Icon: SolarBook, soft: "sky" },
   globe: { Icon: SolarGlobe, soft: "sky" },
-  shield: { Icon: SolarShield, soft: "success" },
+  shield: { Icon: SolarShield, soft: "sky" },
   invite: { Icon: SolarUserPlus, soft: "action" },
   support: { Icon: SolarHeadphones, soft: "sky" },
   document: { Icon: SolarDocumentText, soft: "sky" },
-  edit: { Icon: SolarPen, soft: "action" },
-  chart: { Icon: SolarChart2, soft: "sun" },
+  edit: { Icon: SolarPen, soft: "sky" },
+  chart: { Icon: SolarChart2, soft: "sky" },
   order: { Icon: SolarCalendarAdd, soft: "action" },
   logout: { Icon: SolarLogout, soft: "danger" },
-  medal: { Icon: SolarMedalStar, soft: "sun" },
+  medal: { Icon: SolarMedalStar, soft: "sky" },
 };
 
 type Surface = "canvas" | "nav" | "inverse";
@@ -166,15 +168,23 @@ export function PulseIcon({
   const softTone = soft ?? entry.soft;
   const softColor = pulseIconTone[softTone];
   const ink =
-    surface === "canvas" ? pulseIconTone.ink : pulseIconTone.white;
+    surface === "canvas"
+      ? pulseIconTone.ink
+      : surface === "nav"
+        ? pulseIconTone.navInk
+        : pulseIconTone.white;
   const softFill =
-    surface === "inverse" ? "rgba(255,255,255,0.45)" : softColor;
+    surface === "inverse"
+      ? "rgba(255,255,255,0.45)"
+      : surface === "nav"
+        ? pulseIconTone.navSoft
+        : softColor;
 
   return (
     <Icon
       soft={softFill}
       ink={ink}
-      softOpacity={surface === "inverse" ? 1 : 0.92}
+      softOpacity={surface === "inverse" ? 1 : 0.9}
       className={cn("shrink-0 pf-icon-well", className)}
       {...props}
     />

@@ -9,7 +9,7 @@ export async function assertCompanyEntitled(orgId: string) {
   const { data: org, error } = await admin
     .from("organizations")
     .select(
-      "id, kind, trial_ends_at, subscription_status, stripe_customer_id, stripe_subscription_id, billing_email, name, created_at",
+      "id, kind, trial_ends_at, subscription_status, billing_email, name, created_at",
     )
     .eq("id", orgId)
     .single();

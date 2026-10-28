@@ -103,7 +103,7 @@ Villas, tasks, your bills, and a simple contacts list. No team chat, staff invit
 
 ## For developers
 
-Local demo, Supabase, Stripe, and deploy notes live in [`docs/PRODUCTION.md`](docs/PRODUCTION.md). Agent / MCP setup: [`docs/MCP.md`](docs/MCP.md).
+Local demo, Supabase, App Store billing notes, and deploy notes live in [`docs/PRODUCTION.md`](docs/PRODUCTION.md). Agent / MCP setup: [`docs/MCP.md`](docs/MCP.md).
 
 ```bash
 npm install

@@ -28,8 +28,6 @@ export type Organization = {
   kind: OrgKind;
   created_at: string;
   trial_ends_at?: string | null;
-  stripe_customer_id?: string | null;
-  stripe_subscription_id?: string | null;
   subscription_status?: SubscriptionStatus;
   billing_email?: string | null;
   referral_bonus_ends_at?: string | null;

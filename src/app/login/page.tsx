@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
 import { useI18n } from "@/lib/i18n/provider";
 import { useBrandName } from "@/lib/i18n/use-brand-name";
 import {
@@ -233,8 +234,9 @@ export default function LoginPage() {
     >
       <div className="mx-auto flex min-h-full w-full max-w-md items-center">
         <div className="w-full animate-rise">
-          <div className="mb-4 flex justify-end">
+          <div className="mb-4 flex items-center justify-end gap-1.5">
             <LanguageSwitcher variant="inline" />
+            <ThemeIconToggle />
           </div>
           <div className="mb-6 text-center">
             <div className="mx-auto mb-4 flex justify-center">

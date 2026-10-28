@@ -691,6 +691,8 @@ const es: Dictionary = {
   "billing.yes": "Yes",
   "billing.readOnly": "Read-only",
   "billing.demoHint": "Modo demo: el cobro está desactivado. Tu empresa se muestra como Full para explorar las herramientas de propietario.",
+  "billing.appStoreHint":
+    "When paid plans go live on iOS, software subscriptions are purchased and managed through the Apple App Store. We do not take card payments in the web app.",
   "billing.opening": "Opening…",
   "billing.manage": "Gestionar plan",
   "billing.redirecting": "Redirecting…",
@@ -1276,7 +1278,7 @@ const es: Dictionary = {
   "safety.reportTitle": "Report this message?",
   "safety.reportConfirm":
     "We will review this report. Abuse of reporting may lead to account limits. Contact support@pulseflow.site if you need urgent help.",
-  "safety.reportThanks": "Thanks — we received your report.",
+  "safety.reportThanks": "Thanks - we received your report.",
   "safety.blockTitle": "Block this person?",
   "safety.blockConfirm":
     "You will stop seeing messages from {name}. You can unblock them later in Settings.",
@@ -1393,7 +1395,7 @@ const es: Dictionary = {
   "settings.appearanceHorizon": "Horizon",
   "settings.appearanceHorizonHint": "Cool light canvas (default)",
   "settings.appearanceFrost": "Frost",
-  "settings.appearanceFrostHint": "White liquid glass — welcome light look",
+  "settings.appearanceFrostHint": "White liquid glass - welcome light look",
   "settings.appearanceDark": "Dark",
   "settings.appearanceDarkHint": "Night liquid glass with soft glows",
   "settings.translateContent": "Traducir el contenido del equipo",

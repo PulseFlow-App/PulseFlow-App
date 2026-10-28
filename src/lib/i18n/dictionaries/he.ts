@@ -689,6 +689,8 @@ const he: Dictionary = {
   "billing.yes": "כן",
   "billing.readOnly": "קריאה בלבד",
   "billing.demoHint": "מצב דמו: אין תשלום. החברה מוצגת כ‑Full כדי שתוכל לנסות את כלי הבעלים.",
+  "billing.appStoreHint":
+    "When paid plans go live on iOS, software subscriptions are purchased and managed through the Apple App Store. We do not take card payments in the web app.",
   "billing.opening": "פותח…",
   "billing.manage": "ניהול התוכנית",
   "billing.redirecting": "מעביר…",
@@ -1274,7 +1276,7 @@ const he: Dictionary = {
   "safety.reportTitle": "Report this message?",
   "safety.reportConfirm":
     "We will review this report. Abuse of reporting may lead to account limits. Contact support@pulseflow.site if you need urgent help.",
-  "safety.reportThanks": "Thanks — we received your report.",
+  "safety.reportThanks": "Thanks - we received your report.",
   "safety.blockTitle": "Block this person?",
   "safety.blockConfirm":
     "You will stop seeing messages from {name}. You can unblock them later in Settings.",

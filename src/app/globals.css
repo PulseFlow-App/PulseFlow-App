@@ -52,10 +52,12 @@
   --icon-ink: #023047;
   --icon-soft-action: #f26a36;
   --icon-soft-sky: #8ecae6;
-  --icon-soft-sun: #ffb703;
-  --icon-soft-success: #2a9d8f;
+  --icon-soft-sun: #8ecae6;
+  --icon-soft-success: #8ecae6;
   --icon-soft-danger: #e63946;
   --icon-soft-white: #ffffff;
+  --icon-nav-ink: #ffffff;
+  --icon-nav-soft: #8ecae6;
 
   /* Fonts: Heebo body, Sora display */
   --font-sans: var(--font-pulse), "Heebo", ui-sans-serif, sans-serif;
@@ -400,13 +402,15 @@ html[data-appearance="frost"] {
     0 14px 36px rgba(2, 48, 71, 0.08);
   --shadow-lift: 0 8px 28px rgba(2, 48, 71, 0.1);
   --shadow-nav: 0 12px 32px rgba(2, 48, 71, 0.22);
-  /* Softer washes on glass cards */
+  /* Same calm sky wash as welcome — no amber/brown soft fills */
   --icon-ink: #023047;
   --icon-soft-action: #f26a36;
   --icon-soft-sky: #8ecae6;
-  --icon-soft-sun: #e5a602;
-  --icon-soft-success: #2a9d8f;
+  --icon-soft-sun: #8ecae6;
+  --icon-soft-success: #8ecae6;
   --icon-soft-danger: #e63946;
+  --icon-nav-ink: #ffffff;
+  --icon-nav-soft: #8ecae6;
 }
 
 html[data-appearance="frost"] body {
@@ -435,14 +439,16 @@ html[data-appearance="dark"] {
   --shadow-soft: 0 8px 28px rgba(0, 0, 0, 0.35);
   --shadow-lift: 0 12px 36px rgba(0, 0, 0, 0.42);
   --shadow-nav: 0 12px 32px rgba(0, 0, 0, 0.45);
-  /* Calm Horizon washes on night glass — no neon teal/amber */
+  /* Same palette as welcome dark cards — cool gray-sky, orange only for action */
   --icon-ink: #e8f4f8;
-  --icon-soft-action: rgba(242, 106, 54, 0.7);
-  --icon-soft-sky: rgba(142, 202, 230, 0.42);
-  --icon-soft-sun: rgba(255, 183, 3, 0.45);
-  --icon-soft-success: rgba(42, 157, 143, 0.5);
-  --icon-soft-danger: rgba(230, 57, 70, 0.55);
+  --icon-soft-action: rgba(242, 106, 54, 0.55);
+  --icon-soft-sky: rgba(142, 202, 230, 0.4);
+  --icon-soft-sun: rgba(142, 202, 230, 0.4);
+  --icon-soft-success: rgba(142, 202, 230, 0.4);
+  --icon-soft-danger: rgba(230, 57, 70, 0.5);
   --icon-soft-white: rgba(232, 244, 248, 0.9);
+  --icon-nav-ink: #e8f4f8;
+  --icon-nav-soft: rgba(142, 202, 230, 0.45);
 }
 
 html[data-appearance="dark"] body {

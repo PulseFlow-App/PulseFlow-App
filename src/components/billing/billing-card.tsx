@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useData } from "@/lib/data/use-app-data";
 import {
   isCompanyEntitled,
@@ -11,7 +9,6 @@ import {
 } from "@/lib/billing/entitlement";
 import { COMPANY_TRIAL_DAYS } from "@/lib/auth/helpers";
 import { useI18n } from "@/lib/i18n/provider";
-import { useIsDemoMode } from "@/lib/demo/use-is-demo-mode";
 import { cn } from "@/lib/utils";
 
 export function BillingSettingsCard({
@@ -21,9 +18,6 @@ export function BillingSettingsCard({
 }) {
   const data = useData();
   const { t } = useI18n();
-  const demo = useIsDemoMode();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   if (!data.profile || data.profile.role !== "owner") return null;
   if (data.orgKind !== "company") return null;
@@ -32,38 +26,6 @@ export function BillingSettingsCard({
   const days = trialDaysRemaining(org?.trial_ends_at);
   const entitled = isCompanyEntitled(org);
   const status = org?.subscription_status ?? "none";
-
-  const startCheckout = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/billing/checkout", { method: "POST" });
-      const payload = (await res.json()) as { url?: string; error?: string };
-      if (!res.ok || !payload.url) {
-        throw new Error(payload.error ?? t("common.error"));
-      }
-      window.location.href = payload.url;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("common.error"));
-      setBusy(false);
-    }
-  };
-
-  const openPortal = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/billing/portal", { method: "POST" });
-      const payload = (await res.json()) as { url?: string; error?: string };
-      if (!res.ok || !payload.url) {
-        throw new Error(payload.error ?? t("common.error"));
-      }
-      window.location.href = payload.url;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("common.error"));
-      setBusy(false);
-    }
-  };
 
   const body = (
     <>
@@ -110,39 +72,9 @@ export function BillingSettingsCard({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-          {demo ? (
-            <p className="text-xs text-muted">{t("billing.demoHint")}</p>
-          ) : status === "active" || status === "trialing" ? (
-            <Button
-              variant="secondary"
-              className="w-full"
-              busy={busy}
-              onClick={() => void openPortal()}
-            >
-              {busy ? t("billing.opening") : t("billing.manage")}
-            </Button>
-          ) : (
-            <Button
-              className="w-full"
-              busy={busy}
-              onClick={() => void startCheckout()}
-            >
-              {busy ? t("billing.redirecting") : t("billing.subscribe")}
-            </Button>
-          )}
-          {!demo && !entitled ? (
-            <Button
-              className="w-full"
-              busy={busy}
-              onClick={() => void startCheckout()}
-            >
-              {t("billing.restore")}
-            </Button>
-          ) : null}
-        </div>
-
-      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      <p className="text-sm text-muted" dir="auto">
+        {t("billing.appStoreHint")}
+      </p>
 
       <p className="text-xs text-muted">
         <Link href="/terms" className="font-semibold text-primary">

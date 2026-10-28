@@ -47,7 +47,7 @@ Match existing Pulse site voice: concrete, ops-first, no purple “AI magic” c
 | List / add maintenance log | `pulse_list_maintenance` / `pulse_add_maintenance` |
 | Assign a cleaner or staff member to a property | `pulse_assign_property` |
 
-**Not available (do not claim):** delete properties, Stripe/billing, push blasts, guest account actions, endorsements.
+**Not available (do not claim):** delete properties, billing checkout, push blasts, guest account actions, endorsements.
 
 ---
 

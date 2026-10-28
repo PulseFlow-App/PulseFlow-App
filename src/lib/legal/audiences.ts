@@ -4,8 +4,8 @@ export const LEGAL_AUDIENCES = [
   "all",
   "guest",
   "owner",
-  "employee",
   "staff",
+  "agent",
 ] as const;
 
 export type LegalAudience = (typeof LEGAL_AUDIENCES)[number];
@@ -13,6 +13,8 @@ export type LegalAudience = (typeof LEGAL_AUDIENCES)[number];
 export function parseLegalAudience(
   value: string | null | undefined,
 ): LegalAudience {
+  // Legacy ?for=employee / cleaner → staff (cleaning is not a separate product role).
+  if (value === "employee" || value === "cleaner") return "staff";
   if (value && (LEGAL_AUDIENCES as readonly string[]).includes(value)) {
     return value as LegalAudience;
   }
@@ -22,8 +24,7 @@ export function parseLegalAudience(
 export function legalAudienceFromRole(role: UserRole): LegalAudience {
   if (role === "guest") return "guest";
   if (role === "owner" || role === "manager") return "owner";
-  if (role === "cleaner") return "employee";
-  if (role === "staff") return "staff";
+  if (role === "cleaner" || role === "staff") return "staff";
   return "all";
 }
 
@@ -33,10 +34,10 @@ export function legalAudienceLabel(audience: LegalAudience): string | null {
       return "For stay guests";
     case "owner":
       return "For owners & managers";
-    case "employee":
-      return "For cleaning team";
     case "staff":
-      return "For field staff";
+      return "For staff";
+    case "agent":
+      return "For AI agents";
     default:
       return null;
   }

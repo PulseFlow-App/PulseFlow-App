@@ -11,7 +11,7 @@ Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll chec
 | Audience | Why they need it |
 |----------|------------------|
 | **Owner** | See occupancy, urgent work, and spend without calling for a status update; pay for the company workspace |
-| **Manager** | Run day-to-day ops and reports like an owner, without owning the Stripe bill |
+| **Manager** | Run day-to-day ops and reports like an owner, without owning the company software bill |
 | **Field staff** (cleaner / staff) | Know today’s jobs, confirm them, submit receipts, keep a reputation that travels |
 | **Guest** | One stay hub: house guide, support to host only, deposit/bills, request next dates |
 | **Personal** | Solo villas and light ops with no team (free forever) |
@@ -64,7 +64,7 @@ Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll chec
 - **Rename organization** - Settings; name shows to team and guests  
 - **Invite staff, managers, guests** - invite links / QR  
 - **Villa access assignments** - which properties each field person sees  
-- **Billing** - Stripe Full subscription / portal; trial window; referral progress (5 joins → 1 year Full)  
+- **Billing** - App Store Full subscription when live; trial window; referral progress (5 joins → 1 year Full)  
 
 ---
 
@@ -80,7 +80,7 @@ Home, villas (edit), house guides, tasks, contacts + Order, jobs, bills finance,
 
 | Has | Does not have |
 |-----|----------------|
-| Full day-to-day ops when company is on trial/Full | Stripe company billing ownership |
+| Full day-to-day ops when company is on trial/Full | Company software billing ownership (App Store) |
 | Reporting when company entitled | Villa access assignment UI (owner-only) |
 | Invite managers + field + guests | Rename the company org (owner-only) |
 
@@ -142,7 +142,7 @@ Team chat with cleaners, contacts, talent, endorsements voting, company tasks/op
 | Villas, tasks, own bills | Team invites, team chat, Order bookings |
 | Contacts as a simple phone book | Company vendor Order / WA-LINE ops stack |
 | Invite anyone (grow Pulse Flow) | Invite staff/guest into a company |
-| Rename personal workspace (owner of that org) | Stripe Full company billing, endorsements, leaderboard, talent browse, Guests panel |
+| Rename personal workspace (owner of that org) | App Store Full company billing, endorsements, leaderboard, talent browse, Guests panel |
 
 ---
 

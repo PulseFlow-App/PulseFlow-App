@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   APP_VERSION,
+  CLIENT_BUILD_ID,
   compareAppVersions,
   formatAppVersion,
 } from "@/lib/app-version";
@@ -17,19 +18,20 @@ const CHECK_MS = 5 * 60 * 1000;
 type RemoteVersion = {
   version?: string;
   updatedAt?: string;
+  buildId?: string;
 };
 
-function wasDismissed(version: string) {
+function wasDismissed(token: string) {
   try {
-    return sessionStorage.getItem(DISMISS_KEY) === version;
+    return sessionStorage.getItem(DISMISS_KEY) === token;
   } catch {
     return false;
   }
 }
 
-function dismiss(version: string) {
+function dismiss(token: string) {
   try {
-    sessionStorage.setItem(DISMISS_KEY, version);
+    sessionStorage.setItem(DISMISS_KEY, token);
   } catch {
     /* ignore */
   }
@@ -39,7 +41,7 @@ export function UpdateAvailable() {
   const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
-  const [remoteVersion, setRemoteVersion] = useState<string | null>(null);
+  const [dismissToken, setDismissToken] = useState<string | null>(null);
   const [remoteLabel, setRemoteLabel] = useState<string | null>(null);
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(
     null,
@@ -55,13 +57,13 @@ export function UpdateAvailable() {
     let cancelled = false;
 
     const showFor = (
-      version: string,
+      token: string,
       label?: string | null,
       worker?: ServiceWorker,
     ) => {
-      if (cancelled || wasDismissed(version)) return;
-      setRemoteVersion(version);
-      if (label) setRemoteLabel(label);
+      if (cancelled || wasDismissed(token)) return;
+      setDismissToken(token);
+      setRemoteLabel(label ?? null);
       if (worker) setWaitingWorker(worker);
       setOpen(true);
     };
@@ -73,13 +75,29 @@ export function UpdateAvailable() {
         });
         if (!res.ok) return;
         const data = (await res.json()) as RemoteVersion;
-        const remote = (data.version || "").trim();
-        if (!remote) return;
-        if (compareAppVersions(remote, APP_VERSION) <= 0) return;
-        const label = data.updatedAt?.trim()
-          ? formatAppVersion(remote, data.updatedAt.trim())
-          : `v${remote}`;
-        showFor(remote, label);
+        const remoteBuild = (data.buildId || "").trim();
+        const remoteSemver = (data.version || "").trim();
+
+        // Every deploy: build id in the running tab ≠ server build id.
+        const deployStale =
+          Boolean(remoteBuild) &&
+          remoteBuild !== "dev" &&
+          CLIENT_BUILD_ID !== "dev" &&
+          remoteBuild !== CLIENT_BUILD_ID;
+
+        const versionBumped =
+          Boolean(remoteSemver) &&
+          compareAppVersions(remoteSemver, APP_VERSION) > 0;
+
+        if (!deployStale && !versionBumped) return;
+
+        const token = remoteBuild || remoteSemver || "update";
+        const label = versionBumped
+          ? data.updatedAt?.trim()
+            ? formatAppVersion(remoteSemver, data.updatedAt.trim())
+            : `v${remoteSemver}`
+          : null;
+        showFor(token, label);
       } catch {
         /* offline / ignored */
       }
@@ -128,6 +146,8 @@ export function UpdateAvailable() {
       void navigator.serviceWorker.getRegistration().then((reg) => {
         if (cancelled || !reg) {
           void checkVersion();
+          const id = window.setInterval(() => void checkVersion(), CHECK_MS);
+          cleanupReg = () => window.clearInterval(id);
           return;
         }
         cleanupReg = attachRegistration(reg);
@@ -152,7 +172,7 @@ export function UpdateAvailable() {
   };
 
   const later = () => {
-    dismiss(remoteVersion ?? (waitingWorker ? "sw-waiting" : APP_VERSION));
+    dismiss(dismissToken ?? (waitingWorker ? "sw-waiting" : CLIENT_BUILD_ID));
     setOpen(false);
   };
 

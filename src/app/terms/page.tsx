@@ -63,8 +63,10 @@ export default async function TermsPage({ searchParams }: Props) {
 
         <LegalIntro kind="terms" audience={audience} />
         <TermsSummary />
-        <AudienceSections audience={audience} kind="terms" />
-        <TermsCommonSections />
+        {audience === "all" ? null : (
+          <AudienceSections audience={audience} kind="terms" />
+        )}
+        <TermsCommonSections includeResponsibilities={audience === "all"} />
         <LegalDocumentFooter audience={audience} kind="terms" />
       </div>
     </LegalShell>

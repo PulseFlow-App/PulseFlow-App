@@ -63,8 +63,10 @@ export default async function PrivacyPage({ searchParams }: Props) {
 
         <LegalIntro kind="privacy" audience={audience} />
         <PrivacySummary />
-        <AudienceSections audience={audience} kind="privacy" />
-        <PrivacyCommonSections />
+        {audience === "all" ? null : (
+          <AudienceSections audience={audience} kind="privacy" />
+        )}
+        <PrivacyCommonSections includeWhoCanSee={audience === "all"} />
         <LegalDocumentFooter audience={audience} kind="privacy" />
       </div>
     </LegalShell>

@@ -14,7 +14,7 @@ Use this as a **decision workbook**: each step lists options, what Apple cares a
 | ---------------- | ----------------------------------------------------------------------------------------- |
 | Delivery         | Web app + installable **PWA** at `app.pulseflow.site` (not a native App Store binary yet) |
 | Auth             | Email/password + optional passkeys (Face ID)                                              |
-| Monetization     | Company **Stripe** subscription / trial (web); Personal free                              |
+| Monetization     | Company trial (web); paid plans via **Apple App Store** IAP when iOS ships; Personal free |
 | Legal            | In-app `/terms` and `/privacy` + support email                                            |
 | UGC              | Team chat, guest Support, photos, endorsements, notes                                     |
 | Account deletion | **In-app** Settings → Delete account (`POST /api/account/delete`) + public `/support`     |
@@ -61,7 +61,7 @@ Apple’s guidelines apply to **App Store (and notarized) apps**. A Safari/PWA s
 
 1. If goal is **only** “users can use the product on iPhone” → **A** is already live.
 2. If goal is **App Store listing + brand** → prefer **C or D**, not a bare WebView (**B**).
-3. Pick billing strategy (Step 4) **before** you write a line of native code—Stripe-in-app vs IAP changes product design.
+3. Billing strategy is locked in Step 4 (StoreKit IAP). Design native screens around App Store subscriptions from day one.
 
 **Decision (fill in):** `D`
 
@@ -159,7 +159,7 @@ Also:
 
 - [ ] Staging or production backend **up** during review  
 - [ ] No placeholder “Lorem” screens  
-- [ ] Stripe test mode vs live: document which; don’t break checkout mid-review  
+- [ ] App Store Sandbox vs live: document which; don’t break IAP mid-review  
 
 ---
 
@@ -174,9 +174,9 @@ Pulse Flow sells **digital SaaS access** (company Full / trial / reports). That 
 
 | Option                                     | Description                                                                                                                   | When it fits                                                                | Risks                                                                                                                                            |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **1. StoreKit IAP / subscriptions**        | Sell Company Full via Apple IAP; sync entitlement to Supabase                                                                 | Default for unlocking digital features **inside** the app                   | Apple fee; must rebuild billing; dual Stripe+IAP sync                                                                                            |
-| **2. Multiplatform (3.1.3b)**              | Sell on web (Stripe); iOS app lets users **use** what they bought elsewhere; **also** offer same subscriptions via IAP in-app | Common SaaS pattern                                                         | Must offer IAP for the same digital unlocks **in the app**; cannot *only* Stripe inside iOS app                                                  |
-| **3. Free stand-alone companion (3.1.3f)** | iOS app has **zero** purchase UI / CTAs; all subscribe on web                                                                 | Softest engineering                                                         | **No** “Upgrade”, “Subscribe”, Stripe buttons, or links that steer to buy (except where US/entitlement rules allow); easy to violate by accident |
+| **1. StoreKit IAP / subscriptions**        | Sell Company Full via Apple IAP; sync entitlement to Supabase                                                                 | Default for unlocking digital features **inside** the app                   | Apple fee; must rebuild billing; entitlement sync to Supabase                                                                                            |
+| **2. Multiplatform (3.1.3b)**              | Not chosen: web-only card checkout. Pulse Flow uses App Store IAP for software unlocks in the iOS app | Common SaaS pattern                                                         | Must offer IAP for the same digital unlocks **in the app**; web card checkout alone is not used                                                  |
+| **3. Free stand-alone companion (3.1.3f)** | iOS app has **zero** purchase UI / CTAs; all subscribe on web                                                                 | Softest engineering                                                         | **No** “Upgrade”, “Subscribe”, or buy CTAs that steer outside Apple rules (except where US/entitlement rules allow); easy to violate by accident |
 | **4. Enterprise services (3.1.3c)**        | Sold only to organizations/groups for employees                                                                               | If you stop consumer Personal signup in the app and only sell B2B contracts | Personal free + self-serve company signup on App Store **conflicts** with pure enterprise path                                                   |
 | **5. Reader / external link entitlements** | Not a fit—Pulse Flow is not magazines/music/video “reader” content                                                            | —                                                                           | Don’t rely on this                                                                                                                               |
 | **6. Stay web-only for paid flows**        | Keep PWA for billing; App Store app free ops client with no paywall                                                           | Same as option 3 in practice                                                | Same CTA restrictions                                                                                                                            |
@@ -185,17 +185,15 @@ Pulse Flow sells **digital SaaS access** (company Full / trial / reports). That 
 **Practical Pulse Flow recommendation**
 
 
-| Goal                                               | Pick                                                                        |
-| -------------------------------------------------- | --------------------------------------------------------------------------- |
-| Fastest App Store listing, minimal billing rewrite | **3** — free iOS app, **no** in-app upgrade CTAs; subscribe only on web/PWA |
-| Correct long-term SaaS on iOS                      | **1** or **2** — implement StoreKit auto-renewable “Company Full”           |
-| Only B2B invoice customers                         | Explore **4** with counsel + Apple notes explaining org-only sales          |
+| Goal                          | Pick                                                                              |
+| ----------------------------- | --------------------------------------------------------------------------------- |
+| App Store SaaS (chosen path)  | **1** — StoreKit auto-renewable Company / Pro; sync entitlement to Supabase       |
+| Only B2B invoice customers    | Explore **4** with counsel + Apple notes explaining org-only sales                |
 
 
-**Do not:** put Stripe Checkout inside the iOS binary to unlock Full/reports without IAP (classic 3.1.1 rejection).
+**Do not:** unlock Full/reports with a non-IAP web card checkout inside the iOS binary (classic 3.1.1 rejection). Web card checkout for software plans is retired.
 
-**Decision:** `_____` (1–6)  
-**If 3:** list every screen that currently shows Plan/Billing and plan to **hide or replace** on iOS.
+**Decision:** `1` (StoreKit IAP / subscriptions)
 
 ---
 
@@ -387,7 +385,7 @@ Storefronts:
 | Item              | Options                                                                     |
 | ----------------- | --------------------------------------------------------------------------- |
 | Encryption        | Standard HTTPS only → answer export compliance accordingly (usually exempt) |
-| Third-party SDKs  | List Supabase, Stripe, push vendor, analytics—if any                        |
+| Third-party SDKs  | List Supabase, StoreKit / App Store, push vendor, analytics - if any                        |
 | Data deletion URL | Can match support/privacy page                                              |
 
 
@@ -417,10 +415,7 @@ Copy/adapt:
 Pulse Flow is a multi-role villa operations app (owners, managers, field staff, guests).
 
 BUSINESS MODEL:
-[Pick one and delete others]
-- Free iOS client; subscriptions only on the website; no purchase CTAs in the iOS app (3.1.3f).
-- OR: Company Full is an auto-renewable IAP; web Stripe users can restore multiplatform access (3.1.3b).
-- OR: Enterprise-only org sales; consumer Personal signup disabled in this binary (3.1.3c).
+Company Full / Pro are auto-renewable IAPs via the Apple App Store. Subscribers restore via StoreKit Restore Purchases. Entitlement syncs to Supabase. We do not use web card checkout for software unlocks.
 
 DEMO ACCOUNTS: (see Step 3)
 
@@ -465,8 +460,8 @@ Must-have if shipping an App Store binary:
 6. [x] Stable **demo accounts** for all roles (`owner|manager|employee|guest@pulseflow.site` / `TestPass123!` + welcome demos)  
 7. [x] Support URL page live (`/support`)  
 8. [ ] Privacy questionnaire filled to match real data  
-9. [ ] If free-companion billing: **strip** Stripe upgrade CTAs from iOS build  
-10. [ ] If IAP billing: StoreKit products + server receipt/entitlement sync  
+9. [x] Web card checkout retired (App Store IAP path)  
+10. [ ] StoreKit products + server receipt/entitlement sync  
 11. [ ] Screenshots + description for Store sizes — welcome frost/dark in `docs/welcome-shots/`; still need logged-in Home/Jobs/Messages for listing; do **not** claim a full Airbnb/Booking.com API  
 
 12. [ ] Counsel pass on Terms/Privacy  
@@ -487,7 +482,7 @@ Nice-to-have:
 
 | Phase  | Action                                                         |
 | ------ | -------------------------------------------------------------- |
-| **P0** | Decide: PWA-only vs App Store; if Store → billing option 1/2/3 |
+| **P0** | App Store path chosen; billing = StoreKit IAP (option 1) |
 | **P1** | Enroll Developer Program (Organization if possible)            |
 | **P2** | ~~Build delete-account + report/block + support page~~ **done** |
 | **P3** | Native shell or RN/Swift app with real native hooks            |
@@ -504,12 +499,8 @@ Nice-to-have:
 
 ```
 Need App Store listing?
-├─ No  → Stay PWA (Step 0A). Stop.
-└─ Yes → Will users buy Company Full inside the iOS app?
-         ├─ Yes → Implement StoreKit (Option 1 or 2).
-         └─ No  → Free companion (Option 3):
-                  remove all subscribe/upgrade CTAs from iOS binary;
-                  keep Stripe on website/PWA only.
+├─ No  → Stay PWA (Step 0A) until native ships. Software billing still planned as App Store IAP.
+└─ Yes → Implement StoreKit IAP (Decision 1). Sync entitlements to Supabase. No web card checkout.
 ```
 
 ---

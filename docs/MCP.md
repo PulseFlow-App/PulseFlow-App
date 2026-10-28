@@ -123,4 +123,4 @@ If the log says `npx: not found` or `spawn npx ENOENT`, install Node 20+ from no
 - Disconnect anytime in Settings.
 - Key is bound to your **current workspace** and your profile.
 - Only owners/managers can connect agents.
-- No Stripe, push blast, or delete-villa tools.
+- No billing checkout, push blast, or delete-villa tools.

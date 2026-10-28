@@ -840,7 +840,7 @@ const en = {
   "settings.appearanceHorizon": "Horizon",
   "settings.appearanceHorizonHint": "Cool light canvas (default)",
   "settings.appearanceFrost": "Frost",
-  "settings.appearanceFrostHint": "White liquid glass — welcome light look",
+  "settings.appearanceFrostHint": "White liquid glass - welcome light look",
   "settings.appearanceDark": "Dark",
   "settings.appearanceDarkHint": "Night liquid glass with soft glows",
   "settings.translateContentHint.staff":
@@ -860,8 +860,10 @@ const en = {
   "billing.readOnly": "Read-only",
   "billing.demoHint":
     "Demo mode: billing checkout is off. Your company shows as Full so you can explore the owner tools.",
+  "billing.appStoreHint":
+    "When paid plans go live on iOS, software subscriptions are purchased and managed through the Apple App Store. We do not take card payments in the web app.",
   "billing.opening": "Opening…",
-  "billing.manage": "Manage plan",
+  "billing.manage": "Manage in App Store",
   "billing.redirecting": "Redirecting…",
   "billing.subscribe": "Subscribe",
   "billing.restore": "Restore access",
@@ -869,10 +871,10 @@ const en = {
   "billing.terms": "Terms",
   "billing.privacy": "Privacy",
   "billing.trialBanner": "Company trial ends in {count} day|Company trial ends in {count} days",
-  "billing.review": "Review billing",
+  "billing.review": "Review plan",
   "billing.endedBanner":
-    "Your company trial ended. Subscribe to keep inviting staff and editing company data.",
-  "billing.subscribeNow": "Subscribe now",
+    "Your company trial ended. Subscribe via the App Store when billing is live to keep inviting staff and editing company data.",
+  "billing.subscribeNow": "Open plan settings",
   "billing.askOwner": "Ask your owner to renew.",
 
   "plan.free": "Free",
@@ -1517,7 +1519,7 @@ const en = {
   "safety.reportTitle": "Report this message?",
   "safety.reportConfirm":
     "We will review this report. Abuse of reporting may lead to account limits. Contact support@pulseflow.site if you need urgent help.",
-  "safety.reportThanks": "Thanks — we received your report.",
+  "safety.reportThanks": "Thanks - we received your report.",
   "safety.blockTitle": "Block this person?",
   "safety.blockConfirm":
     "You will stop seeing messages from {name}. You can unblock them later in Settings.",

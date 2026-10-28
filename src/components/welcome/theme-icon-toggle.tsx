@@ -24,8 +24,8 @@ export function ThemeIconToggle({ className }: { className?: string }) {
         else setAppearance("frost");
       }}
       className={cn(
-        "inline-flex size-9 items-center justify-center rounded-full",
-        "border border-[var(--color-border)] bg-card text-ink soft-shadow",
+        "inline-flex size-8 items-center justify-center rounded-full",
+        "border border-[var(--color-border)] bg-card text-ink",
         "hover:bg-canvas-deep",
         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
         className,
@@ -34,9 +34,9 @@ export function ThemeIconToggle({ className }: { className?: string }) {
       title={t("welcome.themeToggle")}
     >
       {isDark ? (
-        <Sun className="size-4" aria-hidden />
+        <Sun className="size-3.5" aria-hidden strokeWidth={2} />
       ) : (
-        <Moon className="size-4" aria-hidden />
+        <Moon className="size-3.5" aria-hidden strokeWidth={2} />
       )}
     </button>
   );

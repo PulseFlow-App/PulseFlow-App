@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
 import type { OrgKind } from "@/lib/design-tokens";
 import { isDemoMode } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
@@ -156,8 +157,9 @@ export default function RegisterPage() {
       }}
     >
       <div className="mx-auto w-full max-w-md animate-rise">
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex items-center justify-end gap-1.5">
           <LanguageSwitcher variant="inline" />
+          <ThemeIconToggle />
         </div>
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex justify-center">

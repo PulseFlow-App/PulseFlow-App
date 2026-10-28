@@ -64,10 +64,11 @@ export default function SupportPage() {
             Cancel a company subscription
           </h2>
           <p className="text-muted">
-            Company owners manage billing in{" "}
-            <strong className="font-semibold text-ink">Settings → Plan</strong>{" "}
-            (Stripe Customer Portal). Personal workspaces are free and have no
-            subscription.
+            When company software billing is live on iOS, owners manage or cancel
+            subscriptions in the Apple App Store under Subscriptions. Personal
+            workspaces stay free and have no subscription. Until then, trial
+            access is shown under{" "}
+            <strong className="font-semibold text-ink">Settings → Plan</strong>.
           </p>
         </section>
 

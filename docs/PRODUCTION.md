@@ -27,9 +27,9 @@
 
 ## Phase 3 - Billing
 
-- [ ] Stripe test product + monthly Company price ID
-- [ ] Checkout + Customer Portal from Settings → Billing
-- [ ] Webhook updates `subscription_status` / Stripe IDs
+- [ ] App Store Connect Company / Pro subscription products
+- [ ] App Store IAP purchase + restore from Settings → Plan (when iOS live)
+- [ ] App Store Server Notifications update `subscription_status` / entitlements
 - [ ] Soft banner when trial < 7 days
 - [ ] Hard gates block invite / company villa / service order when expired
 - [ ] Personal orgs never see Billing or gates
@@ -42,16 +42,16 @@
 - [ ] Supabase PITR / backups enabled
 - [ ] Storage lifecycle for villa photos and receipts
 - [ ] Counsel-reviewed Terms + Privacy (replace placeholders)
-- [x] PWA audit on `app.pulseflow.site` (manifest icons/maskable, zoomable viewport, apple-touch, legal URLs) — native Store binary still open; see `docs/APPLE_APP_STORE_PREP.md`
+- [x] PWA audit on `app.pulseflow.site` (manifest icons/maskable, zoomable viewport, apple-touch, legal URLs) - native Store binary still open; see `docs/APPLE_APP_STORE_PREP.md`
 - [ ] Multi-org membership + RLS smoke tests
 
 ## Phase 5 - Launch sequence
 
-1. Staging: Supabase + Vercel preview + Stripe **test** mode
+1. Staging: Supabase + Vercel preview + App Store Sandbox IAP
 2. Checklist: register company → invite → job photo → bill → trial clock → subscribe → cancel → gates
-3. Production: run migrations; create Stripe **live** products; point webhooks to prod
+3. Production: run migrations; App Store live products; point server notifications to prod
 4. Optional: keep demo on staging or a `/demo` preview only
-5. Soft launch; monitor auth + webhook errors
+5. Soft launch; monitor auth + App Store notification errors
 
 ## Entitlement rule
 
