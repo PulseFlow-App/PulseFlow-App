@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -58,6 +58,14 @@ const ROLE_ORDER = [
 ];
 
 export default function ContactsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <ContactsPageInner />
+    </Suspense>
+  );
+}
+
+function ContactsPageInner() {
   const data = useData();
   const { t } = useI18n();
   const label = useLocalizedDemoText();
