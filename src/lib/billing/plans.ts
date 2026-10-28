@@ -6,6 +6,18 @@ import {
 import type { Organization } from "@/lib/types";
 import type { MessageKey } from "@/lib/i18n";
 
+/**
+ * List prices (USD / month) when software billing is live.
+ * Company covers the org; Pro is a flat add-on on Personal or Company.
+ * Stay guests do not count toward included seats.
+ */
+export const PRICING = {
+  companyMonthlyUsd: 15,
+  includedSeats: 10,
+  extraSeatMonthlyUsd: 2,
+  proMonthlyUsd: 9,
+} as const;
+
 /** Purchasable / display tiers. Manager reporting is included with Full, not a separate tier. */
 export type PlanTier = "free" | "full" | "trial" | "expired";
 

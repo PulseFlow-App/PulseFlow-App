@@ -129,10 +129,10 @@ export default function LoginPage() {
       })();
       return;
     }
+    // Plain Sign in (no ?demo=): drop any sticky demo seat so a real
+    // email/password or passkey sign-in is not masked by the demo cookie.
     setDemoRole(null);
-    if (isDemoMode()) {
-      demoLogout();
-    }
+    demoLogout();
   }, [router]);
 
   useEffect(() => {
@@ -159,7 +159,10 @@ export default function LoginPage() {
   const signIn = async (email: string, password: string) => {
     setError(null);
     try {
-      const useDemoSeat = isDemoMode() || Boolean(demoRole);
+      // Only intentional demo seats (?demo= / chip) or a full demo deploy.
+      // A leftover marketing-demo cookie must not hijack a real password sign-in.
+      const useDemoSeat =
+        Boolean(demoRole) || process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
       if (useDemoSeat) {
         const profile = demoLogin(email, password);
@@ -172,6 +175,7 @@ export default function LoginPage() {
         return;
       }
 
+      demoLogout();
       const supabase = createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -181,7 +185,6 @@ export default function LoginPage() {
         setError(signInError.message);
         return;
       }
-      demoLogout();
       router.replace("/home");
       router.refresh();
     } catch {
@@ -197,6 +200,7 @@ export default function LoginPage() {
     setError(null);
     setPasskeyLoading(true);
     try {
+      demoLogout();
       await signInWithPasskey();
       router.replace("/home");
       router.refresh();

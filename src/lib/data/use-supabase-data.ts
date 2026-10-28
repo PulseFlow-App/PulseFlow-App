@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -265,6 +268,7 @@ export function useSupabaseData(enabled: boolean): AppData {
     cancelServiceOrder: async () => undefined,
     reopenServiceOrder: async () => undefined,
     completeServiceOrder: async () => undefined,
+    markServiceOrderOnSite: async () => undefined,
     updateVilla: async () => undefined,
     createVilla: async () => "",
     deleteVilla: async () => undefined,
@@ -1380,7 +1384,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       const { error } = await supabase
         .from("service_orders")
-        .update({ status: "pending_ack", agreed_at: null })
+        .update({ status: "pending_ack", agreed_at: null, on_site_at: null })
         .eq("id", orderId);
       if (error) throw error;
       const location = order.location_label ?? "location";
@@ -1582,6 +1586,70 @@ export function useSupabaseData(enabled: boolean): AppData {
       ]);
       await refresh();
     },
+    markServiceOrderOnSite: async (orderId) => {
+      if (!profile) throw new Error("Not signed in.");
+      const supabase = createClient();
+      let order = serviceOrders.find((o) => o.id === orderId) ?? null;
+      if (!order) {
+        const { data } = await supabase
+          .from("service_orders")
+          .select("*")
+          .eq("id", orderId)
+          .single();
+        order = (data as ServiceOrder | null) ?? null;
+      }
+      if (!order) throw new Error("Order not found.");
+      requireOrgWrite(order.org_id);
+      if (order.status !== "agreed") {
+        throw new Error("Agree to the job before marking on site.");
+      }
+      if (
+        order.staff_profile_id &&
+        order.staff_profile_id !== profile.id &&
+        profile.role !== "owner" &&
+        profile.role !== "manager"
+      ) {
+        throw new Error("Only the assignee can mark on site.");
+      }
+      if (order.on_site_at) {
+        await refresh();
+        return;
+      }
+      const onSiteAt = new Date().toISOString();
+      const { error } = await supabase
+        .from("service_orders")
+        .update({ on_site_at: onSiteAt })
+        .eq("id", orderId);
+      if (error) throw error;
+
+      const location = order.location_label ?? "location";
+      const when = formatOrderWhen(order);
+      await supabase.from("messages").insert({
+        org_id: order.org_id,
+        sender_id: profile.id,
+        body: `📍 On site - ${order.service_type} ${formatOrderAtWhen(location, order)}`,
+        service_order_id: orderId,
+        channel: "request",
+      });
+
+      const audience = ownerManagerIds(profiles, order.org_id).filter(
+        (id) => id !== profile.id,
+      );
+      if (audience.length) {
+        await insertNotifications(supabase, [
+          {
+            org_id: order.org_id,
+            kind: "appointment",
+            title: `${profile.full_name} is on site`,
+            body: formatOrderMeta(order.service_type, location, when),
+            href: "/jobs",
+            entity_id: orderId,
+            audience_profile_ids: audience,
+          },
+        ]);
+      }
+      await refresh();
+    },
     completeServiceOrder: async (orderId) => {
       if (!profile) throw new Error("Not signed in.");
       const supabase = createClient();
@@ -1600,7 +1668,11 @@ export function useSupabaseData(enabled: boolean): AppData {
       const completedAt = new Date().toISOString();
       const { error } = await supabase
         .from("service_orders")
-        .update({ status: "done", completed_at: completedAt })
+        .update({
+          status: "done",
+          completed_at: completedAt,
+          on_site_at: order.on_site_at ?? completedAt,
+        })
         .eq("id", orderId);
       if (error) throw error;
       if (order.task_id) {
@@ -3344,25 +3416,24 @@ export function useSupabaseData(enabled: boolean): AppData {
       const supabase = createClient();
       const now = new Date().toISOString();
       const existing = villaMasterInfo.find((g) => g.villa_id === villaId);
-      if (existing) {
-        const { error } = await supabase
-          .from("villa_master_info")
-          .update({ ...patch, updated_at: now })
-          .eq("id", existing.id);
-        if (error) {
-          if (
-            error.code === "42P01" ||
-            error.code === "PGRST205" ||
-            error.message.includes("does not exist")
-          ) {
-            throw new Error(
-              "Master info needs migration 051 on Supabase.",
-            );
-          }
-          throw error;
+
+      const missingTable = (error: { code?: string; message: string }) =>
+        error.code === "42P01" ||
+        error.code === "PGRST205" ||
+        /villa_master_info|does not exist|schema cache/i.test(error.message);
+
+      const missingAllowManager = (error: { code?: string; message: string }) =>
+        /allow_manager_view/i.test(error.message) ||
+        error.code === "PGRST204";
+
+      const write = async (body: Record<string, unknown>) => {
+        if (existing) {
+          return supabase
+            .from("villa_master_info")
+            .update(body)
+            .eq("id", existing.id);
         }
-      } else {
-        const { error } = await supabase.from("villa_master_info").insert({
+        return supabase.from("villa_master_info").insert({
           org_id: profile.org_id,
           villa_id: villaId,
           utilities_notes: null,
@@ -3371,21 +3442,27 @@ export function useSupabaseData(enabled: boolean): AppData {
           key_contacts_notes: null,
           tax_notes: null,
           handoff_notes: null,
-          ...patch,
-          updated_at: now,
+          ...body,
         });
-        if (error) {
-          if (
-            error.code === "42P01" ||
-            error.code === "PGRST205" ||
-            error.message.includes("does not exist")
-          ) {
-            throw new Error(
-              "Master info needs migration 051 on Supabase.",
-            );
-          }
-          throw error;
+      };
+
+      const full = { ...patch, updated_at: now };
+      let { error } = await write(full);
+      // Pre-053 DBs lack allow_manager_view — still persist the note fields.
+      if (error && missingAllowManager(error) && "allow_manager_view" in full) {
+        const { allow_manager_view: _omit, ...withoutFlag } = full;
+        ({ error } = await write(withoutFlag));
+      }
+      if (error) {
+        if (missingTable(error)) {
+          throw new Error("Master info needs migration 051 on Supabase.");
         }
+        if (missingAllowManager(error)) {
+          throw new Error(
+            "Master info needs migration 053 (allow_manager_view) on Supabase.",
+          );
+        }
+        throw error;
       }
       await refresh();
     },

@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 "use client";
 
 import {
@@ -17,6 +20,7 @@ import {
   demoAgreeServiceOrder,
   demoCancelServiceOrder,
   demoCompleteServiceOrder,
+  demoMarkServiceOrderOnSite,
   demoRevokeServiceOrderAgreement,
   demoReopenServiceOrder,
   demoCastEndorsement,
@@ -599,6 +603,11 @@ function useDemoData(): AppData {
       assertDemoWritable();
       if (!profile) throw new Error("Not signed in.");
       demoCompleteServiceOrder(profile, orderId);
+    },
+    markServiceOrderOnSite: async (orderId) => {
+      assertDemoWritable();
+      if (!profile) throw new Error("Not signed in.");
+      demoMarkServiceOrderOnSite(profile, orderId);
     },
     updateVilla: async (id, patch) => {
       assertDemoWritable();

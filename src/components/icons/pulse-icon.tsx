@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 "use client";
 
 import type { SVGProps } from "react";

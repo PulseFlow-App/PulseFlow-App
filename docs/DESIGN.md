@@ -279,7 +279,21 @@ Use these as north stars; translate via `i18n`, don’t invent new English brand
 
 ---
 
-## 13. Change control
+## 13. Optional appearances (non-default)
+
+Horizon light is the **product default**. Settings → Appearance may offer opt-in extras that only override CSS variables via `html[data-appearance]`:
+
+| Value | Role |
+| --- | --- |
+| *(unset)* / `horizon` | Default cool canvas — production look (welcome-style atmosphere wash) |
+| `frost` | White liquid-glass cards + stronger sky/orange wash (welcome light toggle) |
+| `dark` | Night liquid glass with soft sky/orange glows |
+
+Rules: never change `:root` Horizon colour tokens for these; never make dark/frost the product default for new installs; demos and locales share the same opt-in (`localStorage` key `pulse-appearance`). Welcome header toggles frost ↔ dark; Settings lists all three. Marketing Liquid Glass sandboxes live under `pulseflow-site/docs/experiments/` (`noindex`), not the live landing.
+
+---
+
+## 14. Change control
 
 1. Propose token/component changes in this file first.  
 2. Update `docs/design-brief.html` so humans can see it.  

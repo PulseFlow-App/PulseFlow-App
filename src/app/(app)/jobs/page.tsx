@@ -373,6 +373,7 @@ export default function JobsPage() {
               !staff ||
               pendingForMe ||
               (staff && order.status === "agreed") ||
+              (staff && order.status === "agreed" && Boolean(order.on_site_at)) ||
               showReview ||
               canAddToCalendar ||
               (!staff && canCancel) ||
@@ -408,6 +409,17 @@ export default function JobsPage() {
                       </p>
                     ) : null}
                     {pendingForMe ? <AgreeButton orderId={order.id} /> : null}
+                    {staff && order.status === "agreed" && !order.on_site_at ? (
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        onClick={() =>
+                          void data.markServiceOrderOnSite(order.id)
+                        }
+                      >
+                        {t("jobs.markOnSite")}
+                      </Button>
+                    ) : null}
                     {staff && order.status === "agreed" ? (
                       <Button
                         size="sm"

@@ -1,12 +1,18 @@
 {
+  "id": "/",
   "name": "Pulse Flow",
   "short_name": "Pulse Flow",
-  "description": "The pulse of your rental operations. Villa status, tasks, contacts, and bills for owners and on-site managers, in one place.",
+  "description": "The pulse of your rental operations. Property status, tasks, contacts, and bills for owners and on-site managers, in one place.",
+  "lang": "en",
+  "dir": "auto",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "browser"],
   "background_color": "#F5FAFC",
   "theme_color": "#F26A36",
-  "orientation": "portrait-primary",
+  "orientation": "any",
+  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -25,6 +31,20 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Sign in",
+      "short_name": "Sign in",
+      "url": "/login",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Home",
+      "short_name": "Home",
+      "url": "/home",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

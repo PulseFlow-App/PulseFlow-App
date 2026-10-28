@@ -6,10 +6,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     {
+      url: appUrl("/"),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 1,
+    },
+    {
       url: appUrl("/login"),
       lastModified,
       changeFrequency: "monthly",
-      priority: 1,
+      priority: 0.95,
     },
     {
       url: appUrl("/register"),

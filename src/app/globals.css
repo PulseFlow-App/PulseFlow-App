@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved. */
 @import "tailwindcss";
 
 /* ─── Horizon design system (DESIGN.md) ─── */
@@ -138,10 +139,11 @@ body {
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Welcome / liquid-glass atmosphere (Horizon light default) */
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(142, 202, 230, 0.22), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, rgba(242, 106, 54, 0.06), transparent 50%),
-    var(--color-canvas);
+    radial-gradient(980px 560px at 6% -8%, rgba(242, 106, 54, 0.14), transparent 55%),
+    radial-gradient(820px 480px at 92% 0%, rgba(142, 202, 230, 0.32), transparent 55%),
+    linear-gradient(180deg, #fff8f5 0%, var(--color-canvas) 42%, #e4f1f6 100%);
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-size: var(--type-body);
@@ -374,4 +376,146 @@ label {
   .animate-rise-delay {
     animation: none;
   }
+}
+
+/* ─── Optional appearances (DESIGN.md §13) — Horizon stays product default ─── */
+html[data-appearance="frost"] {
+  --color-sand: #eef6fa;
+  --color-sand-deep: #e0eef4;
+  --color-canvas: #eef6fa;
+  --color-canvas-deep: #e0eef4;
+  --color-card: rgba(255, 255, 255, 0.82);
+  --color-surface: rgba(255, 255, 255, 0.82);
+  --color-border: rgba(2, 48, 71, 0.12);
+  --shadow-soft: 0 4px 12px rgba(2, 48, 71, 0.05),
+    0 14px 36px rgba(2, 48, 71, 0.08);
+  --shadow-lift: 0 8px 28px rgba(2, 48, 71, 0.1);
+  --shadow-nav: 0 12px 32px rgba(2, 48, 71, 0.22);
+}
+
+html[data-appearance="frost"] body {
+  background:
+    radial-gradient(980px 560px at 6% -8%, rgba(242, 106, 54, 0.18), transparent 55%),
+    radial-gradient(820px 480px at 92% 0%, rgba(142, 202, 230, 0.38), transparent 55%),
+    linear-gradient(180deg, #fff8f5 0%, var(--color-canvas) 42%, #e4f1f6 100%);
+}
+
+html[data-appearance="dark"] {
+  --color-sand: #15202a;
+  --color-sand-deep: #1c2936;
+  --color-canvas: #15202a;
+  --color-canvas-deep: #1c2936;
+  --color-card: rgba(30, 42, 54, 0.88);
+  --color-surface: rgba(30, 42, 54, 0.88);
+  --color-ink: #e8f4f8;
+  --color-muted: #9bb4c0;
+  --color-border: rgba(232, 244, 248, 0.14);
+  /* Bottom nav bar stays dark glass (not light ink) */
+  --color-nav: #121c26;
+  --color-foreground: #e8f4f8;
+  --color-background: #15202a;
+  --color-primary-soft: rgba(242, 106, 54, 0.22);
+  --color-secondary-soft: rgba(42, 157, 143, 0.22);
+  --shadow-soft: 0 8px 28px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 12px 36px rgba(0, 0, 0, 0.42);
+  --shadow-nav: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+html[data-appearance="dark"] body {
+  background:
+    radial-gradient(900px 520px at 8% -10%, rgba(242, 106, 54, 0.22), transparent 55%),
+    radial-gradient(760px 440px at 96% 0%, rgba(33, 158, 188, 0.24), transparent 55%),
+    linear-gradient(180deg, #101820 0%, var(--color-canvas) 45%, #0c141c 100%);
+  color: var(--color-ink);
+}
+
+/*
+  Tailwind v4 compiles many Horizon utilities to literal rgb() (not var()).
+  Remap the surface/ink set so opt-in appearances actually paint.
+*/
+html[data-appearance="frost"] .bg-sand,
+html[data-appearance="frost"] .bg-canvas {
+  background-color: transparent;
+}
+html[data-appearance="frost"] .bg-sand-deep,
+html[data-appearance="frost"] .bg-canvas-deep {
+  background-color: rgba(224, 238, 244, 0.72);
+  backdrop-filter: blur(12px) saturate(1.08);
+  -webkit-backdrop-filter: blur(12px) saturate(1.08);
+}
+html[data-appearance="frost"] .bg-card,
+html[data-appearance="frost"] .bg-surface,
+html[data-appearance="frost"] .bg-card\/80 {
+  background-color: var(--color-card);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+}
+html[data-appearance="frost"] .bg-sand\/95 {
+  background-color: rgba(238, 246, 250, 0.82);
+  backdrop-filter: blur(14px) saturate(1.08);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+}
+html[data-appearance="frost"] .soft-shadow {
+  box-shadow: var(--shadow-soft);
+}
+html[data-appearance="frost"] .lift-shadow {
+  box-shadow: var(--shadow-lift);
+}
+html[data-appearance="frost"] .border-\[var\(--color-border\)\] {
+  border-color: var(--color-border);
+}
+
+html[data-appearance="dark"] .bg-sand,
+html[data-appearance="dark"] .bg-canvas {
+  background-color: transparent;
+}
+html[data-appearance="dark"] .bg-sand-deep,
+html[data-appearance="dark"] .bg-canvas-deep {
+  background-color: var(--color-canvas-deep);
+}
+html[data-appearance="dark"] .bg-card,
+html[data-appearance="dark"] .bg-surface,
+html[data-appearance="dark"] .bg-card\/80 {
+  background-color: var(--color-card);
+  backdrop-filter: blur(16px) saturate(1.05);
+  -webkit-backdrop-filter: blur(16px) saturate(1.05);
+}
+html[data-appearance="dark"] .bg-sand\/95 {
+  background-color: rgba(21, 32, 42, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+html[data-appearance="dark"] .bg-primary-soft {
+  background-color: var(--color-primary-soft);
+}
+html[data-appearance="dark"] .bg-secondary-soft {
+  background-color: var(--color-secondary-soft);
+}
+html[data-appearance="dark"] .bg-white,
+html[data-appearance="dark"] .bg-white\/95 {
+  background-color: rgba(232, 244, 248, 0.92);
+  color: #023047;
+}
+html[data-appearance="dark"] .bg-nav {
+  background-color: var(--color-nav);
+  backdrop-filter: blur(16px) saturate(1.05);
+  -webkit-backdrop-filter: blur(16px) saturate(1.05);
+}
+html[data-appearance="dark"] .text-ink {
+  color: var(--color-ink);
+}
+html[data-appearance="dark"] .text-muted {
+  color: var(--color-muted);
+}
+html[data-appearance="dark"] .border-\[var\(--color-border\)\] {
+  border-color: var(--color-border);
+}
+html[data-appearance="dark"] .soft-shadow {
+  box-shadow: var(--shadow-soft);
+}
+html[data-appearance="dark"] .lift-shadow {
+  box-shadow: var(--shadow-lift);
+}
+html[data-appearance="dark"] .pf-icon-well {
+  color: var(--color-ink);
 }

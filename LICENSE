@@ -1,0 +1,22 @@
+Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow
+
+All rights reserved.
+
+This repository and its contents (source code, documentation, design assets,
+copy, and related materials) are the proprietary intellectual property of the
+copyright holder.
+
+No license is granted to copy, modify, distribute, publish, sublicense, or use
+this software or its contents for any purpose, except as expressly authorized
+in writing by the copyright holder, or as required to operate a licensed Pulse
+Flow account under the then-current Terms of Service at
+https://app.pulseflow.site/terms .
+
+Git commit history in this repository is intended as a public or private record
+of authorship and creation dates for copyright purposes. It is not a patent
+registration and does not by itself create patent rights.
+
+Third-party open-source components remain under their own licenses (see
+package manifests and vendor notices). The optional MCP bridge package under
+`mcp/` may be distributed separately under the license stated in
+`mcp/package.json`.

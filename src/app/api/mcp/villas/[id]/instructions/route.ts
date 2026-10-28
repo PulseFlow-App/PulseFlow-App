@@ -70,6 +70,8 @@ export async function GET(
   }
 
   return NextResponse.json({
+    kind: "guest_house_guide",
+    note: "Guest house guide only (Wi-Fi, gate, bins…). Team master info is a separate resource at /master-info.",
     instructions: data ?? { villa_id: id, ...EMPTY_GUIDE, updated_at: null },
   });
 }
@@ -136,7 +138,11 @@ export async function PUT(
     );
   }
 
-  return NextResponse.json({ instructions: data });
+  return NextResponse.json({
+    kind: "guest_house_guide",
+    note: "Updated guest house guide only. Team master info was not changed — use PUT /master-info for utilities, vendors, handoff.",
+    instructions: data,
+  });
 }
 
 async function villaInOrg(

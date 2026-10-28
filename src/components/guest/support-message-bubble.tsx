@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { LocalizedText } from "@/components/i18n/localized-text";
+import { MessageSafetyMenu } from "@/components/safety/message-safety-menu";
 import { isSupportSystemMessage } from "@/lib/guest/support-deposit-command";
 import type { SupportMessageWithSender } from "@/lib/types";
 
@@ -11,6 +12,8 @@ type SupportMessageBubbleProps = {
   mine: boolean;
   hostLabel: string;
   receiptLabel: string;
+  viewerId?: string | null;
+  onBlocked?: () => void;
 };
 
 export function SupportMessageBubble({
@@ -18,6 +21,8 @@ export function SupportMessageBubble({
   mine,
   hostLabel,
   receiptLabel,
+  viewerId,
+  onBlocked,
 }: SupportMessageBubbleProps) {
   const system = isSupportSystemMessage(message.body);
   const hasAttachment = Boolean(message.attachment_url);
@@ -41,9 +46,22 @@ export function SupportMessageBubble({
         )}
       >
         {!mine && !system ? (
-          <p className="mb-0.5 text-[11px] font-bold opacity-70">
-            {message.sender?.full_name ?? hostLabel}
-          </p>
+          <div className="mb-0.5 flex items-start justify-between gap-2">
+            <p className="text-[11px] font-bold opacity-70">
+              {message.sender?.full_name ?? hostLabel}
+            </p>
+            {viewerId ? (
+              <MessageSafetyMenu
+                viewerId={viewerId}
+                targetProfileId={message.sender_id}
+                targetName={message.sender?.full_name ?? undefined}
+                messageId={message.id}
+                channel="support"
+                onDarkBubble={false}
+                onBlocked={onBlocked}
+              />
+            ) : null}
+          </div>
         ) : null}
         {hasBody ? (
           <LocalizedText

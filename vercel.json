@@ -3,5 +3,11 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "outputDirectory": null
+  "outputDirectory": null,
+  "crons": [
+    {
+      "path": "/api/cron/schedule-alerts",
+      "schedule": "0 1 * * *"
+    }
+  ]
 }

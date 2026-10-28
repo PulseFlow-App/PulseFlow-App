@@ -1,4 +1,7 @@
 /**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
+/**
  * Pulse MCP — talks only to Pulse HTTP APIs with a personal token.
  * Never needs SUPABASE_SERVICE_ROLE_KEY.
  *
@@ -242,7 +245,7 @@ server.tool(
 
 server.tool(
   "pulse_get_property_instructions",
-  "Read the guest-facing house guide for a property (Wi-Fi, gate, bins, quiet hours, checkout, extra notes).",
+  "Read the GUEST house guide only (Wi-Fi, gate, bins, quiet hours, checkout, extra). NOT team master info — for utilities/vendors/handoff use pulse_get_master_info.",
   { villa_id: z.string().uuid() },
   async ({ villa_id }) =>
     textResult(await api(`/api/mcp/villas/${villa_id}/instructions`)),
@@ -250,7 +253,7 @@ server.tool(
 
 server.tool(
   "pulse_set_property_instructions",
-  "Set guest-facing house instructions for a property. Guests see these on their booking. Send only the fields to change. Empty string clears a field.",
+  "Set the GUEST house guide only (Wi-Fi, gate, bins, quiet hours, checkout, extra). Guests see this on their booking. NOT team master info — for utilities/vendors/access/contacts/tax/handoff use pulse_set_master_info. Send only fields to change; empty string clears a field.",
   {
     villa_id: z.string().uuid(),
     wifi_ssid: z.string().max(200).nullable().optional(),
@@ -282,6 +285,74 @@ server.tool(
       await api(`/api/mcp/villas/${villa_id}/assign`, {
         method: "POST",
         body: JSON.stringify({ profile_id }),
+      }),
+    ),
+);
+
+server.tool(
+  "pulse_get_master_info",
+  "Read TEAM master info (utilities, service providers, access, key contacts, tax, handoff). Separate from the guest house guide — do not use pulse_get_property_instructions for this.",
+  { villa_id: z.string().uuid() },
+  async ({ villa_id }) =>
+    textResult(await api(`/api/mcp/villas/${villa_id}/master-info`)),
+);
+
+server.tool(
+  "pulse_set_master_info",
+  "Set TEAM master info (utilities, service providers, access, key contacts, tax, handoff). Separate from the guest house guide — never write these into pulse_set_property_instructions. Send only fields to change; empty string clears. allow_manager_view is owner-only.",
+  {
+    villa_id: z.string().uuid(),
+    utilities_notes: z.string().max(8000).nullable().optional(),
+    service_providers_notes: z.string().max(8000).nullable().optional(),
+    access_notes: z.string().max(8000).nullable().optional(),
+    key_contacts_notes: z.string().max(8000).nullable().optional(),
+    tax_notes: z.string().max(8000).nullable().optional(),
+    handoff_notes: z.string().max(8000).nullable().optional(),
+    allow_manager_view: z.boolean().optional(),
+  },
+  async ({ villa_id, ...fields }) =>
+    textResult(
+      await api(`/api/mcp/villas/${villa_id}/master-info`, {
+        method: "PUT",
+        body: JSON.stringify(fields),
+      }),
+    ),
+);
+
+server.tool(
+  "pulse_list_maintenance",
+  "List maintenance log entries for a property (newest first).",
+  {
+    villa_id: z.string().uuid(),
+    limit: z.number().int().min(1).max(100).optional(),
+  },
+  async ({ villa_id, limit }) =>
+    textResult(
+      await api(`/api/mcp/villas/${villa_id}/maintenance`, {
+        query: { limit: limit != null ? String(limit) : undefined },
+      }),
+    ),
+);
+
+server.tool(
+  "pulse_add_maintenance",
+  "Add a maintenance log entry for a property (item/system, optional date YYYY-MM-DD, description, vendor).",
+  {
+    villa_id: z.string().uuid(),
+    item: z.string().min(1).max(200),
+    logged_on: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    description: z.string().max(4000).nullable().optional(),
+    vendor: z.string().max(200).nullable().optional(),
+    photo_url: z.string().url().max(2000).nullable().optional(),
+  },
+  async ({ villa_id, ...fields }) =>
+    textResult(
+      await api(`/api/mcp/villas/${villa_id}/maintenance`, {
+        method: "POST",
+        body: JSON.stringify(fields),
       }),
     ),
 );

@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { cn } from "@/lib/utils";
 

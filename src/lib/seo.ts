@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 import type { Metadata } from "next";
 import { brand } from "@/lib/design-tokens";
 

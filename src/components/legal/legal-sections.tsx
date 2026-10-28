@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 import Link from "next/link";
 import { brand } from "@/lib/design-tokens";
 import {
@@ -343,7 +346,9 @@ export function TermsOwnerSection() {
         </li>
         <li>
           Company software billing (when live) is the company owner’s
-          responsibility. Managers and field staff are not billed for seats.
+          responsibility: USD 15 / month includes 10 team seats, then USD 2 /
+          month per extra seat. Pro adds USD 9 / month. Managers and field
+          staff are not billed individually.
         </li>
         <li>
           Managers typically share operational access with owners, except
@@ -449,9 +454,8 @@ function TermsAgentSection() {
           it.
         </li>
         <li>
-          Pro / Connect your agent pricing, when billing is live, is described
-          in the app and on the marketing site. That fee is for software access
-          only.
+          Pro / Connect your agent adds USD 9 / month on Personal or Company
+          when billing is live. That fee is for software access only.
         </li>
       </ul>
     </section>

@@ -253,39 +253,76 @@ export default function BookingsPage() {
                 description={t("bookings.dayEmptyHint")}
               />
             ) : (
-              dayEvents.map((ev) => (
-                <Card key={ev.id} className="space-y-1 p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-display text-base font-bold text-ink">
-                        {ev.villaName}
-                      </p>
-                      <p className="text-sm text-muted">{ev.label}</p>
+              dayEvents.map((ev) => {
+                const dayKey = format(selectedDay, "yyyy-MM-dd");
+                const isCheckout = ev.checkOut === dayKey;
+                const openTurnover = data.serviceOrders.some(
+                  (o) =>
+                    o.villa_id === ev.villaId &&
+                    o.status !== "done" &&
+                    o.status !== "cancelled" &&
+                    /turnover|clean/i.test(o.service_type) &&
+                    (o.scheduled_date === dayKey || !o.scheduled_date),
+                );
+                return (
+                  <Card key={ev.id} className="space-y-2 p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-display text-base font-bold text-ink">
+                          {ev.villaName}
+                        </p>
+                        <p className="text-sm text-muted">{ev.label}</p>
+                      </div>
+                      <span
+                        className={cn(
+                          "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                          ev.kind === "direct"
+                            ? "bg-secondary-soft text-secondary-dark"
+                            : "bg-[color-mix(in_srgb,var(--color-sun)_28%,white)] text-ink",
+                        )}
+                      >
+                        {ev.kind === "direct"
+                          ? t("bookings.badgeDirect")
+                          : t("bookings.badgeChannel")}
+                      </span>
                     </div>
-                    <span
-                      className={cn(
-                        "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold",
-                        ev.kind === "direct"
-                          ? "bg-secondary-soft text-secondary-dark"
-                          : "bg-[color-mix(in_srgb,var(--color-sun)_28%,white)] text-ink",
-                      )}
-                    >
-                      {ev.kind === "direct"
-                        ? t("bookings.badgeDirect")
-                        : t("bookings.badgeChannel")}
-                    </span>
-                  </div>
-                  <p className="text-xs font-semibold text-muted">
-                    {formatShortDate(ev.checkIn)} → {formatShortDate(ev.checkOut)}
-                  </p>
-                  <Link
-                    href={`/villas/${ev.villaId}`}
-                    className="inline-block text-xs font-semibold text-primary"
-                  >
-                    {t("bookings.openProperty")}
-                  </Link>
-                </Card>
-              ))
+                    <p className="text-xs font-semibold text-muted">
+                      {formatShortDate(ev.checkIn)} →{" "}
+                      {formatShortDate(ev.checkOut)}
+                    </p>
+                    {isCheckout ? (
+                      <p className="text-xs font-semibold text-warning-dark">
+                        {t("bookings.checkoutToday")}
+                      </p>
+                    ) : null}
+                    <div className="flex flex-wrap gap-3">
+                      <Link
+                        href={`/villas/${ev.villaId}`}
+                        className="text-xs font-semibold text-primary"
+                      >
+                        {t("bookings.openProperty")}
+                      </Link>
+                      {isCheckout && canManage ? (
+                        openTurnover ? (
+                          <Link
+                            href="/jobs"
+                            className="text-xs font-semibold text-secondary-dark"
+                          >
+                            {t("bookings.turnoverOpen")}
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/contacts?bookVilla=${ev.villaId}&date=${dayKey}&service=${encodeURIComponent("Turnover clean")}`}
+                            className="text-xs font-semibold text-primary"
+                          >
+                            {t("bookings.bookTurnover")}
+                          </Link>
+                        )
+                      ) : null}
+                    </div>
+                  </Card>
+                );
+              })
             )}
           </section>
         </>

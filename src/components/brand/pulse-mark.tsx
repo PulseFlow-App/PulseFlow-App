@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 "use client";
 
 import { useId } from "react";
@@ -29,6 +32,7 @@ export function PulseMark({ className = "h-8 w-8" }: { className?: string }) {
 
       <path
         d="M 160 260 V 370 H 352 V 260"
+        fill="none"
         stroke="#FFFFFF"
         strokeWidth="28"
         strokeLinecap="round"
@@ -37,6 +41,7 @@ export function PulseMark({ className = "h-8 w-8" }: { className?: string }) {
 
       <path
         d="M 100 260 H 160 L 256 140 L 300 290 L 320 220 L 352 260 H 412"
+        fill="none"
         stroke="#FFFFFF"
         strokeWidth="28"
         strokeLinecap="round"

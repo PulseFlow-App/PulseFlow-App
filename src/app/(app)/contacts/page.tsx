@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Phone,
   MessageCircle,
@@ -62,6 +62,7 @@ export default function ContactsPage() {
   const { t } = useI18n();
   const label = useLocalizedDemoText();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const canEdit = data.profile ? canEditContacts(data.profile.role) : false;
   const canBook = data.profile
     ? canBookServices(data.profile.role, data.orgKind)
@@ -83,8 +84,30 @@ export default function ContactsPage() {
   const [editing, setEditing] = useState<Contact | null>(null);
   const [creating, setCreating] = useState(false);
   const [ordering, setOrdering] = useState<Contact | null>(null);
+  const [orderPrefill, setOrderPrefill] = useState<{
+    villaId?: string;
+    date?: string;
+    service?: string;
+  } | null>(null);
   const [reviewing, setReviewing] = useState<Contact | null>(null);
   const currentWeek = weekKey();
+
+  useEffect(() => {
+    if (!data.ready || !canBook || ordering) return;
+    const villaId = searchParams.get("bookVilla")?.trim();
+    if (!villaId) return;
+    const date = searchParams.get("date")?.trim() || undefined;
+    const service = searchParams.get("service")?.trim() || undefined;
+    const preferred =
+      data.contacts.find(
+        (c) =>
+          c.linked_profile_id &&
+          /clean|housekeep|turnover/i.test(c.role ?? ""),
+      ) ?? data.contacts.find((c) => Boolean(c.linked_profile_id));
+    if (!preferred) return;
+    setOrderPrefill({ villaId, date, service });
+    setOrdering(preferred);
+  }, [data.ready, data.contacts, canBook, ordering, searchParams]);
 
   const reviewedThisWeek = useMemo(() => {
     if (!data.profile) return new Set<string>();
@@ -185,14 +208,19 @@ export default function ContactsPage() {
       {ordering && canBook && ordering.linked_profile_id ? (
         <OrderForm
           contact={ordering}
+          prefill={orderPrefill}
           villas={data.villas}
-          onCancel={() => setOrdering(null)}
+          onCancel={() => {
+            setOrdering(null);
+            setOrderPrefill(null);
+          }}
           onSave={async (values) => {
             await data.createServiceOrder({
               contact_id: ordering.id,
               ...values,
             });
             setOrdering(null);
+            setOrderPrefill(null);
           }}
         />
       ) : null}
@@ -477,11 +505,13 @@ function ReviewForm({
 function OrderForm({
   contact,
   villas,
+  prefill,
   onCancel,
   onSave,
 }: {
   contact: Contact;
   villas: { id: string; name: string }[];
+  prefill?: { villaId?: string; date?: string; service?: string } | null;
   onCancel: () => void;
   onSave: (values: {
     villa_id: string | null;
@@ -500,11 +530,21 @@ function OrderForm({
   const { t } = useI18n();
   const label = useLocalizedDemoText();
   const [serviceType, setServiceType] = useState(
-    label(contact.role),
+    prefill?.service?.trim() || label(contact.role),
   );
-  const [villaId, setVillaId] = useState(villas[0]?.id ?? "");
+  const [villaId, setVillaId] = useState(
+    prefill?.villaId && villas.some((v) => v.id === prefill.villaId)
+      ? prefill.villaId
+      : (villas[0]?.id ?? ""),
+  );
   const [locationLabel, setLocationLabel] = useState("");
-  const [schedule, setSchedule] = useState(() => emptyWorkSchedule());
+  const [schedule, setSchedule] = useState(() =>
+    emptyWorkSchedule(
+      prefill?.date
+        ? { date: prefill.date, endDate: prefill.date }
+        : undefined,
+    ),
+  );
   const [details, setDetails] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);

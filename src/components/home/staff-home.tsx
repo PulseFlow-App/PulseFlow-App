@@ -118,7 +118,7 @@ export function StaffHome({ data }: { data: AppData }) {
           <Card className="p-4 text-sm text-muted">{t("home.noJobs")}</Card>
         ) : null}
         {todayOrders.map((order) => (
-          <Card key={order.id} className="p-3">
+          <Card key={order.id} className="space-y-2 p-3">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="font-semibold text-ink">
@@ -139,6 +139,25 @@ export function StaffHome({ data }: { data: AppData }) {
                 {t(`order.status.${order.status}` as MessageKey)}
               </span>
             </div>
+            {order.status === "agreed" && !order.on_site_at ? (
+              <Button
+                size="sm"
+                className="w-full"
+                onClick={() => void data.markServiceOrderOnSite(order.id)}
+              >
+                {t("jobs.markOnSite")}
+              </Button>
+            ) : null}
+            {order.status === "agreed" ? (
+              <Button
+                size="sm"
+                variant="secondary"
+                className="w-full"
+                onClick={() => void data.completeServiceOrder(order.id)}
+              >
+                {t("jobs.markDone")}
+              </Button>
+            ) : null}
           </Card>
         ))}
         {todayTasks

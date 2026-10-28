@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 import type {
   BillCategory,
   BillStatus,
@@ -240,6 +243,8 @@ export type ServiceOrder = {
   recurrence_count: number | null;
   status: ServiceOrderStatus;
   agreed_at: string | null;
+  /** When assignee marked on site (between agreed and done). */
+  on_site_at?: string | null;
   /** When status became done (Mark job done). */
   completed_at: string | null;
   chat_message_id: string | null;

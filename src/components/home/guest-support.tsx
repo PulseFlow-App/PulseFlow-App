@@ -23,6 +23,7 @@ import {
   supportCommandSuggestions,
 } from "@/lib/guest/support-command-suggestions";
 import { refundableDepositBalance } from "@/lib/guest/handle-support-refund";
+import { filterBlockedSender } from "@/lib/safety/blocks";
 
 export function GuestSupportChat() {
   const data = useData();
@@ -33,13 +34,18 @@ export function GuestSupportChat() {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState(0);
+  const [blockTick, setBlockTick] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const stay = pickGuestSupportStay(data.guestStays);
   const canSend = canUseSupportStay(stay, data.profile?.role);
-  const messages = data.supportMessages.filter((m) => m.stay_id === stay?.id);
   const me = data.profile?.id;
+  const messages = useMemo(() => {
+    const stayMsgs = data.supportMessages.filter((m) => m.stay_id === stay?.id);
+    return filterBlockedSender(stayMsgs, me);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- blockTick refreshes local blocks
+  }, [data.supportMessages, stay?.id, me, blockTick]);
   const isGuest = data.profile?.role === "guest";
   const commandSuggestions =
     isGuest && canSend
@@ -185,6 +191,8 @@ export function GuestSupportChat() {
                 mine={m.sender_id === me}
                 hostLabel={t("guest.host")}
                 receiptLabel={t("guest.supportReceipt")}
+                viewerId={me}
+                onBlocked={() => setBlockTick((n) => n + 1)}
               />
             ))
           )}
@@ -306,6 +314,7 @@ export function HostSupportInbox() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState(0);
+  const [blockTick, setBlockTick] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -322,6 +331,14 @@ export function HostSupportInbox() {
       .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
   }, [data.guestStays, data.guestDeposits]);
 
+  const activeId = stayId ?? stays[0]?.id ?? null;
+  const me = data.profile?.id;
+  const messages = useMemo(() => {
+    const stayMsgs = data.supportMessages.filter((m) => m.stay_id === activeId);
+    return filterBlockedSender(stayMsgs, me);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- blockTick refreshes local blocks
+  }, [data.supportMessages, activeId, me, blockTick]);
+
   useEffect(() => {
     return () => {
       if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
@@ -336,9 +353,6 @@ export function HostSupportInbox() {
   if (role !== "owner" && role !== "manager") return null;
   if (!stays.length) return null;
 
-  const activeId = stayId ?? stays[0]?.id ?? null;
-  const messages = data.supportMessages.filter((m) => m.stay_id === activeId);
-  const me = data.profile?.id;
   const activeDeposit = activeId
     ? data.guestDeposits.find((d) => d.stay_id === activeId)
     : null;
@@ -466,6 +480,8 @@ export function HostSupportInbox() {
             mine={m.sender_id === me}
             hostLabel={t("guest.host")}
             receiptLabel={t("guest.supportReceipt")}
+            viewerId={me}
+            onBlocked={() => setBlockTick((n) => n + 1)}
           />
         ))}
       </div>

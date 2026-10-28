@@ -3,11 +3,13 @@ import type {
   ServiceOrder,
   TaskWithRelations,
   Villa,
+  VillaMaintenanceLog,
 } from "@/lib/types";
 import { formatOrderWhen } from "@/lib/service-orders";
 import { formatAmountInDisplayCurrency } from "@/lib/billing/use-display-currency";
 import type { BillCurrency } from "@/lib/billing/currencies";
 import { normalizeBillCurrency } from "@/lib/billing/currencies";
+import { convertBillAmount } from "@/lib/billing/convert-currency";
 import { formatMoney, formatShortDate } from "@/lib/utils";
 import { rowsToCsv } from "@/lib/export/csv";
 
@@ -247,7 +249,7 @@ export function buildWeeklySummaryHtml(data: WeeklySummaryData): string {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Weekly ops · ${escapeHtml(data.orgName)}</title>
+  <title>Operations summary · ${escapeHtml(data.orgName)}</title>
   <style>
     body { font-family: Heebo, system-ui, sans-serif; max-width: 720px; margin: 24px auto; color: #023047; line-height: 1.45; }
     h1 { font-size: 1.35rem; margin: 0 0 4px; }
@@ -259,7 +261,7 @@ export function buildWeeklySummaryHtml(data: WeeklySummaryData): string {
   </style>
 </head>
 <body>
-  <h1>Weekly ops summary</h1>
+  <h1>Operations summary</h1>
   <p class="meta">${escapeHtml(data.orgName)} · ${escapeHtml(data.weekLabel)} · Generated ${escapeHtml(data.generatedAt)}</p>
   <h2>Turnovers &amp; schedule</h2>
   <ul>${turnoverLines}</ul>
@@ -272,12 +274,184 @@ export function buildWeeklySummaryHtml(data: WeeklySummaryData): string {
 </html>`;
 }
 
+export type MaintenanceLogReportData = {
+  orgName: string;
+  periodLabel: string;
+  generatedAt: string;
+  villas: Villa[];
+  logs: VillaMaintenanceLog[];
+};
+
+export function buildMaintenanceLogHtml(
+  data: MaintenanceLogReportData,
+): string {
+  const villaName = (id: string) =>
+    data.villas.find((v) => v.id === id)?.name ?? "Property";
+
+  const sorted = [...data.logs].sort((a, b) =>
+    b.logged_on.localeCompare(a.logged_on),
+  );
+
+  const lines =
+    sorted.length === 0
+      ? "<li>None</li>"
+      : sorted
+          .map((log) => {
+            const parts = [
+              escapeHtml(log.logged_on),
+              `<strong>${escapeHtml(villaName(log.villa_id))}</strong>`,
+              escapeHtml(log.item),
+            ];
+            if (log.vendor?.trim()) {
+              parts.push(escapeHtml(log.vendor.trim()));
+            }
+            if (log.description?.trim()) {
+              parts.push(escapeHtml(log.description.trim()));
+            }
+            if (log.photo_url) {
+              parts.push(
+                `<a href="${escapeHtml(log.photo_url)}">photo</a>`,
+              );
+            }
+            return `<li>${parts.join(" · ")}</li>`;
+          })
+          .join("");
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Maintenance log · ${escapeHtml(data.orgName)}</title>
+  <style>
+    body { font-family: Heebo, system-ui, sans-serif; max-width: 720px; margin: 24px auto; color: #023047; line-height: 1.45; }
+    h1 { font-size: 1.35rem; margin: 0 0 4px; }
+    .meta { color: #5a6d78; font-size: 0.9rem; margin-bottom: 20px; }
+    h2 { font-size: 1rem; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+    ul { margin: 0; padding-left: 1.2rem; }
+    li { margin: 6px 0; }
+    a { color: #219ebc; }
+    @media print { body { margin: 12px; } }
+  </style>
+</head>
+<body>
+  <h1>Maintenance log</h1>
+  <p class="meta">${escapeHtml(data.orgName)} · ${escapeHtml(data.periodLabel)} · Generated ${escapeHtml(data.generatedAt)}</p>
+  <h2>Entries</h2>
+  <ul>${lines}</ul>
+  <script>window.onload = () => window.print();</script>
+</body>
+</html>`;
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+export type MonthlyMoneySummaryData = {
+
+  orgName: string;
+  monthLabel: string;
+  generatedAt: string;
+  displayCurrency: BillCurrency;
+  bills: BillWithRelations[];
+};
+
+export function buildMonthlyMoneySummaryHtml(
+  data: MonthlyMoneySummaryData,
+): string {
+  const money = (amount: number, currency: string) =>
+    formatAmountInDisplayCurrency(
+      amount,
+      currency,
+      data.displayCurrency,
+    );
+
+  let spend = 0;
+  let pending = 0;
+  let paid = 0;
+  const byVilla = new Map<string, number>();
+  const byCategory = new Map<string, number>();
+  const lines: string[] = [];
+
+  for (const b of data.bills) {
+    const from = normalizeBillCurrency(b.currency);
+    const amount = convertBillAmount(
+      Number(b.amount),
+      from,
+      data.displayCurrency,
+    );
+    spend += amount;
+    if (b.status === "pending") pending += amount;
+    else paid += amount;
+    const villa = b.villa?.name ?? "General";
+    byVilla.set(villa, (byVilla.get(villa) ?? 0) + amount);
+    const cat = b.category ?? "other";
+    byCategory.set(cat, (byCategory.get(cat) ?? 0) + amount);
+    lines.push(
+      `<li>${escapeHtml(b.created_at.slice(0, 10))} · ${escapeHtml(b.description)} · ${money(Number(b.amount), b.currency)} · ${escapeHtml(villa)} · ${escapeHtml(b.status)}${b.receipt_photo_url ? ` · <a href="${escapeHtml(b.receipt_photo_url)}">receipt</a>` : ""}</li>`,
+    );
+  }
+
+  const villaLines =
+    [...byVilla.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(
+        ([name, total]) =>
+          `<li><strong>${escapeHtml(name)}</strong> · ${formatMoney(total, data.displayCurrency)}</li>`,
+      )
+      .join("") || "<li>None</li>";
+
+  const catLines =
+    [...byCategory.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(
+        ([name, total]) =>
+          `<li><strong>${escapeHtml(name)}</strong> · ${formatMoney(total, data.displayCurrency)}</li>`,
+      )
+      .join("") || "<li>None</li>";
+
+  const billLines = lines.length ? lines.join("") : "<li>None</li>";
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Finances report · ${escapeHtml(data.orgName)}</title>
+  <style>
+    body { font-family: Heebo, system-ui, sans-serif; max-width: 720px; margin: 24px auto; color: #023047; line-height: 1.45; }
+    h1 { font-size: 1.35rem; margin: 0 0 4px; }
+    .meta { color: #5a6d78; font-size: 0.9rem; margin-bottom: 20px; }
+    .totals { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0 8px; }
+    .totals div { background: #f5fafc; border-radius: 12px; padding: 12px; }
+    .totals strong { display: block; font-size: 1.1rem; margin-top: 4px; }
+    h2 { font-size: 1rem; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+    ul { margin: 0; padding-left: 1.2rem; }
+    li { margin: 4px 0; }
+    a { color: #219ebc; }
+    @media print { body { margin: 12px; } }
+  </style>
+</head>
+<body>
+  <h1>Finances report</h1>
+  <p class="meta">${escapeHtml(data.orgName)} · ${escapeHtml(data.monthLabel)} · Generated ${escapeHtml(data.generatedAt)}</p>
+  <div class="totals">
+    <div>Spend<strong>${formatMoney(spend, data.displayCurrency)}</strong></div>
+    <div>Pending<strong>${formatMoney(pending, data.displayCurrency)}</strong></div>
+    <div>Paid<strong>${formatMoney(paid, data.displayCurrency)}</strong></div>
+  </div>
+  <h2>By property</h2>
+  <ul>${villaLines}</ul>
+  <h2>By category</h2>
+  <ul>${catLines}</ul>
+  <h2>Bills</h2>
+  <ul>${billLines}</ul>
+  <script>window.onload = () => window.print();</script>
+</body>
+</html>`;
 }
 
 export type HandoffPayload = {

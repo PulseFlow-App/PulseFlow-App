@@ -104,6 +104,8 @@ export type AppData = {
     options?: { assigned_to?: string | null },
   ) => Promise<void>;
   completeServiceOrder: (orderId: string) => Promise<void>;
+  /** Staff: mark arrived on site after Read & agreed. */
+  markServiceOrderOnSite: (orderId: string) => Promise<void>;
   updateVilla: (
     id: string,
     patch: Partial<

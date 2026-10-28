@@ -4,9 +4,34 @@ Safer setup: the agent never gets your database key. It only calls Pulse with a 
 
 Users do **not** download or fork the Pulse app. `npx @pulseflow/mcp` fetches the public agent bridge from npm.
 
-## 1. Apply migration
+## 1. Apply migrations
 
 Run `048_mcp_tokens.sql` on your Supabase project (CLI or SQL editor).
+
+For team master info tools, also apply `053_master_info_allow_manager.sql` (or `scripts/apply-053-master-info.sql`). Without it, note fields can still save from the app (fallback), but `allow_manager_view` and some MCP selects need the column.
+
+### Local Connect agent (before npm 0.3.0 is published)
+
+Published `@pulseflow/mcp` is still `0.2.0` on npm (no master-info tools). Until `0.3.0` is published, point Cursor MCP at the repo build:
+
+```json
+{
+  "mcpServers": {
+    "pulse": {
+      "command": "/ABS/PATH/TO/node",
+      "args": [
+        "/ABS/PATH/TO/PulseFlow (villas management)/mcp/bin/pulse-mcp.js"
+      ],
+      "env": {
+        "PULSE_MCP_TOKEN": "pfmcp_…",
+        "PULSE_BASE_URL": "http://localhost:3000"
+      }
+    }
+  }
+}
+```
+
+Reload MCP in Cursor (Settings → MCP → pulse refresh). `PULSE_BASE_URL` must serve the app that includes `/api/mcp/villas/:id/master-info`. After reload you should see `pulse_get_master_info` / `pulse_set_master_info`.
 
 ## 2. Create a connection key
 
@@ -84,8 +109,12 @@ If the log says `npx: not found` or `spawn npx ENOENT`, install Node 20+ from no
 | `pulse_list_jobs` | `jobs:read` | Service orders |
 | `pulse_create_job` | `jobs:write` | Book teammate + task + request chat |
 | `pulse_list_bills` | `bills:read` | Pending / paid bills |
-| `pulse_get_property_instructions` | `villas:read` | Guest-facing house guide: Wi-Fi, gate, bins, quiet hours, checkout, extra notes |
-| `pulse_set_property_instructions` | `villas:write` | Set that house guide. Guests see it on their booking. Send only fields to change. |
+| `pulse_get_property_instructions` | `villas:read` | **Guest house guide only** (Wi-Fi, gate, bins…). Not master info. |
+| `pulse_set_property_instructions` | `villas:write` | Set guest house guide. Guests see it. Do **not** put utilities/handoff here. |
+| `pulse_get_master_info` | `villas:read` | **Team master info only** (utilities, providers, access, contacts, tax, handoff) |
+| `pulse_set_master_info` | `villas:write` | Set team master info. Separate from the guest house guide. |
+| `pulse_list_maintenance` | `villas:read` | Maintenance log for a property |
+| `pulse_add_maintenance` | `villas:write` | Add a maintenance log entry |
 | `pulse_assign_property` | `villas:write` | Assign a cleaner or staff teammate to a property. Other assignees stay. |
 
 ## Safety

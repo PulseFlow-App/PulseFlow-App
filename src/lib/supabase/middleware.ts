@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { DEMO_USER_COOKIE, isDemoMode } from "@/lib/env";
@@ -42,12 +45,23 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/login";
       return NextResponse.redirect(url);
     }
+    // Demo seats stay on /home from "/". Plain /login and /register must stay
+    // reachable so a visitor can leave the demo and sign in for real.
+    const demoPrefill = Boolean(request.nextUrl.searchParams.get("demo"));
     if (
       demoCookie &&
-      (pathname === "/" ||
-        pathname === "/register" ||
-        (pathname === "/login" && !request.nextUrl.searchParams.get("demo")))
+      (pathname === "/login" || pathname === "/register") &&
+      !demoPrefill
     ) {
+      // Clear the demo seat on the response so Sign in / Register are never
+      // masked by a leftover marketing-demo cookie.
+      supabaseResponse.cookies.set(DEMO_USER_COOKIE, "", {
+        path: "/",
+        maxAge: 0,
+      });
+      return supabaseResponse;
+    }
+    if (demoCookie && pathname === "/" && !demoPrefill) {
       const url = request.nextUrl.clone();
       url.pathname = "/home";
       return NextResponse.redirect(url);

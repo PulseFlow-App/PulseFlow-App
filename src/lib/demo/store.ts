@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 "use client";
 
 import {
@@ -418,8 +421,14 @@ export function resetDemoStore() {
 }
 
 function setSession(profileId: string) {
-  document.cookie = `${USER_KEY}=${profileId}; path=/; max-age=2592000; SameSite=Lax`;
-  localStorage.setItem(USER_KEY, profileId);
+  // Session cookie only (no max-age) so closing the browser drops the demo seat.
+  // Do not mirror into localStorage — that made demo seats stick across Sign in.
+  document.cookie = `${USER_KEY}=${profileId}; path=/; SameSite=Lax`;
+  try {
+    localStorage.removeItem(USER_KEY);
+  } catch {
+    /* private mode */
+  }
 }
 
 export function demoLogin(email: string, password: string): Profile | null {
@@ -438,17 +447,31 @@ export function demoLogin(email: string, password: string): Profile | null {
 
 export function demoLogout() {
   document.cookie = `${USER_KEY}=; path=/; max-age=0; SameSite=Lax`;
-  localStorage.removeItem(USER_KEY);
+  // Also clear any legacy long-lived demo cookies from older builds.
+  document.cookie = `${USER_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+  try {
+    localStorage.removeItem(USER_KEY);
+  } catch {
+    /* private mode */
+  }
 }
 
 export function getDemoUserId(): string | null {
   if (typeof window === "undefined") return null;
-  const fromStorage = localStorage.getItem(USER_KEY);
-  if (fromStorage) return fromStorage;
   const cookie = document.cookie
     .split("; ")
     .find((row) => row.startsWith(`${USER_KEY}=`));
-  return cookie ? cookie.split("=")[1] : null;
+  if (cookie) {
+    const value = cookie.slice(`${USER_KEY}=`.length);
+    return value || null;
+  }
+  // Drop legacy localStorage seat ids so they cannot revive a cleared cookie.
+  try {
+    localStorage.removeItem(USER_KEY);
+  } catch {
+    /* private mode */
+  }
+  return null;
 }
 
 export function getDemoProfile(): Profile | null {
@@ -1207,6 +1230,68 @@ export function demoCreateServiceOrder(
   return order;
 }
 
+export function demoMarkServiceOrderOnSite(actor: Profile, orderId: string) {
+  const store = readStore();
+  const order = store.serviceOrders.find((o) => o.id === orderId);
+  if (!order) throw new Error("Order not found.");
+  if (order.status !== "agreed") {
+    throw new Error("Agree to the job before marking on site.");
+  }
+  if (
+    order.staff_profile_id &&
+    order.staff_profile_id !== actor.id &&
+    actor.role !== "owner" &&
+    actor.role !== "manager"
+  ) {
+    throw new Error("Only the assignee can mark on site.");
+  }
+  if (order.on_site_at) return;
+  const now = new Date().toISOString();
+  const msg = {
+    id: crypto.randomUUID(),
+    org_id: order.org_id,
+    sender_id: actor.id,
+    body: `📍 On site - ${order.service_type} ${formatOrderAtWhen(
+      order.location_label ?? "location",
+      order,
+    )}`,
+    created_at: now,
+    service_order_id: orderId,
+    channel: "request" as const,
+    attachment_url: null,
+  };
+  const audience = ownerManagerIds(store.profiles, order.org_id).filter(
+    (id) => id !== actor.id,
+  );
+  updateDemoStore((s) => ({
+    ...s,
+    serviceOrders: s.serviceOrders.map((o) =>
+      o.id === orderId ? { ...o, on_site_at: now } : o,
+    ),
+    messages: [...s.messages, msg],
+    notifications: [
+      ...(audience.length
+        ? [
+            makeNotification({
+              org_id: order.org_id,
+              kind: "appointment",
+              title: `${actor.full_name} is on site`,
+              body: formatOrderMeta(
+                order.service_type,
+                order.location_label ?? "location",
+                formatOrderWhen(order),
+              ),
+              href: "/jobs",
+              entity_id: orderId,
+              audience_profile_ids: audience,
+            }),
+          ]
+        : []),
+      ...(s.notifications ?? []),
+    ],
+  }));
+}
+
 export function demoCompleteServiceOrder(actor: Profile, orderId: string) {
   const store = readStore();
   const order = store.serviceOrders.find((o) => o.id === orderId);
@@ -1240,7 +1325,12 @@ export function demoCompleteServiceOrder(actor: Profile, orderId: string) {
     ...s,
     serviceOrders: s.serviceOrders.map((o) =>
       o.id === orderId
-        ? { ...o, status: "done" as const, completed_at: now }
+        ? {
+            ...o,
+            status: "done" as const,
+            completed_at: now,
+            on_site_at: o.on_site_at ?? now,
+          }
         : o,
     ),
     tasks: s.tasks.map((t) => {
@@ -1380,7 +1470,12 @@ export function demoRevokeServiceOrderAgreement(actor: Profile, orderId: string)
     ...s,
     serviceOrders: s.serviceOrders.map((o) =>
       o.id === orderId
-        ? { ...o, status: "pending_ack" as const, agreed_at: null }
+        ? {
+            ...o,
+            status: "pending_ack" as const,
+            agreed_at: null,
+            on_site_at: null,
+          }
         : o,
     ),
     messages: [

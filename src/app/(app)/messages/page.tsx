@@ -53,6 +53,8 @@ import {
   stripAgentReplyPrefix,
   wrapAgentReply,
 } from "@/lib/agent-chat/markers";
+import { MessageSafetyMenu } from "@/components/safety/message-safety-menu";
+import { filterBlockedSender } from "@/lib/safety/blocks";
 
 const TEAM_CHANNELS: {
   id: MessageChannel;
@@ -113,6 +115,7 @@ function MessagesPageInner() {
   const [agentAllowPhoto, setAgentAllowPhoto] = useState(false);
   const [villaIntake, setVillaIntake] = useState<VillaIntake | null>(null);
   const [localAgent, setLocalAgent] = useState<MessageWithSender[]>([]);
+  const [blockTick, setBlockTick] = useState(0);
   const villaIntakeRef = useRef<VillaIntake | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -122,11 +125,18 @@ function MessagesPageInner() {
     const live = data.messages.filter(
       (m) => (m.channel ?? "general") === channel,
     );
-    if (channel !== "agent") return live;
-    const ids = new Set(live.map((m) => m.body));
-    const extras = localAgent.filter((m) => !ids.has(m.body));
-    return [...live, ...extras];
-  }, [data.messages, channel, localAgent]);
+    const scoped =
+      channel !== "agent"
+        ? live
+        : (() => {
+            const ids = new Set(live.map((m) => m.body));
+            const extras = localAgent.filter((m) => !ids.has(m.body));
+            return [...live, ...extras];
+          })();
+    return filterBlockedSender(scoped, data.profile?.id);
+    // blockTick forces re-filter after local block
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.messages, channel, localAgent, data.profile?.id, blockTick]);
 
   const [optimistic, addOptimistic] = useOptimistic(
     channelMessages,
@@ -378,10 +388,16 @@ function MessagesPageInner() {
         bills: data.bills,
         serviceOrders: data.serviceOrders,
         contacts: data.contacts,
+        villaMasterInfo: data.villaMasterInfo,
+        houseGuides: data.houseGuides,
+        villaMaintenanceLogs: data.villaMaintenanceLogs,
         createTask: data.createTask,
         setTaskStatus: data.setTaskStatus,
         createServiceOrder: data.createServiceOrder,
         createVilla: data.createVilla,
+        upsertVillaMasterInfo: data.upsertVillaMasterInfo,
+        upsertHouseGuide: data.upsertHouseGuide,
+        addVillaMaintenanceLog: data.addVillaMaintenanceLog,
       }, {
         photoUrl,
         chipId: input.chipId,
@@ -544,11 +560,24 @@ function MessagesPageInner() {
                       )}
                     >
                       {!mine ? (
-                        <p className="mb-0.5 text-[11px] font-semibold opacity-70">
-                          {agentReply
-                            ? t("messages.agentBotName")
-                            : (msg.sender?.full_name ?? t("messages.teammate"))}
-                        </p>
+                        <div className="mb-0.5 flex items-start justify-between gap-2">
+                          <p className="text-[11px] font-semibold opacity-70">
+                            {agentReply
+                              ? t("messages.agentBotName")
+                              : (msg.sender?.full_name ?? t("messages.teammate"))}
+                          </p>
+                          {!agentReply && data.profile ? (
+                            <MessageSafetyMenu
+                              viewerId={data.profile.id}
+                              targetProfileId={msg.sender_id}
+                              targetName={msg.sender?.full_name ?? undefined}
+                              messageId={msg.id}
+                              channel={channel}
+                              onDarkBubble={false}
+                              onBlocked={() => setBlockTick((n) => n + 1)}
+                            />
+                          ) : null}
+                        </div>
                       ) : null}
                       {msg.attachment_url ? (
                         <a

@@ -42,6 +42,9 @@ Match existing Pulse site voice: concrete, ops-first, no purple “AI magic” c
 | List bills (pending / paid) | `pulse_list_bills` |
 | Read guest house instructions | `pulse_get_property_instructions` |
 | Set guest house instructions | `pulse_set_property_instructions` |
+| Read team master info | `pulse_get_master_info` |
+| Set team master info | `pulse_set_master_info` |
+| List / add maintenance log | `pulse_list_maintenance` / `pulse_add_maintenance` |
 | Assign a cleaner or staff member to a property | `pulse_assign_property` |
 
 **Not available (do not claim):** delete properties, Stripe/billing, push blasts, guest account actions, endorsements.
@@ -163,7 +166,7 @@ Show **two OS tabs** (default to visitor OS if known): Mac / Linux and Windows.
 
 **Footer note:** If pulse stays off and the log says Node.js could not be found or spawn npx ENOENT, install Node 20+ from nodejs.org, then reload the server / restart the client.
 
-**What it can do:** pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills, pulse_get_property_instructions, pulse_set_property_instructions, pulse_assign_property.
+**What it can do:** pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills, pulse_get_property_instructions, pulse_set_property_instructions, pulse_get_master_info, pulse_set_master_info, pulse_list_maintenance, pulse_add_maintenance, pulse_assign_property.
 
 ---
 

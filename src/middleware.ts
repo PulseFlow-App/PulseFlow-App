@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 

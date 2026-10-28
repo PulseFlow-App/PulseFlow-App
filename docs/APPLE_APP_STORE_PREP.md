@@ -19,8 +19,25 @@ Use this as a **decision workbook**: each step lists options, what Apple cares a
 | UGC              | Team chat, guest Support, photos, endorsements, notes                                     |
 | Account deletion | **In-app** Settings → Delete account (`POST /api/account/delete`) + public `/support`     |
 | Support URL      | Public [`/support`](https://app.pulseflow.site/support) (help, delete, billing, legal)    |
-| Report/block     | Limited / unclear for chat abuse vs Apple 1.2 requirements — **next gap**                 |
+| Report/block     | **Done (MVP):** ⋯ on team chat + Support → Report / Block; Settings → Blocked people; APIs + migration `057_safety_report_block.sql` |
 
+
+### PWA / “Add to Home Screen” readiness (web, not Store binary)
+
+These are the installable-web checks that map to common App Store / Play a11y expectations when you stay on path **A** (web + PWA) or ship a thin wrapper later:
+
+| Check | Status |
+| ----- | ------ |
+| Pinch-zoom allowed (no `maximum-scale=1` / `user-scalable=no`) | Done (`viewport` in `src/app/layout.tsx`) |
+| Web app manifest (`name`, `icons` 192/512, maskable, `start_url`, `scope`, `display`) | Done (`public/manifest.webmanifest`) |
+| Apple touch icon + `appleWebApp` metadata | Done |
+| Public Privacy + Terms + Support without login | Done (`/privacy`, `/terms`, `/support`) |
+| In-app account deletion | Done (Settings → Delete) |
+| Safe-area padding on auth / shell | Present on login and app chrome |
+| UGC report / block (Apple 1.2 / Play UGC) | **Done (MVP)** — apply migration `057` before production use |
+| Native binary + IAP / Play Billing | **Not started** — required only for App Store / Play Console listing |
+
+**Google Play:** same baseline — Play does not review a pure PWA URL. A Play listing needs a signed Android App Bundle (TWA / Capacitor / native), Data safety form, and (if digital goods are sold in-app) Play Billing. Until then, Android users install via Chrome → Add to Home screen on `app.pulseflow.site`.
 
 ---
 
@@ -276,7 +293,7 @@ Apple requires:
 | **Host-only guest Support** | Still UGC—guest↔host messages need report/block too                                                            |
 
 
-**Gap today:** Plan report + block before submission if shipping chat in the binary.
+**Status:** MVP shipped in web app — Report / Block on team chat + guest Support; block list in Settings; `content_reports` + `user_blocks` (migration `057`). Monitor `support@pulseflow.site`. Stronger admin queue still optional.
 
 ---
 
@@ -407,11 +424,12 @@ BUSINESS MODEL:
 
 DEMO ACCOUNTS: (see Step 3)
 
-UGC: Team chat and guest Support include report/block via …
-ACCOUNT DELETION: Settings → …
-LOCATION/CAMERA: used for … ; optional.
+UGC: Team chat and guest Support — ⋯ menu → Report or Block; unblock in Settings → Blocked people.
+ACCOUNT DELETION: Settings → Delete account (also /support).
+LOCATION/CAMERA: optional job/photo capture; purpose strings TBD for native.
+See docs/APP_STORE_REVIEW_NOTES.md for demo logins.
 
-Contact: support@…
+Contact: support@pulseflow.site
 ```
 
 ---
@@ -443,13 +461,14 @@ Must-have if shipping an App Store binary:
 2. [ ] Choose billing path (Step 4)  
 3. [ ] Organization (or Individual) Developer enrollment  
 4. [x] In-app **Delete account** (Settings + API)  
-5. [ ] Chat **Report** + **Block** (and support SLA) ← **next**  
-6. [ ] Stable **demo accounts** for all roles  
+5. [x] Chat **Report** + **Block** (MVP; monitor support@)  
+6. [x] Stable **demo accounts** for all roles (`owner|manager|employee|guest@pulseflow.site` / `TestPass123!` + welcome demos)  
 7. [x] Support URL page live (`/support`)  
 8. [ ] Privacy questionnaire filled to match real data  
 9. [ ] If free-companion billing: **strip** Stripe upgrade CTAs from iOS build  
 10. [ ] If IAP billing: StoreKit products + server receipt/entitlement sync  
-11. [ ] Screenshots + description that match real features (iCal calendar **import** from Airbnb/Booking.com export links is OK to mention; do **not** claim a full Airbnb/Booking.com API or channel manager)  
+11. [ ] Screenshots + description for Store sizes — welcome frost/dark in `docs/welcome-shots/`; still need logged-in Home/Jobs/Messages for listing; do **not** claim a full Airbnb/Booking.com API  
+
 12. [ ] Counsel pass on Terms/Privacy  
 13. [ ] Native iOS app (not bare WebView) — aligns with Step 0D 
 
@@ -470,7 +489,7 @@ Nice-to-have:
 | ------ | -------------------------------------------------------------- |
 | **P0** | Decide: PWA-only vs App Store; if Store → billing option 1/2/3 |
 | **P1** | Enroll Developer Program (Organization if possible)            |
-| **P2** | Build delete-account + report/block + support page             |
+| **P2** | ~~Build delete-account + report/block + support page~~ **done** |
 | **P3** | Native shell or RN/Swift app with real native hooks            |
 | **P4** | TestFlight internal → external                                 |
 | **P5** | App Review with full demo notes                                |

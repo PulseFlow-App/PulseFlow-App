@@ -1,4 +1,7 @@
 /**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
+/**
  * Horizon design tokens — keep in sync with pulseflow-site/DESIGN.md
  * Prefer CSS vars in UI; this object is for JS (charts, themeColor, SVGs).
  */

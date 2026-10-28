@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 import type { OrgKind, UserRole } from "@/lib/design-tokens";
 
 export const ROLE_LABELS: Record<UserRole, string> = {

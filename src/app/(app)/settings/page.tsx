@@ -16,8 +16,10 @@ import { PasskeySettingsCard } from "@/components/auth/passkey-settings-card";
 import { JobSearchSettingsCard } from "@/components/settings/job-search-settings-card";
 import { McpSettingsCard } from "@/components/settings/mcp-settings-card";
 import { DeleteAccountCard } from "@/components/settings/delete-account-card";
+import { BlockedUsersCard } from "@/components/settings/blocked-users-card";
 import { PushSettingsCard } from "@/components/settings/push-settings-card";
 import { TranslateContentSettingsCard } from "@/components/settings/translate-content-settings-card";
+import { AppearanceSettingsCard } from "@/components/settings/appearance-settings-card";
 import type { MessageKey } from "@/lib/i18n";
 import { resolvePlanTier } from "@/lib/billing/plans";
 import { cn } from "@/lib/utils";
@@ -93,6 +95,9 @@ export default function SettingsPage() {
           <DisplayCurrencySelect aria-label={t("bills.currency")} />
         </div>
         <TranslateContentSettingsCard />
+        <div className="border-t border-[var(--color-border)] pt-4">
+          <AppearanceSettingsCard />
+        </div>
       </Card>
 
       <Card className="space-y-4 p-4 sm:p-5">
@@ -270,6 +275,7 @@ export default function SettingsPage() {
         </div>
       ) : null}
 
+      <BlockedUsersCard />
       <DeleteAccountCard />
     </Screen>
   );

@@ -11,6 +11,7 @@ import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import type { OrgKind } from "@/lib/design-tokens";
 import { isDemoMode } from "@/lib/supabase/client";
+import { demoLogout } from "@/lib/demo/store";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
 import {
@@ -44,6 +45,8 @@ export default function RegisterPage() {
   );
 
   useEffect(() => {
+    // Leave any sticky demo seat when starting a real workspace signup.
+    demoLogout();
     const params = new URLSearchParams(window.location.search);
     const fromQuery = readReferralParam(params);
     if (fromQuery) {

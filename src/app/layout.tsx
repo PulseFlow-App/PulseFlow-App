@@ -1,4 +1,8 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import {
   Heebo,
   Sora,
@@ -8,6 +12,7 @@ import {
   Noto_Sans_Myanmar,
 } from "next/font/google";
 import { brand, colors } from "@/lib/design-tokens";
+import { APPEARANCE_BOOT_SCRIPT } from "@/lib/appearance/apply";
 import { APP_URL, OG_IMAGE } from "@/lib/seo";
 import { Providers } from "@/components/providers";
 import "./globals.css";
@@ -105,9 +110,7 @@ export const viewport: Viewport = {
   themeColor: colors.background,
   width: "device-width",
   initialScale: 1,
-  minimumScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Allow pinch-zoom (WCAG / store a11y). Locked zoom is a common reject reason.
   viewportFit: "cover",
 };
 
@@ -129,6 +132,11 @@ export default function RootLayout({
             "var(--font-pulse), var(--font-noto), var(--font-thai), var(--font-myanmar), var(--font-arabic), system-ui, sans-serif",
         }}
       >
+        <Script
+          id="pulse-appearance-boot"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }}
+        />
         <Providers>{children}</Providers>
       </body>
     </html>

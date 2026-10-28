@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 export const DEMO_USER_COOKIE = "pulseflow_demo_user";
 
 export function isSupabaseConfigured() {

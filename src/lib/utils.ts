@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
+ */
 import { format, parseISO, isToday, isSameDay, startOfDay, subDays } from "date-fns";
 import type { Locale } from "./i18n/types";
 import { isLocale } from "./i18n";

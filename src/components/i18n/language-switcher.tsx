@@ -59,8 +59,8 @@ export function LanguageSwitcher({
   if (variant === "inline") {
     return (
       <LocaleSelect
-        className="inline-block min-w-[9.5rem]"
-        selectClassName="rounded-full py-2"
+        className="inline-block min-w-[7.25rem] max-w-[9.5rem]"
+        selectClassName="h-11 rounded-full py-0 text-xs sm:text-sm"
       />
     );
   }

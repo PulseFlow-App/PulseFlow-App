@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Check, ChevronDown, FileText, Loader2, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label, Textarea } from "@/components/ui/input";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
+import {
+  applyMasterInfoEnrichment,
+  parseMasterInfoFromText,
+} from "@/lib/villas/parse-master-info";
+import { cn } from "@/lib/utils";
 
 export type MasterInfoDraft = {
   utilities_notes: string;
@@ -59,6 +65,39 @@ type Props =
       embed?: boolean;
     };
 
+function AcceptTick({
+  busy,
+  disabled,
+  onClick,
+  label,
+}: {
+  busy?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      disabled={disabled || busy}
+      onClick={onClick}
+      className={cn(
+        "inline-flex size-9 shrink-0 items-center justify-center rounded-full border transition",
+        disabled
+          ? "border-[var(--color-border)] text-muted opacity-40"
+          : "border-secondary/40 bg-secondary-soft text-secondary-dark hover:border-secondary",
+      )}
+    >
+      {busy ? (
+        <Loader2 className="size-4 animate-spin" />
+      ) : (
+        <Check className="size-4" strokeWidth={2.6} />
+      )}
+    </button>
+  );
+}
+
 export function VillaMasterInfoEditor(props: Props) {
   const data = useData();
   const { t } = useI18n();
@@ -69,6 +108,7 @@ export function VillaMasterInfoEditor(props: Props) {
   const existing = props.villaId
     ? data.villaMasterInfo.find((g) => g.villa_id === props.villaId)
     : undefined;
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const [utilities, setUtilities] = useState("");
   const [providers, setProviders] = useState("");
@@ -80,6 +120,13 @@ export function VillaMasterInfoEditor(props: Props) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quickOpen, setQuickOpen] = useState(true);
+  const [pasteText, setPasteText] = useState("");
+  const [docName, setDocName] = useState<string | null>(null);
+  const [pasteBusy, setPasteBusy] = useState(false);
+  const [docBusy, setDocBusy] = useState(false);
+  const [fillNote, setFillNote] = useState<string | null>(null);
+  const [fillError, setFillError] = useState<string | null>(null);
 
   useEffect(() => {
     if (controlled) return;
@@ -132,6 +179,54 @@ export function VillaMasterInfoEditor(props: Props) {
     }
   };
 
+  const applyParsedText = (text: string) => {
+    const enrichment = parseMasterInfoFromText(text);
+    if (!Object.values(enrichment).some((v) => v?.trim())) {
+      setFillError(t("villas.masterQuickFillEmpty"));
+      setFillNote(null);
+      return false;
+    }
+    setDraft(applyMasterInfoEnrichment(draft, enrichment));
+    setFillError(null);
+    setFillNote(t("villas.masterQuickFillApplied"));
+    return true;
+  };
+
+  const acceptPaste = () => {
+    setPasteBusy(true);
+    try {
+      applyParsedText(pasteText);
+    } finally {
+      setPasteBusy(false);
+    }
+  };
+
+  const onDoc = async (file: File | null) => {
+    if (!file || !canEdit) return;
+    setDocBusy(true);
+    setFillError(null);
+    setFillNote(null);
+    try {
+      const lower = file.name.toLowerCase();
+      const isText =
+        file.type.startsWith("text/") ||
+        /\.(txt|md|csv|tsv|json|html?)$/i.test(lower);
+      if (!isText) {
+        setDocName(file.name);
+        setFillNote(t("villas.masterQuickFillDocHint"));
+        return;
+      }
+      const text = await file.text();
+      setDocName(file.name);
+      setPasteText(text);
+      applyParsedText(text);
+    } catch (e) {
+      setFillError(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setDocBusy(false);
+    }
+  };
+
   const save = async () => {
     if (!props.villaId || !canEdit) return;
     setSaving(true);
@@ -163,6 +258,21 @@ export function VillaMasterInfoEditor(props: Props) {
         value={String(draft[key] ?? "")}
         onChange={(e) => setDraft({ [key]: e.target.value })}
         disabled={!canEdit && !controlled}
+        placeholder={
+          key === "utilities_notes"
+            ? t("villas.masterUtilitiesPh")
+            : key === "service_providers_notes"
+              ? t("villas.masterProvidersPh")
+              : key === "access_notes"
+                ? t("villas.masterAccessPh")
+                : key === "key_contacts_notes"
+                  ? t("villas.masterContactsPh")
+                  : key === "tax_notes"
+                    ? t("villas.masterTaxPh")
+                    : key === "handoff_notes"
+                      ? t("villas.masterHandoffPh")
+                      : undefined
+        }
       />
     </div>
   );
@@ -177,6 +287,118 @@ export function VillaMasterInfoEditor(props: Props) {
           <p className="mt-0.5 text-xs leading-snug text-muted">
             {t("villas.masterInfoHint")}
           </p>
+        </div>
+      ) : null}
+
+      {canEdit || controlled ? (
+        <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-canvas-deep/50">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition hover:bg-sand/50"
+            aria-expanded={quickOpen}
+            onClick={() => setQuickOpen((o) => !o)}
+          >
+            <span className="text-sm font-semibold text-ink">
+              {t("villas.masterQuickFill")}
+            </span>
+            <ChevronDown
+              className={cn(
+                "size-4 shrink-0 text-muted transition-transform",
+                quickOpen && "rotate-180",
+              )}
+              aria-hidden
+            />
+          </button>
+          {quickOpen ? (
+            <div className="space-y-3 border-t border-black/5 px-3 py-3">
+              <p className="text-xs text-muted">
+                {t("villas.masterQuickFillHint")}
+              </p>
+
+              <div>
+                <Label>{t("villas.masterQuickFillPaste")}</Label>
+                <div className="mt-1 flex items-start gap-2">
+                  <Textarea
+                    rows={4}
+                    value={pasteText}
+                    onChange={(e) => {
+                      setPasteText(e.target.value);
+                      setFillError(null);
+                      setFillNote(null);
+                    }}
+                    placeholder={t("villas.masterQuickFillPastePh")}
+                    className="min-w-0 flex-1"
+                  />
+                  <AcceptTick
+                    label={t("villas.masterQuickFillApply")}
+                    disabled={!pasteText.trim()}
+                    busy={pasteBusy}
+                    onClick={acceptPaste}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label>{t("villas.masterQuickFillUpload")}</Label>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".txt,.md,.csv,.tsv,.json,.html,.htm,text/plain,text/markdown,text/csv"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] ?? null;
+                    e.target.value = "";
+                    void onDoc(file);
+                  }}
+                />
+                <div className="mt-1 flex items-center gap-2">
+                  {docName ? (
+                    <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-[var(--color-border)] bg-card px-3 py-2">
+                      <FileText className="size-4 shrink-0 text-primary" />
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
+                        {docName}
+                      </span>
+                      <button
+                        type="button"
+                        className="rounded-full p-1 text-muted hover:text-danger"
+                        aria-label={t("common.remove")}
+                        onClick={() => {
+                          setDocName(null);
+                          setFillNote(null);
+                        }}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      className="flex-1"
+                      reflectGlobalBusy={false}
+                      busy={docBusy}
+                      onClick={() => fileRef.current?.click()}
+                    >
+                      <FileText className="size-3.5" />
+                      {docBusy
+                        ? t("common.saving")
+                        : t("villas.masterQuickFillUploadBtn")}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {fillNote ? (
+                <p className="text-xs font-semibold text-secondary-dark">
+                  {fillNote}
+                </p>
+              ) : null}
+              {fillError ? (
+                <p className="text-xs text-danger">{fillError}</p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
 

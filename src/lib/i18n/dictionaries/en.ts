@@ -155,6 +155,9 @@ const en = {
   "home.noMoves": "No moves on this day.",
   "home.due": "due {date}",
   "home.weekVolumeClosed": "of this week's task volume closed",
+  "home.weekSpendTitle": "Spend this week",
+  "home.weekSpendPending": "{amount} still pending approval",
+  "home.weekSpendCta": "Bills",
   "home.closedLabel": "closed",
   "home.openedLabel": "opened",
   "home.chartOpened": "Opened",
@@ -264,6 +267,21 @@ const en = {
   "villas.masterInfoTitle": "Master info",
   "villas.masterInfoHint":
     "Team-only handoff file so someone else can run this property without you.",
+  "villas.masterQuickFill": "Quick fill",
+  "villas.masterQuickFillHint":
+    "Paste notes from a doc or AI chat, or upload a text file. Use labels like Utilities: and Handoff: when you can.",
+  "villas.masterQuickFillPaste": "Paste from doc or chat",
+  "villas.masterQuickFillPastePh":
+    "Utilities:\nMeter behind AC…\n\nHandoff:\nCall guard first…",
+  "villas.masterQuickFillApply": "Apply pasted notes",
+  "villas.masterQuickFillUpload": "Upload notes file",
+  "villas.masterQuickFillUploadBtn": "Upload .txt, .md, or .csv",
+  "villas.masterQuickFillApplied":
+    "Fields filled from your notes - review and save.",
+  "villas.masterQuickFillEmpty":
+    "Nothing to apply. Paste notes or use section labels.",
+  "villas.masterQuickFillDocHint":
+    "That file type is not read automatically. Paste the text above, then apply.",
   "villas.masterUtilities": "Utilities",
   "villas.masterUtilitiesPh": "Electric, water, meters, account numbers…",
   "villas.masterProviders": "Service providers",
@@ -452,6 +470,7 @@ const en = {
   "jobs.openTasks": "Open tasks",
   "jobs.noOpenTasks": "No open tasks.",
   "jobs.markDone": "Mark job done",
+  "jobs.markOnSite": "On site",
   "jobs.tipOwner": "Tip: open Contacts → Order by name to book a vendor.",
   "jobs.tipStaff":
     "Guest check-in times live with the owner - you only need your work window.",
@@ -477,6 +496,7 @@ const en = {
   "jobs.progress.title": "Job · {villa}",
   "jobs.progress.created": "Job created",
   "jobs.progress.accepted": "Accepted",
+  "jobs.progress.onSite": "On site",
   "jobs.progress.completed": "Completed",
   "jobs.progress.cancelled": "Cancelled",
   "jobs.progress.metaAssigned": "assigned to {name}",
@@ -634,6 +654,11 @@ const en = {
   "messages.agent.cmd.job": "Book a job for a teammate",
   "messages.agent.cmd.bills": "List pending bills",
   "messages.agent.cmd.villa": "Add a property (questionnaire or famous place)",
+  "messages.agent.cmd.master":
+    "Team master info (utilities/handoff — not the guest guide)",
+  "messages.agent.cmd.guide":
+    "Guest house guide (Wi-Fi/gate — not master info)",
+  "messages.agent.cmd.maint": "List or add maintenance log entries",
   "messages.attachPhoto": "Add photo",
   "messages.photoRequired": "Add a photo or screenshot for this thread.",
   "messages.removePhoto": "Remove photo",
@@ -799,7 +824,7 @@ const en = {
   "settings.mcpHowCopyConfig": "Copy config",
   "settings.mcpHowToolsLabel": "What it can do:",
   "settings.mcpHowTools":
-    "pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills, pulse_get_property_instructions, pulse_set_property_instructions, pulse_assign_property.",
+    "pulse_whoami, pulse_list_team, pulse_list_villas, pulse_create_villa, pulse_list_tasks, pulse_create_task, pulse_update_task_status, pulse_list_jobs, pulse_create_job, pulse_list_bills, pulse_get_property_instructions, pulse_set_property_instructions, pulse_get_master_info, pulse_set_master_info, pulse_list_maintenance, pulse_add_maintenance, pulse_assign_property.",
   "settings.inviteError": "Could not create invite.",
   "settings.saveError": "Could not save.",
   "settings.translateContent": "Translate team content",
@@ -809,6 +834,15 @@ const en = {
     "Host briefings, support messages, and stay notes appear in your app language.",
   "settings.translateContentHint.host":
     "Tasks, chat, guest updates, and team messages appear in your app language.",
+  "settings.appearance": "Appearance",
+  "settings.appearanceHint":
+    "Horizon is the default. Frost is the white liquid-glass look from welcome; Dark is night glass.",
+  "settings.appearanceHorizon": "Horizon",
+  "settings.appearanceHorizonHint": "Cool light canvas (default)",
+  "settings.appearanceFrost": "Frost",
+  "settings.appearanceFrostHint": "White liquid glass — welcome light look",
+  "settings.appearanceDark": "Dark",
+  "settings.appearanceDarkHint": "Night liquid glass with soft glows",
   "settings.translateContentHint.staff":
     "Tasks, chat, and messages from your team appear in your app language.",
 
@@ -854,17 +888,17 @@ const en = {
     "Free forever for your own properties, tasks, and bills.",
   "plan.note.guest": "",
   "plan.note.staff":
-    "Free seat on this company - assigned properties, jobs, bills, and chat.",
+    "Covered seat on this company - assigned properties, jobs, bills, and chat.",
   "plan.note.managerLimited":
-    "Free seat while company Full is inactive. Exports and company writes stay closed until the owner subscribes.",
+    "Covered seat while company Full is inactive. Exports and company writes stay closed until the owner subscribes.",
   "plan.note.managerIncluded":
     "Your owner’s Full plan covers you - reporting, exports, and team features are included while it stays active.",
   "plan.note.ownerTrial":
-    "3 months of Full free - invite the team and run company ops while billing is not live.",
+    "3 months of Full free - invite the team and run company ops while billing is not live. When live: USD 15 / month (10 seats), then USD 2 / seat, Pro +USD 9.",
   "plan.note.ownerFull":
-    "Your subscription covers the team. Managers get reporting automatically.",
+    "Company is USD 15 / month with 10 seats included; extra seats USD 2 / month. Pro adds USD 9. Managers get reporting automatically.",
   "plan.note.ownerExpired":
-    "Company Full has ended. Subscribe to reopen invites, company properties, and service orders.",
+    "Company Full has ended. Subscribe (USD 15 / month, 10 seats; +USD 2 / extra seat; Pro +USD 9) to reopen invites, company properties, and service orders.",
   "plan.referralTitle": "Invite 5 people → Get 1 year Full free",
   "plan.referralHint":
     "Copy your referral link in Profile. Inviting someone to the app or as staff to your company both count. When billing starts, 5 credited joins unlock 1 year of Full from that date.",
@@ -1345,6 +1379,9 @@ const en = {
   "bookings.badgeDirect": "App",
   "bookings.badgeChannel": "Calendar",
   "bookings.openProperty": "Open property",
+  "bookings.checkoutToday": "Checkout today",
+  "bookings.bookTurnover": "Book turnover",
+  "bookings.turnoverOpen": "Turnover job open",
   "bookings.source.ical": "Calendar booking",
   "bookings.source.airbnb": "Airbnb",
   "bookings.source.booking": "Booking.com",
@@ -1432,17 +1469,21 @@ const en = {
   "reports.period90": "Last 90 days",
   "reports.property": "Property",
   "reports.allProperties": "All properties",
-  "reports.exportHint":
-    "CSV downloads open cleanly in Google Sheets or Excel. Budget sheet is best for P&L paste.",
+  "reports.exportHint": "CSV files for Google Sheets or Excel",
   "reports.exportBudget": "Budget sheet",
   "reports.exportBills": "Bills",
   "reports.exportTasks": "Tasks",
   "reports.exportProperties": "Properties",
   "reports.exportJobs": "Jobs",
   "reports.exportOccupancy": "Occupancy",
-  "reports.weeklyTitle": "Weekly ops summary",
-  "reports.weeklyHint": "Printable turnovers, urgent tasks, pending bills.",
-  "reports.printWeekly": "Print summary",
+  "reports.weeklyTitle": "Operations summary",
+  "reports.weeklyHint": "Turnovers, urgent tasks, pending bills.",
+  "reports.printWeekly": "Operations summary",
+  "reports.monthlyMoneyTitle": "Finances report",
+  "reports.monthlyMoneyHint": "",
+  "reports.printMonthlyMoney": "Finances report",
+  "reports.pdfMaintenance": "Maintenance log",
+  "reports.pdfLabel": "PDF",
   "reports.handoffTitle": "Shift handoff",
   "reports.handoffHint":
     "Save a point-in-time status of properties, open tasks, and pending bills so the next person can pick up the shift.",
@@ -1454,7 +1495,7 @@ const en = {
   "reports.deleteSnapshot": "Delete",
   "reports.noSnapshots": "No saved handoffs yet.",
   "settings.reportsLink": "Reports & exports",
-  "settings.reportsHint": "CSV downloads, printable weekly summary, shift handoffs.",
+  "settings.reportsHint": "PDF reports, CSV downloads, and shift handoffs.",
   "settings.website": "Website",
   "settings.websiteHint": "Product overview, plans, and guides on the public site.",
   "settings.userGuide": "User guide",
@@ -1468,6 +1509,22 @@ const en = {
   "settings.deleteAccountTitle": "Delete your account?",
   "settings.deleteAccountConfirm":
     "Your login and profile will be removed. Company data owned by others may remain. This cannot be undone.",
+
+  "safety.menu": "Message options",
+  "safety.report": "Report",
+  "safety.block": "Block",
+  "safety.unblock": "Unblock",
+  "safety.reportTitle": "Report this message?",
+  "safety.reportConfirm":
+    "We will review this report. Abuse of reporting may lead to account limits. Contact support@pulseflow.site if you need urgent help.",
+  "safety.reportThanks": "Thanks — we received your report.",
+  "safety.blockTitle": "Block this person?",
+  "safety.blockConfirm":
+    "You will stop seeing messages from {name}. You can unblock them later in Settings.",
+  "safety.blockDone": "Blocked. Their messages are hidden.",
+  "safety.blockedTitle": "Blocked people",
+  "safety.blockedHint": "People you blocked cannot message you in chat or Support.",
+
   "settings.preparingShareLink": "Preparing your public link…",
   "settings.scanToJoin": "Scan to join",
 
@@ -1555,6 +1612,57 @@ const en = {
   "talent.skill.manager": "On-site manager",
   "talent.reviewsSection": "Reviews & endorsements",
   "talent.browseLink": "Start search",
+
+  /* Welcome (logged-out) — EN source; other locales: English stubs pending native review */
+  "welcome.signIn": "Sign in",
+  "welcome.title": "The pulse of your rental operations",
+  "welcome.subline":
+    "Multilayered platform for managing rental properties, where each member of a company is on the same page.",
+  "welcome.startFree": "Start free",
+  "welcome.seeDemo": "See the demo",
+  "welcome.demoChooserTitle": "Try a demo",
+  "welcome.demoChooserHint": "Open a sample workspace as that role.",
+  "welcome.themeToggle": "Appearance",
+  "welcome.themeHorizon": "Switch to light",
+  "welcome.themeFrost": "Switch to light glass",
+  "welcome.themeDark": "Switch to dark",
+  "welcome.cardLiveTitle": "Shared dashboard",
+  "welcome.cardLiveBody": "Properties, check-ins and today's focus.",
+  "welcome.cardLiveB1": "Properties and check-ins on one shared dashboard.",
+  "welcome.cardLiveB2": "Today's focus without chasing chats.",
+  "welcome.cardLiveB3": "Each property keeps its own ops notes with the team.",
+  "welcome.cardJobsTitle": "Jobs and assignees",
+  "welcome.cardJobsBody": "Tasks with confirmation and the clear result.",
+  "welcome.cardJobsB1": "Assign the job to a named person on the team.",
+  "welcome.cardJobsB2": "They confirm on site; you see the clear result.",
+  "welcome.cardJobsB3": "Master handoff for the team when you are offline.",
+  "welcome.cardBillsTitle": "Money and finances",
+  "welcome.cardBillsBody": "All bills and reports in one place.",
+  "welcome.cardBillsB1": "All bills live in one place with the receipt attached.",
+  "welcome.cardBillsB2": "Approve pending spend before it piles up.",
+  "welcome.cardBillsB3": "Week spend and printable finance reports.",
+  "welcome.cardLangTitle": "Multilingual support",
+  "welcome.cardLangBody":
+    "Every team member communicates in their own language.",
+  "welcome.cardLangB1":
+    "Every team member communicates in their own language.",
+  "welcome.cardLangB2": "You write in yours. They read theirs.",
+  "welcome.cardLangB3": "The app menu stays clear across the org.",
+  "welcome.sheetClose": "Close details",
+  "welcome.roleOwner": "Owner",
+  "welcome.roleManager": "Manager",
+  "welcome.roleStaff": "Staff",
+  "welcome.roleGuest": "Guest",
+  "welcome.roleAgent": "Agent",
+  "welcome.roleNew": "New",
+  "welcome.roleLineOwner": "See everything without asking.",
+  "welcome.roleLineManager": "Set the day once, not in every chat.",
+  "welcome.roleLineStaff": "Only your jobs, in your language.",
+  "welcome.roleLineGuest": "A clean channel, not your host's phone number.",
+  "welcome.roleLineAgent":
+    "Connect your AI to read and update your workspace, including in-app slash commands.",
+  "welcome.tryDemo": "Try the {role} demo",
+  "welcome.support": "support@pulseflow.site",
 } as const;
 
 export type MessageKey = keyof typeof en;

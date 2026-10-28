@@ -42,7 +42,7 @@
 - [ ] Supabase PITR / backups enabled
 - [ ] Storage lifecycle for villa photos and receipts
 - [ ] Counsel-reviewed Terms + Privacy (replace placeholders)
-- [ ] PWA audit on `app.pulseflow.site` (separate from marketing site)
+- [x] PWA audit on `app.pulseflow.site` (manifest icons/maskable, zoomable viewport, apple-touch, legal URLs) — native Store binary still open; see `docs/APPLE_APP_STORE_PREP.md`
 - [ ] Multi-org membership + RLS smoke tests
 
 ## Phase 5 - Launch sequence
