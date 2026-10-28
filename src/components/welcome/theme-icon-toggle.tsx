@@ -5,7 +5,11 @@ import { useAppearance } from "@/lib/appearance/provider";
 import { useI18n } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 
-/** Compact header control: frost (white glass) ↔ dark glass. */
+/**
+ * Compact header control on the public welcome (no login).
+ * Cycles frost (white liquid glass) → dark → frost. First click from Horizon
+ * enters frost so the landing immediately shows the sky glass look.
+ */
 export function ThemeIconToggle({ className }: { className?: string }) {
   const { appearance, setAppearance } = useAppearance();
   const { t } = useI18n();
@@ -14,10 +18,15 @@ export function ThemeIconToggle({ className }: { className?: string }) {
   return (
     <button
       type="button"
-      onClick={() => setAppearance(isDark ? "frost" : "dark")}
+      onClick={() => {
+        // Horizon → frost (white glass) → dark → frost …
+        if (appearance === "dark") setAppearance("frost");
+        else if (appearance === "frost") setAppearance("dark");
+        else setAppearance("frost");
+      }}
       className={cn(
         "inline-flex size-11 items-center justify-center rounded-full",
-        "border border-[var(--color-border)] bg-card text-ink",
+        "border border-[var(--color-border)] bg-card text-ink soft-shadow",
         "hover:bg-canvas-deep",
         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
         className,

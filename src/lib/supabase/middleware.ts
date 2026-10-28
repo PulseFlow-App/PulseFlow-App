@@ -61,10 +61,15 @@ export async function updateSession(request: NextRequest) {
       });
       return supabaseResponse;
     }
-    if (demoCookie && pathname === "/" && !demoPrefill) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/home";
-      return NextResponse.redirect(url);
+    // Visiting `/` should always show the public welcome (moon toggle + info
+    // cards), not skip into a sticky demo home. Clear the demo seat here;
+    // demos still start from "Try the … demo" / See the demo → /login?demo=.
+    if (demoCookie && pathname === "/") {
+      supabaseResponse.cookies.set(DEMO_USER_COOKIE, "", {
+        path: "/",
+        maxAge: 0,
+      });
+      return supabaseResponse;
     }
     return supabaseResponse;
   }

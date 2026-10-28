@@ -135,13 +135,13 @@ export function WelcomeScreen() {
 
   return (
     <div
-      className="min-h-dvh overflow-x-hidden bg-sand text-ink"
+      className="h-dvh overflow-x-hidden overflow-y-auto overscroll-y-contain bg-transparent text-ink"
       style={{
         paddingInline:
           "max(0.75rem, env(safe-area-inset-left)) max(0.75rem, env(safe-area-inset-right))",
       }}
     >
-      <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
+      <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
         <header className="flex flex-wrap items-center gap-x-1.5 gap-y-2 pb-4 sm:gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <PulseMark className="size-9 shrink-0" />
