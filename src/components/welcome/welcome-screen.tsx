@@ -13,6 +13,7 @@ import {
   type PulseIconName,
 } from "@/components/icons/pulse-icon";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { AppVersionMark } from "@/components/layout/app-version-mark";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/welcome/bottom-sheet";
 import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
@@ -311,13 +312,34 @@ export function WelcomeScreen() {
           </section>
         </main>
 
-        <footer className="mt-8 border-t border-[var(--color-border)] pt-4 text-center">
+        <footer className="mt-8 space-y-3 border-t border-[var(--color-border)] pt-4 text-center">
+          <nav
+            aria-label={`${t("settings.privacyLink")}, ${t("settings.termsLink")}`}
+            className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm font-semibold"
+          >
+            <Link
+              href="/privacy"
+              className="text-sky underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              {t("settings.privacyLink")}
+            </Link>
+            <span className="text-muted" aria-hidden>
+              ·
+            </span>
+            <Link
+              href="/terms"
+              className="text-sky underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              {t("settings.termsLink")}
+            </Link>
+          </nav>
           <a
             href="mailto:support@pulseflow.site"
-            className="text-sm font-semibold text-sky underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-block text-sm font-semibold text-sky underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {t("welcome.support")}
           </a>
+          <AppVersionMark className="pt-1" />
         </footer>
       </div>
 
