@@ -144,7 +144,7 @@ export function WelcomeScreen() {
       <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
         <header className="flex flex-wrap items-center gap-x-1.5 gap-y-2 pb-4 sm:gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <PulseMark className="size-9 shrink-0" />
+            <PulseMark className="size-8 shrink-0 sm:size-9" />
             <span className="hidden font-display text-sm font-bold tracking-tight min-[400px]:inline sm:text-base">
               {brandName}
             </span>
@@ -154,8 +154,8 @@ export function WelcomeScreen() {
           <Link
             href="/login"
             className={cn(
-              "inline-flex h-11 min-w-[44px] shrink-0 items-center justify-center rounded-full px-2.5 sm:px-3",
-              "text-sm font-semibold text-ink",
+              "inline-flex h-9 shrink-0 items-center justify-center rounded-full px-2.5",
+              "text-xs font-semibold text-ink sm:text-sm",
               "hover:bg-canvas-deep",
               "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
             )}
@@ -213,16 +213,16 @@ export function WelcomeScreen() {
                   setOpenCard(id);
                 }}
                 className={cn(
-                  "flex max-h-[110px] min-h-[96px] flex-col items-start gap-2 rounded-[1.15rem]",
-                  "border border-[var(--color-border)] bg-card p-4 text-start soft-shadow",
+                  "flex w-full items-start gap-3 overflow-hidden rounded-[1.15rem]",
+                  "border border-[var(--color-border)] bg-card px-3.5 py-3.5 text-start soft-shadow",
                   "transition hover:bg-canvas-deep active:scale-[0.99]",
                   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                 )}
               >
-                <span className="inline-flex size-9 items-center justify-center rounded-xl bg-canvas-deep">
+                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-canvas-deep">
                   <PulseIcon name={icon} className="size-5" aria-hidden />
                 </span>
-                <span className="space-y-0.5">
+                <span className="min-w-0 flex-1 space-y-0.5">
                   <span className="block font-display text-sm font-bold leading-snug text-ink">
                     {t(titleKey)}
                   </span>

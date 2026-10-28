@@ -19,13 +19,12 @@ export function ThemeIconToggle({ className }: { className?: string }) {
     <button
       type="button"
       onClick={() => {
-        // Horizon → frost (white glass) → dark → frost …
         if (appearance === "dark") setAppearance("frost");
         else if (appearance === "frost") setAppearance("dark");
         else setAppearance("frost");
       }}
       className={cn(
-        "inline-flex size-11 items-center justify-center rounded-full",
+        "inline-flex size-9 items-center justify-center rounded-full",
         "border border-[var(--color-border)] bg-card text-ink soft-shadow",
         "hover:bg-canvas-deep",
         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
@@ -35,9 +34,9 @@ export function ThemeIconToggle({ className }: { className?: string }) {
       title={t("welcome.themeToggle")}
     >
       {isDark ? (
-        <Sun className="size-5" aria-hidden />
+        <Sun className="size-4" aria-hidden />
       ) : (
-        <Moon className="size-5" aria-hidden />
+        <Moon className="size-4" aria-hidden />
       )}
     </button>
   );
