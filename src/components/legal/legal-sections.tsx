@@ -9,7 +9,7 @@ import {
 } from "@/lib/legal/audiences";
 
 /** Bump when Terms or Privacy substantive text changes. */
-export const LEGAL_LAST_UPDATED = "28 October 2026";
+export const LEGAL_LAST_UPDATED = "29 October 2026";
 
 export function LegalIntro({
   kind,
@@ -127,8 +127,9 @@ export function TermsWhatWeAre() {
           rent that property or receive money for it.
         </li>
         <li>
-          Demo seats are for exploration and may be reset. Do not store
-          production secrets only in demo.
+          Demo seats are for exploration only. Demo content is sample data you
+          cannot edit into your own workspace, and we may reset it at any time.
+          Use a real account for your properties and team.
         </li>
       </ul>
     </section>
@@ -349,14 +350,34 @@ export function TermsCommonSections({
       <section className="space-y-2">
         <h2 className="font-display text-lg font-bold">Software billing</h2>
         <p className="text-muted">
-          Personal workspaces stay free. Companies may receive a free period
-          while billing rolls out. When plans are live on iOS, the owner
-          subscribes in the Apple App Store (planned Company USD 15 / month with
-          10 seats, then USD 2 / seat; Pro USD 9 / month for Connect your
-          agent). Apple processes the charge; we store entitlement status.
-          Managers, staff and guests are not billed individually. Referral
-          rewards may unlock extended Full access as described in the app.
-          Software fees follow App Store refund rules.
+          Personal workspaces are free for solo use, with no limit on how many
+          properties you add. New company workspaces may get a trial of full
+          features while billing rolls out. When paid company plans are active,
+          the company owner pays: USD 15 / month includes 10 team seats, then
+          USD 2 / month for each extra seat. Pro adds USD 9 / month for Connect
+          your agent. Managers and field staff are not billed individually. On
+          iOS, billing runs through the Apple App Store, which handles the
+          charge. Software fees follow App Store refund rules. Referral rewards
+          work as described in the app.
+        </p>
+        <p className="text-muted">
+          Founding company offer: the first 10 company workspaces we designate
+          as founding (rental companies that create a company workspace during
+          the public founding period announced on www.pulseflow.site) receive
+          Company plan software access at no monthly Company fee for as long as
+          we continue to offer the Company product to that workspace
+          (“lifetime” means the remaining commercial life of that product for
+          that workspace, not a promise that {brand.name} or any feature will
+          exist forever). Included: the Company plan features then generally
+          sold for USD 15 / month and the 10 included seats. Not included unless
+          we state otherwise in writing: Pro (USD 9 / month), seats beyond 10
+          (USD 2 / month each), and any future add-ons. The offer is
+          non-transferable, one per company workspace, and does not create
+          equity in {brand.name}. If we rename, restructure or replace the
+          Company plan, we will move founding workspaces to a successor with
+          equal or greater core Company features at no Company monthly fee. If
+          we discontinue the Service or the Company product entirely, founding
+          access ends; no cash refund is owed for free access.
         </p>
       </section>
 
