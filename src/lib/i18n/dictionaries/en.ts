@@ -1535,7 +1535,7 @@ const en = {
 
   "talent.title": "Find staff",
   "talent.subtitle":
-    "Search people who posted their profile available - by skill, place, or map.",
+    "Search people who listed themselves for work. Invite them to your company — when they agree, they appear in Contacts and you can book them.",
   "talent.searchPlaceholder": "Search by name, skill, or bio…",
   "talent.filterLocation": "City or area",
   "talent.filterCountry": "Country",
