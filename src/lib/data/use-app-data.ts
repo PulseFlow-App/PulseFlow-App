@@ -113,11 +113,32 @@ import { resolveSupportRefundAction } from "@/lib/guest/handle-support-refund";
 import { capitalizeLabel } from "@/lib/format-label";
 import { pickVillaDetails } from "@/lib/villas/property-details";
 import {
-  fetchIcalText,
   pickPulseStayDates,
   planIcalSync,
 } from "@/lib/calendar/sync-villa-ical";
 import { normalizeIcalUrl } from "@/lib/calendar/parse-ics";
+
+/** Demo-only browser fetch — production sync goes through /api/calendar/sync-ical. */
+async function fetchIcalTextDemo(feedUrl: string): Promise<string> {
+  const normalized = normalizeIcalUrl(feedUrl);
+  if (!normalized) throw new Error("Invalid calendar URL");
+  const parsed = new URL(normalized);
+  if (parsed.protocol !== "https:") {
+    throw new Error("Only https calendar URLs are allowed");
+  }
+  const res = await fetch(normalized, {
+    headers: {
+      Accept: "text/calendar, text/plain, */*",
+      "User-Agent": "PulseFlow-CalendarSync/1.0",
+    },
+  });
+  if (!res.ok) throw new Error(`Calendar feed returned ${res.status}`);
+  const text = await res.text();
+  if (!/BEGIN:VCALENDAR/i.test(text)) {
+    throw new Error("URL did not return a calendar (.ics) feed");
+  }
+  return text;
+}
 
 export type { AppData } from "@/lib/data/types";
 import type { AppData } from "@/lib/data/types";
@@ -2283,7 +2304,7 @@ function useDemoData(): AppData {
           "Paste an Airbnb or Booking.com calendar export URL first.",
         );
       }
-      const icsText = await fetchIcalText(feedUrl);
+      const icsText = await fetchIcalTextDemo(feedUrl);
       const existing = (store.calendarBookings ?? []).filter(
         (b) => b.villa_id === villa.id,
       );

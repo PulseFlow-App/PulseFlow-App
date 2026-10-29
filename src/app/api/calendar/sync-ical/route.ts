@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isDemoMode } from "@/lib/env";
+import { fetchIcalText } from "@/lib/calendar/fetch-ical-text";
 import {
-  fetchIcalText,
   pickPulseStayDates,
   planIcalSync,
 } from "@/lib/calendar/sync-villa-ical";

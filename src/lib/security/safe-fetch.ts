@@ -1,6 +1,7 @@
 /**
  * SSRF-hardened fetch for user-supplied URLs (listing enrich, iCal sync).
  * HTTPS only, blocks private/loopback after DNS, caps body size.
+ * Server/API routes only — never import from client components.
  */
 
 import { lookup } from "node:dns/promises";

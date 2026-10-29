@@ -1,7 +1,6 @@
 import type { VillaCalendarBooking, VillaCalendarSource } from "@/lib/types";
 import {
   detectIcalSource,
-  normalizeIcalUrl,
   parseIcsEvents,
 } from "@/lib/calendar/parse-ics";
 
@@ -149,28 +148,6 @@ export function planIcalSync(input: {
     toCancelIds,
     resultBookings,
   };
-}
-
-export async function fetchIcalText(feedUrl: string): Promise<string> {
-  const normalized = normalizeIcalUrl(feedUrl);
-  if (!normalized) throw new Error("Invalid calendar URL");
-
-  const { safeFetchText } = await import("@/lib/security/safe-fetch");
-  const { status, text } = await safeFetchText(normalized, {
-    accept: "text/calendar, text/plain, */*",
-    headers: { "User-Agent": "PulseFlow-CalendarSync/1.0" },
-    timeoutMs: 20_000,
-    maxBytes: 2_000_000,
-  });
-
-  if (status >= 400) {
-    throw new Error(`Calendar feed returned ${status}`);
-  }
-
-  if (!/BEGIN:VCALENDAR/i.test(text)) {
-    throw new Error("URL did not return a calendar (.ics) feed");
-  }
-  return text;
 }
 
 /** Next upcoming or current booking for villa pulse dates. */
