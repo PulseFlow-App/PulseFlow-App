@@ -6,12 +6,41 @@ import { attachInviteToExistingProfile } from "@/lib/auth/attach-org";
 import { creditReferral } from "@/lib/billing/referrals";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 import { appOriginFromRequest, sendAppEmail } from "@/lib/email/send";
+import { ensureStaffContact } from "@/lib/contacts/ensure-staff-contact";
 import {
   clientIp,
   rateLimit,
   rateLimitResponse,
 } from "@/lib/security/rate-limit";
 import { randomBytes } from "crypto";
+
+async function ensureBookableContact(
+  admin: Admin,
+  input: {
+    orgId: string;
+    role: string;
+    profile: {
+      id: string;
+      full_name: string;
+      phone?: string | null;
+      job_title?: string | null;
+      role?: string | null;
+    };
+  },
+) {
+  if (input.role === "guest" || input.role === "owner") return;
+  try {
+    await ensureStaffContact(admin, {
+      orgId: input.orgId,
+      profile: {
+        ...input.profile,
+        role: input.role,
+      },
+    });
+  } catch (e) {
+    console.warn("ensureStaffContact failed", e);
+  }
+}
 
 type Body = {
   token: string;
@@ -314,6 +343,17 @@ export async function POST(request: Request) {
       phone: existingProfile.phone,
       userId: user.id,
     });
+    await ensureBookableContact(admin, {
+      orgId: invite.org_id,
+      role: invite.role,
+      profile: {
+        id: user.id,
+        full_name: existingProfile.full_name,
+        phone: existingProfile.phone,
+        job_title: invite.job_title ?? existingProfile.job_title,
+        role: invite.role,
+      },
+    });
     await notifyTeamJoined(admin, {
       orgId: invite.org_id,
       userId: user.id,
@@ -388,6 +428,17 @@ export async function POST(request: Request) {
         email,
         phone,
         userId: existingAuth.id,
+      });
+      await ensureBookableContact(admin, {
+        orgId: invite.org_id,
+        role: invite.role,
+        profile: {
+          id: existingAuth.id,
+          full_name: fullName || profileRow.full_name,
+          phone: phone ?? profileRow.phone,
+          job_title: invite.job_title ?? profileRow.job_title,
+          role: invite.role,
+        },
       });
       return NextResponse.json({
         ok: true,
@@ -494,6 +545,18 @@ export async function POST(request: Request) {
   });
 
   await markInviteUsed(admin, invite, { fullName, email, phone, userId });
+
+  await ensureBookableContact(admin, {
+    orgId: invite.org_id,
+    role: invite.role,
+    profile: {
+      id: userId,
+      full_name: fullName,
+      phone,
+      job_title: invite.job_title,
+      role: invite.role,
+    },
+  });
 
   await notifyTeamJoined(admin, {
     orgId: invite.org_id,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureProfileShareSlug } from "@/lib/auth/share-slug";
 import { attachInviteToExistingProfile } from "@/lib/auth/attach-org";
+import { ensureStaffContact } from "@/lib/contacts/ensure-staff-contact";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 
 type Body = {
@@ -161,6 +162,24 @@ export async function POST(request: Request) {
     share_slug: existingProfile.share_slug as string | null,
     role: existingProfile.role,
   });
+
+  if (role !== "guest" && role !== "owner") {
+    try {
+      await ensureStaffContact(admin, {
+        orgId,
+        profile: {
+          id: userId,
+          full_name: existingProfile.full_name,
+          phone: (row.phone as string | null) ?? existingProfile.phone,
+          job_title:
+            (row.job_title as string | null) ?? existingProfile.job_title,
+          role,
+        },
+      });
+    } catch (e) {
+      console.warn("ensureStaffContact on merge failed", e);
+    }
+  }
 
   await admin
     .from("invites")

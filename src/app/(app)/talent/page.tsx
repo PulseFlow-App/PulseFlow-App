@@ -61,6 +61,61 @@ export default function TalentPage() {
   const [loading, setLoading] = useState(true);
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inviteBusyId, setInviteBusyId] = useState<string | null>(null);
+  const [inviteNote, setInviteNote] = useState<string | null>(null);
+
+  const inviteToCompany = useCallback(
+    async (person: TalentSearchResult) => {
+      setInviteBusyId(person.id);
+      setInviteNote(null);
+      try {
+        const res = await fetch("/api/talent/invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            profileId: person.id,
+            role: person.role === "manager" ? "manager" : "staff",
+          }),
+        });
+        const payload = (await res.json()) as {
+          ok?: boolean;
+          alreadyMember?: boolean;
+          contactCreated?: boolean;
+          inviteUrl?: string | null;
+          error?: string;
+        };
+        if (!res.ok) {
+          throw new Error(payload.error ?? t("talent.inviteError"));
+        }
+        if (payload.alreadyMember) {
+          setInviteNote(
+            payload.contactCreated
+              ? t("talent.alreadyOnTeam")
+              : t("talent.alreadyOnContacts"),
+          );
+          await data.refresh();
+          return;
+        }
+        if (payload.inviteUrl && typeof navigator !== "undefined") {
+          try {
+            await navigator.clipboard.writeText(payload.inviteUrl);
+            setInviteNote(t("talent.inviteCopied"));
+          } catch {
+            setInviteNote(t("talent.inviteSent"));
+          }
+        } else {
+          setInviteNote(t("talent.inviteSent"));
+        }
+      } catch (e) {
+        setInviteNote(
+          e instanceof Error ? e.message : t("talent.inviteError"),
+        );
+      } finally {
+        setInviteBusyId(null);
+      }
+    },
+    [data, t],
+  );
 
   const canBrowse = data.profile
     ? canBrowseTalent(data.profile.role, data.orgKind)
@@ -360,6 +415,10 @@ export default function TalentPage() {
         </Card>
       ) : null}
 
+      {inviteNote ? (
+        <Card className="p-3 text-sm font-semibold text-ink">{inviteNote}</Card>
+      ) : null}
+
       {loading ? (
         <p className="text-sm text-muted">{t("common.loading")}</p>
       ) : error ? (
@@ -411,7 +470,7 @@ export default function TalentPage() {
                       ) : null}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <StarsDisplay
                         value={person.average_rating}
@@ -430,11 +489,24 @@ export default function TalentPage() {
                         </span>
                       )}
                     </div>
-                    <Link href={`/u/${person.share_slug}`}>
-                      <Button size="sm" variant="secondary">
-                        {t("talent.viewProfile")}
-                      </Button>
-                    </Link>
+                    <div className="flex flex-wrap gap-2">
+                      <Link href={`/u/${person.share_slug}`}>
+                        <Button size="sm" variant="secondary">
+                          {t("talent.viewProfile")}
+                        </Button>
+                      </Link>
+                      {data.orgKind === "company" ? (
+                        <Button
+                          size="sm"
+                          busy={inviteBusyId === person.id}
+                          onClick={() => void inviteToCompany(person)}
+                        >
+                          {inviteBusyId === person.id
+                            ? t("talent.inviteBusy")
+                            : t("talent.inviteCompany")}
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
                 </Card>
               </li>
@@ -447,7 +519,7 @@ export default function TalentPage() {
             const place = formatTalentPlace(person);
             return (
               <li key={person.id}>
-                <Card className="flex items-center justify-between gap-3 p-3">
+                <Card className="flex flex-wrap items-center justify-between gap-3 p-3">
                   <div className="min-w-0">
                     <p className="truncate font-semibold text-ink">
                       {person.full_name}
@@ -459,11 +531,24 @@ export default function TalentPage() {
                         : ""}
                     </p>
                   </div>
-                  <Link href={`/u/${person.share_slug}`}>
-                    <Button size="sm" variant="secondary">
-                      {t("talent.viewProfile")}
-                    </Button>
-                  </Link>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href={`/u/${person.share_slug}`}>
+                      <Button size="sm" variant="secondary">
+                        {t("talent.viewProfile")}
+                      </Button>
+                    </Link>
+                    {data.orgKind === "company" ? (
+                      <Button
+                        size="sm"
+                        busy={inviteBusyId === person.id}
+                        onClick={() => void inviteToCompany(person)}
+                      >
+                        {inviteBusyId === person.id
+                          ? t("talent.inviteBusy")
+                          : t("talent.inviteCompany")}
+                      </Button>
+                    ) : null}
+                  </div>
                 </Card>
               </li>
             );

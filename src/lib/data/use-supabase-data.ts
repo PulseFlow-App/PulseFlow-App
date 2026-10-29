@@ -1279,14 +1279,27 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!contact) throw new Error("Contact not found.");
       if (!contact.linked_profile_id) {
         throw new Error(
-          "This contact is not on PulseFlow. Link a team member or call them.",
+          "This contact is not on PulseFlow. Invite them to your company first, or link their team profile.",
         );
       }
-      const staffProfile = profiles.find(
-        (p) => p.id === contact.linked_profile_id,
-      );
+      let staffProfile =
+        profiles.find((p) => p.id === contact.linked_profile_id) ??
+        allProfiles.find((p) => p.id === contact.linked_profile_id) ??
+        null;
+      if (!staffProfile) {
+        const { data: remoteStaff } = await supabase
+          .from("profiles")
+          .select("id, full_name, role, org_id, phone, job_title")
+          .eq("id", contact.linked_profile_id)
+          .maybeSingle();
+        staffProfile = remoteStaff
+          ? normalizeProfile(remoteStaff as Profile)
+          : null;
+      }
       if (!staffProfile || !isTaskAssignableRole(staffProfile.role)) {
-        throw new Error("Guests cannot be assigned jobs.");
+        throw new Error(
+          "This contact cannot be booked. Invite them as staff or manager first.",
+        );
       }
       const villa = input.villa_id
         ? villas.find((v) => v.id === input.villa_id)
