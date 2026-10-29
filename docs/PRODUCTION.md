@@ -41,7 +41,8 @@
 - [x] Apply migration `059_scale_security_hardening.sql` (role/org locks, private receipts, staff RLS, push dedupe)
 - [x] Run `docs/SECURITY_AUDIT_059.sql` (Oct 2026): 3 personal owners missing `org_memberships` — backfilled; 0 `active` company orgs (2 `trialing`); no billing self-promotion found
 - [ ] `NEXT_PUBLIC_DEMO_MODE=false` on production; demo credentials hidden
-- [ ] Error monitoring (e.g. Sentry): needs a project DSN — not in `.env.local` yet; set `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` on Vercel when ready
+- [ ] Error monitoring: `@sentry/nextjs` wired — set `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` on Vercel (optional `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` for source maps)
+- [ ] Apply migration `060_audit_view_security_invoker.sql` (audit view security_invoker + service_role only)
 - [ ] Supabase PITR / backups: enable in Dashboard → Project → Database → Backups (Pro plan; Management API login required from this machine)
 - [ ] Storage lifecycle for villa photos and receipts
 - [x] Counsel-reviewed Terms + Privacy (Horizon legal rewrite Oct 2026)

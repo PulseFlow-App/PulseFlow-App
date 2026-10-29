@@ -1,5 +1,6 @@
--- Run in Supabase SQL editor after applying migration 059.
+-- Run in Supabase SQL editor after applying migrations 059 + 060.
 -- Review rows; do not delete blindly.
+-- View is security_invoker and SELECT is service_role only (Dashboard SQL editor OK).
 
 -- Profiles whose primary org has no matching membership, or role mismatch.
 select * from public.audit_profile_role_mismatches

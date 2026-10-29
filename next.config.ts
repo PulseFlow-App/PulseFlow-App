@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 /** Changes on every Vercel deploy; footer semver stays manual in app-version.ts. */
 const buildId =
@@ -41,4 +42,18 @@ const nextConfig: NextConfig = {
   ],
 };
 
-export default nextConfig;
+const sentryOrg = process.env.SENTRY_ORG?.trim();
+const sentryProject = process.env.SENTRY_PROJECT?.trim();
+
+export default withSentryConfig(nextConfig, {
+  ...(sentryOrg ? { org: sentryOrg } : {}),
+  ...(sentryProject ? { project: sentryProject } : {}),
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  // Avoid failing production builds when source-map upload creds are absent.
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+  widenClientFileUpload: Boolean(process.env.SENTRY_AUTH_TOKEN),
+  tunnelRoute: "/sentry-tunnel",
+});
