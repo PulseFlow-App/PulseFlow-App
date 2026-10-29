@@ -38,16 +38,16 @@
 
 - [ ] Apply migration `036_mvp_security_hardening.sql` (guest RLS + entitlement expiry) if not already on prod
 - [ ] Apply migration `058_drop_stripe_billing_columns.sql`
-- [ ] Apply migration `059_scale_security_hardening.sql` (role/org locks, private receipts, staff RLS, push dedupe)
-- [ ] Run `docs/SECURITY_AUDIT_059.sql` and review suspicious owners / active orgs
+- [x] Apply migration `059_scale_security_hardening.sql` (role/org locks, private receipts, staff RLS, push dedupe)
+- [x] Run `docs/SECURITY_AUDIT_059.sql` (Oct 2026): 3 personal owners missing `org_memberships` — backfilled; 0 `active` company orgs (2 `trialing`); no billing self-promotion found
 - [ ] `NEXT_PUBLIC_DEMO_MODE=false` on production; demo credentials hidden
-- [ ] Error monitoring (e.g. Sentry): set `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` when ready; keep webhook logging on
-- [ ] Supabase PITR / backups enabled (Dashboard → Database → Backups)
+- [ ] Error monitoring (e.g. Sentry): needs a project DSN — not in `.env.local` yet; set `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` on Vercel when ready
+- [ ] Supabase PITR / backups: enable in Dashboard → Project → Database → Backups (Pro plan; Management API login required from this machine)
 - [ ] Storage lifecycle for villa photos and receipts
 - [x] Counsel-reviewed Terms + Privacy (Horizon legal rewrite Oct 2026)
 - [x] PWA audit on `app.pulseflow.site` (manifest icons/maskable, zoomable viewport, apple-touch, legal URLs) - native Store binary still open; see `docs/APPLE_APP_STORE_PREP.md`
 - [ ] Multi-org membership + RLS smoke tests
-- [ ] Cron: call `/api/cron/schedule-alerts` repeatedly with `?offset=` until `done: true` (or chain via Vercel cron)
+- [ ] Cron: `/api/cron` must be public to middleware (fixed); hit `/api/cron/schedule-alerts` with `Authorization: Bearer $CRON_SECRET` until `done: true` (route now walks batches in one call)
 
 ## Phase 5 - Launch sequence
 
