@@ -20,6 +20,7 @@ import { BlockedUsersCard } from "@/components/settings/blocked-users-card";
 import { PushSettingsCard } from "@/components/settings/push-settings-card";
 import { TranslateContentSettingsCard } from "@/components/settings/translate-content-settings-card";
 import { AppearanceSettingsCard } from "@/components/settings/appearance-settings-card";
+import { WorkspaceSwitcherCard } from "@/components/settings/workspace-switcher-card";
 import type { MessageKey } from "@/lib/i18n";
 import { resolvePlanTier } from "@/lib/billing/plans";
 import { cn } from "@/lib/utils";
@@ -232,6 +233,8 @@ export default function SettingsPage() {
           />
         )}
       </Card>
+
+      <WorkspaceSwitcherCard />
 
       <Card className="space-y-4 p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">

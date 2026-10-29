@@ -48,6 +48,7 @@ import {
   personalVillasOnly,
 } from "@/lib/roles";
 import { GuestBookingGuide } from "@/components/home/guest-booking-guide";
+import { HandoffPersonalCard } from "@/components/villas/handoff-personal-card";
 import { useI18n } from "@/lib/i18n/provider";
 import { labelRole, labelVillaStatus } from "@/lib/i18n/labels";
 import type { MessageKey } from "@/lib/i18n";
@@ -568,6 +569,10 @@ export default function VillasPage() {
             </Button>
           </div>
         </Card>
+      ) : null}
+
+      {!showAdd && personalVillas.length > 0 ? (
+        <HandoffPersonalCard personalVillas={personalVillas} />
       ) : null}
 
       {!showAdd && data.villaList.length === 0 ? (

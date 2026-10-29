@@ -84,6 +84,12 @@ Home, villas (edit), house guides, tasks, contacts + Order, jobs, bills finance,
 | Reporting when company entitled | Villa access assignment UI (owner-only) |
 | Invite managers + field + guests | Rename the company org (owner-only) |
 
+### Multi-company + personal handoff
+
+- **Several companies:** each company owner invites you as manager. One login keeps a membership per company. **Settings → Your companies** switches the active workspace (`profiles.org_id`). Your **personal** list stays available alongside.
+- **Personal first, then owner:** add villas under **No company (personal)**. On Properties, **Invite owner** creates a handoff link: pick villas, owner email, and either **create a new company** or attach to **their existing company**. When they accept at `/handoff/{token}`, villas move into that company, they become **owner**, you stay **manager** (and a bookable contact), billing stays on the owner.
+- Switching companies does **not** move personal villas. Handoff never pulls villas out of another company.
+
 ---
 
 ## Field staff (cleaner / staff)
@@ -135,7 +141,7 @@ Team chat with cleaners, contacts, talent, endorsements voting, company tasks/op
 
 ## Personal workspace (solo)
 
-**Job:** Own a few properties with no company team. Free forever.
+**Job:** Own a few properties with no company team. Free forever. When you bring on a real owner for side clients, use **Invite owner** (handoff) so those villas move into their company while you stay manager.
 
 | Has | Does not have |
 |-----|----------------|

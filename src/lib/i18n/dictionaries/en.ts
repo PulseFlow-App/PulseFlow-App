@@ -695,6 +695,14 @@ const en = {
   "settings.orgNameHint":
     "Shown to your team and to guests invited to this company.",
   "settings.workspace": "Workspace",
+  "settings.yourCompanies": "Your companies",
+  "settings.yourCompaniesHint":
+    "One login can work in several companies plus your personal list. Tap to switch the active workspace.",
+  "settings.myPersonal": "My personal",
+  "settings.workspaceActive": "Active",
+  "settings.workspaceSwitch": "Switch",
+  "settings.workspaceSwitched": "Workspace switched.",
+  "settings.workspaceSwitchError": "Could not switch workspace.",
   "settings.reputation": "Reputation",
   "settings.reputationOwner":
     "Vote each week and follow your company’s ranking.",
@@ -1672,6 +1680,46 @@ const en = {
     "Connect your AI to read and update your workspace, including in-app slash commands.",
   "welcome.tryDemo": "Try the {role} demo",
   "welcome.support": "support@pulseflow.site",
+
+  "handoff.title": "Hand over to an owner",
+  "handoff.hint":
+    "Move selected personal properties into a company. You stay as manager; they become the owner.",
+  "handoff.open": "Invite owner",
+  "handoff.pickVillas": "Properties to move",
+  "handoff.pickVillasHint":
+    "Leave all unchecked to move every personal property in this list.",
+  "handoff.ownerEmail": "Owner email",
+  "handoff.ownerName": "Owner name (optional)",
+  "handoff.modeCreate": "Create new company",
+  "handoff.modeAttach": "Their existing company",
+  "handoff.modeAttachHint":
+    "They must already own a company workspace, then pick it when they accept.",
+  "handoff.companyName": "New company name",
+  "handoff.companyNamePh": "e.g. Samui Coastal Villas",
+  "handoff.send": "Create handoff link",
+  "handoff.createError": "Could not create handoff.",
+  "handoff.linkReady": "Share this link with the owner:",
+  "handoff.loading": "Loading handoff…",
+  "handoff.unavailable": "This handoff link is invalid or expired.",
+  "handoff.unavailableTitle": "Handoff unavailable",
+  "handoff.alreadyDoneTitle": "Already accepted",
+  "handoff.alreadyDoneHint": "These properties are already in a company.",
+  "handoff.goToVillas": "Go to properties",
+  "handoff.acceptTitle": "Take ownership",
+  "handoff.acceptHint": "{name} wants to hand properties into your company.",
+  "handoff.someone": "Someone",
+  "handoff.acceptCreateCompany":
+    "Accepting creates company “{company}” with you as owner.",
+  "handoff.acceptAttachCompany":
+    "Accepting moves these properties into a company you already own.",
+  "handoff.chooseCompany": "Company that receives the properties",
+  "handoff.mustSignInAs": "Sign in as {email} to accept.",
+  "handoff.signInToAccept": "Sign in to accept",
+  "handoff.createAccount": "Create an account",
+  "handoff.wrongAccount":
+    "Signed in as {current}. Sign out and use {expected}.",
+  "handoff.accept": "Accept handoff",
+  "handoff.acceptError": "Could not accept handoff.",
 } as const;
 
 export type MessageKey = keyof typeof en;

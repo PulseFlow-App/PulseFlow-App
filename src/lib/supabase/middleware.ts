@@ -10,6 +10,7 @@ const PUBLIC_PREFIXES = [
   "/register",
   "/join",
   "/merge",
+  "/handoff",
   "/auth/callback",
   "/u",
   "/terms",
@@ -18,6 +19,7 @@ const PUBLIC_PREFIXES = [
   "/api/auth",
   "/api/account",
   "/api/invites",
+  "/api/handoff",
   "/api/public",
   "/api/billing/webhook",
   // Vercel Cron / ops: route checks Authorization: Bearer CRON_SECRET.
