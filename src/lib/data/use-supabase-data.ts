@@ -75,6 +75,71 @@ import {
 import { withScheduleDefaults } from "@/lib/work-schedule";
 import { formatMoney } from "@/lib/utils";
 import { normalizeBillCurrency } from "@/lib/billing/currencies";
+
+/** Cap history loads so Supabase max-rows (default 1000) never hides newest. */
+const LIST_LIMIT = {
+  messages: 120,
+  support: 120,
+  tasks: 200,
+  bills: 200,
+  notifications: 100,
+  orders: 150,
+  stays: 150,
+  dateRequests: 100,
+} as const;
+
+const SIGNED_URL_TTL_SEC = 60 * 60 * 24 * 365;
+
+/** Extract storage object path from a receipts public or signed URL. */
+function receiptsObjectPath(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const markers = [
+    "/storage/v1/object/public/receipts/",
+    "/storage/v1/object/sign/receipts/",
+  ];
+  for (const marker of markers) {
+    const i = url.indexOf(marker);
+    if (i < 0) continue;
+    const rest = url.slice(i + marker.length);
+    const path = rest.split("?")[0]?.trim();
+    return path ? decodeURIComponent(path) : null;
+  }
+  return null;
+}
+
+async function resignReceiptUrl(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  url: string | null | undefined,
+): Promise<string | null> {
+  if (!url) return null;
+  // Already a long-lived signed URL — keep unless it was a public URL.
+  if (!url.includes("/object/public/receipts/")) return url;
+  const path = receiptsObjectPath(url);
+  if (!path) return url;
+  const { data, error } = await supabase.storage
+    .from("receipts")
+    .createSignedUrl(path, SIGNED_URL_TTL_SEC);
+  if (error || !data?.signedUrl) return url;
+  return data.signedUrl as string;
+}
+
+async function uploadReceiptSigned(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  path: string,
+  file: File,
+) {
+  const { error } = await supabase.storage.from("receipts").upload(path, file);
+  if (error) throw error;
+  const { data, error: signErr } = await supabase.storage
+    .from("receipts")
+    .createSignedUrl(path, SIGNED_URL_TTL_SEC);
+  if (signErr || !data?.signedUrl) {
+    throw signErr ?? new Error("Could not sign receipt URL.");
+  }
+  return data.signedUrl as string;
+}
 import {
   formatDepositQuoteLine,
   formatStayQuoteLine,
@@ -403,7 +468,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       orgRes,
       orgsRes,
       profilesRes,
-      allProfilesRes,
+      membershipProfileRows,
       villasRes,
       contactsRes,
       tasksRes,
@@ -427,7 +492,10 @@ export function useSupabaseData(enabled: boolean): AppData {
       supabase.from("organizations").select("*").eq("id", orgId).single(),
       supabase.from("organizations").select("*").in("id", orgIds),
       supabase.from("profiles").select("*").eq("org_id", orgId),
-      supabase.from("profiles").select("*"),
+      supabase
+        .from("org_memberships")
+        .select("profile_id, org_id")
+        .in("org_id", orgIds),
       supabase.from("villas").select("*").in("org_id", orgIds).order("name"),
       isGuest
         ? Promise.resolve({ data: [] })
@@ -438,21 +506,24 @@ export function useSupabaseData(enabled: boolean): AppData {
             .from("tasks")
             .select("*")
             .in("org_id", orgIds)
-            .order("created_at", { ascending: false }),
+            .order("created_at", { ascending: false })
+            .limit(LIST_LIMIT.tasks),
       isGuest
         ? Promise.resolve({ data: [] })
         : supabase
             .from("bills")
             .select("*")
             .eq("org_id", orgId)
-            .order("created_at", { ascending: false }),
+            .order("created_at", { ascending: false })
+            .limit(LIST_LIMIT.bills),
       isGuest
         ? Promise.resolve({ data: [] })
         : supabase
             .from("messages")
             .select("*, sender:profiles!messages_sender_id_fkey(id, full_name, role)")
             .eq("org_id", orgId)
-            .order("created_at", { ascending: true }),
+            .order("created_at", { ascending: false })
+            .limit(LIST_LIMIT.messages),
       isGuest
         ? Promise.resolve({ data: [] })
         : supabase.from("invites").select("*").eq("org_id", orgId).is("used_at", null),
@@ -464,36 +535,42 @@ export function useSupabaseData(enabled: boolean): AppData {
         .from("notifications")
         .select("*")
         .in("org_id", orgIds)
-        .order("created_at", { ascending: false }),
+        .order("created_at", { ascending: false })
+        .limit(LIST_LIMIT.notifications),
       isGuest
         ? Promise.resolve({ data: [] })
         : supabase
             .from("service_orders")
             .select("*")
             .eq("org_id", orgId)
-            .order("created_at", { ascending: false }),
+            .order("created_at", { ascending: false })
+            .limit(LIST_LIMIT.orders),
       isGuest
         ? supabase
             .from("stay_date_requests")
             .select("*")
             .eq("guest_profile_id", p.id)
             .order("created_at", { ascending: false })
+            .limit(LIST_LIMIT.dateRequests)
         : supabase
             .from("stay_date_requests")
             .select("*")
             .in("org_id", orgIds)
-            .order("created_at", { ascending: false }),
+            .order("created_at", { ascending: false })
+            .limit(LIST_LIMIT.dateRequests),
       isGuest
         ? supabase
             .from("guest_stays")
             .select("*")
             .eq("guest_profile_id", p.id)
             .order("created_at", { ascending: false })
+            .limit(LIST_LIMIT.stays)
         : supabase
             .from("guest_stays")
             .select("*")
             .in("org_id", orgIds)
-            .order("created_at", { ascending: false }),
+            .order("created_at", { ascending: false })
+            .limit(LIST_LIMIT.stays),
       isGuest
         ? Promise.resolve({ data: [], error: null })
         : supabase
@@ -501,7 +578,8 @@ export function useSupabaseData(enabled: boolean): AppData {
             .select("*")
             .in("org_id", orgIds)
             .neq("status", "cancelled")
-            .order("check_in", { ascending: true }),
+            .order("check_in", { ascending: true })
+            .limit(500),
       supabase.from("house_guides").select("*").in("org_id", orgIds),
       isGuest
         ? supabase
@@ -510,14 +588,16 @@ export function useSupabaseData(enabled: boolean): AppData {
               "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
             )
             .in("org_id", orgIds)
-            .order("created_at", { ascending: true })
+            .order("created_at", { ascending: false })
+            .limit(LIST_LIMIT.support)
         : supabase
             .from("support_messages")
             .select(
               "*, sender:profiles!support_messages_sender_id_fkey(id, full_name, role)",
             )
             .in("org_id", orgIds)
-            .order("created_at", { ascending: true }),
+            .order("created_at", { ascending: false })
+            .limit(LIST_LIMIT.support),
       supabase
         .from("guest_briefings")
         .select("*")
@@ -538,25 +618,31 @@ export function useSupabaseData(enabled: boolean): AppData {
 
     setOrganization((orgRes.data as Organization) ?? null);
     setOrgs((orgsRes.data as Organization[]) ?? []);
-    const loadedAll = (allProfilesRes.data as Profile[]) ?? [];
     const loadedOrg = (profilesRes.data as Profile[]) ?? [];
-    const { data: orgMemberRows } = await supabase
-      .from("org_memberships")
-      .select("profile_id")
-      .eq("org_id", orgId);
     const memberIds = new Set(
-      ((orgMemberRows as { profile_id: string }[]) ?? []).map(
-        (m) => m.profile_id,
-      ),
+      (
+        (membershipProfileRows.data as { profile_id: string }[]) ?? []
+      ).map((m) => m.profile_id),
     );
-    const byId = new Map<string, Profile>();
-    for (const row of [...loadedOrg, ...loadedAll]) {
-      if (row.org_id === orgId || memberIds.has(row.id) || row.id === p.id) {
-        byId.set(row.id, normalizeProfile(row));
-      }
+    memberIds.add(p.id);
+    const missingMemberIds = [...memberIds].filter(
+      (id) => !loadedOrg.some((row) => row.id === id),
+    );
+    let extraProfiles: Profile[] = [];
+    if (missingMemberIds.length) {
+      const { data: extra } = await supabase
+        .from("profiles")
+        .select("*")
+        .in("id", missingMemberIds);
+      extraProfiles = (extra as Profile[]) ?? [];
     }
-    setProfiles(Array.from(byId.values()));
-    setAllProfiles(loadedAll.map(normalizeProfile));
+    const byId = new Map<string, Profile>();
+    for (const row of [...loadedOrg, ...extraProfiles]) {
+      byId.set(row.id, normalizeProfile(row));
+    }
+    const scopedProfiles = Array.from(byId.values());
+    setProfiles(scopedProfiles);
+    setAllProfiles(scopedProfiles);
     setVillas(asVillas(villasRes.data));
     setContacts(
       ((contactsRes.data as Contact[]) ?? []).map((c) => normalizeContactRow(c)),
@@ -574,15 +660,26 @@ export function useSupabaseData(enabled: boolean): AppData {
         }),
       ),
     );
-    setBills((billsRes.data as Bill[]) ?? []);
-    setMessages(
-      ((messagesRes.data as MessageWithSender[]) ?? []).map((m) => ({
+    const rawBills = (billsRes.data as Bill[]) ?? [];
+    const billsWithSigned = await Promise.all(
+      rawBills.map(async (b) => ({
+        ...b,
+        receipt_photo_url: await resignReceiptUrl(supabase, b.receipt_photo_url),
+      })),
+    );
+    setBills(billsWithSigned);
+    const rawMessages = ((messagesRes.data as MessageWithSender[]) ?? [])
+      .slice()
+      .reverse();
+    const messagesWithSigned = await Promise.all(
+      rawMessages.map(async (m) => ({
         ...m,
         channel: m.channel ?? "general",
-        attachment_url: m.attachment_url ?? null,
+        attachment_url: await resignReceiptUrl(supabase, m.attachment_url),
         audience_profile_ids: m.audience_profile_ids ?? null,
       })),
     );
+    setMessages(messagesWithSigned);
     setInvites((invitesRes.data as Invite[]) ?? []);
     setVillaAssignments((assignRes.data as VillaAssignment[]) ?? []);
     setEndorsements(
@@ -668,16 +765,23 @@ export function useSupabaseData(enabled: boolean): AppData {
       setVillaMasterInfo([]);
       setVillaMaintenanceLogs([]);
     }
-    setSupportMessages(
-      supportMessagesRes.error
-        ? []
-        : ((supportMessagesRes.data as SupportMessageWithSender[]) ?? []).map(
-            (m) => ({
-              ...m,
-              attachment_url: m.attachment_url ?? null,
-            }),
-          ),
-    );
+    if (supportMessagesRes.error) {
+      setSupportMessages([]);
+    } else {
+      const rawSupport = (
+        (supportMessagesRes.data as SupportMessageWithSender[]) ?? []
+      )
+        .slice()
+        .reverse();
+      setSupportMessages(
+        await Promise.all(
+          rawSupport.map(async (m) => ({
+            ...m,
+            attachment_url: await resignReceiptUrl(supabase, m.attachment_url),
+          })),
+        ),
+      );
+    }
     setGuestBriefings(
       guestBriefingsRes.error
         ? []
@@ -824,6 +928,14 @@ export function useSupabaseData(enabled: boolean): AppData {
       "bills",
     ] as const;
 
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleRefresh = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        void refreshRef.current();
+      }, 400);
+    };
+
     let channel = supabase.channel(topic);
     for (const orgKey of orgKeys) {
       for (const table of tables) {
@@ -836,7 +948,7 @@ export function useSupabaseData(enabled: boolean): AppData {
             filter: `org_id=eq.${orgKey}`,
           },
           () => {
-            void refreshRef.current();
+            scheduleRefresh();
           },
         );
       }
@@ -844,23 +956,30 @@ export function useSupabaseData(enabled: boolean): AppData {
     channel.subscribe();
 
     return () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
       void supabase.removeChannel(channel);
     };
   }, [enabled, profile?.org_id, realtimeOrgKey]);
 
   useEffect(() => {
     if (!enabled || !profile?.org_id) return;
-    const onVisible = () => {
-      if (document.visibilityState === "visible") {
+    let focusTimer: ReturnType<typeof setTimeout> | null = null;
+    const schedule = () => {
+      if (focusTimer) clearTimeout(focusTimer);
+      focusTimer = setTimeout(() => {
         void refreshRef.current();
-      }
+      }, 1200);
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") schedule();
     };
     const onFocus = () => {
-      void refreshRef.current();
+      schedule();
     };
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onFocus);
     return () => {
+      if (focusTimer) clearTimeout(focusTimer);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onFocus);
     };
@@ -2574,10 +2693,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       requireCurrentOrgWrite();
       const supabase = createClient();
       const path = `${profile.org_id}/${profile.id}/${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage.from("receipts").upload(path, file);
-      if (error) throw error;
-      const { data } = supabase.storage.from("receipts").getPublicUrl(path);
-      return data.publicUrl;
+      return uploadReceiptSigned(supabase, path, file);
     },
     uploadChatAttachment: async (file) => {
       if (!profile) return null;
@@ -2585,20 +2701,14 @@ export function useSupabaseData(enabled: boolean): AppData {
       const supabase = createClient();
       const safeName = file.name.replace(/[^\w.\-]+/g, "_");
       const path = `${profile.org_id}/${profile.id}/chat/${Date.now()}-${safeName}`;
-      const { error } = await supabase.storage.from("receipts").upload(path, file);
-      if (error) throw error;
-      const { data } = supabase.storage.from("receipts").getPublicUrl(path);
-      return data.publicUrl;
+      return uploadReceiptSigned(supabase, path, file);
     },
     uploadSupportAttachment: async (file) => {
       if (!profile) return null;
       const supabase = createClient();
       const safeName = file.name.replace(/[^\w.\-]+/g, "_");
       const path = `${profile.org_id}/${profile.id}/support/${Date.now()}-${safeName}`;
-      const { error } = await supabase.storage.from("receipts").upload(path, file);
-      if (error) throw error;
-      const { data } = supabase.storage.from("receipts").getPublicUrl(path);
-      return data.publicUrl;
+      return uploadReceiptSigned(supabase, path, file);
     },
     uploadVillaPhoto: async (file) => {
       if (!profile) throw new Error("Not signed in.");

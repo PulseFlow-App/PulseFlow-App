@@ -36,14 +36,18 @@
 
 ## Phase 4 - Hardening
 
-- [ ] Apply migration `036_mvp_security_hardening.sql` (guest RLS + entitlement expiry)
+- [ ] Apply migration `036_mvp_security_hardening.sql` (guest RLS + entitlement expiry) if not already on prod
+- [ ] Apply migration `058_drop_stripe_billing_columns.sql`
+- [ ] Apply migration `059_scale_security_hardening.sql` (role/org locks, private receipts, staff RLS, push dedupe)
+- [ ] Run `docs/SECURITY_AUDIT_059.sql` and review suspicious owners / active orgs
 - [ ] `NEXT_PUBLIC_DEMO_MODE=false` on production; demo credentials hidden
-- [ ] Error monitoring (e.g. Sentry) + webhook logging
-- [ ] Supabase PITR / backups enabled
+- [ ] Error monitoring (e.g. Sentry): set `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` when ready; keep webhook logging on
+- [ ] Supabase PITR / backups enabled (Dashboard → Database → Backups)
 - [ ] Storage lifecycle for villa photos and receipts
-- [ ] Counsel-reviewed Terms + Privacy (replace placeholders)
+- [x] Counsel-reviewed Terms + Privacy (Horizon legal rewrite Oct 2026)
 - [x] PWA audit on `app.pulseflow.site` (manifest icons/maskable, zoomable viewport, apple-touch, legal URLs) - native Store binary still open; see `docs/APPLE_APP_STORE_PREP.md`
 - [ ] Multi-org membership + RLS smoke tests
+- [ ] Cron: call `/api/cron/schedule-alerts` repeatedly with `?offset=` until `done: true` (or chain via Vercel cron)
 
 ## Phase 5 - Launch sequence
 

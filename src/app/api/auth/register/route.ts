@@ -8,8 +8,19 @@ import {
 } from "@/lib/auth/helpers";
 import { creditReferral } from "@/lib/billing/referrals";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
+import {
+  clientIp,
+  rateLimit,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 export async function POST(request: Request) {
+  const rl = rateLimit(`register:${clientIp(request)}`, {
+    limit: 8,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
   if (isDemoMode() || !isSupabaseConfigured()) {
     return NextResponse.json(
       { error: "Registration requires Supabase (set DEMO_MODE=false)." },

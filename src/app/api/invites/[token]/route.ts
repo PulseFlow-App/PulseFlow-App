@@ -1,10 +1,21 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
+import {
+  clientIp,
+  rateLimit,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 type Ctx = { params: Promise<{ token: string }> };
 
-export async function GET(_request: Request, context: Ctx) {
+export async function GET(request: Request, context: Ctx) {
+  const rl = rateLimit(`invite-get:${clientIp(request)}`, {
+    limit: 60,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
   if (isDemoMode() || !isSupabaseConfigured()) {
     return NextResponse.json({ error: "Not available in demo mode." }, { status: 400 });
   }

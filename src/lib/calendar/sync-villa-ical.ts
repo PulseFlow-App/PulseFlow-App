@@ -155,21 +155,18 @@ export async function fetchIcalText(feedUrl: string): Promise<string> {
   const normalized = normalizeIcalUrl(feedUrl);
   if (!normalized) throw new Error("Invalid calendar URL");
 
-  const res = await fetch(normalized, {
-    headers: {
-      Accept: "text/calendar, text/plain, */*",
-      "Cache-Control": "no-cache",
-      "User-Agent": "PulseFlow-CalendarSync/1.0",
-    },
-    signal: AbortSignal.timeout(20000),
-    redirect: "follow",
+  const { safeFetchText } = await import("@/lib/security/safe-fetch");
+  const { status, text } = await safeFetchText(normalized, {
+    accept: "text/calendar, text/plain, */*",
+    headers: { "User-Agent": "PulseFlow-CalendarSync/1.0" },
+    timeoutMs: 20_000,
+    maxBytes: 2_000_000,
   });
 
-  if (!res.ok) {
-    throw new Error(`Calendar feed returned ${res.status}`);
+  if (status >= 400) {
+    throw new Error(`Calendar feed returned ${status}`);
   }
 
-  const text = await res.text();
   if (!/BEGIN:VCALENDAR/i.test(text)) {
     throw new Error("URL did not return a calendar (.ics) feed");
   }

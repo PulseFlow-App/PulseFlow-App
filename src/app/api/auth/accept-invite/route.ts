@@ -6,6 +6,11 @@ import { attachInviteToExistingProfile } from "@/lib/auth/attach-org";
 import { creditReferral } from "@/lib/billing/referrals";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 import { appOriginFromRequest, sendAppEmail } from "@/lib/email/send";
+import {
+  clientIp,
+  rateLimit,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 import { randomBytes } from "crypto";
 
 type Body = {
@@ -22,6 +27,16 @@ type Admin = ReturnType<typeof createAdminClient>;
 
 async function findAuthUserByEmail(admin: Admin, email: string) {
   const normalized = email.toLowerCase();
+  // Prefer profiles index (scales past 10k auth users) then Auth admin API.
+  const { data: profileHit } = await admin
+    .from("profiles")
+    .select("id, email")
+    .ilike("email", normalized)
+    .limit(1)
+    .maybeSingle();
+  if (profileHit?.id) {
+    return { id: String(profileHit.id) };
+  }
   const getter = (
     admin.auth.admin as unknown as {
       getUserByEmail?: (
@@ -32,17 +47,6 @@ async function findAuthUserByEmail(admin: Admin, email: string) {
   if (typeof getter === "function") {
     const { data } = await getter.call(admin.auth.admin, normalized);
     if (data?.user) return data.user;
-  }
-  for (let page = 1; page <= 50; page += 1) {
-    const { data: listed } = await admin.auth.admin.listUsers({
-      page,
-      perPage: 200,
-    });
-    const found = listed?.users.find(
-      (u) => u.email?.toLowerCase() === normalized,
-    );
-    if (found) return found;
-    if (!listed?.users.length || listed.users.length < 200) return null;
   }
   return null;
 }
@@ -223,6 +227,12 @@ async function startMergeRequest(
 }
 
 export async function POST(request: Request) {
+  const rl = rateLimit(`accept-invite:${clientIp(request)}`, {
+    limit: 12,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
   if (isDemoMode() || !isSupabaseConfigured()) {
     return NextResponse.json(
       { error: "Invite accept requires Supabase." },

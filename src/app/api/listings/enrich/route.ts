@@ -5,14 +5,26 @@ import {
   enrichFromHtml,
   enrichFromPlainText,
 } from "@/lib/villas/enrich-from-source";
+import { safeFetchText } from "@/lib/security/safe-fetch";
+import {
+  clientIp,
+  rateLimit,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
 /**
  * Best-effort listing enrichment from a public URL or pasted text.
- * Uses Open Graph / title / description — not a full SPA scrape.
+ * Uses Open Graph / title / description - not a full SPA scrape.
  */
 export async function POST(request: Request) {
+  const rl = rateLimit(`enrich:${clientIp(request)}`, {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
   if (!isDemoMode(request.headers.get("cookie"))) {
     const supabase = await createClient();
     const {
@@ -41,31 +53,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "url or text required" }, { status: 400 });
   }
 
-  let parsed: URL;
   try {
-    parsed = new URL(url);
-  } catch {
-    return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
-  }
-  if (!/^https?:$/i.test(parsed.protocol)) {
-    return NextResponse.json({ error: "Only http(s) URLs" }, { status: 400 });
-  }
-
-  try {
-    const res = await fetch(parsed.toString(), {
+    const fetched = await safeFetchText(url, {
+      accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       headers: {
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
-        "Cache-Control": "no-cache",
         "User-Agent":
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       },
-      signal: AbortSignal.timeout(15000),
-      redirect: "follow",
+      timeoutMs: 15_000,
+      maxBytes: 400_000,
     });
-    const html = await res.text();
-    const enrichment = enrichFromHtml(html.slice(0, 400_000), parsed.toString());
+    const html = fetched.text;
+    const enrichment = enrichFromHtml(html.slice(0, 400_000), fetched.url);
     const head = html.slice(0, 2500);
     const botWall =
       /page not found|access denied|captcha|cf-browser-verification|just a moment|challenge-platform|awsWafCookieDomainList|challenge\.js|reportChallengeError/i.test(
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
     // Booking / similar: AWS WAF challenge (~4kb shell). Airbnb preview: OG only.
     const thin =
       botWall ||
-      (!res.ok && !hasListingPreview) ||
+      (fetched.status >= 400 && !hasListingPreview) ||
       (html.length < 2500 && !hasListingPreview);
 
     if (text) {
@@ -134,7 +135,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       enrichment,
-      fetched: res.ok && !thin,
+      fetched: fetched.status < 400 && !thin,
       warning: thin
         ? "Listing from this page can't be read at the moment"
         : null,

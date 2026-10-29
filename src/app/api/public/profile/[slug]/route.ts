@@ -37,20 +37,17 @@ export async function GET(
     const publicProfile = profile as Profile;
     const showTalent = Boolean(publicProfile.job_search_visible);
 
+    // Do not expose org_id or membership rows publicly (feeds privilege escalation).
     const [
       { data: endorsements },
-      { data: memberships },
       { data: tasksDoneRows },
       { data: tasksOpenRows },
+      { data: orgNameRow },
     ] = await Promise.all([
       admin
         .from("endorsements")
-        .select("id, org_id, from_profile_id, to_profile_id, stars, week_key, created_at")
+        .select("id, from_profile_id, to_profile_id, stars, week_key, created_at")
         .eq("to_profile_id", publicProfile.id),
-      admin
-        .from("org_memberships")
-        .select("id, org_id, profile_id, role, joined_at")
-        .eq("profile_id", publicProfile.id),
       admin
         .from("tasks")
         .select("id")
@@ -61,32 +58,28 @@ export async function GET(
         .select("id")
         .eq("assigned_to", publicProfile.id)
         .eq("status", "open"),
+      publicProfile.org_id
+        ? admin
+            .from("organizations")
+            .select("name, kind")
+            .eq("id", publicProfile.org_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
 
-    const orgIds = [
-      ...new Set(
-        [
-          publicProfile.org_id,
-          ...(memberships ?? []).map((m: OrgMembership) => m.org_id),
-        ].filter(Boolean),
-      ),
-    ] as string[];
-
-    let orgs: Organization[] = [];
-    if (orgIds.length) {
-      const { data: orgRows } = await admin
-        .from("organizations")
-        .select("id, name, kind, created_at")
-        .in("id", orgIds);
-      orgs = (orgRows as Organization[]) ?? [];
-    }
+    const safeEndorsements = ((endorsements as Endorsement[]) ?? []).map(
+      (e) => ({
+        ...e,
+        org_id: "public",
+      }),
+    );
 
     return NextResponse.json({
       profile: {
         id: publicProfile.id,
         full_name: publicProfile.full_name,
         role: publicProfile.role,
-        org_id: publicProfile.org_id,
+        org_id: "public",
         personal_org_id: null,
         phone: null,
         email: "",
@@ -107,9 +100,19 @@ export async function GET(
         job_search_lng: null,
         job_search_updated_at: null,
       } satisfies Profile,
-      endorsements: (endorsements as Endorsement[]) ?? [],
-      memberships: (memberships as OrgMembership[]) ?? [],
-      orgs,
+      endorsements: safeEndorsements,
+      memberships: [] as OrgMembership[],
+      orgs: orgNameRow
+        ? ([
+            {
+              id: "public",
+              name: (orgNameRow as { name: string; kind: string }).name,
+              kind: (orgNameRow as { name: string; kind: Organization["kind"] })
+                .kind,
+              created_at: "",
+            },
+          ] satisfies Organization[])
+        : [],
       tasksDone: tasksDoneRows?.length ?? 0,
       tasksOpen: tasksOpenRows?.length ?? 0,
     });

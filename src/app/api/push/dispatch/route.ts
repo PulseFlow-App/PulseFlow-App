@@ -4,6 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 import { sendWebPushMany, type PushPayload } from "@/lib/push/web-push";
 import type { NotificationKind } from "@/lib/types";
+import {
+  clientIp,
+  rateLimit,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -66,6 +71,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const rl = rateLimit(`push:${user.id}:${clientIp(request)}`, {
+    limit: 30,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
   let body: z.infer<typeof bodySchema>;
   try {
     body = bodySchema.parse(await request.json());
@@ -75,25 +86,60 @@ export async function POST(request: Request) {
 
   const orgIds = [...new Set(body.notifications.map((n) => n.org_id))];
   const [{ data: profile }, { data: memberships }] = await Promise.all([
-    supabase.from("profiles").select("org_id, personal_org_id").eq("id", user.id).maybeSingle(),
-    supabase.from("org_memberships").select("org_id").eq("profile_id", user.id),
+    supabase
+      .from("profiles")
+      .select("org_id, personal_org_id, role")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("org_memberships")
+      .select("org_id, role")
+      .eq("profile_id", user.id),
   ]);
-  const allowedOrgs = new Set(
-    [
-      profile?.org_id,
-      profile?.personal_org_id,
-      ...(memberships ?? []).map((m) => m.org_id as string),
-    ].filter(Boolean) as string[],
-  );
-  if (orgIds.some((id) => !allowedOrgs.has(id))) {
-    return NextResponse.json({ error: "Forbidden org." }, { status: 403 });
+
+  const roleByOrg = new Map<string, string>();
+  if (profile?.org_id) {
+    roleByOrg.set(profile.org_id, String(profile.role ?? ""));
+  }
+  for (const m of memberships ?? []) {
+    roleByOrg.set(String(m.org_id), String(m.role ?? ""));
+  }
+  if (profile?.personal_org_id) {
+    roleByOrg.set(profile.personal_org_id, String(profile.role ?? "owner"));
+  }
+
+  const canPushOrg = (orgId: string) => {
+    const role = roleByOrg.get(orgId);
+    return Boolean(role) && role !== "guest";
+  };
+
+  if (orgIds.some((id) => !canPushOrg(id))) {
+    return NextResponse.json(
+      { error: "Guests cannot dispatch push notifications." },
+      { status: 403 },
+    );
   }
 
   const payloads: PushPayload[] = [];
   let skipped = 0;
   for (const n of body.notifications) {
+    // Bound free-form fields (clients previously could blast arbitrary text).
+    if (n.title.length > 120 || n.body.length > 280) {
+      skipped += 1;
+      continue;
+    }
     const key = pushDedupeKey(n);
-    if (!takePushSlot(key)) {
+    let claimed = true;
+    const { data: dbClaim, error: dedupeErr } = await supabase.rpc(
+      "try_claim_push_dedupe",
+      { p_key: key, p_ttl_seconds: 90 },
+    );
+    if (!dedupeErr) {
+      claimed = dbClaim !== false;
+    } else {
+      claimed = takePushSlot(key);
+    }
+    if (!claimed) {
       skipped += 1;
       continue;
     }

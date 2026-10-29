@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isDemoMode } from "@/lib/env";
+import {
+  clientIp,
+  rateLimit,
+  rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -36,6 +41,12 @@ function areaFrom(hit: NominatimHit) {
 
 /** Look up a famous place / address for in-app Agent villa intake. */
 export async function GET(request: Request) {
+  const rl = rateLimit(`places:${clientIp(request)}`, {
+    limit: 40,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) return rateLimitResponse(rl.resetAt);
+
   const q = new URL(request.url).searchParams.get("q")?.trim() ?? "";
   if (q.length < 2) return NextResponse.json({ places: [] });
   if (q.length > 200) {
