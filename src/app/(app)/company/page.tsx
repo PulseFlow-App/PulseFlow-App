@@ -6,10 +6,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label, Select } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/empty-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useData } from "@/lib/data/use-app-data";
 import { canManageVillaAssignments } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
+import type { Profile } from "@/lib/types";
 
 /** Villa access and team roster for company owners and managers. */
 export default function CompanyPage() {
@@ -19,11 +21,18 @@ export default function CompanyPage() {
   const [assignManagerId, setAssignManagerId] = useState("");
   const [selectedVillas, setSelectedVillas] = useState<string[]>([]);
   const [assignMsg, setAssignMsg] = useState<string | null>(null);
+  const [removeTarget, setRemoveTarget] = useState<Profile | null>(null);
+  const [removeBusy, setRemoveBusy] = useState(false);
+  const [teamMsg, setTeamMsg] = useState<string | null>(null);
 
   const profile = data.profile;
   const isCompany = data.orgKind === "company";
   const showVillaAccess =
     !!profile && canManageVillaAssignments(profile.role, data.orgKind);
+  const canRemoveMembers =
+    !!profile &&
+    isCompany &&
+    (profile.role === "owner" || profile.role === "manager");
 
   const assignablePeople = useMemo(
     () =>
@@ -33,6 +42,11 @@ export default function CompanyPage() {
           p.id !== profile?.id,
       ),
     [data.profiles, profile?.id],
+  );
+
+  const team = useMemo(
+    () => data.profiles.filter((p) => p.role !== "guest"),
+    [data.profiles],
   );
 
   useEffect(() => {
@@ -64,6 +78,42 @@ export default function CompanyPage() {
       setAssignMsg(t("settings.villaAccessSaved"));
     } catch (e) {
       setAssignMsg(e instanceof Error ? e.message : t("settings.saveError"));
+    }
+  };
+
+  const canRemove = (p: Profile) => {
+    if (!canRemoveMembers || p.id === profile.id) return false;
+    if (p.role === "owner") return false;
+    if (profile.role === "manager" && p.role === "manager") return false;
+    return true;
+  };
+
+  const confirmRemove = async () => {
+    if (!removeTarget) return;
+    setRemoveBusy(true);
+    setTeamMsg(null);
+    try {
+      const res = await fetch("/api/org/remove-member", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          profileId: removeTarget.id,
+          orgId: profile.org_id,
+        }),
+      });
+      const payload = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        throw new Error(payload.error ?? t("settings.removeMemberError"));
+      }
+      setRemoveTarget(null);
+      setTeamMsg(t("settings.removeMemberDone"));
+      await data.refresh();
+    } catch (e) {
+      setTeamMsg(
+        e instanceof Error ? e.message : t("settings.removeMemberError"),
+      );
+    } finally {
+      setRemoveBusy(false);
     }
   };
 
@@ -140,24 +190,67 @@ export default function CompanyPage() {
         </Card>
       ) : null}
 
-      <Card id="team" className="scroll-mt-4 space-y-2 p-5">
-        <h2 className="font-display text-lg font-bold text-ink">
-          {t("settings.team")}
-        </h2>
-        {data.profiles
-          .filter((p) => p.role !== "guest")
-          .map((p) => (
+      <Card id="team" className="scroll-mt-4 space-y-3 p-5">
+        <div>
+          <h2 className="font-display text-lg font-bold text-ink">
+            {t("settings.team")}
+          </h2>
+          <p className="mt-1 text-sm text-muted">{t("settings.teamHint")}</p>
+        </div>
+        {team.map((p) => (
           <div
             key={p.id}
-            className="flex items-center justify-between rounded-2xl bg-canvas-deep px-3 py-2.5 text-sm"
+            className="flex items-center justify-between gap-3 rounded-2xl bg-canvas-deep px-3 py-2.5 text-sm"
           >
-            <span className="font-semibold text-ink">{p.full_name}</span>
-            <span className="text-muted">
-              {t(`roles.${p.role}` as MessageKey)}
-            </span>
+            <div className="min-w-0">
+              <span className="font-semibold text-ink">{p.full_name}</span>
+              <span className="ms-2 text-muted">
+                {t(`roles.${p.role}` as MessageKey)}
+              </span>
+            </div>
+            {canRemove(p) ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="shrink-0 text-danger"
+                onClick={() => {
+                  setTeamMsg(null);
+                  setRemoveTarget(p);
+                }}
+              >
+                {t("settings.removeMember")}
+              </Button>
+            ) : null}
           </div>
         ))}
+        {teamMsg ? (
+          <p
+            className={`text-sm font-semibold ${
+              teamMsg === t("settings.removeMemberDone")
+                ? "text-secondary"
+                : "text-danger"
+            }`}
+          >
+            {teamMsg}
+          </p>
+        ) : null}
       </Card>
+
+      <ConfirmDialog
+        open={Boolean(removeTarget)}
+        title={t("settings.removeMemberTitle")}
+        description={
+          removeTarget
+            ? t("settings.removeMemberHint", { name: removeTarget.full_name })
+            : undefined
+        }
+        confirmLabel={t("settings.removeMemberConfirm")}
+        busy={removeBusy}
+        onConfirm={() => void confirmRemove()}
+        onClose={() => {
+          if (!removeBusy) setRemoveTarget(null);
+        }}
+      />
     </div>
   );
 }

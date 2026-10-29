@@ -17,6 +17,7 @@ import { canViewBillFinance, isGuestApp, isStaffApp } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 import { GuestHome } from "@/components/home/guest-home";
 import { Screen } from "@/components/ui/page";
+import { buildFocusToday } from "@/lib/home/focus-today";
 
 function startOfWeekLocal(d = new Date()) {
   const start = startOfDay(d);
@@ -41,24 +42,20 @@ export default function HomePage() {
     return base;
   }, [data.villas]);
 
-  const attentionCount = counts.turnover + counts.maintenance;
-  const urgent = useMemo(() => {
-    return data.tasks
-      .filter(
-        (task) =>
-          task.priority === "urgent" &&
-          (task.status === "open" || task.status === "pending_verify"),
-      )
-      .sort((a, b) => {
-        if (a.status !== b.status) {
-          return a.status === "pending_verify" ? -1 : 1;
-        }
-        if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
-        if (a.due_date) return -1;
-        if (b.due_date) return 1;
-        return a.title.localeCompare(b.title);
-      });
-  }, [data.tasks]);
+  const focusItems = useMemo(
+    () =>
+      buildFocusToday({
+        tasks: data.tasks,
+        serviceOrders: data.serviceOrders,
+        villas: data.villas,
+        calendarBookings: data.calendarBookings,
+      }),
+    [data.tasks, data.serviceOrders, data.villas, data.calendarBookings],
+  );
+  const attentionCount = Math.max(
+    counts.turnover + counts.maintenance,
+    focusItems.length,
+  );
 
   const showFinance = data.profile
     ? canViewBillFinance(data.profile.role, data.orgKind)
@@ -113,7 +110,7 @@ export default function HomePage() {
           />
         ) : null}
         <UrgentTasks
-          tasks={urgent}
+          items={focusItems}
           onDelete={async (id) => data.deleteTask(id)}
         />
         <DateStrip

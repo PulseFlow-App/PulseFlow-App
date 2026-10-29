@@ -788,7 +788,8 @@ function useDemoData(): AppData {
         ? store.villas.find((v) => v.id === input.villa_id)
         : null;
       const location = villa?.name ?? "General";
-      const scheduledDate = input.due_date?.trim() || null;
+      const scheduledDate =
+        input.due_date?.trim() || new Date().toISOString().slice(0, 10);
       const schedule_mode = input.schedule_mode ?? "window";
       const time_slots = input.time_slots ?? null;
       const recurrence = input.recurrence ?? "once";

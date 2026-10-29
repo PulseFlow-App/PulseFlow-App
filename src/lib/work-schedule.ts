@@ -31,15 +31,16 @@ export type WorkScheduleFields = {
 export function emptyWorkSchedule(
   defaults?: Partial<WorkScheduleInput>,
 ): WorkScheduleInput {
+  const today = new Date().toISOString().slice(0, 10);
   return {
     schedule_mode: "window",
-    date: "",
-    endDate: "",
+    date: today,
+    endDate: today,
     time_start: "",
     time_end: "",
     visitTimes: [],
     recurrence: "once",
-    recurrenceCount: 7,
+    recurrenceCount: 1,
     ...defaults,
   };
 }
@@ -48,13 +49,54 @@ function normalizeTime(value: string): string {
   return value.trim().slice(0, 5);
 }
 
-function daySpanInclusive(start: string, end: string): number | null {
-  if (!start || !end || end <= start) return null;
+/** Inclusive day count between YYYY-MM-DD dates. Same day → 1. */
+export function daySpanInclusive(start: string, end: string): number | null {
+  if (!start) return null;
+  const endDay = end && end >= start ? end : start;
   const a = new Date(`${start}T12:00:00`);
-  const b = new Date(`${end}T12:00:00`);
+  const b = new Date(`${endDay}T12:00:00`);
   if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) return null;
   const days = Math.round((b.getTime() - a.getTime()) / 86_400_000) + 1;
-  return days >= 2 ? Math.min(60, days) : null;
+  if (days < 1) return null;
+  return Math.min(60, days);
+}
+
+function addDaysYmd(start: string, days: number): string {
+  const d = new Date(`${start}T12:00:00`);
+  d.setDate(d.getDate() + Math.max(0, days - 1));
+  return d.toISOString().slice(0, 10);
+}
+
+/** Keep start/end dates and recurrenceCount aligned when either side changes. */
+export function syncWorkScheduleDates(
+  input: WorkScheduleInput,
+  patch: Partial<WorkScheduleInput>,
+): WorkScheduleInput {
+  const next: WorkScheduleInput = { ...input, ...patch };
+  if (!next.date.trim()) return next;
+
+  const touchedDates =
+    patch.date !== undefined || patch.endDate !== undefined;
+  const touchedCount = patch.recurrenceCount !== undefined;
+
+  if (touchedDates) {
+    const span = daySpanInclusive(next.date, next.endDate);
+    if (span != null) {
+      next.recurrenceCount = span;
+      if (span >= 2 && next.recurrence === "once") {
+        next.recurrence = "daily";
+      }
+      if (span === 1) {
+        next.endDate = next.date;
+      }
+    }
+  } else if (touchedCount && next.recurrence !== "once") {
+    const count = Math.min(60, Math.max(1, Math.round(next.recurrenceCount) || 1));
+    next.recurrenceCount = count;
+    next.endDate = addDaysYmd(next.date, count);
+  }
+
+  return next;
 }
 
 /** Normalize form state into DB-ready schedule fields. */
@@ -69,8 +111,8 @@ export function resolveWorkSchedule(input: WorkScheduleInput): WorkScheduleField
       ? null
       : Math.min(60, Math.max(1, Math.round(input.recurrenceCount) || 7));
 
-  // Start + end day without an explicit repeat → daily across the range.
-  if (span != null && recurrence === "once") {
+  // Start + end span drives the series length (and promotes once → daily).
+  if (span != null && span >= 2 && recurrence === "once") {
     recurrence = "daily";
     recurrence_count = span;
   } else if (span != null && recurrence !== "once") {

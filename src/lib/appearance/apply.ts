@@ -1,55 +1,49 @@
 import {
   APPEARANCE_STORAGE_KEY,
   DEFAULT_APPEARANCE,
-  isAppearance,
+  normalizeAppearance,
   type Appearance,
+  type AppearanceOption,
 } from "@/lib/appearance/types";
 
 /** Theme-color / PWA chrome per appearance (keeps status bar in sync). */
-export const APPEARANCE_THEME_COLOR: Record<Appearance, string> = {
-  horizon: "#f5fafc",
+export const APPEARANCE_THEME_COLOR: Record<AppearanceOption, string> = {
   frost: "#eef6fa",
   dark: "#15202a",
 };
 
-export function readStoredAppearance(): Appearance {
+export function readStoredAppearance(): AppearanceOption {
   if (typeof window === "undefined") return DEFAULT_APPEARANCE;
   try {
     const raw = window.localStorage.getItem(APPEARANCE_STORAGE_KEY);
-    return isAppearance(raw) ? raw : DEFAULT_APPEARANCE;
+    return normalizeAppearance(raw);
   } catch {
     return DEFAULT_APPEARANCE;
   }
 }
 
-export function applyAppearance(appearance: Appearance) {
+export function applyAppearance(appearance: Appearance | AppearanceOption) {
   if (typeof document === "undefined") return;
+  const next = normalizeAppearance(appearance);
   const root = document.documentElement;
-  if (appearance === DEFAULT_APPEARANCE) {
-    root.removeAttribute("data-appearance");
-  } else {
-    root.setAttribute("data-appearance", appearance);
-  }
-  root.style.colorScheme = appearance === "dark" ? "dark" : "light";
+  root.setAttribute("data-appearance", next);
+  root.style.colorScheme = next === "dark" ? "dark" : "light";
 
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute("content", APPEARANCE_THEME_COLOR[appearance]);
+    meta.setAttribute("content", APPEARANCE_THEME_COLOR[next]);
   }
 }
 
-export function persistAppearance(appearance: Appearance) {
+export function persistAppearance(appearance: Appearance | AppearanceOption) {
+  const next = normalizeAppearance(appearance);
   try {
-    if (appearance === DEFAULT_APPEARANCE) {
-      window.localStorage.removeItem(APPEARANCE_STORAGE_KEY);
-    } else {
-      window.localStorage.setItem(APPEARANCE_STORAGE_KEY, appearance);
-    }
+    window.localStorage.setItem(APPEARANCE_STORAGE_KEY, next);
   } catch {
     /* private mode / blocked storage */
   }
-  applyAppearance(appearance);
+  applyAppearance(next);
 }
 
 /** Inline boot script — run before paint to avoid flash. */
-export const APPEARANCE_BOOT_SCRIPT = `(function(){try{var k=${JSON.stringify(APPEARANCE_STORAGE_KEY)};var a=localStorage.getItem(k);if(a==="frost"||a==="dark"){document.documentElement.setAttribute("data-appearance",a);document.documentElement.style.colorScheme=a==="dark"?"dark":"light";}}catch(e){}})();`;
+export const APPEARANCE_BOOT_SCRIPT = `(function(){try{var k=${JSON.stringify(APPEARANCE_STORAGE_KEY)};var a=localStorage.getItem(k);if(a==="horizon"||!a)a="frost";if(a!=="frost"&&a!=="dark")a="frost";document.documentElement.setAttribute("data-appearance",a);document.documentElement.style.colorScheme=a==="dark"?"dark":"light";}catch(e){}})();`;

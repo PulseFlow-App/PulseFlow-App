@@ -87,6 +87,8 @@ export type AppData = {
     time_slots?: string[] | null;
     recurrence?: "once" | "daily" | "weekdays";
     recurrence_count?: number | null;
+    priority?: TaskPriority;
+    photo_url?: string | null;
   }) => Promise<ServiceOrder>;
   agreeServiceOrder: (orderId: string) => Promise<void>;
   /** Undo Read and agreed while the job is still >24h away. */

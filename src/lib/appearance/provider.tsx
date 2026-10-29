@@ -18,12 +18,12 @@ import {
 } from "@/lib/appearance/apply";
 import {
   DEFAULT_APPEARANCE,
-  type Appearance,
+  type AppearanceOption,
 } from "@/lib/appearance/types";
 
 type AppearanceContextValue = {
-  appearance: Appearance;
-  setAppearance: (next: Appearance) => void;
+  appearance: AppearanceOption;
+  setAppearance: (next: AppearanceOption) => void;
 };
 
 const AppearanceContext = createContext<AppearanceContextValue>({
@@ -32,7 +32,8 @@ const AppearanceContext = createContext<AppearanceContextValue>({
 });
 
 export function AppearanceProvider({ children }: { children: React.ReactNode }) {
-  const [appearance, setAppearanceState] = useState<Appearance>(DEFAULT_APPEARANCE);
+  const [appearance, setAppearanceState] =
+    useState<AppearanceOption>(DEFAULT_APPEARANCE);
 
   // Sync from localStorage after mount (SSR can't read it; boot script already painted).
   useEffect(() => {
@@ -45,7 +46,7 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
     applyAppearance(appearance);
   }, [appearance]);
 
-  const setAppearance = useCallback((next: Appearance) => {
+  const setAppearance = useCallback((next: AppearanceOption) => {
     setAppearanceState(next);
     persistAppearance(next);
   }, []);

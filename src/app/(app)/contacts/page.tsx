@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  Camera,
   Phone,
   MessageCircle,
   Plus,
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { PulseIcon } from "@/components/icons/pulse-icon";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StarsPicker } from "@/components/endorsements/stars";
 import { useData } from "@/lib/data/use-app-data";
 import { contactReachability } from "@/lib/notifications";
@@ -30,7 +32,7 @@ import {
 import { cn, lineDeepLink, phoneToWaMe, telegramDeepLink } from "@/lib/utils";
 import type { Contact, ContactMessenger } from "@/lib/types";
 import { capitalizeLabel } from "@/lib/format-label";
-import type { ContactMessengerKind } from "@/lib/design-tokens";
+import type { ContactMessengerKind, TaskPriority } from "@/lib/design-tokens";
 import {
   CONTACT_MESSENGER_KINDS,
   contactMessengers,
@@ -91,6 +93,8 @@ function ContactsPageInner() {
   }, [data.profile, router]);
   const [editing, setEditing] = useState<Contact | null>(null);
   const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState<Contact | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const [ordering, setOrdering] = useState<Contact | null>(null);
   const [orderPrefill, setOrderPrefill] = useState<{
     villaId?: string;
@@ -333,8 +337,8 @@ function ContactsPageInner() {
                         <button
                           type="button"
                           className="rounded-lg p-2 text-danger transition hover:bg-sand active:scale-[0.96]"
-                          onClick={() => void data.deleteContact(contact.id)}
-                          aria-label="Delete"
+                          onClick={() => setDeleting(contact)}
+                          aria-label={t("common.delete")}
                         >
                           <Trash2 className="size-4" />
                         </button>
@@ -429,6 +433,30 @@ function ContactsPageInner() {
           </section>
         ))
       )}
+
+      <ConfirmDialog
+        open={Boolean(deleting)}
+        title={t("contacts.deleteTitle")}
+        description={
+          deleting
+            ? t("contacts.deleteHint", { name: deleting.name })
+            : undefined
+        }
+        confirmLabel={t("contacts.deleteConfirm")}
+        busy={deleteBusy}
+        onConfirm={() => {
+          if (!deleting) return;
+          setDeleteBusy(true);
+          void data
+            .deleteContact(deleting.id)
+            .then(() => setDeleting(null))
+            .catch(() => undefined)
+            .finally(() => setDeleteBusy(false));
+        }}
+        onClose={() => {
+          if (!deleteBusy) setDeleting(null);
+        }}
+      />
     </div>
   );
 }
@@ -523,7 +551,6 @@ function OrderForm({
   onCancel: () => void;
   onSave: (values: {
     villa_id: string | null;
-    location_label?: string | null;
     service_type: string;
     details?: string | null;
     scheduled_date?: string | null;
@@ -533,19 +560,23 @@ function OrderForm({
     time_slots?: string[] | null;
     recurrence?: "once" | "daily" | "weekdays";
     recurrence_count?: number | null;
+    priority?: TaskPriority;
+    photo_url?: string | null;
   }) => Promise<void>;
 }) {
   const { t } = useI18n();
+  const data = useData();
   const label = useLocalizedDemoText();
-  const [serviceType, setServiceType] = useState(
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [title, setTitle] = useState(
     prefill?.service?.trim() || label(contact.role),
   );
   const [villaId, setVillaId] = useState(
     prefill?.villaId && villas.some((v) => v.id === prefill.villaId)
       ? prefill.villaId
-      : (villas[0]?.id ?? ""),
+      : "",
   );
-  const [locationLabel, setLocationLabel] = useState("");
+  const [priority, setPriority] = useState<TaskPriority>("normal");
   const [schedule, setSchedule] = useState(() =>
     emptyWorkSchedule(
       prefill?.date
@@ -553,28 +584,47 @@ function OrderForm({
         : undefined,
     ),
   );
-  const [details, setDetails] = useState("");
+  const [notes, setNotes] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const onPickPhoto = async (file: File | null) => {
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const url = await data.uploadChatAttachment(file);
+      if (!url) throw new Error(t("common.error"));
+      setPhotoUrl(url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("common.error"));
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <Card className="space-y-3 p-4">
       <div>
-        <h2 className="text-lg font-bold text-ink">Order {contact.name}</h2>
+        <h2 className="text-lg font-bold text-ink">
+          {t("contacts.orderTitle", { name: contact.name })}
+        </h2>
         <p className="text-sm text-muted">{t("contacts.orderHint")}</p>
       </div>
       <div>
-        <Label>For what</Label>
+        <Label>{t("tasks.titleField")}</Label>
         <Input
-          value={serviceType}
-          onChange={(e) => setServiceType(e.target.value)}
-          placeholder="Turnover clean, AC repair…"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder={t("tasks.titlePlaceholder")}
         />
       </div>
       <div>
-        <Label>Where (property)</Label>
+        <Label>{t("tasks.villa")}</Label>
         <Select value={villaId} onChange={(e) => setVillaId(e.target.value)}>
-          <option value="">Other / custom</option>
+          <option value="">{t("common.general")}</option>
           {villas.map((v) => (
             <option key={v.id} value={v.id}>
               {v.name}
@@ -582,62 +632,104 @@ function OrderForm({
           ))}
         </Select>
       </div>
-      {!villaId ? (
-        <div>
-          <Label>Location label</Label>
-          <Input
-            value={locationLabel}
-            onChange={(e) => setLocationLabel(e.target.value)}
-            placeholder="Address or property name"
-          />
-        </div>
-      ) : null}
-      <WorkScheduleFields
-        value={schedule}
-        onChange={setSchedule}
-      />
       <div>
-        <Label>Details</Label>
+        <Label>{t("tasks.priority")}</Label>
+        <Select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value as TaskPriority)}
+        >
+          <option value="normal">{t("tasks.priority.normal")}</option>
+          <option value="urgent">{t("tasks.priority.urgent")}</option>
+        </Select>
+      </div>
+      <WorkScheduleFields value={schedule} onChange={setSchedule} />
+      <div>
+        <Label>{t("tasks.assignee")}</Label>
+        <Input value={contact.name} disabled readOnly />
+      </div>
+      <div>
+        <Label>
+          {t("common.notes")}{" "}
+          <span className="font-normal text-muted">
+            ({t("common.optional")})
+          </span>
+        </Label>
         <Textarea
-          rows={2}
-          value={details}
-          onChange={(e) => setDetails(e.target.value)}
-          placeholder="What needs doing?"
+          rows={3}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder={t("tasks.notesPlaceholder")}
         />
+      </div>
+      <div>
+        <Label>
+          {t("tasks.examplePhoto")}{" "}
+          <span className="font-normal text-muted">
+            ({t("common.optional")})
+          </span>
+        </Label>
+        {t("tasks.examplePhotoHint") ? (
+          <p className="mb-2 text-xs text-muted">{t("tasks.examplePhotoHint")}</p>
+        ) : null}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => void onPickPhoto(e.target.files?.[0] ?? null)}
+        />
+        {photoUrl ? (
+          <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photoUrl}
+              alt=""
+              className="size-16 rounded-xl object-cover"
+            />
+            <button
+              type="button"
+              className="text-xs font-semibold text-danger"
+              onClick={() => setPhotoUrl(null)}
+            >
+              {t("common.remove")}
+            </button>
+          </div>
+        ) : (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            disabled={uploading}
+            onClick={() => fileRef.current?.click()}
+          >
+            <Camera className="size-4" />
+            {uploading ? t("common.saving") : t("tasks.addPhoto")}
+          </Button>
+        )}
       </div>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       <div className="flex gap-2">
         <Button variant="ghost" className="flex-1" onClick={onCancel}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Button
           className="flex-1"
           busy={saving}
           onClick={() => {
-            if (!serviceType.trim()) {
-              setError("Service is required.");
-              return;
-            }
-            if (!villaId && !locationLabel.trim()) {
-              setError("Pick a property or enter a location.");
+            if (!title.trim()) {
+              setError("Title is required.");
               return;
             }
             const resolved = resolveWorkSchedule(schedule);
-            if (
-              schedule.schedule_mode === "slots" &&
-              !resolved.time_slots?.length
-            ) {
-              setError(t("schedule.needVisit"));
-              return;
-            }
             setSaving(true);
             void onSave({
               villa_id: villaId || null,
-              location_label: locationLabel.trim() || null,
-              service_type: capitalizeLabel(serviceType),
-              details: details.trim() || null,
+              service_type: capitalizeLabel(title),
+              details: notes.trim() || null,
               scheduled_date: resolved.date,
               ...schedulePayloadFromResolved(resolved),
+              priority,
+              photo_url: photoUrl,
             })
               .catch((e: unknown) =>
                 setError(e instanceof Error ? e.message : "Could not book."),
@@ -645,7 +737,7 @@ function OrderForm({
               .finally(() => setSaving(false));
           }}
         >
-          {saving ? t("common.saving") : "Send order"}
+          {saving ? t("common.saving") : t("contacts.sendOrder")}
         </Button>
       </div>
     </Card>

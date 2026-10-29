@@ -139,6 +139,16 @@ const en = {
   "home.focusToday": "Focus of today",
   "home.focusTodayClear": "Nothing urgent right now.",
   "home.focusTodayMore": "+{count} more",
+  "home.focusDue": "Due today",
+  "home.focusVerify": "Needs verify",
+  "home.focusJob": "Open job",
+  "home.focusJobHint": "Open Jobs to agree or finish.",
+  "home.focusCheckout": "Checkout today",
+  "home.focusCheckoutHint": "Book turnover or open the property.",
+  "home.focusCheckin": "Check-in today",
+  "home.focusCheckinHint": "Open the property to prepare arrival.",
+  "home.focusTurnover": "Turnover",
+  "home.focusTurnoverHint": "Property is in turnover. Finish clean & reset.",
   "home.staffClear": "Your job board looks clear.",
   "home.staffPending":
     "{count} job waiting for Read & agreed|{count} jobs waiting for Read & agreed",
@@ -539,7 +549,7 @@ const en = {
   "contacts.order": "Order",
   "contacts.orderTitle": "Order {name}",
   "contacts.orderHint":
-    "Posts to Questions/Feedback. They must tap Read and agreed.",
+    "Same as creating a task, already assigned to this contact. They must tap Read and agreed.",
   "contacts.review": "Review",
   "contacts.reviewTitle": "Review {name}",
   "contacts.reviewHint":
@@ -655,9 +665,9 @@ const en = {
   "messages.agent.cmd.bills": "List pending bills",
   "messages.agent.cmd.villa": "Add a property (questionnaire or famous place)",
   "messages.agent.cmd.master":
-    "Team master info (utilities/handoff — not the guest guide)",
+    "Team master info (utilities/handoff, not the guest guide)",
   "messages.agent.cmd.guide":
-    "Guest house guide (Wi-Fi/gate — not master info)",
+    "Guest house guide (Wi-Fi/gate, not master info)",
   "messages.agent.cmd.maint": "List or add maintenance log entries",
   "messages.attachPhoto": "Add photo",
   "messages.photoRequired": "Add a photo or screenshot for this thread.",
@@ -739,6 +749,19 @@ const en = {
   "settings.saveVillaAccess": "Save property access",
   "settings.villaAccessSaved": "Property access updated.",
   "settings.team": "Team",
+  "settings.teamHint":
+    "People with a seat in this company. Removing someone ends their company access. It does not delete their account or personal properties. Contacts stay until you delete them separately.",
+  "settings.removeMember": "Remove",
+  "settings.removeMemberTitle": "Remove from company?",
+  "settings.removeMemberHint":
+    "{name} will lose access to this company workspace. Their account and personal list stay.",
+  "settings.removeMemberConfirm": "Remove from company",
+  "settings.removeMemberDone": "Removed from company.",
+  "settings.removeMemberError": "Could not remove this person.",
+  "contacts.deleteTitle": "Delete contact?",
+  "contacts.deleteHint":
+    "Remove {name} from Contacts. If they are on your team, remove them from Company too to end their seat.",
+  "contacts.deleteConfirm": "Delete contact",
   "settings.signOut": "Sign out",
   "settings.passkeyTitle": "Face ID sign-in",
   "settings.passkeyHint":
@@ -844,13 +867,13 @@ const en = {
     "Tasks, chat, guest updates, and team messages appear in your app language.",
   "settings.appearance": "Appearance",
   "settings.appearanceHint":
-    "Horizon is the default. Frost is the white liquid-glass look from welcome; Dark is night glass.",
+    "Frost is the light look. Dark is night glass.",
   "settings.appearanceHorizon": "Horizon",
   "settings.appearanceHorizonHint": "Cool light canvas (default)",
   "settings.appearanceFrost": "Frost",
-  "settings.appearanceFrostHint": "White liquid glass - welcome light look",
+  "settings.appearanceFrostHint": "Light canvas with soft glass",
   "settings.appearanceDark": "Dark",
-  "settings.appearanceDarkHint": "Night liquid glass with soft glows",
+  "settings.appearanceDarkHint": "Night glass with soft glows",
   "settings.translateContentHint.staff":
     "Tasks, chat, and messages from your team appear in your app language.",
 
@@ -903,8 +926,7 @@ const en = {
     "Covered seat while company Full is inactive. Exports and company writes stay closed until the owner subscribes.",
   "plan.note.managerIncluded":
     "Your owner’s Full plan covers you - reporting, exports, and team features are included while it stays active.",
-  "plan.note.ownerTrial":
-    "3 months of Full free - invite the team and run company ops while billing is not live. When live: USD 15 / month (10 seats), then USD 2 / seat, Pro +USD 9.",
+  "plan.note.ownerTrial": "",
   "plan.note.ownerFull":
     "Company is USD 15 / month with 10 seats included; extra seats USD 2 / month. Pro adds USD 9. Managers get reporting automatically.",
   "plan.note.ownerExpired":
@@ -1379,7 +1401,7 @@ const en = {
   "bookings.feedsLinked":
     "{count} property with calendar linked|{count} properties with calendar linked",
   "bookings.noFeedsYet":
-    "No calendar feeds yet — open a property → Quick fill → paste Export calendar URL → Sync.",
+    "No calendar feeds yet. Open a property → Quick fill → paste Export calendar URL → Sync.",
   "bookings.prevMonth": "Previous month",
   "bookings.nextMonth": "Next month",
   "bookings.dayEmpty": "Nothing booked this day",
@@ -1543,7 +1565,7 @@ const en = {
 
   "talent.title": "Find staff",
   "talent.subtitle":
-    "Search people who listed themselves for work. Invite them to your company — when they agree, they appear in Contacts and you can book them.",
+    "Search people who listed themselves for work. Invite them to your company. When they agree, they appear in Contacts and you can book them.",
   "talent.searchPlaceholder": "Search by name, skill, or bio…",
   "talent.filterLocation": "City or area",
   "talent.filterCountry": "Country",
@@ -1582,9 +1604,9 @@ const en = {
   "talent.inviteCompany": "Invite to company",
   "talent.inviteBusy": "Sending invite…",
   "talent.inviteSent": "Invite sent. They’ll get a notification and join link.",
-  "talent.inviteCopied": "Invite link copied — send it if they miss the notification.",
-  "talent.alreadyOnTeam": "Already on your team — added to Contacts so you can book them.",
-  "talent.alreadyOnContacts": "Already on your Contacts — open Contacts to book.",
+  "talent.inviteCopied": "Invite link copied. Send it if they miss the notification.",
+  "talent.alreadyOnTeam": "Already on your team. Added to Contacts so you can book them.",
+  "talent.alreadyOnContacts": "Already on your Contacts. Open Contacts to book.",
   "talent.inviteError": "Could not invite this person.",
   "talent.noReviews": "No reviews yet",
   "talent.reviewCount": "{count} review|{count} reviews",
@@ -1630,7 +1652,7 @@ const en = {
   "talent.reviewsSection": "Reviews & endorsements",
   "talent.browseLink": "Start search",
 
-  /* Welcome (logged-out) — EN source; other locales: English stubs pending native review */
+  /* Welcome (logged-out). EN source; other locales: English stubs pending native review */
   "welcome.signIn": "Sign in",
   "welcome.title": "The pulse of your rental operations",
   "welcome.subline":

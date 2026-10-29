@@ -1064,6 +1064,8 @@ export function demoCreateServiceOrder(
     time_slots?: string[] | null;
     recurrence?: "once" | "daily" | "weekdays";
     recurrence_count?: number | null;
+    priority?: "normal" | "urgent";
+    photo_url?: string | null;
     require_ack?: boolean;
   },
 ): ServiceOrder {
@@ -1087,18 +1089,19 @@ export function demoCreateServiceOrder(
     ? store.villas.find((v) => v.id === input.villa_id)
     : null;
   const location =
-    villa?.name ??
-    input.location_label?.trim() ??
-    "Location TBC";
+    villa?.name ?? input.location_label?.trim() ?? "General";
   const serviceType = capitalizeLabel(input.service_type);
   const orderId = crypto.randomUUID();
   const taskId = crypto.randomUUID();
   const msgId = crypto.randomUUID();
-  const scheduledDate = input.scheduled_date?.trim() || null;
+  const scheduledDate =
+    input.scheduled_date?.trim() || new Date().toISOString().slice(0, 10);
   const schedule_mode = input.schedule_mode ?? "window";
   const time_slots = input.time_slots ?? null;
   const recurrence = input.recurrence ?? "once";
   const recurrence_count = input.recurrence_count ?? null;
+  const priority = input.priority ?? "normal";
+  const photoUrl = input.photo_url?.trim() || null;
   const when =
     formatWorkWindow(
       scheduledDate,
@@ -1150,8 +1153,8 @@ export function demoCreateServiceOrder(
         villa_id: order.villa_id,
         title: `${order.service_type} - ${location}`,
         notes: order.details,
-        photo_url: null,
-        priority: "normal" as const,
+        photo_url: photoUrl,
+        priority,
         assigned_to: contact.linked_profile_id,
         status: "open" as const,
         due_date: order.scheduled_date,
@@ -1183,7 +1186,7 @@ export function demoCreateServiceOrder(
         created_at: order.created_at,
         service_order_id: orderId,
         channel: "request" as const,
-        attachment_url: null,
+        attachment_url: photoUrl,
       },
     ];
 

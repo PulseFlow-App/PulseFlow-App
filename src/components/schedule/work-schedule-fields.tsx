@@ -6,6 +6,7 @@ import { formatWorkWindow } from "@/lib/notifications";
 import {
   emptyWorkSchedule,
   resolveWorkSchedule,
+  syncWorkScheduleDates,
   type WorkRecurrence,
   type WorkScheduleInput,
 } from "@/lib/work-schedule";
@@ -19,7 +20,7 @@ export function WorkScheduleFields({ value, onChange }: Props) {
   const { t } = useI18n();
 
   const set = (patch: Partial<WorkScheduleInput>) =>
-    onChange({ ...value, ...patch });
+    onChange(syncWorkScheduleDates(value, patch));
 
   const resolved = resolveWorkSchedule(value);
   const preview = formatWorkWindow(
@@ -28,6 +29,10 @@ export function WorkScheduleFields({ value, onChange }: Props) {
     resolved.time_end,
     resolved,
   );
+  const shownCount =
+    resolved.recurrence !== "once" && resolved.recurrence_count
+      ? resolved.recurrence_count
+      : value.recurrenceCount;
 
   return (
     <div className="space-y-3">
@@ -91,7 +96,7 @@ export function WorkScheduleFields({ value, onChange }: Props) {
               type="number"
               min={1}
               max={60}
-              value={value.recurrenceCount}
+              value={shownCount}
               onChange={(e) =>
                 set({
                   recurrenceCount: Math.min(

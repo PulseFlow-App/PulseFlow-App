@@ -316,7 +316,7 @@ export function AppMenuButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex size-8 items-center justify-center text-ink/85 transition hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+        className="flex size-8 items-center justify-center text-muted transition hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
         aria-label={t("nav.menu")}
         aria-expanded={open}
         aria-haspopup="dialog"

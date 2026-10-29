@@ -53,7 +53,7 @@ export function PushSettingsCard() {
   const [subscribed, setSubscribed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [prefsBusy, setPrefsBusy] = useState(false);
-  const [categoriesOpen, setCategoriesOpen] = useState(true);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [prefs, setPrefs] = useState<PushCategoryPrefs>(defaultPushPrefs);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -116,7 +116,6 @@ export function PushSettingsCard() {
     try {
       await enablePushOnThisDevice();
       setSubscribed(true);
-      setCategoriesOpen(true);
       await loadPrefs();
       setMessage(t("settings.pushEnabled"));
     } catch (e) {

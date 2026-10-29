@@ -1,19 +1,21 @@
 "use client";
 
 import { useAppearance } from "@/lib/appearance/provider";
-import { APPEARANCES, type Appearance } from "@/lib/appearance/types";
+import {
+  APPEARANCE_OPTIONS,
+  normalizeAppearance,
+  type AppearanceOption,
+} from "@/lib/appearance/types";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-const LABEL_KEYS: Record<Appearance, MessageKey> = {
-  horizon: "settings.appearanceHorizon",
+const LABEL_KEYS: Record<AppearanceOption, MessageKey> = {
   frost: "settings.appearanceFrost",
   dark: "settings.appearanceDark",
 };
 
-const HINT_KEYS: Record<Appearance, MessageKey> = {
-  horizon: "settings.appearanceHorizonHint",
+const HINT_KEYS: Record<AppearanceOption, MessageKey> = {
   frost: "settings.appearanceFrostHint",
   dark: "settings.appearanceDarkHint",
 };
@@ -21,6 +23,7 @@ const HINT_KEYS: Record<Appearance, MessageKey> = {
 export function AppearanceSettingsCard() {
   const { t } = useI18n();
   const { appearance, setAppearance } = useAppearance();
+  const current = normalizeAppearance(appearance);
 
   return (
     <div className="space-y-3">
@@ -30,9 +33,9 @@ export function AppearanceSettingsCard() {
         </p>
         <p className="text-sm text-muted">{t("settings.appearanceHint")}</p>
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-        {APPEARANCES.map((option) => {
-          const selected = appearance === option;
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {APPEARANCE_OPTIONS.map((option) => {
+          const selected = current === option;
           return (
             <button
               key={option}
@@ -42,14 +45,24 @@ export function AppearanceSettingsCard() {
               className={cn(
                 "rounded-2xl border px-3 py-3 text-left transition",
                 selected
-                  ? "border-primary bg-primary-soft/60 ring-1 ring-primary/30"
+                  ? "border-primary bg-primary text-white ring-1 ring-primary/40"
                   : "border-[var(--color-border)] bg-canvas-deep hover:border-sky/40",
               )}
             >
-              <span className="block text-sm font-bold text-ink">
+              <span
+                className={cn(
+                  "block text-sm font-bold",
+                  selected ? "text-white" : "text-ink",
+                )}
+              >
                 {t(LABEL_KEYS[option])}
               </span>
-              <span className="mt-0.5 block text-xs text-muted">
+              <span
+                className={cn(
+                  "mt-0.5 block text-xs",
+                  selected ? "text-white/85" : "text-muted",
+                )}
+              >
                 {t(HINT_KEYS[option])}
               </span>
             </button>

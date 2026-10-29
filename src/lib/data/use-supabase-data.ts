@@ -1305,13 +1305,17 @@ export function useSupabaseData(enabled: boolean): AppData {
         ? villas.find((v) => v.id === input.villa_id)
         : null;
       const location =
-        villa?.name ?? input.location_label?.trim() ?? "Location TBC";
+        villa?.name ?? input.location_label?.trim() ?? "General";
       const serviceType = capitalizeLabel(input.service_type);
-      const scheduledDate = input.scheduled_date?.trim() || null;
+      // service_orders.scheduled_date is NOT NULL; default to today when unset.
+      const scheduledDate =
+        input.scheduled_date?.trim() || new Date().toISOString().slice(0, 10);
       const schedule_mode = input.schedule_mode ?? "window";
       const time_slots = input.time_slots ?? null;
       const recurrence = input.recurrence ?? "once";
       const recurrence_count = input.recurrence_count ?? null;
+      const priority = input.priority ?? "normal";
+      const photoUrl = input.photo_url?.trim() || null;
       const when =
         formatWorkWindow(
           scheduledDate,
@@ -1353,7 +1357,8 @@ export function useSupabaseData(enabled: boolean): AppData {
           villa_id: villa?.id ?? null,
           title,
           notes: orderNotes,
-          priority: "normal",
+          photo_url: photoUrl,
+          priority,
           assigned_to: contact.linked_profile_id,
           status: "open",
           due_date: scheduledDate,
@@ -1385,6 +1390,7 @@ export function useSupabaseData(enabled: boolean): AppData {
           body: chatBody,
           service_order_id: order.id,
           channel: "request",
+          attachment_url: photoUrl,
         })
         .select("*")
         .single();
@@ -2063,7 +2069,9 @@ export function useSupabaseData(enabled: boolean): AppData {
         ? villas.find((v) => v.id === input.villa_id)
         : null;
       const location = villa?.name ?? "General";
-      const scheduledDate = input.due_date?.trim() || null;
+      // service_orders.scheduled_date is NOT NULL; default to today when unset.
+      const scheduledDate =
+        input.due_date?.trim() || new Date().toISOString().slice(0, 10);
       const schedule_mode = input.schedule_mode ?? "window";
       const time_slots = input.time_slots ?? null;
       const recurrence = input.recurrence ?? "once";
@@ -2119,7 +2127,9 @@ export function useSupabaseData(enabled: boolean): AppData {
       const order = orderRes.data;
       const orderError = orderRes.error;
       if (orderError || !order) {
-        throw orderError ?? new Error("Could not create job confirmation.");
+        throw new Error(
+          orderError?.message ?? "Could not create job confirmation.",
+        );
       }
 
       const chatBody = buildOrderChatBody({
@@ -2181,7 +2191,9 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
       const inserted = taskRes.data;
       const error = taskRes.error;
-      if (error || !inserted) throw error ?? new Error("Could not create task.");
+      if (error || !inserted) {
+        throw new Error(error?.message ?? "Could not create task.");
+      }
 
       await supabase
         .from("service_orders")
