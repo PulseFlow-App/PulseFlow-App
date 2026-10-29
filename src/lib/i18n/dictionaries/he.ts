@@ -836,7 +836,7 @@ const he: Dictionary = {
 
 
   "contacts.subtitlePersonal": "שמרו מספרים במקום אחד - והתקשרו מכאן",
-  "contacts.subtitleCompany": "חברו משתמש Pulse Flow כדי להזמין באפליקציה; לאחרים התקשרו",
+  "contacts.subtitleCompany": "Add your staff or search people near you and invite to join your company",
   "contacts.whatsapp": "וואטסאפ",
   "contacts.line": "LINE",
   "contacts.telegram": "Telegram",

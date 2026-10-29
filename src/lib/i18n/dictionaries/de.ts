@@ -838,7 +838,7 @@ const de: Dictionary = {
 
 
   "contacts.subtitlePersonal": "Nummern an einem Ort speichern - von hier aus anrufen",
-  "contacts.subtitleCompany": "Verknüpfen Sie einen Pulse Flow-Benutzer mit der Bestellung in der App; rufen Sie andere an",
+  "contacts.subtitleCompany": "Add your staff or search people near you and invite to join your company",
   "contacts.whatsapp": "WhatsApp",
   "contacts.line": "ZEILE",
   "contacts.telegram": "Telegram",

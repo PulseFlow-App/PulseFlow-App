@@ -871,7 +871,7 @@ const tr: Dictionary = {
   "demo.guest.depositNote": "Check-in sırasında güvenlik teminatı alınır.",
   "demo.guest.chargeGlass": "Kırık şarap kadehi (yedek)",
   "contacts.subtitlePersonal": "Numaraları tek bir yere kaydedin - buradan arayın",
-  "contacts.subtitleCompany": "Bir Pulse Flow kullanıcısını uygulama içi Sipariş'e bağlayın; başkalarını ara",
+  "contacts.subtitleCompany": "Add your staff or search people near you and invite to join your company",
   "contacts.whatsapp": "WhatsApp",
   "contacts.line": "ASTAR",
   "contacts.telegram": "Telgraf",

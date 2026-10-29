@@ -877,7 +877,7 @@ const ar: Dictionary = {
   "demo.guest.depositNote": "Security deposit held at check-in.",
   "demo.guest.chargeGlass": "Broken wine glass (replacement)",
   "contacts.subtitlePersonal": "Save numbers in one place - call from here",
-  "contacts.subtitleCompany": "Link a Pulse Flow user to Order in-app; call others",
+  "contacts.subtitleCompany": "Add your staff or search people near you and invite to join your company",
   "contacts.whatsapp": "WhatsApp",
   "contacts.line": "LINE",
   "contacts.telegram": "Telegram",

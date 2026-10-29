@@ -839,7 +839,7 @@ const ru: Dictionary = {
 
 
   "contacts.subtitlePersonal": "Save numbers in one place - call from here",
-  "contacts.subtitleCompany": "Привяжите пользователя Pulse Flow для заказа в приложении; остальным звоните",
+  "contacts.subtitleCompany": "Add your staff or search people near you and invite to join your company",
   "contacts.whatsapp": "WhatsApp",
   "contacts.line": "LINE",
   "contacts.telegram": "Telegram",
