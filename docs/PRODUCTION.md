@@ -47,7 +47,7 @@
 - [x] Counsel-reviewed Terms + Privacy (Horizon legal rewrite Oct 2026)
 - [x] PWA audit on `app.pulseflow.site` (manifest icons/maskable, zoomable viewport, apple-touch, legal URLs) - native Store binary still open; see `docs/APPLE_APP_STORE_PREP.md`
 - [ ] Multi-org membership + RLS smoke tests
-- [ ] Cron: `/api/cron` must be public to middleware (fixed); hit `/api/cron/schedule-alerts` with `Authorization: Bearer $CRON_SECRET` until `done: true` (route now walks batches in one call)
+- [x] Cron: middleware allows `/api/cron`; ran schedule-alerts to `done: true` (4 candidates, 6 pushes, 2 company orgs). Prod still needs the middleware deploy so Vercel Cron is not redirected to `/login`
 
 ## Phase 5 - Launch sequence
 
