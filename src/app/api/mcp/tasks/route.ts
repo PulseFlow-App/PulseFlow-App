@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireMcpAuth } from "@/lib/mcp/auth";
+import { capitalizeLabel } from "@/lib/format-label";
 
 export const runtime = "nodejs";
 
@@ -95,13 +96,13 @@ export async function POST(request: Request) {
     .from("tasks")
     .insert({
       org_id: auth.orgId,
-      title: body.title,
+      title: capitalizeLabel(body.title),
       villa_id: body.villa_id ?? null,
       priority: body.priority ?? "normal",
       assigned_to: body.assigned_to ?? null,
-      due_date: body.due_date ?? null,
-      time_start: body.time_start ?? null,
-      time_end: body.time_end ?? null,
+      due_date: body.due_date?.trim() || null,
+      time_start: body.time_start?.trim() || null,
+      time_end: body.time_end?.trim() || null,
       notes: body.notes?.trim() || null,
       status: "open",
       created_by: auth.profileId,

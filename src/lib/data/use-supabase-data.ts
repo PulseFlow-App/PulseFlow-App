@@ -175,6 +175,10 @@ import {
 } from "@/lib/notifications-read";
 import { capitalizeLabel } from "@/lib/format-label";
 import {
+  isMissingScheduleColumnError,
+  normalizeScheduleInsert,
+} from "@/lib/data/schedule-insert";
+import {
   normalizeVillaRow,
   omitVillaDetails,
   omitVillaQuickSources,
@@ -1307,82 +1311,125 @@ export function useSupabaseData(enabled: boolean): AppData {
       const location =
         villa?.name ?? input.location_label?.trim() ?? "General";
       const serviceType = capitalizeLabel(input.service_type);
-      // service_orders.scheduled_date is NOT NULL; default to today when unset.
+      // Prefer a real day; older DBs may still require scheduled_date NOT NULL.
       const scheduledDate =
         input.scheduled_date?.trim() || new Date().toISOString().slice(0, 10);
-      const schedule_mode = input.schedule_mode ?? "window";
-      const time_slots = input.time_slots ?? null;
-      const recurrence = input.recurrence ?? "once";
-      const recurrence_count = input.recurrence_count ?? null;
-      const priority = input.priority ?? "normal";
+      const {
+        schedule_mode,
+        time_slots,
+        recurrence,
+        recurrence_count,
+        time_start: timeStart,
+        time_end: timeEnd,
+      } = normalizeScheduleInsert(input);
+      const priority = input.priority === "urgent" ? "urgent" : "normal";
       const photoUrl = input.photo_url?.trim() || null;
+      const orderNotes = input.details?.trim() || null;
       const when =
-        formatWorkWindow(
-          scheduledDate,
-          input.time_start ?? null,
-          input.time_end ?? null,
-          { schedule_mode, time_slots, recurrence, recurrence_count },
-        ) ?? "";
-
-      const { data: order, error } = await supabase
-        .from("service_orders")
-        .insert({
-          org_id: profile.org_id,
-          contact_id: contact.id,
-          staff_profile_id: contact.linked_profile_id,
-          ordered_by: profile.id,
-          villa_id: villa?.id ?? null,
-          location_label: location,
-          service_type: serviceType,
-          details: input.details?.trim() || null,
-          scheduled_date: scheduledDate,
-          time_start: input.time_start || null,
-          time_end: input.time_end || null,
+        formatWorkWindow(scheduledDate, timeStart, timeEnd, {
           schedule_mode,
           time_slots,
           recurrence,
           recurrence_count,
-          status: "pending_ack",
-        })
+        }) ?? "";
+
+      const orderBase = {
+        org_id: profile.org_id,
+        contact_id: contact.id,
+        staff_profile_id: contact.linked_profile_id,
+        ordered_by: profile.id,
+        villa_id: villa?.id ?? null,
+        location_label: location,
+        service_type: serviceType,
+        details: orderNotes,
+        scheduled_date: scheduledDate,
+        time_start: timeStart,
+        time_end: timeEnd,
+        status: "pending_ack" as const,
+      };
+      const orderSchedule = {
+        schedule_mode,
+        time_slots,
+        recurrence,
+        recurrence_count,
+      };
+
+      let orderRes = await supabase
+        .from("service_orders")
+        .insert({ ...orderBase, ...orderSchedule })
         .select("*")
         .single();
-      if (error || !order) throw error ?? new Error("Could not create order.");
+      if (
+        orderRes.error &&
+        isMissingScheduleColumnError(orderRes.error.message)
+      ) {
+        orderRes = await supabase
+          .from("service_orders")
+          .insert(orderBase)
+          .select("*")
+          .single();
+      }
+      const order = orderRes.data;
+      const orderError = orderRes.error;
+      if (orderError || !order) {
+        throw new Error(
+          orderError?.message ?? "Could not create order.",
+        );
+      }
 
       const title = `${serviceType} · ${location}`;
-      const orderNotes = input.details?.trim() || null;
-      const { data: task } = await supabase
+      const taskBase = {
+        org_id: profile.org_id,
+        villa_id: villa?.id ?? null,
+        title,
+        notes: orderNotes,
+        photo_url: photoUrl,
+        priority,
+        assigned_to: contact.linked_profile_id,
+        status: "open" as const,
+        due_date: scheduledDate,
+        time_start: timeStart,
+        time_end: timeEnd,
+        created_by: profile.id,
+        service_order_id: order.id,
+      };
+      let taskRes = await supabase
         .from("tasks")
         .insert({
-          org_id: profile.org_id,
-          villa_id: villa?.id ?? null,
-          title,
-          notes: orderNotes,
-          photo_url: photoUrl,
-          priority,
-          assigned_to: contact.linked_profile_id,
-          status: "open",
-          due_date: scheduledDate,
-          time_start: input.time_start || null,
-          time_end: input.time_end || null,
+          ...taskBase,
           schedule_mode,
           time_slots,
           recurrence,
           recurrence_count,
-          created_by: profile.id,
-          service_order_id: order.id,
         })
         .select("*")
         .single();
+      if (
+        taskRes.error &&
+        isMissingScheduleColumnError(taskRes.error.message)
+      ) {
+        taskRes = await supabase
+          .from("tasks")
+          .insert(taskBase)
+          .select("*")
+          .single();
+      }
+      const task = taskRes.data;
+      if (taskRes.error || !task) {
+        throw new Error(
+          taskRes.error?.message ?? "Could not create task for this order.",
+        );
+      }
 
       const chatBody = buildOrderChatBody({
         assigneeName: contact.name,
         serviceType,
         location,
         when,
-        details: input.details?.trim() || null,
+        details: orderNotes,
         orderedBy: profile.full_name,
       });
-      const { data: msg } = await supabase
+      const { data: msg, error: msgError } = await supabase
         .from("messages")
         .insert({
           org_id: profile.org_id,
@@ -1394,11 +1441,14 @@ export function useSupabaseData(enabled: boolean): AppData {
         })
         .select("*")
         .single();
+      if (msgError) {
+        console.warn("order chat message", msgError.message);
+      }
 
       await supabase
         .from("service_orders")
         .update({
-          task_id: task?.id ?? null,
+          task_id: task.id,
           chat_message_id: msg?.id ?? null,
         })
         .eq("id", order.id);
@@ -2072,17 +2122,21 @@ export function useSupabaseData(enabled: boolean): AppData {
       // service_orders.scheduled_date is NOT NULL; default to today when unset.
       const scheduledDate =
         input.due_date?.trim() || new Date().toISOString().slice(0, 10);
-      const schedule_mode = input.schedule_mode ?? "window";
-      const time_slots = input.time_slots ?? null;
-      const recurrence = input.recurrence ?? "once";
-      const recurrence_count = input.recurrence_count ?? null;
+      const {
+        schedule_mode,
+        time_slots,
+        recurrence,
+        recurrence_count,
+        time_start: timeStart,
+        time_end: timeEnd,
+      } = normalizeScheduleInsert(input);
       const when =
-        formatWorkWindow(
-          scheduledDate,
-          input.time_start ?? null,
-          input.time_end ?? null,
-          { schedule_mode, time_slots, recurrence, recurrence_count },
-        ) ?? "";
+        formatWorkWindow(scheduledDate, timeStart, timeEnd, {
+          schedule_mode,
+          time_slots,
+          recurrence,
+          recurrence_count,
+        }) ?? "";
       const assignee = assigneeId
         ? profiles.find((p) => p.id === assigneeId)
         : null;
@@ -2099,8 +2153,8 @@ export function useSupabaseData(enabled: boolean): AppData {
         service_type: title,
         details: notes,
         scheduled_date: scheduledDate,
-        time_start: input.time_start || null,
-        time_end: input.time_end || null,
+        time_start: timeStart,
+        time_end: timeEnd,
         status: "pending_ack" as const,
       };
       const orderSchedule = {
@@ -2116,7 +2170,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         .single();
       if (
         orderRes.error &&
-        /schedule_mode|time_slots|recurrence/i.test(orderRes.error.message)
+        isMissingScheduleColumnError(orderRes.error.message)
       ) {
         orderRes = await supabase
           .from("service_orders")
@@ -2164,8 +2218,8 @@ export function useSupabaseData(enabled: boolean): AppData {
         priority: input.priority,
         assigned_to: assigneeId,
         due_date: scheduledDate,
-        time_start: input.time_start ?? null,
-        time_end: input.time_end ?? null,
+        time_start: timeStart,
+        time_end: timeEnd,
         service_order_id: order.id,
       };
       let taskRes = await supabase
@@ -2181,7 +2235,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         .single();
       if (
         taskRes.error &&
-        /schedule_mode|time_slots|recurrence/i.test(taskRes.error.message)
+        isMissingScheduleColumnError(taskRes.error.message)
       ) {
         taskRes = await supabase
           .from("tasks")

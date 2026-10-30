@@ -215,9 +215,6 @@ export const demoAccounts: DemoAccount[] = [
   },
 ];
 
-/** @deprecated use demoAccounts */
-export const demoCredentials = demoAccounts;
-
 function daysFromNow(n: number) {
   const d = new Date();
   d.setDate(d.getDate() + n);

@@ -148,16 +148,6 @@ export function takeReviewDraft(): {
   }
 }
 
-/** @deprecated use writeReviewDraft */
-export function writeReviewDraftNote(note: string) {
-  writeReviewDraft({ note });
-}
-
-/** @deprecated use takeReviewDraft */
-export function takeReviewDraftNote(): string {
-  return takeReviewDraft().note;
-}
-
 /** Survives task rows disappearing after confirm-done. */
 export function ReviewOfferBanner() {
   const data = useData();

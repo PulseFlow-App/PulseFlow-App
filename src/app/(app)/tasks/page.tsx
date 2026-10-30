@@ -21,6 +21,7 @@ import {
   resolveWorkSchedule,
   schedulePayloadFromResolved,
 } from "@/lib/work-schedule";
+import { capitalizeLabel } from "@/lib/format-label";
 import type { MessageKey } from "@/lib/i18n";
 import { ReportsEntryLink } from "@/components/reports/reports-entry-link";
 
@@ -109,7 +110,7 @@ export default function TasksPage() {
     setSaving(true);
     try {
       await data.createTask({
-        title: title.trim(),
+        title: capitalizeLabel(title),
         villa_id: villaId || null,
         priority,
         assigned_to: assignee || null,
@@ -196,6 +197,7 @@ export default function TasksPage() {
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => setTitle((v) => capitalizeLabel(v))}
               placeholder={t("tasks.titlePlaceholder")}
             />
           </div>

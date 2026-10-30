@@ -38,8 +38,3 @@ export function supportCommandSuggestions(
   const q = token.toLowerCase();
   return commands.filter((c) => c.command.startsWith(q) && c.command !== q);
 }
-
-/** @deprecated Use supportCommandSuggestions with GUEST_SUPPORT_COMMANDS */
-export function guestSupportCommandSuggestions(input: string) {
-  return supportCommandSuggestions(input, GUEST_SUPPORT_COMMANDS);
-}

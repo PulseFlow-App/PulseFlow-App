@@ -276,11 +276,6 @@ export function TermsStaffSection() {
   );
 }
 
-/** @deprecated Cleaning is not a product role; use TermsStaffSection. */
-export function TermsEmployeeSection() {
-  return <TermsStaffSection />;
-}
-
 export function TermsAgentSection() {
   return (
     <section className="space-y-2">
@@ -543,11 +538,6 @@ export function PrivacyStaffSection() {
       </ul>
     </section>
   );
-}
-
-/** @deprecated Cleaning is not a product role; use PrivacyStaffSection. */
-export function PrivacyEmployeeSection() {
-  return <PrivacyStaffSection />;
 }
 
 export function PrivacyCommonSections({

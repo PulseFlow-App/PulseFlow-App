@@ -111,23 +111,6 @@ export function peelAssigneeFromText(
   };
 }
 
-/** @deprecated Prefer peelAssigneeFromText for /task and /job. */
-export function extractMentionToken(text: string): string | null {
-  const m = text.match(/@([^\s@]+(?:\s+[^\s@]+){0,3})/);
-  return m?.[1]?.trim() ?? null;
-}
-
-export function stripMention(text: string, mention: string) {
-  return text
-    .replace(new RegExp(`@${escapeRegExp(mention)}`, "i"), " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function escapeRegExp(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 export function resolveContactForProfile(
   profileId: string,
   contacts: Contact[],

@@ -1939,14 +1939,3 @@ export function buildVillaList(
 
   return [...company, ...personal];
 }
-
-/** @deprecated prefer buildVillaList */
-export function villasVisibleTo(
-  profile: Profile,
-  villas: Villa[],
-  assignments: VillaAssignment[],
-): Villa[] {
-  return buildVillaList(profile, villas, assignments, []).map(
-    ({ bucket: _b, orgLabel: _o, ...v }) => v,
-  );
-}

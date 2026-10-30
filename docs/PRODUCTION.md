@@ -39,7 +39,7 @@
 - [ ] Apply migration `036_mvp_security_hardening.sql` (guest RLS + entitlement expiry) if not already on prod
 - [ ] Apply migration `058_drop_stripe_billing_columns.sql`
 - [x] Apply migration `059_scale_security_hardening.sql` (role/org locks, private receipts, staff RLS, push dedupe)
-- [x] Run `docs/SECURITY_AUDIT_059.sql` (Oct 2026): 3 personal owners missing `org_memberships` — backfilled; 0 `active` company orgs (2 `trialing`); no billing self-promotion found
+- [x] Security audit after `059` (Oct 2026): 3 personal owners missing `org_memberships` — backfilled; 0 `active` company orgs (2 `trialing`); no billing self-promotion found
 - [ ] `NEXT_PUBLIC_DEMO_MODE=false` on production; demo credentials hidden
 - [ ] Error monitoring: `@sentry/nextjs` wired — set `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` on Vercel (optional `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` for source maps)
 - [ ] Apply migration `060_audit_view_security_invoker.sql` (audit view security_invoker + service_role only)

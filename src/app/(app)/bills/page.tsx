@@ -27,6 +27,7 @@ import { DisplayCurrencySelect } from "@/components/billing/display-currency-sel
 import { DisplayMoney } from "@/components/billing/display-money";
 import { useDisplayCurrency } from "@/lib/billing/use-display-currency";
 import { cn, formatMoneyCompact, formatShortDate } from "@/lib/utils";
+import { capitalizeLabel } from "@/lib/format-label";
 import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import type { MessageKey } from "@/lib/i18n";
@@ -239,7 +240,7 @@ export default function BillsPage() {
       let receipt: string | null = null;
       if (file) receipt = await data.uploadReceipt(file);
       await data.createBill({
-        description: description.trim(),
+        description: capitalizeLabel(description),
         amount: value,
         currency,
         villa_id: villaId || null,
@@ -317,6 +318,7 @@ export default function BillsPage() {
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onBlur={() => setDescription((v) => capitalizeLabel(v))}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">

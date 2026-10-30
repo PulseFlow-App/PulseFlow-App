@@ -14,9 +14,6 @@ export function canUseManagerReporting(input: {
   return role === "owner" || role === "manager";
 }
 
-/** @deprecated Use canUseManagerReporting */
-export const canUseBasicReporting = canUseManagerReporting;
-
 /** Bill/task history window when Full is inactive - 90 days. */
 export const LIMITED_HISTORY_DAYS = 90;
 

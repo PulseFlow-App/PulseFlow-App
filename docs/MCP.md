@@ -8,7 +8,7 @@ Users do **not** download or fork the Pulse app. `npx @pulseflow/mcp` fetches th
 
 Run `048_mcp_tokens.sql` on your Supabase project (CLI or SQL editor).
 
-For team master info tools, also apply `053_master_info_allow_manager.sql` (or `scripts/apply-053-master-info.sql`). Without it, note fields can still save from the app (fallback), but `allow_manager_view` and some MCP selects need the column.
+For team master info tools, also apply migration `053_master_info_allow_manager.sql`. Without it, note fields can still save from the app (fallback), but `allow_manager_view` and some MCP selects need the column.
 
 ### Local Connect agent (before npm 0.3.0 is published)
 

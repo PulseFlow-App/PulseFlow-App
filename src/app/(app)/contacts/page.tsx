@@ -568,8 +568,8 @@ function OrderForm({
   const data = useData();
   const label = useLocalizedDemoText();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [title, setTitle] = useState(
-    prefill?.service?.trim() || label(contact.role),
+  const [title, setTitle] = useState(() =>
+    capitalizeLabel(prefill?.service?.trim() || label(contact.role)),
   );
   const [villaId, setVillaId] = useState(
     prefill?.villaId && villas.some((v) => v.id === prefill.villaId)
@@ -618,6 +618,7 @@ function OrderForm({
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onBlur={() => setTitle((v) => capitalizeLabel(v))}
           placeholder={t("tasks.titlePlaceholder")}
         />
       </div>
@@ -731,9 +732,18 @@ function OrderForm({
               priority,
               photo_url: photoUrl,
             })
-              .catch((e: unknown) =>
-                setError(e instanceof Error ? e.message : "Could not book."),
-              )
+              .catch((e: unknown) => {
+                const message =
+                  e instanceof Error
+                    ? e.message
+                    : typeof e === "object" &&
+                        e &&
+                        "message" in e &&
+                        typeof (e as { message: unknown }).message === "string"
+                      ? (e as { message: string }).message
+                      : "Could not book.";
+                setError(message);
+              })
               .finally(() => setSaving(false));
           }}
         >
@@ -830,7 +840,11 @@ function ContactForm({
       ) : null}
       <div>
         <Label>Name</Label>
-        <Input value={name} onChange={(e) => setName(e.target.value)} />
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={() => setName((v) => capitalizeLabel(v))}
+        />
       </div>
       <div>
         <Label>Role</Label>
@@ -975,7 +989,7 @@ function ContactForm({
               ? syncContactMessengerFields(messengers)
               : syncContactMessengerFields([]);
             void onSave({
-              name: name.trim(),
+              name: capitalizeLabel(name),
               role,
               phone: phone || null,
               ...synced,

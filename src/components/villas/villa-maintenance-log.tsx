@@ -8,6 +8,7 @@ import { Input, Label, Textarea } from "@/components/ui/input";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import { formatShortDate } from "@/lib/utils";
+import { capitalizeLabel } from "@/lib/format-label";
 import { todayIsoDate } from "@/lib/villas/status-from-dates";
 
 export function VillaMaintenanceLog({ villaId }: { villaId: string }) {
@@ -42,10 +43,10 @@ export function VillaMaintenanceLog({ villaId }: { villaId: string }) {
       }
       await data.addVillaMaintenanceLog({
         villa_id: villaId,
-        item,
+        item: capitalizeLabel(item),
         logged_on: loggedOn,
-        description,
-        vendor,
+        description: description.trim() || null,
+        vendor: vendor.trim() ? capitalizeLabel(vendor) : null,
         photo_url,
       });
       setItem("");
@@ -94,6 +95,7 @@ export function VillaMaintenanceLog({ villaId }: { villaId: string }) {
               id="maint-item"
               value={item}
               onChange={(e) => setItem(e.target.value)}
+              onBlur={() => setItem((v) => capitalizeLabel(v))}
               placeholder={t("villas.maintItemPh")}
             />
           </div>

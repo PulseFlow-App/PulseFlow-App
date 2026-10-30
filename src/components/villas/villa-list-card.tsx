@@ -22,11 +22,7 @@ export function VillaListCard({
   villa: VillaListItem;
   showAssignees: boolean;
   assignees: string[];
-  /** @deprecated Company label is shown above grouped lists — unused. */
-  hideBucketBadge?: boolean;
   canEdit?: boolean;
-  /** @deprecated Master + stats share one note icon to the stats page. */
-  showMasterInfo?: boolean;
 }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);

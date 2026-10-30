@@ -26,6 +26,7 @@ import { useData } from "@/lib/data/use-app-data";
 import type { VillaStatus } from "@/lib/design-tokens";
 import { canDeleteVilla, canEditVillaCore, isStaffApp } from "@/lib/roles";
 import { isValidLocationUrl, normalizeLocationUrl } from "@/lib/utils";
+import { capitalizeLabel } from "@/lib/format-label";
 import { formatWorkWindow } from "@/lib/notifications";
 import { formatOrderWhen } from "@/lib/service-orders";
 import { useI18n } from "@/lib/i18n/provider";
@@ -188,7 +189,9 @@ export default function VillaDetailPage({
         photo_url: photoUrl,
         ...quickSourcesPayload(quickSources),
         ...formToDetails(details),
-        ...(canEditCore ? { name, area: area || null } : {}),
+        ...(canEditCore
+          ? { name: capitalizeLabel(name), area: area || null }
+          : {}),
       });
       if (isOwner && !isPersonal) {
         await data.setVillaAssignees(villa.id, assigneeIds);
@@ -227,7 +230,11 @@ export default function VillaDetailPage({
           <>
             <div>
               <Label>{t("villas.propertyName")}</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => setName((v) => capitalizeLabel(v))}
+              />
             </div>
 
             <div className="space-y-2">

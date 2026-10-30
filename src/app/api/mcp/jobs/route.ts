@@ -144,11 +144,14 @@ export async function POST(request: Request) {
 
   const serviceType = capitalizeLabel(body.service_type);
   const location =
-    villaName ?? body.location_label?.trim() ?? "Location TBC";
-  const scheduledDate = body.scheduled_date?.trim() || null;
+    villaName ?? body.location_label?.trim() ?? "General";
+  // Older DBs may still require scheduled_date NOT NULL.
+  const scheduledDate =
+    body.scheduled_date?.trim() || new Date().toISOString().slice(0, 10);
+  const timeStart = body.time_start?.trim() || null;
+  const timeEnd = body.time_end?.trim() || null;
   const when =
-    formatWorkWindow(scheduledDate, body.time_start ?? null, body.time_end ?? null) ??
-    "";
+    formatWorkWindow(scheduledDate, timeStart, timeEnd) ?? "";
 
   const { data: order, error: orderError } = await admin
     .from("service_orders")
@@ -162,8 +165,8 @@ export async function POST(request: Request) {
       service_type: serviceType,
       details: body.details?.trim() || null,
       scheduled_date: scheduledDate,
-      time_start: body.time_start || null,
-      time_end: body.time_end || null,
+      time_start: timeStart,
+      time_end: timeEnd,
       status: "pending_ack",
     })
     .select(
@@ -190,8 +193,8 @@ export async function POST(request: Request) {
       assigned_to: staffProfileId,
       status: "open",
       due_date: scheduledDate,
-      time_start: body.time_start || null,
-      time_end: body.time_end || null,
+      time_start: timeStart,
+      time_end: timeEnd,
       created_by: auth.profileId,
       service_order_id: order.id,
     })

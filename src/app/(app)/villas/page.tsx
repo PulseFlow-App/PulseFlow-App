@@ -51,6 +51,7 @@ import { GuestBookingGuide } from "@/components/home/guest-booking-guide";
 import { HandoffPersonalCard } from "@/components/villas/handoff-personal-card";
 import { useI18n } from "@/lib/i18n/provider";
 import { labelRole, labelVillaStatus } from "@/lib/i18n/labels";
+import { capitalizeLabel } from "@/lib/format-label";
 import type { MessageKey } from "@/lib/i18n";
 import type { VillaListItem } from "@/lib/types";
 import type { VillaStatus } from "@/lib/design-tokens";
@@ -298,6 +299,7 @@ export default function VillasPage() {
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onBlur={() => setName((v) => capitalizeLabel(v))}
             />
           </div>
 
@@ -515,7 +517,7 @@ export default function VillasPage() {
                   try {
                     const photoUrl = await photo.waitForPhoto();
                     const villaId = await data.createVilla({
-                      name: name.trim(),
+                      name: capitalizeLabel(name),
                       area: area.trim() || undefined,
                       location_url: normalizeLocationUrl(locationUrl),
                       description: description.trim() || undefined,
@@ -591,7 +593,6 @@ export default function VillasPage() {
             villas={data.villaList}
             showAssignees={false}
             assigneesFor={assigneesFor}
-            hideBucketBadge
             canEditCore={(v) =>
               Boolean(
                 data.profile &&
@@ -599,7 +600,6 @@ export default function VillasPage() {
                     canEditVillaCore(data.profile.role)),
               )
             }
-            showMasterInfo={isOwner || data.profile?.role === "manager"}
             t={t}
           />
         ) : (
@@ -616,7 +616,6 @@ export default function VillasPage() {
                 canEditCore={() =>
                   Boolean(data.profile && canEditVillaCore(data.profile.role))
                 }
-                showMasterInfo={isOwner || data.profile?.role === "manager"}
                 t={t}
               />
             ))}
@@ -630,7 +629,6 @@ export default function VillasPage() {
                 showAssignees={false}
                 assigneesFor={assigneesFor}
                 canEditCore={() => true}
-                showMasterInfo={isOwner || data.profile?.role === "manager"}
                 t={t}
               />
             ) : null}
@@ -648,9 +646,7 @@ function VillaSection({
   villas,
   showAssignees,
   assigneesFor,
-  hideBucketBadge = false,
   canEditCore,
-  showMasterInfo,
   t,
 }: {
   title: string;
@@ -659,9 +655,7 @@ function VillaSection({
   villas: VillaListItem[];
   showAssignees: boolean;
   assigneesFor: (id: string) => string[];
-  hideBucketBadge?: boolean;
   canEditCore: (villa: VillaListItem) => boolean;
-  showMasterInfo: boolean;
   t: (key: MessageKey, params?: Record<string, string | number>) => string;
 }) {
   return (
@@ -692,9 +686,7 @@ function VillaSection({
               villa={villa}
               showAssignees={showAssignees}
               assignees={assigneesFor(villa.id)}
-              hideBucketBadge={hideBucketBadge}
               canEdit={canEditCore(villa)}
-              showMasterInfo={showMasterInfo}
             />
           </li>
         ))}

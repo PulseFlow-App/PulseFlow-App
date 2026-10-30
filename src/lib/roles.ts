@@ -31,14 +31,6 @@ export function invitableStaffRoles(
   return [];
 }
 
-/** @deprecated Prefer invitableStaffRoles + guest invites. */
-export function invitableRoles(
-  actorRole: UserRole,
-  orgKind?: OrgKind | null,
-): UserRole[] {
-  return invitableStaffRoles(actorRole, orgKind);
-}
-
 export function canInvite(actorRole: UserRole, orgKind?: OrgKind | null) {
   return invitableStaffRoles(actorRole, orgKind).length > 0;
 }
