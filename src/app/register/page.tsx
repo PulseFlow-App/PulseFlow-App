@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
-import type { OrgKind } from "@/lib/design-tokens";
+import type { OrgKind, UserRole } from "@/lib/design-tokens";
 import { isDemoMode } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
 import { cn } from "@/lib/utils";
@@ -25,13 +25,15 @@ import {
 } from "@/lib/billing/plans";
 import { DEMO_READ_ONLY_MESSAGE } from "@/lib/demo/guard";
 
-type Step = "use" | "details";
+type Step = "use" | "seat" | "details";
+type CompanySeat = Extract<UserRole, "owner" | "manager">;
 
 export default function RegisterPage() {
   const router = useRouter();
   const { t } = useI18n();
   const [step, setStep] = useState<Step>("use");
   const [useKind, setUseKind] = useState<OrgKind | null>(null);
+  const [companySeat, setCompanySeat] = useState<CompanySeat | null>(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -71,13 +73,25 @@ export default function RegisterPage() {
   }, []);
 
   const title = useMemo(() => {
-    if (step === "use") return "How will you use PulseFlow?";
-    if (useKind === "company") return "Create your company";
-    return "Set up your property workspace";
-  }, [step, useKind]);
+    if (step === "use") return t("register.howTitle");
+    if (step === "seat") return t("register.seatTitle");
+    if (useKind === "company") return t("register.companyTitle");
+    return t("register.personalTitle");
+  }, [step, useKind, t]);
 
   const continueFromUse = () => {
     if (!useKind) return;
+    setError(null);
+    if (useKind === "company") {
+      setStep("seat");
+      return;
+    }
+    setCompanySeat(null);
+    setStep("details");
+  };
+
+  const continueFromSeat = () => {
+    if (!companySeat) return;
     setError(null);
     setStep("details");
   };
@@ -85,6 +99,10 @@ export default function RegisterPage() {
   const submit = async () => {
     setError(null);
     if (!useKind) return;
+    if (useKind === "company" && !companySeat) {
+      setError(t("register.seatRequired"));
+      return;
+    }
     if (!fullName.trim() || !email.trim() || password.length < 6) {
       setError("Name, email, and a password (6+ chars) are required.");
       return;
@@ -104,8 +122,8 @@ export default function RegisterPage() {
         orgName.trim() ||
         `${fullName.trim().split(" ")[0] || "My"}'s properties`;
 
-      // Personal = solo workspace. Company register = owner only (staff use /join).
-      const role = "owner" as const;
+      const role: CompanySeat =
+        useKind === "company" ? (companySeat ?? "owner") : "owner";
 
       if (isDemoMode()) {
         throw new Error(DEMO_READ_ONLY_MESSAGE);
@@ -179,15 +197,18 @@ export default function RegisterPage() {
             <div className="grid gap-3">
               <Choice
                 icon={<PulseIcon name="home" className="size-5" />}
-                title="Personal use"
-                description="Just you and your properties - track work, bills, and jobs in one simple workspace."
+                title={t("register.personalUse")}
+                description={t("register.personalUseHint")}
                 active={useKind === "personal"}
-                onClick={() => setUseKind("personal")}
+                onClick={() => {
+                  setUseKind("personal");
+                  setCompanySeat(null);
+                }}
               />
               <Choice
                 icon={<PulseIcon name="properties" className="size-5" />}
-                title="Company use"
-                description="You are creating a new company as the owner. After setup you can invite your team."
+                title={t("register.companyUse")}
+                description={t("register.companyUseHint")}
                 active={useKind === "company"}
                 onClick={() => setUseKind("company")}
               />
@@ -198,6 +219,42 @@ export default function RegisterPage() {
               >
                 Continue
               </Button>
+            </div>
+          ) : null}
+
+          {step === "seat" ? (
+            <div className="grid gap-3">
+              <p className="text-sm text-muted">{t("register.seatHint")}</p>
+              <Choice
+                icon={<PulseIcon name="properties" className="size-5" />}
+                title={t("register.seatOwner")}
+                description={t("register.seatOwnerHint")}
+                active={companySeat === "owner"}
+                onClick={() => setCompanySeat("owner")}
+              />
+              <Choice
+                icon={<PulseIcon name="contacts" className="size-5" />}
+                title={t("register.seatManager")}
+                description={t("register.seatManagerHint")}
+                active={companySeat === "manager"}
+                onClick={() => setCompanySeat("manager")}
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={() => setStep("use")}
+                >
+                  Back
+                </Button>
+                <Button
+                  className="flex-1"
+                  disabled={!companySeat}
+                  onClick={continueFromSeat}
+                >
+                  Continue
+                </Button>
+              </div>
             </div>
           ) : null}
 
@@ -270,9 +327,9 @@ export default function RegisterPage() {
               ) : null}
               {useKind === "company" ? (
                 <p className="text-xs text-muted">
-                  Company accounts include about 90 days of full features free
-                  while billing rolls out. By creating an account you agree to
-                  our{" "}
+                  {companySeat === "manager"
+                    ? t("register.companyTrialManagerNote")
+                    : t("register.companyTrialNote")}{" "}
                   <Link href="/terms" className="font-semibold text-primary">
                     Terms
                   </Link>{" "}
@@ -287,7 +344,9 @@ export default function RegisterPage() {
                 <Button
                   variant="ghost"
                   className="flex-1"
-                  onClick={() => setStep("use")}
+                  onClick={() =>
+                    setStep(useKind === "company" ? "seat" : "use")
+                  }
                 >
                   Back
                 </Button>

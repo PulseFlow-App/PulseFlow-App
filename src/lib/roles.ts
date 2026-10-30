@@ -31,6 +31,34 @@ export function invitableStaffRoles(
   return [];
 }
 
+/**
+ * Invite / transfer the Owner seat.
+ * - No owner yet: manager or owner may invite the paying owner (founding).
+ * - Owner exists: only the current owner may invite a replacement (billing transfer).
+ */
+export function canInviteOwner(
+  actorRole: UserRole,
+  orgKind?: OrgKind | null,
+  hasOwner = true,
+) {
+  if (!isCompanyWorkspace(orgKind)) return false;
+  if (!hasOwner) {
+    return actorRole === "owner" || actorRole === "manager";
+  }
+  return actorRole === "owner";
+}
+
+/** True when inviting owner replaces an existing owner (billing moves). */
+export function isOwnerTransferInvite(hasOwner: boolean) {
+  return hasOwner;
+}
+
+export function companyHasOwner(
+  profiles: Array<{ role: UserRole }>,
+): boolean {
+  return profiles.some((p) => p.role === "owner");
+}
+
 export function canInvite(actorRole: UserRole, orgKind?: OrgKind | null) {
   return invitableStaffRoles(actorRole, orgKind).length > 0;
 }

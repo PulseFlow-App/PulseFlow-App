@@ -92,7 +92,7 @@ export type Invite = {
   id: string;
   token: string;
   org_id: string;
-  role: Exclude<UserRole, "owner">;
+  role: UserRole;
   /** Set by invitee when they accept */
   full_name: string | null;
   email: string | null;

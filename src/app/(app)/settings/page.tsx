@@ -12,6 +12,7 @@ import { useI18n } from "@/lib/i18n/provider";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { DisplayCurrencySelect } from "@/components/billing/display-currency-select";
 import { BillingSettingsCard } from "@/components/billing/billing-card";
+import { UpgradeToCompanyCard } from "@/components/settings/upgrade-to-company-card";
 import { PasskeySettingsCard } from "@/components/auth/passkey-settings-card";
 import { JobSearchSettingsCard } from "@/components/settings/job-search-settings-card";
 import { McpSettingsCard } from "@/components/settings/mcp-settings-card";
@@ -266,6 +267,7 @@ export default function SettingsPage() {
           </div>
         </div>
         <BillingSettingsCard embedded />
+        {isPersonal ? <UpgradeToCompanyCard /> : null}
       </Card>
 
       <PasskeySettingsCard hideHint={isGuest} />

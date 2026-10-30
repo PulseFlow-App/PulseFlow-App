@@ -52,25 +52,37 @@ export async function POST(request: Request) {
   if (kind !== "personal" && kind !== "company") {
     return NextResponse.json({ error: "Invalid organization kind." }, { status: 400 });
   }
-  // Public register: personal solo workspace, or company owner only.
-  // Staff / managers join via invite (/join/[token]).
+  // Public register: personal solo, or company as owner (pays) / manager (invites owner).
+  // Other staff join via invite (/join/[token]).
   if (kind === "company" && !orgName) {
     return NextResponse.json(
       { error: "Company name is required." },
       { status: 400 },
     );
   }
-  if (role && role !== "owner") {
+  if (kind === "personal" && role && role !== "owner") {
+    return NextResponse.json(
+      { error: "Personal workspaces always start as owner of your own list." },
+      { status: 400 },
+    );
+  }
+  if (
+    kind === "company" &&
+    role != null &&
+    role !== "owner" &&
+    role !== "manager"
+  ) {
     return NextResponse.json(
       {
         error:
-          "Register as a company owner, or choose Personal use. Team members join with an invite link.",
+          "Choose Owner (you pay) or Manager (invite the owner who pays). Other roles join with an invite link.",
       },
       { status: 400 },
     );
   }
 
-  const resolvedRole = "owner" as const;
+  const resolvedRole =
+    kind === "company" && role === "manager" ? ("manager" as const) : ("owner" as const);
 
   const admin = createAdminClient();
 
@@ -160,7 +172,12 @@ export async function POST(request: Request) {
     full_name: fullName,
     phone,
     email,
-    job_title: kind === "personal" ? "Personal" : "Owner",
+    job_title:
+      kind === "personal"
+        ? "Personal"
+        : resolvedRole === "manager"
+          ? "Manager"
+          : "Owner",
     share_slug,
   });
 

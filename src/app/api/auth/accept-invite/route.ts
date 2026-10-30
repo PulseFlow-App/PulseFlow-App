@@ -111,6 +111,55 @@ async function markInviteUsed(
     .eq("id", invite.id);
 }
 
+async function applyOwnerBilling(
+  admin: Admin,
+  orgId: string,
+  billingEmail: string,
+) {
+  await admin
+    .from("organizations")
+    .update({ billing_email: billingEmail })
+    .eq("id", orgId);
+}
+
+/**
+ * After an owner invite is accepted: demote any previous owners to manager,
+ * then set billing to the new owner. Founding (no prior owner) is a no-op demote.
+ */
+async function finalizeOwnerSeat(
+  admin: Admin,
+  orgId: string,
+  newOwnerId: string,
+  billingEmail: string,
+) {
+  const { data: owners } = await admin
+    .from("org_memberships")
+    .select("id, profile_id")
+    .eq("org_id", orgId)
+    .eq("role", "owner");
+  const previous = (owners ?? []).filter((o) => o.profile_id !== newOwnerId);
+  for (const row of previous) {
+    await admin
+      .from("org_memberships")
+      .update({ role: "manager" })
+      .eq("id", row.id);
+    const { data: p } = await admin
+      .from("profiles")
+      .select("id, org_id, role")
+      .eq("id", row.profile_id)
+      .maybeSingle();
+    if (p && p.org_id === orgId && p.role === "owner") {
+      await admin
+        .from("profiles")
+        .update({ role: "manager", job_title: "Manager" })
+        .eq("id", p.id);
+    }
+  }
+  if (billingEmail) {
+    await applyOwnerBilling(admin, orgId, billingEmail);
+  }
+}
+
 async function notifyTeamJoined(
   admin: Admin,
   input: {
@@ -361,6 +410,11 @@ export async function POST(request: Request) {
       role: invite.role,
       merged: true,
     });
+    if (invite.role === "owner") {
+      const billEmail =
+        (existingProfile.email as string | null) ?? user.email ?? "";
+      await finalizeOwnerSeat(admin, invite.org_id, user.id, billEmail);
+    }
     return NextResponse.json({ ok: true, userId: user.id, joinedWithSession: true });
   }
 
@@ -440,6 +494,9 @@ export async function POST(request: Request) {
           role: invite.role,
         },
       });
+      if (invite.role === "owner") {
+        await finalizeOwnerSeat(admin, invite.org_id, existingAuth.id, email);
+      }
       return NextResponse.json({
         ok: true,
         userId: existingAuth.id,
@@ -565,6 +622,10 @@ export async function POST(request: Request) {
     role: invite.role,
     merged: false,
   });
+
+  if (invite.role === "owner") {
+    await finalizeOwnerSeat(admin, invite.org_id, userId, email);
+  }
 
   try {
     await creditReferral(admin, {

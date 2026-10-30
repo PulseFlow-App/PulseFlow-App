@@ -11,8 +11,11 @@ import type { UserRole } from "@/lib/design-tokens";
 import {
   canInviteAnyone,
   canInviteGuest,
+  canInviteOwner,
   canInviteStaff,
+  companyHasOwner,
   invitableStaffRoles,
+  isOwnerTransferInvite,
 } from "@/lib/roles";
 import {
   referralJoinUrl,
@@ -23,7 +26,7 @@ import type { MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { Invite } from "@/lib/types";
 
-type FlipKind = "staff" | "guest";
+type FlipKind = "staff" | "guest" | "owner";
 
 type Props = {
   referralCode: string;
@@ -52,6 +55,11 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
     [profile, data.orgKind],
   );
 
+  const hasOwner = useMemo(
+    () => companyHasOwner(data.profiles),
+    [data.profiles],
+  );
+
   useEffect(() => {
     setAnyoneUrl(
       referralRegisterUrl(window.location.origin, referralCode, {
@@ -65,6 +73,14 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
   const showAnyone = canInviteAnyone(profile.role);
   const showStaff = canInviteStaff(profile.role, data.orgKind);
   const showGuest = canInviteGuest(profile.role, data.orgKind);
+  const showOwnerInvite = canInviteOwner(
+    profile.role,
+    data.orgKind,
+    hasOwner,
+  );
+  const openOwnerInvite = invites.some(
+    (i) => i.role === "owner" && !i.used_at,
+  );
 
   const effectiveStaffRole = (
     staffRoles.includes(staffRole) ? staffRole : staffRoles[0] ?? "staff"
@@ -85,22 +101,32 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
     window.setTimeout(() => setCopied(null), 1800);
   };
 
-  const createRoleInvite = async (role: Exclude<UserRole, "owner">) => {
+  const createRoleInvite = async (role: UserRole) => {
     setCreating(true);
     setError(null);
     try {
       const invite = await data.createInvite({
         role,
-        jobTitle: role === "guest" ? undefined : jobTitle || undefined,
+        jobTitle:
+          role === "guest" || role === "owner"
+            ? undefined
+            : jobTitle || undefined,
       });
       const link = referralJoinUrl(
         window.location.origin,
         invite.token,
         referralCode,
-        { src: role === "guest" ? "app_invite_guest" : "app_invite_staff" },
+        {
+          src:
+            role === "guest"
+              ? "app_invite_guest"
+              : role === "owner"
+                ? "app_invite_owner"
+                : "app_invite_staff",
+        },
       );
       await copyText(link, invite.token);
-      if (role !== "guest") setJobTitle("");
+      if (role !== "guest" && role !== "owner") setJobTitle("");
     } catch (e) {
       setError(e instanceof Error ? e.message : t("settings.inviteError"));
     } finally {
@@ -130,6 +156,17 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
     hintKey: MessageKey;
   }[] = [
     {
+      kind: "owner",
+      show: showOwnerInvite,
+      icon: "properties",
+      titleKey: isOwnerTransferInvite(hasOwner)
+        ? "invite.card.transferOwner"
+        : "invite.card.owner",
+      hintKey: isOwnerTransferInvite(hasOwner)
+        ? "invite.card.transferOwnerHint"
+        : "invite.card.ownerHint",
+    },
+    {
       kind: "staff",
       show: showStaff,
       icon: "contacts",
@@ -145,13 +182,45 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
     },
   ];
 
-  const gridCols =
-    Number(showAnyone) + Number(showStaff) + Number(showGuest) >= 3
-      ? "sm:grid-cols-3"
-      : "sm:grid-cols-2";
+  const cardCount =
+    Number(showAnyone) +
+    Number(showStaff) +
+    Number(showGuest) +
+    Number(showOwnerInvite);
+  const gridCols = cardCount >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2";
 
   return (
     <div className="space-y-3">
+      {showOwnerInvite ? (
+        <Card className="space-y-3 border-primary/30 bg-primary/5 p-4">
+          <p className="font-display text-base font-bold text-ink">
+            {isOwnerTransferInvite(hasOwner)
+              ? t("invite.transferOwnerTitle")
+              : t("invite.needsOwnerTitle")}
+          </p>
+          <p className="text-sm text-muted">
+            {isOwnerTransferInvite(hasOwner)
+              ? t("invite.transferOwnerHint")
+              : t("invite.needsOwnerHint")}
+          </p>
+          <Button
+            size="sm"
+            className="w-full"
+            disabled={creating || openOwnerInvite}
+            onClick={() => void createRoleInvite("owner")}
+          >
+            <Copy className="size-4" />
+            {creating
+              ? t("settings.creating")
+              : openOwnerInvite
+                ? t("invite.ownerInviteOpen")
+                : isOwnerTransferInvite(hasOwner)
+                  ? t("invite.createTransferLink")
+                  : t("invite.createOwnerLink")}
+          </Button>
+        </Card>
+      ) : null}
+
       <div className={cn("grid gap-3", gridCols)}>
         {showAnyone ? (
           <Card className="flex flex-col space-y-3 p-4">
@@ -311,6 +380,27 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                           </Button>
                         </div>
                       ) : null}
+
+                      {kind === "owner" ? (
+                        <div className="mt-auto space-y-2">
+                          <p className="text-xs text-muted">
+                            {t("invite.ownerBackHint")}
+                          </p>
+                          <Button
+                            size="sm"
+                            className="w-full"
+                            disabled={creating || openOwnerInvite}
+                            onClick={() => void createRoleInvite("owner")}
+                          >
+                            <Copy className="size-4" />
+                            {creating
+                              ? t("settings.creating")
+                              : openOwnerInvite
+                                ? t("invite.ownerInviteOpen")
+                                : t("invite.createAndCopy")}
+                          </Button>
+                        </div>
+                      ) : null}
                     </Card>
                   </div>
                 </div>
@@ -326,7 +416,8 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
         </p>
       ) : null}
 
-      {openInvites.length > 0 && (showStaff || showGuest) ? (
+      {openInvites.length > 0 &&
+      (showStaff || showGuest || showOwnerInvite) ? (
         <div className="space-y-2 border-t border-black/5 pt-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
             {t("settings.openInvites")}
@@ -340,7 +431,9 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                 src:
                   inv.role === "guest"
                     ? "app_invite_guest"
-                    : "app_invite_staff",
+                    : inv.role === "owner"
+                      ? "app_invite_owner"
+                      : "app_invite_staff",
               },
             );
             return (
@@ -348,7 +441,13 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                 <div className="flex items-center justify-between gap-2 text-sm">
                   <div className="flex min-w-0 items-start gap-2">
                     <PulseIcon
-                      name={inv.role === "guest" ? "guests" : "contacts"}
+                      name={
+                        inv.role === "guest"
+                          ? "guests"
+                          : inv.role === "owner"
+                            ? "properties"
+                            : "contacts"
+                      }
                       className="mt-0.5 size-5 shrink-0"
                     />
                     <div className="min-w-0">
@@ -369,7 +468,7 @@ export function InviteFlipCards({ referralCode, invites, isOwner }: Props) {
                     >
                       {t("common.copy")}
                     </Button>
-                    {isOwner ? (
+                    {isOwner || inv.role === "owner" ? (
                       <Button
                         size="sm"
                         variant="ghost"

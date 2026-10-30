@@ -181,6 +181,36 @@ export async function POST(request: Request) {
     }
   }
 
+  if (role === "owner") {
+    const { data: owners } = await admin
+      .from("org_memberships")
+      .select("id, profile_id")
+      .eq("org_id", orgId)
+      .eq("role", "owner");
+    for (const row of owners ?? []) {
+      if (row.profile_id === userId) continue;
+      await admin
+        .from("org_memberships")
+        .update({ role: "manager" })
+        .eq("id", row.id);
+      const { data: p } = await admin
+        .from("profiles")
+        .select("id, org_id, role")
+        .eq("id", row.profile_id)
+        .maybeSingle();
+      if (p && p.org_id === orgId && p.role === "owner") {
+        await admin
+          .from("profiles")
+          .update({ role: "manager", job_title: "Manager" })
+          .eq("id", p.id);
+      }
+    }
+    await admin
+      .from("organizations")
+      .update({ billing_email: email })
+      .eq("id", orgId);
+  }
+
   await admin
     .from("invites")
     .update({

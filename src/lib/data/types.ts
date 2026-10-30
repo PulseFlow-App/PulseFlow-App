@@ -248,7 +248,7 @@ export type AppData = {
   uploadSupportAttachment: (file: File) => Promise<string | null>;
   uploadVillaPhoto: (file: File) => Promise<string | null>;
   createInvite: (input: {
-    role: Exclude<UserRole, "owner">;
+    role: UserRole;
     jobTitle?: string;
   }) => Promise<Invite>;
   /** Revoke an unused invite link so it can no longer be opened. */

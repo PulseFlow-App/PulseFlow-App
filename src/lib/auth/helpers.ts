@@ -31,7 +31,7 @@ export type RegisterWorkspaceInput = {
   password: string;
   orgName: string;
   kind: OrgKind;
-  /** Ignored if not owner; public register is owner-only. */
+  /** Company register: owner (pays) or manager (invites owner who pays). Personal ignores. */
   role?: Extract<UserRole, "owner" | "manager">;
   /** Referrer share slug or profile id prefix from ?ref= */
   referredBy?: string | null;

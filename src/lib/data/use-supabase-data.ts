@@ -41,8 +41,10 @@ import {
   canBookServices,
   canCreateVillas,
   canInviteGuest,
+  canInviteOwner,
   canUseAgentChat,
   canViewAllBills,
+  companyHasOwner,
   invitableStaffRoles,
   isStaffApp,
   isTaskAssignableRole,
@@ -2809,17 +2811,25 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (organization?.kind !== "company") {
         throw new Error("Invites are only available for company workspaces.");
       }
-      const allowed =
+      const hasOwner = companyHasOwner(profiles);
+      const allowed: readonly string[] =
         input.role === "guest"
           ? canInviteGuest(profile.role, organization.kind)
-            ? (["guest"] as const)
+            ? ["guest"]
             : []
-          : invitableStaffRoles(profile.role, organization.kind);
-      if (!(allowed as readonly string[]).includes(input.role)) {
+          : input.role === "owner"
+            ? canInviteOwner(profile.role, organization.kind, hasOwner)
+              ? ["owner"]
+              : []
+            : invitableStaffRoles(profile.role, organization.kind);
+      if (!allowed.includes(input.role)) {
         throw new Error("You cannot invite someone with that role.");
       }
       requireCurrentOrgWrite();
       const supabase = createClient();
+      if (input.role === "owner" && hasOwner && profile.role !== "owner") {
+        throw new Error("Only the current owner can transfer billing.");
+      }
       const token = crypto.randomUUID().replace(/-/g, "");
       const { data, error } = await supabase
         .from("invites")

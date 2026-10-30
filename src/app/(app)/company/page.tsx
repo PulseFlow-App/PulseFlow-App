@@ -8,7 +8,11 @@ import { Label, Select } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/empty-state";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useData } from "@/lib/data/use-app-data";
-import { canManageVillaAssignments } from "@/lib/roles";
+import {
+  canInviteOwner,
+  canManageVillaAssignments,
+  companyHasOwner,
+} from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
 import type { Profile } from "@/lib/types";
@@ -33,6 +37,12 @@ export default function CompanyPage() {
     !!profile &&
     isCompany &&
     (profile.role === "owner" || profile.role === "manager");
+  const hasOwner = companyHasOwner(data.profiles);
+  const needsOwner =
+    !!profile &&
+    isCompany &&
+    !hasOwner &&
+    canInviteOwner(profile.role, data.orgKind, hasOwner);
 
   const assignablePeople = useMemo(
     () =>
@@ -125,6 +135,22 @@ export default function CompanyPage() {
         </h1>
         <p className="text-sm text-muted">{data.orgName}</p>
       </div>
+
+      {needsOwner ? (
+        <Card className="space-y-2 border-primary/30 bg-primary/5 p-4">
+          <p className="font-display text-base font-bold text-ink">
+            {t("invite.needsOwnerTitle")}
+          </p>
+          <p className="text-sm text-muted">{t("invite.needsOwnerHint")}</p>
+          <Button
+            size="sm"
+            className="w-full sm:w-auto"
+            onClick={() => router.push("/invites")}
+          >
+            {t("invite.goInviteOwner")}
+          </Button>
+        </Card>
+      ) : null}
 
       {showVillaAccess ? (
         <Card id="villa-access" className="scroll-mt-4 space-y-3 p-5">

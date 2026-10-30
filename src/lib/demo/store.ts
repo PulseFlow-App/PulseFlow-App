@@ -49,7 +49,16 @@ import type {
   VillaListItem,
 } from "@/lib/types";
 import type { OrgKind, UserRole } from "@/lib/design-tokens";
-import { invitableStaffRoles, canInviteGuest, isStaffApp, isTaskAssignableRole, canBookServices } from "@/lib/roles";
+import { companyTrialEndsAt } from "@/lib/auth/helpers";
+import {
+  invitableStaffRoles,
+  canInviteGuest,
+  canInviteOwner,
+  companyHasOwner,
+  isStaffApp,
+  isTaskAssignableRole,
+  canBookServices,
+} from "@/lib/roles";
 import { weekKey } from "@/lib/endorsements";
 import {
   buildEndorsementReceivedNotification,
@@ -501,7 +510,7 @@ type RegisterOwnerInput = {
   password: string;
   orgName: string;
   kind: OrgKind;
-  /** Public register is always owner; managers/staff join via invite. */
+  /** Company: owner (pays) or manager (invites owner). Personal ignores. */
   role?: "owner" | "manager";
 };
 
@@ -512,7 +521,10 @@ export function demoRegisterWorkspace(input: RegisterOwnerInput): Profile {
     throw new Error("An account with this email already exists. Sign in instead.");
   }
 
-  const role = "owner" as const;
+  const role =
+    input.kind === "company" && input.role === "manager"
+      ? ("manager" as const)
+      : ("owner" as const);
   const orgId = crypto.randomUUID();
   const profileId = crypto.randomUUID();
   const org: Organization = {
@@ -520,6 +532,12 @@ export function demoRegisterWorkspace(input: RegisterOwnerInput): Profile {
     name: input.orgName.trim(),
     kind: input.kind,
     created_at: new Date().toISOString(),
+    ...(input.kind === "company"
+      ? {
+          billing_email: email,
+          subscription_status: "trialing" as const,
+        }
+      : {}),
   };
   const share_slug = uniqueShareSlug(
     slugifyName(input.fullName),
@@ -534,7 +552,12 @@ export function demoRegisterWorkspace(input: RegisterOwnerInput): Profile {
     full_name: input.fullName.trim(),
     phone: input.phone?.trim() || null,
     email,
-    job_title: input.kind === "personal" ? "Personal" : "Owner",
+    job_title:
+      input.kind === "personal"
+        ? "Personal"
+        : role === "manager"
+          ? "Manager"
+          : "Owner",
     share_slug,
     job_search_visible: false,
     job_search_skills: [],
@@ -574,8 +597,84 @@ export function demoRegisterWorkspace(input: RegisterOwnerInput): Profile {
   return profile;
 }
 
+/** Convert active personal workspace to a company with Owner|Manager seat. */
+export function demoUpgradeToCompany(
+  actor: Profile,
+  input: { role: "owner" | "manager"; companyName?: string },
+): Profile {
+  const store = readStore();
+  const org = store.orgs.find((o) => o.id === actor.org_id);
+  if (!org || org.kind !== "personal") {
+    throw new Error("Switch to your personal workspace first, then upgrade.");
+  }
+  const personalOrgId = crypto.randomUUID();
+  const personalOrg: Organization = {
+    id: personalOrgId,
+    name: `${actor.full_name.split(" ")[0] || "My"}'s personal ops`,
+    kind: "personal",
+    created_at: new Date().toISOString(),
+    subscription_status: "none",
+  };
+  const companyName =
+    input.companyName?.trim() ||
+    org.name.replace(/\s*'s properties$/i, "").trim() ||
+    `${actor.full_name.split(" ")[0] || "My"} company`;
+  const email = (actor.email ?? "").toLowerCase();
+
+  updateDemoStore((s) => {
+    const memberships = s.memberships.some(
+      (m) => m.org_id === org.id && m.profile_id === actor.id,
+    )
+      ? s.memberships.map((m) =>
+          m.org_id === org.id && m.profile_id === actor.id
+            ? { ...m, role: input.role }
+            : m,
+        )
+      : [
+          ...s.memberships,
+          {
+            id: crypto.randomUUID(),
+            org_id: org.id,
+            profile_id: actor.id,
+            role: input.role,
+            joined_at: new Date().toISOString(),
+          },
+        ];
+    return {
+      ...s,
+      orgs: [
+        ...s.orgs.map((o) =>
+          o.id === org.id
+            ? {
+                ...o,
+                kind: "company" as const,
+                name: companyName,
+                trial_ends_at: companyTrialEndsAt(),
+                subscription_status: "trialing" as const,
+                billing_email: email || null,
+              }
+            : o,
+        ),
+        personalOrg,
+      ],
+      profiles: s.profiles.map((p) =>
+        p.id === actor.id
+          ? {
+              ...p,
+              role: input.role,
+              job_title: input.role === "manager" ? "Manager" : "Owner",
+              personal_org_id: personalOrgId,
+            }
+          : p,
+      ),
+      memberships,
+    };
+  });
+  return getDemoProfile()!;
+}
+
 type CreateInviteInput = {
-  role: Exclude<UserRole, "owner">;
+  role: UserRole;
   jobTitle?: string;
 };
 
@@ -588,14 +687,40 @@ export function demoCreateInvite(
   if (!org || org.kind !== "company") {
     throw new Error("Invites are only available for company workspaces.");
   }
-  const allowed =
+  const orgProfiles = store.profiles.filter((p) => p.org_id === actor.org_id);
+  const hasOwner =
+    companyHasOwner(orgProfiles) ||
+    store.memberships.some(
+      (m) => m.org_id === actor.org_id && m.role === "owner",
+    );
+  const allowed: readonly string[] =
     input.role === "guest"
       ? canInviteGuest(actor.role, org.kind)
-        ? (["guest"] as const)
+        ? ["guest"]
         : []
-      : invitableStaffRoles(actor.role, org.kind);
-  if (!(allowed as readonly string[]).includes(input.role)) {
+      : input.role === "owner"
+        ? canInviteOwner(actor.role, org.kind, hasOwner)
+          ? ["owner"]
+          : []
+        : invitableStaffRoles(actor.role, org.kind);
+  if (!allowed.includes(input.role)) {
     throw new Error("You cannot invite someone with that role.");
+  }
+  if (
+    input.role === "owner" &&
+    hasOwner &&
+    actor.role !== "owner"
+  ) {
+    throw new Error("Only the current owner can transfer billing.");
+  }
+  if (
+    input.role === "owner" &&
+    store.invites.some(
+      (i) =>
+        i.org_id === actor.org_id && i.role === "owner" && !i.used_at,
+    )
+  ) {
+    throw new Error("An owner invite is already open for this company.");
   }
 
   const invite: Invite = {
@@ -659,6 +784,39 @@ export function demoAcceptInvite(
     (a) => a.email.toLowerCase() === email,
   );
 
+  const applyOwnerSeat = (
+    orgs: Organization[],
+    memberships: typeof store.memberships,
+    profiles: typeof store.profiles,
+    newOwnerId: string,
+  ) => {
+    if (invite.role !== "owner") {
+      return { orgs, memberships, profiles };
+    }
+    const nextMemberships = memberships.map((m) =>
+      m.org_id === invite.org_id &&
+      m.role === "owner" &&
+      m.profile_id !== newOwnerId
+        ? { ...m, role: "manager" as const }
+        : m,
+    );
+    const nextProfiles = profiles.map((p) =>
+      p.org_id === invite.org_id &&
+      p.role === "owner" &&
+      p.id !== newOwnerId
+        ? { ...p, role: "manager" as const, job_title: "Manager" }
+        : p,
+    );
+    const nextOrgs = orgs.map((o) =>
+      o.id === invite.org_id ? { ...o, billing_email: email } : o,
+    );
+    return {
+      orgs: nextOrgs,
+      memberships: nextMemberships,
+      profiles: nextProfiles,
+    };
+  };
+
   // Existing user joining a company keeps their personal villas workspace.
   if (existingAccount) {
     const existing = store.profiles.find((p) => p.id === existingAccount.profileId);
@@ -696,7 +854,11 @@ export function demoAcceptInvite(
             ? existing.org_id
             : invite.org_id;
       const memberships = alreadyMember
-        ? s.memberships
+        ? s.memberships.map((m) =>
+            m.profile_id === existing.id && m.org_id === invite.org_id
+              ? { ...m, role: invite.role }
+              : m,
+          )
         : [
             ...s.memberships,
             {
@@ -723,24 +885,31 @@ export function demoAcceptInvite(
               },
             ]
           : memberships;
+      const updatedProfiles = s.profiles.map((p) =>
+        p.id === existing.id
+          ? {
+              ...p,
+              org_id: nextOrgId,
+              personal_org_id: personalOrgId,
+              role: nextRole,
+              job_title: invite.job_title ?? p.job_title,
+              share_slug:
+                p.share_slug ||
+                uniqueShareSlug(slugifyName(p.full_name), s.profiles),
+            }
+          : p,
+      );
+      const seated = applyOwnerSeat(
+        orgs,
+        withHomeMembership,
+        updatedProfiles,
+        existing.id,
+      );
       return {
         ...s,
-        orgs,
-        profiles: s.profiles.map((p) =>
-          p.id === existing.id
-            ? {
-                ...p,
-                org_id: nextOrgId,
-                personal_org_id: personalOrgId,
-                role: nextRole,
-                job_title: invite.job_title ?? p.job_title,
-                share_slug:
-                  p.share_slug ||
-                  uniqueShareSlug(slugifyName(p.full_name), s.profiles),
-              }
-            : p,
-        ),
-        memberships: withHomeMembership,
+        orgs: seated.orgs,
+        profiles: seated.profiles,
+        memberships: seated.memberships,
         invites: s.invites.map((i) =>
           i.id === invite.id
             ? {
@@ -798,12 +967,8 @@ export function demoAcceptInvite(
     profileId,
   };
 
-  updateDemoStore((s) => ({
-    ...s,
-    orgs: [...s.orgs, personalOrg],
-    profiles: [...s.profiles, profile],
-    accounts: [...s.accounts, account],
-    memberships: [
+  updateDemoStore((s) => {
+    const memberships = [
       ...s.memberships,
       {
         id: crypto.randomUUID(),
@@ -812,20 +977,33 @@ export function demoAcceptInvite(
         role: invite.role,
         joined_at: new Date().toISOString(),
       },
-    ],
-    invites: s.invites.map((i) =>
-      i.id === invite.id
-        ? {
-            ...i,
-            full_name: profile.full_name,
-            email,
-            phone: profile.phone,
-            used_at: new Date().toISOString(),
-            used_by: profileId,
-          }
-        : i,
-    ),
-  }));
+    ];
+    const seated = applyOwnerSeat(
+      [...s.orgs, personalOrg],
+      memberships,
+      [...s.profiles, profile],
+      profileId,
+    );
+    return {
+      ...s,
+      orgs: seated.orgs,
+      profiles: seated.profiles,
+      accounts: [...s.accounts, account],
+      memberships: seated.memberships,
+      invites: s.invites.map((i) =>
+        i.id === invite.id
+          ? {
+              ...i,
+              full_name: profile.full_name,
+              email,
+              phone: profile.phone,
+              used_at: new Date().toISOString(),
+              used_by: profileId,
+            }
+          : i,
+      ),
+    };
+  });
   setSession(profileId);
   return profile;
 }

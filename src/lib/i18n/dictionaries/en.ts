@@ -926,7 +926,8 @@ const en = {
     "Covered seat while company Full is inactive. Exports and company writes stay closed until the owner subscribes.",
   "plan.note.managerIncluded":
     "Your owner’s Full plan covers you - reporting, exports, and team features are included while it stays active.",
-  "plan.note.ownerTrial": "",
+  "plan.note.ownerTrial":
+    "Full company features for about 90 days. Invite your team anytime. Billing is not charged yet.",
   "plan.note.ownerFull":
     "Company is USD 15 / month with 10 seats included; extra seats USD 2 / month. Pro adds USD 9. Managers get reporting automatically.",
   "plan.note.ownerExpired":
@@ -1125,16 +1126,46 @@ const en = {
   "invite.card.guest": "Invite your guest",
   "invite.card.guestHint":
     "Guests get a stay space: house guide, support chat, and deposit bills.",
+  "invite.card.owner": "Invite the owner",
+  "invite.card.ownerHint":
+    "They join as Owner and take billing for this company.",
+  "invite.card.transferOwner": "Transfer ownership",
+  "invite.card.transferOwnerHint":
+    "Invite a new Owner. You become Manager; billing moves to them.",
   "invite.tapToFlip": "Tap for link",
   "invite.flipBack": "Back",
   "invite.copyLink": "Copy invite link",
   "invite.createAndCopy": "Create link & copy",
+  "invite.createOwnerLink": "Create owner invite & copy",
+  "invite.createTransferLink": "Create transfer link & copy",
+  "invite.ownerInviteOpen": "Owner invite already open - copy it below",
   "invite.anyoneBackHint":
     "Opens account setup with Personal or Company choice.",
   "invite.staffBackHint":
     "They join your company, fill their details, and keep a personal space too.",
   "invite.guestBackHint":
     "They join as a guest of your company for this stay and future visits.",
+  "invite.ownerBackHint":
+    "They become Owner of this company and hold billing. Only one owner.",
+  "invite.needsOwnerTitle": "Invite the owner who pays",
+  "invite.needsOwnerHint":
+    "This company has no Owner yet. Send them a link so they take the billing seat. Trial stays open either way.",
+  "invite.transferOwnerTitle": "Transfer ownership & billing",
+  "invite.transferOwnerHint":
+    "Send a link to the new Owner. When they accept, you stay on the company as Manager and billing moves to them.",
+  "invite.goInviteOwner": "Go to invites",
+  "join.ownerTitle": "You are invited as the company owner",
+  "join.ownerHint":
+    "Accept to join as Owner. You hold billing for this company. The previous owner (if any) becomes Manager.",
+  "upgrade.companyTitle": "Upgrade to a company",
+  "upgrade.companyHint":
+    "Turn this personal list into a company workspace, pick Owner or Manager, then invite people. Properties stay put.",
+  "upgrade.companyCta": "Change to company",
+  "upgrade.companyNameOptional": "Company name (optional)",
+  "upgrade.companyConfirm": "Upgrade & start trial",
+  "upgrade.companyError": "Could not upgrade to a company.",
+  "upgrade.companyTrialNote":
+    "Starts a 90-day Full trial. If you pick Manager, invite the Owner when ready - trial keeps running either way.",
 
   "guest.noStay": "No stay is linked yet. Browse properties below to request dates.",
   "guest.companyFallback": "Host company",
@@ -1562,6 +1593,29 @@ const en = {
 
   "register.referralSaved":
     "Invite link recognized. Choose personal or company below - you are not signing up as anyone's employee automatically.",
+  "register.howTitle": "How will you use PulseFlow?",
+  "register.seatTitle": "Your seat in the company",
+  "register.companyTitle": "Create your company",
+  "register.personalTitle": "Set up your property workspace",
+  "register.personalUse": "Personal use",
+  "register.personalUseHint":
+    "Just you and your properties - track work, bills, and jobs in one simple workspace.",
+  "register.companyUse": "Company use",
+  "register.companyUseHint":
+    "Create a company workspace. Next you choose whether you pay as Owner, or invite the Owner who pays.",
+  "register.seatHint":
+    "Who pays for this company? Owner holds billing. Manager runs ops and invites the Owner.",
+  "register.seatOwner": "Owner",
+  "register.seatOwnerHint":
+    "You create the company and pay for the seat. Invite managers and staff after setup.",
+  "register.seatManager": "Manager",
+  "register.seatManagerHint":
+    "You set up ops now. Invite the Owner next - they take billing for the company.",
+  "register.seatRequired": "Choose Owner or Manager to continue.",
+  "register.companyTrialNote":
+    "Company accounts include about 90 days of full features free while billing rolls out. By creating an account you agree to our",
+  "register.companyTrialManagerNote":
+    "Trial starts now. Invite the Owner so they can take billing when it goes live. By creating an account you agree to our",
 
   "talent.title": "Find staff",
   "talent.subtitle":

@@ -268,6 +268,17 @@ export default function JoinPage({
 
   const { invite, org, inviter } = ctx;
   const isGuestInvite = invite.role === "guest";
+  const isOwnerInvite = invite.role === "owner";
+  const joinTitle = isGuestInvite
+    ? t("guest.joinTitle")
+    : isOwnerInvite
+      ? t("join.ownerTitle")
+      : t("join.staffTitle");
+  const joinHint = isGuestInvite
+    ? t("guest.joinHint")
+    : isOwnerInvite
+      ? t("join.ownerHint")
+      : t("join.staffHint");
 
   return (
     <div
@@ -284,15 +295,19 @@ export default function JoinPage({
         <div className="mb-6 text-center">
           <PulseMark className="mx-auto mb-3 size-12" />
           <PulseIcon
-            name={isGuestInvite ? "guests" : "invite"}
+            name={
+              isGuestInvite
+                ? "guests"
+                : isOwnerInvite
+                  ? "properties"
+                  : "invite"
+            }
             className="mx-auto mb-3 block size-7"
           />
           <h1 className="font-display text-2xl font-bold text-ink">
-            {isGuestInvite ? t("guest.joinTitle") : t("join.staffTitle")}
+            {joinTitle}
           </h1>
-          <p className="mt-2 text-sm text-muted">
-            {isGuestInvite ? t("guest.joinHint") : t("join.staffHint")}
-          </p>
+          <p className="mt-2 text-sm text-muted">{joinHint}</p>
           <p className="mt-2 text-sm text-muted">
             <span className="font-semibold text-ink">
               {org?.name ?? t("join.thisOrganization")}
