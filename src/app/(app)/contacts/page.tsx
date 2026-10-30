@@ -106,6 +106,16 @@ function ContactsPageInner() {
 
   useEffect(() => {
     if (!data.ready || !canBook || ordering) return;
+    const orderProfile = searchParams.get("orderProfile")?.trim();
+    if (orderProfile) {
+      const match = data.contacts.find(
+        (c) => c.linked_profile_id === orderProfile,
+      );
+      if (match) {
+        setOrdering(match);
+        return;
+      }
+    }
     const villaId = searchParams.get("bookVilla")?.trim();
     if (!villaId) return;
     const date = searchParams.get("date")?.trim() || undefined;
@@ -315,10 +325,10 @@ function ContactsPageInner() {
                           )}
                         >
                           {reach === "awaiting_ack"
-                            ? "Not contacted - awaiting Read & agreed"
+                            ? t("contacts.reach.awaiting")
                             : reach === "not_on_app"
-                              ? "Not on app - call to reach"
-                              : "Reachable in app"}
+                              ? t("contacts.reach.offline")
+                              : t("contacts.reach.ok")}
                         </p>
                       ) : contact.phone ? (
                         <p className="mt-1 text-xs text-muted">{contact.phone}</p>
@@ -851,10 +861,10 @@ function ContactForm({
         <Select value={role} onChange={(e) => setRole(e.target.value)}>
           {ROLE_ORDER.map((r) => (
             <option key={r} value={r}>
-              {r}
+              {capitalizeLabel(r)}
             </option>
           ))}
-          <option value="other">other</option>
+          <option value="other">{capitalizeLabel("other")}</option>
         </Select>
       </div>
       <div>

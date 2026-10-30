@@ -1621,6 +1621,15 @@ const he: Dictionary = {
   "upgrade.companyConfirm": "Upgrade & start trial",
   "upgrade.companyError": "Could not upgrade to a company.",
   "upgrade.companyTrialNote": "Starts a 90-day Full trial. If you pick Manager, invite the Owner when ready - trial keeps running either way.",
+  "home.focusOpenClear": "No open tasks or jobs right now.",
+  "home.focusScheduleStrip": "Today's moves",
+  "home.focusAllBookings": "Guest calendar",
+  "home.focusRecentClosed": "Recent closed ({count})",
+  "home.focusClosedTask": "Closed task",
+  "home.focusClosedJob": "Closed job",
+  "home.focusOpenInJobs": "Open in Jobs",
+  "home.downloadTaskReports": "Download task reports",
+  "jobs.workWindowsCta": "Work windows by property",
 };
 
 export default he;

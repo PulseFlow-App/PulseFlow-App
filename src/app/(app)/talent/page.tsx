@@ -490,6 +490,13 @@ export default function TalentPage() {
                       )}
                     </div>
                     <div className="flex flex-wrap gap-2">
+                      {data.orgKind === "company" ? (
+                        <Link
+                          href={`/contacts?orderProfile=${encodeURIComponent(person.id)}`}
+                        >
+                          <Button size="sm">{t("contacts.order")}</Button>
+                        </Link>
+                      ) : null}
                       <Link href={`/u/${person.share_slug}`}>
                         <Button size="sm" variant="secondary">
                           {t("talent.viewProfile")}
@@ -498,6 +505,7 @@ export default function TalentPage() {
                       {data.orgKind === "company" ? (
                         <Button
                           size="sm"
+                          variant="secondary"
                           busy={inviteBusyId === person.id}
                           onClick={() => void inviteToCompany(person)}
                         >

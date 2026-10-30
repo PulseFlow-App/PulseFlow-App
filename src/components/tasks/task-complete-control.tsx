@@ -221,24 +221,27 @@ export function TaskCompleteControl({
             />
           ) : null}
           {canApprove ? (
-            <div className="flex gap-2">
+            <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
               <Button
                 size="sm"
-                className="flex-1"
+                className="w-full min-w-0"
                 busy={busy}
                 onClick={() => void run(() => approveAndMaybeReview())}
               >
-                {!busy ? <Check className="size-4" /> : null}
-                {busy ? t("common.saving") : t("tasks.verifyApprove")}
+                {!busy ? <Check className="size-4 shrink-0" /> : null}
+                <span className="truncate">
+                  {busy ? t("common.saving") : t("tasks.verifyApprove")}
+                </span>
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
+                className="w-full min-w-0"
                 disabled={busy}
                 onClick={() => void run(() => data.rejectTaskVerify(task.id))}
               >
-                <X className="size-4" />
-                {t("tasks.verifyReject")}
+                <X className="size-4 shrink-0" />
+                <span className="truncate">{t("tasks.verifyReject")}</span>
               </Button>
             </div>
           ) : (

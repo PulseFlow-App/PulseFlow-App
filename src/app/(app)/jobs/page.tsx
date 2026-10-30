@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { CalendarPlus, Star, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -169,8 +170,18 @@ function ReopenOrderPanel({ orderId }: { orderId: string }) {
 }
 
 export default function JobsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <JobsPageInner />
+    </Suspense>
+  );
+}
+
+function JobsPageInner() {
   const data = useData();
   const { t } = useI18n();
+  const searchParams = useSearchParams();
+  const focusOrderId = searchParams.get("focus")?.trim() || null;
   const staff = data.profile ? isStaffApp(data.profile.role) : false;
   const booker = data.profile
     ? canBookServices(data.profile.role, data.orgKind)
@@ -205,7 +216,14 @@ export default function JobsPage() {
 
   const myOrders = useMemo(() => {
     if (!data.profile) return [];
+    const openRank = (status: ServiceOrder["status"]) => {
+      if (status === "pending_ack") return 0;
+      if (status === "agreed") return 1;
+      if (status === "done") return 2;
+      return 3;
+    };
     const list = data.serviceOrders.filter((o) => {
+      if (o.status === "cancelled") return false;
       if (staff) {
         return (
           o.staff_profile_id === data.profile!.id ||
@@ -223,6 +241,9 @@ export default function JobsPage() {
       return true;
     });
     return [...list].sort((a, b) => {
+      const ra = openRank(a.status);
+      const rb = openRank(b.status);
+      if (ra !== rb) return ra - rb;
       const da = `${a.scheduled_date ?? ""}${a.time_start ?? ""}`;
       const db = `${b.scheduled_date ?? ""}${b.time_start ?? ""}`;
       return da.localeCompare(db);
@@ -288,6 +309,12 @@ export default function JobsPage() {
     downloadIcs(`pulseflow-jobs-week-${stamp}.ics`, ics);
   };
 
+  useEffect(() => {
+    if (!focusOrderId || !data.ready) return;
+    const el = document.getElementById(`job-${focusOrderId}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [focusOrderId, data.ready, myOrders]);
+
   if (!data.ready || !data.profile) return <LoadingState />;
 
   return (
@@ -300,6 +327,11 @@ export default function JobsPage() {
           <p className="text-sm text-muted">
             {staff ? t("jobs.subtitleStaff") : t("jobs.subtitleOwner")}
           </p>
+          {staff ? (
+            <p className="mt-1 text-xs font-semibold text-secondary">
+              {t("jobs.workWindowsCta")}
+            </p>
+          ) : null}
         </div>
         <div className="flex shrink-0 flex-col items-stretch gap-2 sm:flex-row">
           {myOrders.some(orderHasCalendarSchedule) ? (
@@ -381,9 +413,11 @@ export default function JobsPage() {
             return (
               <Card
                 key={order.id}
+                id={`job-${order.id}`}
                 className={cn(
-                  "space-y-0 overflow-hidden p-0",
+                  "space-y-0 overflow-hidden p-0 scroll-mt-4",
                   pendingForMe && "ring-1 ring-primary/30",
+                  focusOrderId === order.id && "ring-2 ring-primary/50",
                 )}
               >
                 {photo ? (

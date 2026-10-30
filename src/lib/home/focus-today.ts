@@ -12,7 +12,9 @@ export type FocusKind =
   | "job"
   | "checkout"
   | "checkin"
-  | "turnover";
+  | "turnover"
+  | "closed_task"
+  | "closed_job";
 
 export type FocusItem = {
   id: string;
@@ -24,6 +26,16 @@ export type FocusItem = {
   href: string;
   /** Present when the focus row is a task. */
   task?: TaskWithRelations;
+  /** Present when the focus row is a service order / job. */
+  order?: ServiceOrder;
+  closed?: boolean;
+};
+
+export type FocusTodayBundle = {
+  open: FocusItem[];
+  closed: FocusItem[];
+  /** Open schedule reminders for the compact bookings strip. */
+  schedule: FocusItem[];
 };
 
 function todayYmd(d = new Date()) {
@@ -34,6 +46,10 @@ function isOpenTask(task: TaskWithRelations) {
   return task.status === "open" || task.status === "pending_verify";
 }
 
+function isOpenJob(order: ServiceOrder) {
+  return order.status !== "done" && order.status !== "cancelled";
+}
+
 function hasOpenTurnoverJob(
   orders: ServiceOrder[],
   villaId: string,
@@ -42,16 +58,15 @@ function hasOpenTurnoverJob(
   return orders.some(
     (o) =>
       o.villa_id === villaId &&
-      o.status !== "done" &&
-      o.status !== "cancelled" &&
+      isOpenJob(o) &&
       /turnover|clean/i.test(o.service_type) &&
       (o.scheduled_date === day || !o.scheduled_date),
   );
 }
 
 /**
- * Ranked “Focus of today” for owners/managers: urgent & due work, open jobs,
- * and schedule reminders (checkout / check-in / turnover status).
+ * Ranked “Focus of today” for owners/managers: open work first, then a short
+ * closed trail, plus schedule reminders for a compact bookings strip.
  */
 export function buildFocusToday(input: {
   tasks: TaskWithRelations[];
@@ -59,20 +74,27 @@ export function buildFocusToday(input: {
   villas: Villa[];
   calendarBookings?: VillaCalendarBooking[];
   today?: string;
-}): FocusItem[] {
+  closedLimit?: number;
+}): FocusTodayBundle {
   const today = input.today ?? todayYmd();
-  const items: FocusItem[] = [];
+  const closedLimit = input.closedLimit ?? 5;
+  const open: FocusItem[] = [];
+  const closed: FocusItem[] = [];
+  const schedule: FocusItem[] = [];
   const seen = new Set<string>();
-  /** Collapse duplicate schedule reminders for the same villa/day. */
   const scheduleKey = (kind: FocusKind, villaId: string, day: string) =>
     `${kind}:${villaId}:${day}`;
 
-  const push = (item: FocusItem, dedupeKey?: string) => {
+  const push = (
+    list: FocusItem[],
+    item: FocusItem,
+    dedupeKey?: string,
+  ) => {
     const key = dedupeKey ?? item.id;
     if (seen.has(key) || seen.has(item.id)) return;
     seen.add(key);
     seen.add(item.id);
-    items.push(item);
+    list.push(item);
   };
 
   for (const task of input.tasks) {
@@ -81,52 +103,52 @@ export function buildFocusToday(input: {
     const dueTodayOrOverdue = Boolean(due && due <= today);
 
     if (task.status === "pending_verify") {
-      push({
+      push(open, {
         id: `task:${task.id}`,
         kind: "verify_task",
         rank: 5,
         title: task.title,
         subtitle: task.villa?.name ?? null,
-        href: "/tasks",
+        href: `/tasks?focus=${task.id}`,
         task,
       });
       continue;
     }
 
     if (task.priority === "urgent") {
-      push({
+      push(open, {
         id: `task:${task.id}`,
         kind: "urgent_task",
         rank: dueTodayOrOverdue ? 0 : 10,
         title: task.title,
         subtitle: task.villa?.name ?? null,
-        href: "/tasks",
+        href: `/tasks?focus=${task.id}`,
         task,
       });
       continue;
     }
 
-    if (dueTodayOrOverdue) {
-      push({
+    if (dueTodayOrOverdue || !due) {
+      push(open, {
         id: `task:${task.id}`,
         kind: "due_task",
-        rank: due && due < today ? 8 : 20,
+        rank: due && due < today ? 8 : due ? 20 : 24,
         title: task.title,
         subtitle: task.villa?.name ?? null,
-        href: "/tasks",
+        href: `/tasks?focus=${task.id}`,
         task,
       });
     }
   }
 
   for (const order of input.serviceOrders) {
-    if (order.status === "done" || order.status === "cancelled") continue;
+    if (!isOpenJob(order)) continue;
     const day = order.scheduled_date?.slice(0, 10) ?? null;
     const relevant = !day || day <= today;
     if (!relevant) continue;
     const isTurnover = /turnover|clean/i.test(order.service_type);
     const overdue = Boolean(day && day < today);
-    push({
+    push(open, {
       id: `job:${order.id}`,
       kind: "job",
       rank:
@@ -141,7 +163,8 @@ export function buildFocusToday(input: {
               : 35,
       title: order.service_type,
       subtitle: order.location_label,
-      href: "/jobs",
+      href: `/jobs?focus=${order.id}`,
+      order,
     });
   }
 
@@ -159,6 +182,7 @@ export function buildFocusToday(input: {
         today,
       );
       push(
+        schedule,
         {
           id: `checkout:${villa.id}:${today}`,
           kind: "checkout",
@@ -173,6 +197,7 @@ export function buildFocusToday(input: {
       );
     } else if (villa.status === "turnover") {
       push(
+        schedule,
         {
           id: `turnover:${villa.id}`,
           kind: "turnover",
@@ -187,6 +212,7 @@ export function buildFocusToday(input: {
 
     if (checkIn === today) {
       push(
+        schedule,
         {
           id: `checkin:${villa.id}:${today}`,
           kind: "checkin",
@@ -213,6 +239,7 @@ export function buildFocusToday(input: {
         today,
       );
       push(
+        schedule,
         {
           id: `cal-checkout:${booking.id}`,
           kind: "checkout",
@@ -228,6 +255,7 @@ export function buildFocusToday(input: {
     }
     if (checkIn === today) {
       push(
+        schedule,
         {
           id: `cal-checkin:${booking.id}`,
           kind: "checkin",
@@ -241,8 +269,53 @@ export function buildFocusToday(input: {
     }
   }
 
-  return items.sort((a, b) => {
+  const closedCandidates: FocusItem[] = [];
+  for (const task of input.tasks) {
+    if (task.status !== "done") continue;
+    const stamp = task.completed_at ?? task.created_at;
+    closedCandidates.push({
+      id: `closed-task:${task.id}`,
+      kind: "closed_task",
+      rank: -new Date(stamp).getTime(),
+      title: task.title,
+      subtitle: task.villa?.name ?? null,
+      href: `/tasks?focus=${task.id}`,
+      task,
+      closed: true,
+    });
+  }
+  for (const order of input.serviceOrders) {
+    if (order.status !== "done") continue;
+    const stamp = order.completed_at ?? order.created_at;
+    closedCandidates.push({
+      id: `closed-job:${order.id}`,
+      kind: "closed_job",
+      rank: -new Date(stamp).getTime(),
+      title: order.service_type,
+      subtitle: order.location_label,
+      href: `/jobs?focus=${order.id}`,
+      order,
+      closed: true,
+    });
+  }
+  closedCandidates.sort((a, b) => a.rank - b.rank);
+  for (const item of closedCandidates.slice(0, closedLimit)) {
+    closed.push(item);
+  }
+
+  const byRank = (a: FocusItem, b: FocusItem) => {
     if (a.rank !== b.rank) return a.rank - b.rank;
     return a.title.localeCompare(b.title);
-  });
+  };
+
+  return {
+    open: open.sort(byRank),
+    closed,
+    schedule: schedule.sort(byRank),
+  };
+}
+
+/** Flat list for attention counts / legacy callers. */
+export function flattenFocusToday(bundle: FocusTodayBundle): FocusItem[] {
+  return [...bundle.open, ...bundle.schedule];
 }

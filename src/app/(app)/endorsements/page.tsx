@@ -195,27 +195,37 @@ function EndorsementsPageInner() {
               {ok ? (
                 <p className="text-sm font-semibold text-secondary">{ok}</p>
               ) : null}
-              <Button
-                size="sm"
-                className="w-full"
-                onClick={() => {
-                  setError(null);
-                  void data
-                    .castEndorsement(selectedId, stars, note)
-                    .then(() => {
-                      setOk("Endorsement saved for this week.");
-                      setNote("");
-                      setSelectedId("");
-                    })
-                    .catch((e: unknown) =>
-                      setError(
-                        e instanceof Error ? e.message : "Could not save.",
-                      ),
-                    );
-                }}
-              >
-                Submit {stars}-star endorsement
-              </Button>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    setError(null);
+                    void data
+                      .castEndorsement(selectedId, stars, note)
+                      .then(() => {
+                        setOk("Endorsement saved for this week.");
+                        setNote("");
+                        setSelectedId("");
+                      })
+                      .catch((e: unknown) =>
+                        setError(
+                          e instanceof Error ? e.message : "Could not save.",
+                        ),
+                      );
+                  }}
+                >
+                  Submit {stars}-star endorsement
+                </Button>
+                <Link
+                  href={`/contacts?orderProfile=${encodeURIComponent(selectedId)}`}
+                  className="sm:w-auto"
+                >
+                  <Button size="sm" variant="secondary" className="w-full">
+                    Order for a job
+                  </Button>
+                </Link>
+              </div>
             </div>
           ) : null}
         </Card>

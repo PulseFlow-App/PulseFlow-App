@@ -94,7 +94,7 @@ export function StaffHome({ data }: { data: AppData }) {
                   <p className="font-semibold text-ink">
                     <LocalizedText text={order.service_type} />
                   </p>
-                  <p className="text-sm text-muted">
+                  <p className="text-sm text-ink/70">
                     {formatOrderMeta(order.location_label, formatOrderWhen(order))}
                   </p>
                   <AgreeButton orderId={order.id} className="mt-3" />

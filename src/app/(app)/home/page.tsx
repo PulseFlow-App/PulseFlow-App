@@ -17,7 +17,10 @@ import { canViewBillFinance, isGuestApp, isStaffApp } from "@/lib/roles";
 import { useI18n } from "@/lib/i18n/provider";
 import { GuestHome } from "@/components/home/guest-home";
 import { Screen } from "@/components/ui/page";
-import { buildFocusToday } from "@/lib/home/focus-today";
+import {
+  buildFocusToday,
+  flattenFocusToday,
+} from "@/lib/home/focus-today";
 
 function startOfWeekLocal(d = new Date()) {
   const start = startOfDay(d);
@@ -42,7 +45,7 @@ export default function HomePage() {
     return base;
   }, [data.villas]);
 
-  const focusItems = useMemo(
+  const focusBundle = useMemo(
     () =>
       buildFocusToday({
         tasks: data.tasks,
@@ -51,6 +54,10 @@ export default function HomePage() {
         calendarBookings: data.calendarBookings,
       }),
     [data.tasks, data.serviceOrders, data.villas, data.calendarBookings],
+  );
+  const focusItems = useMemo(
+    () => flattenFocusToday(focusBundle),
+    [focusBundle],
   );
   const attentionCount = Math.max(
     counts.turnover + counts.maintenance,
@@ -110,7 +117,7 @@ export default function HomePage() {
           />
         ) : null}
         <UrgentTasks
-          items={focusItems}
+          bundle={focusBundle}
           onDelete={async (id) => data.deleteTask(id)}
         />
         <DateStrip

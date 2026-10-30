@@ -232,6 +232,17 @@ function PublicProfilePageInner({
                   votes: ratingSummary.voteCount,
                 })}
               </p>
+              <Link
+                href={`/contacts?orderProfile=${encodeURIComponent(data.profile.id)}`}
+                className="mt-4 inline-flex"
+              >
+                <Button
+                  size="sm"
+                  className="bg-white text-primary hover:bg-white/90"
+                >
+                  {t("contacts.order")}
+                </Button>
+              </Link>
             </div>
 
             {showReview ? (
