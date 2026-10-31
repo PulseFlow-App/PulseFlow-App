@@ -278,9 +278,14 @@ export default function GuestsPage() {
           <h1 className="type-title">{t("guests.title")}</h1>
           <p className="type-meta mt-1">{t("guests.subtitle")}</p>
         </div>
-        <Link href="/bookings" className="shrink-0 text-sm font-semibold text-primary">
-          {t("nav.bookings")}
-        </Link>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="shrink-0"
+          onClick={() => router.push("/bookings")}
+        >
+          {t("home.openBookingCalendar")}
+        </Button>
       </div>
 
       {pendingDates > 0 ? (

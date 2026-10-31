@@ -229,7 +229,8 @@ const en = {
   "villas.details": "Property details",
   "villas.detailsHint": "",
   "villas.quickSources": "Quick fill (optional)",
-  "villas.quickSourcesHint": "Share existing information about your property.",
+  "villas.quickSourcesHint":
+    "Paste an Airbnb listing link or notes and we fill what we can.",
   "villas.placeLookup": "Search on Google Maps",
   "villas.placeLookupPh": "",
   "villas.placeLookupHint": "",
@@ -242,15 +243,20 @@ const en = {
   "calendarExport.booking": "Booking",
   "calendarExport.guesty": "Guesty",
   "calendarExport.airbnbSteps":
-    "Host calendar → pick the listing → Availability → Connect calendars → Connect to another website → copy the Export calendar link (.ics). Paste it below, then Sync.",
+    "Host calendar → pick the listing → Availability → Connect calendars → Connect to another website → copy the Export calendar link (.ics). Paste it below, then Import.",
   "calendarExport.bookingSteps":
-    "Booking.com Extranet → Rates & Availability (or Calendar) → Sync calendars → Export calendar → copy the private link. Paste it below, then Sync.",
+    "Booking.com Extranet → Rates & Availability (or Calendar) → Sync calendars → Export calendar → copy the private link. Paste it below, then Import.",
   "calendarExport.guestySteps":
-    "Guesty → Properties → listing → Calendar → Calendar sync (iCal) → Export Guesty calendar → copy the iCalendar URL. Paste it below, then Sync. For the whole portfolio, use Settings → Guesty instead.",
-  "villas.icalSync": "Sync",
-  "villas.icalSyncOk": "Bookings pulled into Pulse Flow.",
-  "villas.icalSyncFail": "Could not sync calendar.",
-  "villas.icalSyncedAt": "Last synced {when}",
+    "Guesty → Properties → listing → Calendar → Calendar sync (iCal) → Export Guesty calendar → copy the iCalendar URL. Paste it below, then Import. For the whole portfolio, use Settings → Guesty instead.",
+  "villas.icalSync": "Import",
+  "villas.icalSyncOk": "Bookings imported into Pulse Flow.",
+  "villas.icalSyncFail": "Could not import calendar.",
+  "villas.icalSyncedAt": "Last imported {when}",
+  "villas.icalUnlink": "Unlink",
+  "villas.icalUnlinkOk": "Calendar link removed.",
+  "villas.icalUnlinkFail": "Could not unlink calendar.",
+  "villas.icalUnlinkConfirm":
+    "Remove this calendar export link and imported channel nights? Direct guest stays stay.",
   "villas.driveUrl": "Photo / docs folder",
   "villas.driveUrlPh": "",
   "villas.driveUrlHint": "",
@@ -1436,10 +1442,12 @@ const en = {
   "bookings.connectFeed": "Connect calendar",
   "bookings.connectTitle": "Link a property calendar",
   "bookings.connectHint":
-    "Pick Airbnb, Booking, or Guesty for where to find the export link, then paste it and Sync.",
+    "Pick Airbnb, Booking, or Guesty for where to find the export link, then paste it and Import. Unlink anytime if you need to.",
   "bookings.connectOk":
-    "{count} night synced|{count} nights synced",
-  "bookings.connectFail": "Could not sync that calendar link.",
+    "{count} night imported|{count} nights imported",
+  "bookings.connectFail": "Could not import that calendar link.",
+  "bookings.unlinkOk": "Calendar unlinked.",
+  "bookings.unlinkFail": "Could not unlink calendar.",
   "bookings.emptyVillas": "No properties yet",
   "bookings.emptyVillasHint": "Add a property, then paste its Airbnb or Booking.com calendar link.",
   "bookings.allProperties": "All properties",
@@ -1447,11 +1455,11 @@ const en = {
   "bookings.feedsLinked":
     "{count} property with calendar linked|{count} properties with calendar linked",
   "bookings.noFeedsYet":
-    "No calendar feeds yet. Tap Connect calendar, paste an Export calendar URL, then Sync.",
+    "No calendar feeds yet. Tap Connect calendar, paste an Export calendar URL, then Import.",
   "bookings.prevMonth": "Previous month",
   "bookings.nextMonth": "Next month",
   "bookings.dayEmpty": "Nothing booked this day",
-  "bookings.dayEmptyHint": "Sync an Airbnb or Booking.com calendar, or confirm a guest stay.",
+  "bookings.dayEmptyHint": "Import an Airbnb or Booking.com calendar, or confirm a guest stay.",
   "bookings.directStay": "Direct stay (app guest)",
   "bookings.blocked": "Blocked",
   "bookings.badgeDirect": "App",
@@ -1838,7 +1846,50 @@ const en = {
   "guesty.needsMigration":
     "Ask your admin to apply database migration 064 before connecting Guesty.",
 
+  // REVIEW: Education mode owner/manager tour copy (truth-checked)
   "education.mode": "Education mode",
+  "education.resume": "Resume",
+  "education.startAgain": "Start again",
+  "education.skipStep": "Skip",
+  "education.pause": "Pause",
+  "education.gotIt": "Got it",
+  "education.done": "Done",
+  "education.stepOf": "Step {current} of {total}",
+  "education.chipLabel": "Education · {current}/{total}",
+  "education.stepComplete": "Done",
+  "education.checklistTitle": "Your setup checklist",
+  "education.percent": "{percent}%",
+  "education.statusDone": "Done",
+  "education.statusSkipped": "Skipped",
+  "education.statusCurrent": "Current",
+  "education.statusPending": "Not started",
+  "education.youreSetTitle": "You're set",
+  "education.youreSetBody":
+    "You can restart this tour anytime from the menu.",
+  "education.viewChecklist": "View checklist",
+  "education.ctaProperties": "Go to Properties",
+  "education.ctaCalendar": "Open Bookings",
+  "education.ctaContacts": "Go to Contacts",
+  "education.ctaWork": "Go to Jobs",
+  "education.propertiesTitle": "Add your properties",
+  "education.propertiesBody":
+    "Enter each property's name, location, size and amenities. Or use Quick fill: paste an Airbnb listing link or notes and it fills what it can.",
+  "education.calendarTitle": "Booking calendar",
+  "education.calendarBody":
+    "Paste your calendar export link from Airbnb, Booking or Guesty to import bookings. Or record check-ins and check-outs by hand.",
+  "education.contactsTitle": "Add your contacts",
+  "education.contactsBody":
+    "Save your cleaners', electricians' and plumbers' numbers. Invite them from Company so they get jobs in their language and can add jobs to their phone calendar.",
+  "education.workTitle": "Create jobs and tasks",
+  "education.workBody":
+    "Create a job for one person, or an open request anyone available can accept. Add jobs to your phone calendar so no reminder is missed.",
+  "education.homeTitle": "Follow your work on Home",
+  "education.homeBody":
+    "Home shows today's focus and check-ins. The bottom icons open properties, stays, jobs, team and bills. The menu has more and restarts this tour.",
+  "education.settingsTitle": "Settings worth setting once",
+  "education.settingsBody":
+    "In Settings, set language, currency and theme (Frost or Dark). Keep team translation on so chat and tasks follow your language. Add Face ID or Touch ID for faster signing in.",
+  // Legacy keys kept so older locale stubs type-check until replaced
   "education.next": "Next",
   "education.finish": "Got it",
   "education.skip": "Skip tour",
@@ -1849,12 +1900,6 @@ const en = {
   "education.guestWelcomeTitle": "Your stay in one place",
   "education.guestWelcomeBody":
     "Open your house guide, support chat with the host team, and stay notes from Home. Use Settings to pick your language.",
-  "education.settingsTitle": "Settings worth setting once",
-  "education.settingsBody":
-    "Set Language and Currency under Settings. Pick Frost or Dark for appearance. Team content translation stays on so chat and tasks follow your app language.",
-  "education.propertiesTitle": "Add your properties",
-  "education.propertiesBody":
-    "Open Properties, add a villa, then fill Stay and team, Master info, and Quick fill. Paste an Airbnb or Booking.com Export calendar URL to sync nights.",
   "education.staffTitle": "Invite staff",
   "education.staffBody":
     "From Invites or Company, create a link for Manager or Staff. They join with that link. Assign people on each property so jobs reach the right hands.",

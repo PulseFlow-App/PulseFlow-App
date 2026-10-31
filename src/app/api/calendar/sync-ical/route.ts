@@ -166,3 +166,81 @@ export async function POST(request: Request) {
     bookings,
   });
 }
+
+const CHANNEL_SOURCES = ["ical", "airbnb", "booking", "vrbo"] as const;
+
+/**
+ * Unlink a property calendar export: clear URL + cancel imported channel nights.
+ * Body: { villaId: string }
+ */
+export async function DELETE(request: Request) {
+  if (isDemoMode(request.headers.get("cookie"))) {
+    return NextResponse.json(
+      {
+        error:
+          "Demo mode unlinks from the client. Use Unlink on the property screen.",
+      },
+      { status: 400 },
+    );
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let body: { villaId?: string };
+  try {
+    body = (await request.json()) as { villaId?: string };
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const villaId = body.villaId?.trim();
+  if (!villaId) {
+    return NextResponse.json({ error: "villaId required" }, { status: 400 });
+  }
+
+  const { data: villa, error: villaErr } = await supabase
+    .from("villas")
+    .select("id, org_id, ical_import_url")
+    .eq("id", villaId)
+    .maybeSingle();
+
+  if (villaErr || !villa) {
+    return NextResponse.json(
+      { error: villaErr?.message || "Villa not found" },
+      { status: 404 },
+    );
+  }
+
+  const now = new Date().toISOString();
+  const { error: cancelErr } = await supabase
+    .from("villa_calendar_bookings")
+    .update({ status: "cancelled", last_seen_at: now })
+    .eq("villa_id", villaId)
+    .in("source", [...CHANNEL_SOURCES])
+    .neq("status", "cancelled");
+
+  if (cancelErr) {
+    return NextResponse.json({ error: cancelErr.message }, { status: 500 });
+  }
+
+  const { error: clearErr } = await supabase
+    .from("villas")
+    .update({
+      ical_import_url: null,
+      ical_synced_at: null,
+      updated_at: now,
+    })
+    .eq("id", villaId);
+
+  if (clearErr) {
+    return NextResponse.json({ error: clearErr.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, villaId });
+}

@@ -54,6 +54,16 @@ const staffTabs: Tab[] = [
   { href: "/bills", labelKey: "nav.bills", icon: "bills" },
 ];
 
+function tourIdForHref(href: string): string | undefined {
+  if (href === "/villas") return "nav-properties";
+  if (href === "/contacts") return "nav-contacts";
+  if (href === "/jobs") return "nav-jobs";
+  if (href === "/tasks") return "nav-tasks";
+  if (href === "/bookings" || href === "/guests") return "nav-bookings";
+  if (href === "/home") return "nav-home";
+  return undefined;
+}
+
 const guestTabs: Tab[] = [
   { href: "/home", labelKey: "guest.nav.stay", icon: "home" },
   { href: "/villas", labelKey: "guest.nav.guide", icon: "properties" },
@@ -165,6 +175,8 @@ export function SideNav() {
             <Link
               key={href}
               href={href}
+              data-tour={tourIdForHref(href)}
+              data-tour-label={t(labelKey)}
               className={cn(
                 "flex items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-sm font-semibold transition",
                 active
@@ -207,11 +219,16 @@ export function BottomNav() {
   const tabsReady = data.ready && Boolean(data.profile?.role);
 
   return (
-    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden">
+    <nav
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden"
+      data-tour="bottom-nav"
+      data-tour-label={t("nav.home")}
+    >
       <ul className="pointer-events-auto mx-auto flex h-12 w-full max-w-lg items-stretch justify-between gap-0 overflow-hidden rounded-2xl bg-nav px-0.5 shadow-[var(--shadow-nav)]">
         {tabs.map(({ href, labelKey, icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           const label = t(labelKey);
+          const tourId = tourIdForHref(href);
           return (
             <li key={href} className="min-w-0 flex-1">
               <Link
@@ -219,6 +236,8 @@ export function BottomNav() {
                 aria-label={label}
                 aria-current={active ? "page" : undefined}
                 title={label}
+                data-tour={tourId}
+                data-tour-label={label}
                 className={cn(
                   "flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 transition",
                   !tabsReady && "pointer-events-none opacity-40",

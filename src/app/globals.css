@@ -565,6 +565,40 @@ html[data-appearance="dark"] .bg-nav {
 html[data-appearance="dark"] .text-ink {
   color: var(--color-ink);
 }
+/*
+  Tailwind compiles text-ink/NN to opacity of the light-mode ink hex (#023047).
+  Remap every used opacity so hints/subtext stay readable on dark surfaces.
+*/
+html[data-appearance="dark"] .text-ink\/35 {
+  color: color-mix(in srgb, var(--color-ink) 35%, transparent);
+}
+html[data-appearance="dark"] .text-ink\/40 {
+  color: color-mix(in srgb, var(--color-ink) 40%, transparent);
+}
+html[data-appearance="dark"] .text-ink\/50 {
+  color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+}
+html[data-appearance="dark"] .text-ink\/60 {
+  color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+}
+html[data-appearance="dark"] .text-ink\/65 {
+  color: color-mix(in srgb, var(--color-ink) 65%, transparent);
+}
+html[data-appearance="dark"] .text-ink\/70 {
+  color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+}
+html[data-appearance="dark"] .text-ink\/75 {
+  color: color-mix(in srgb, var(--color-ink) 75%, transparent);
+}
+html[data-appearance="dark"] .text-ink\/80 {
+  color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+}
+html[data-appearance="dark"] .text-ink\/85 {
+  color: color-mix(in srgb, var(--color-ink) 85%, transparent);
+}
+html[data-appearance="dark"] .placeholder\:text-ink\/50::placeholder {
+  color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+}
 html[data-appearance="dark"] .text-muted {
   color: var(--color-muted);
 }

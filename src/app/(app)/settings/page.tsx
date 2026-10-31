@@ -87,8 +87,14 @@ export default function SettingsPage() {
       <ScreenHeader title={t("settings.title")} description={t("brand.tagline")} />
 
       <Card id="language" className="scroll-mt-4 space-y-3 p-3 sm:p-4">
-        <LanguageSwitcher hideHint={isGuest} />
-        <div className="space-y-1.5 border-t border-[var(--color-border)] pt-3">
+        <div data-tour="settings-language" data-tour-label={t("settings.language")}>
+          <LanguageSwitcher hideHint={isGuest} />
+        </div>
+        <div
+          className="space-y-1.5 border-t border-[var(--color-border)] pt-3"
+          data-tour="settings-currency"
+          data-tour-label={t("bills.currency")}
+        >
           <div>
             <p className="text-sm font-bold text-ink">{t("bills.currency")}</p>
             {!isGuest && t("bills.displayCurrencyHint") ? (
@@ -99,8 +105,14 @@ export default function SettingsPage() {
           </div>
           <DisplayCurrencySelect aria-label={t("bills.currency")} />
         </div>
-        <TranslateContentSettingsCard />
-        <div className="border-t border-[var(--color-border)] pt-3">
+        <div data-tour="settings-translate" data-tour-label={t("settings.translateContent")}>
+          <TranslateContentSettingsCard />
+        </div>
+        <div
+          className="border-t border-[var(--color-border)] pt-3"
+          data-tour="settings-appearance"
+          data-tour-label={t("settings.appearance")}
+        >
           <AppearanceSettingsCard />
         </div>
       </Card>
@@ -277,7 +289,9 @@ export default function SettingsPage() {
         {isPersonal ? <UpgradeToCompanyCard /> : null}
       </Card>
 
-      <PasskeySettingsCard hideHint={isGuest} />
+      <div data-tour="settings-passkey" data-tour-label={t("settings.passkeyTitle")}>
+        <PasskeySettingsCard hideHint={isGuest} />
+      </div>
       <PushSettingsCard />
       <GuestySettingsCard />
       <McpSettingsCard />

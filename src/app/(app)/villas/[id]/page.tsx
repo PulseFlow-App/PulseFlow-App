@@ -308,6 +308,13 @@ export default function VillaDetailPage({
                     ical_import_url: feedUrl,
                   }));
                 }}
+                onUnlinkCalendar={async () => {
+                  await data.unlinkVillaCalendar(villa.id);
+                  setQuickSources((prev) => ({
+                    ...prev,
+                    ical_import_url: "",
+                  }));
+                }}
                 onEnrich={(enrichment) => {
                   const next = applyVillaEnrichment(enrichment, {
                     name,

@@ -35,3 +35,13 @@ export function isDemoMode(cookieHeader?: string | null) {
   if (process.env.NEXT_PUBLIC_DEMO_MODE === "false") return false;
   return !isSupabaseConfigured();
 }
+
+/**
+ * Education mode (guided first-run tour for owners/managers).
+ * Off when NEXT_PUBLIC_EDUCATION_MODE is "0" or "false"; on otherwise.
+ */
+export function isEducationModeEnabled() {
+  const raw = process.env.NEXT_PUBLIC_EDUCATION_MODE?.trim().toLowerCase();
+  if (raw === "0" || raw === "false" || raw === "off") return false;
+  return true;
+}

@@ -168,6 +168,29 @@ export default function BookingsPage() {
     }
   };
 
+  const runUnlink = async () => {
+    if (!connectVillaId) return;
+    if (!window.confirm(t("villas.icalUnlinkConfirm"))) return;
+    setConnectBusy(true);
+    setConnectErr(null);
+    setConnectMsg(null);
+    try {
+      await data.unlinkVillaCalendar(connectVillaId);
+      setConnectUrl("");
+      setConnectMsg(t("bookings.unlinkOk"));
+    } catch (e) {
+      setConnectErr(
+        e instanceof Error ? e.message : t("bookings.unlinkFail"),
+      );
+    } finally {
+      setConnectBusy(false);
+    }
+  };
+
+  const connectVillaHasFeed = Boolean(
+    data.villas.find((v) => v.id === connectVillaId)?.ical_import_url,
+  );
+
   if (!data.ready || !data.profile) return <LoadingState />;
   if (!canManage) return <LoadingState />;
 
@@ -233,15 +256,29 @@ export default function BookingsPage() {
           {connectMsg ? (
             <p className="text-sm font-semibold text-sky">{connectMsg}</p>
           ) : null}
-          <Button
-            size="sm"
-            className="w-full"
-            busy={connectBusy}
-            disabled={!connectVillaId || !connectUrl.trim()}
-            onClick={() => void runConnect()}
-          >
-            {t("villas.icalSync")}
-          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              size="sm"
+              className="w-full sm:flex-1"
+              busy={connectBusy}
+              disabled={!connectVillaId || !connectUrl.trim()}
+              onClick={() => void runConnect()}
+            >
+              {t("villas.icalSync")}
+            </Button>
+            {connectVillaHasFeed ? (
+              <Button
+                size="sm"
+                variant="secondary"
+                className="w-full sm:flex-1"
+                busy={connectBusy}
+                disabled={!connectVillaId}
+                onClick={() => void runUnlink()}
+              >
+                {t("villas.icalUnlink")}
+              </Button>
+            ) : null}
+          </div>
         </Card>
       ) : null}
 

@@ -1,114 +1,136 @@
 import type { MessageKey } from "@/lib/i18n";
-import type { UserRole } from "@/lib/design-tokens";
-import type { PulseIconName } from "@/components/icons/pulse-icon";
 
 export type EducationStepId =
-  | "welcome"
-  | "guestWelcome"
-  | "settings"
   | "properties"
-  | "staff"
-  | "jobsVsTasks"
-  | "createWork"
-  | "transferOwner"
-  | "staffBoard"
-  | "staffAccept";
+  | "calendar"
+  | "contacts"
+  | "work"
+  | "home"
+  | "settings";
 
-export type EducationStep = {
+export type EducationStepStatus = "pending" | "done" | "skipped";
+
+export type EducationStepDef = {
   id: EducationStepId;
-  icon: PulseIconName;
   titleKey: MessageKey;
   bodyKey: MessageKey;
+  /** Primary CTA label while spotlighting */
+  ctaKey: MessageKey;
+  /** Ordered data-tour targets to highlight */
+  targets: string[];
+  /** Route to navigate when the step becomes current */
+  href: string;
+  /** Completion events that mark this step done */
+  doneOn: Array<
+    | "property.created"
+    | "calendar.saved"
+    | "checkin.created"
+    | "contact.created"
+    | "job.created"
+    | "task.created"
+    | "step.acknowledged"
+  >;
+  /** Acknowledge button (steps 5–6) */
+  acknowledge?: boolean;
 };
 
-const STEP: Record<EducationStepId, EducationStep> = {
-  welcome: {
-    id: "welcome",
-    icon: "home",
-    titleKey: "education.welcomeTitle",
-    bodyKey: "education.welcomeBody",
-  },
-  guestWelcome: {
-    id: "guestWelcome",
-    icon: "guests",
-    titleKey: "education.guestWelcomeTitle",
-    bodyKey: "education.guestWelcomeBody",
-  },
-  settings: {
-    id: "settings",
-    icon: "settings",
-    titleKey: "education.settingsTitle",
-    bodyKey: "education.settingsBody",
-  },
-  properties: {
+export const EDUCATION_STEP_IDS: EducationStepId[] = [
+  "properties",
+  "calendar",
+  "contacts",
+  "work",
+  "home",
+  "settings",
+];
+
+export const EDUCATION_STEPS: EducationStepDef[] = [
+  {
     id: "properties",
-    icon: "properties",
     titleKey: "education.propertiesTitle",
     bodyKey: "education.propertiesBody",
+    ctaKey: "education.ctaProperties",
+    targets: ["nav-properties", "add-property", "quick-fill"],
+    href: "/villas",
+    doneOn: ["property.created"],
   },
-  staff: {
-    id: "staff",
-    icon: "invite",
-    titleKey: "education.staffTitle",
-    bodyKey: "education.staffBody",
+  {
+    id: "calendar",
+    titleKey: "education.calendarTitle",
+    bodyKey: "education.calendarBody",
+    ctaKey: "education.ctaCalendar",
+    targets: ["nav-bookings", "calendar-import"],
+    href: "/bookings",
+    doneOn: ["calendar.saved", "checkin.created"],
   },
-  jobsVsTasks: {
-    id: "jobsVsTasks",
-    icon: "jobs",
-    titleKey: "education.jobsVsTasksTitle",
-    bodyKey: "education.jobsVsTasksBody",
+  {
+    id: "contacts",
+    titleKey: "education.contactsTitle",
+    bodyKey: "education.contactsBody",
+    ctaKey: "education.ctaContacts",
+    targets: ["nav-contacts", "add-contact", "nav-invites"],
+    href: "/contacts",
+    doneOn: ["contact.created"],
   },
-  createWork: {
-    id: "createWork",
-    icon: "tasks",
-    titleKey: "education.createWorkTitle",
-    bodyKey: "education.createWorkBody",
+  {
+    id: "work",
+    titleKey: "education.workTitle",
+    bodyKey: "education.workBody",
+    ctaKey: "education.ctaWork",
+    targets: ["nav-jobs", "nav-tasks", "add-job", "add-task"],
+    href: "/jobs",
+    doneOn: ["job.created", "task.created"],
   },
-  transferOwner: {
-    id: "transferOwner",
-    icon: "contacts",
-    titleKey: "education.transferTitle",
-    bodyKey: "education.transferBody",
+  {
+    id: "home",
+    titleKey: "education.homeTitle",
+    bodyKey: "education.homeBody",
+    ctaKey: "education.gotIt",
+    targets: ["home-focus", "bottom-nav", "burger-menu"],
+    href: "/home",
+    doneOn: ["step.acknowledged"],
+    acknowledge: true,
   },
-  staffBoard: {
-    id: "staffBoard",
-    icon: "home",
-    titleKey: "education.staffBoardTitle",
-    bodyKey: "education.staffBoardBody",
+  {
+    id: "settings",
+    titleKey: "education.settingsTitle",
+    bodyKey: "education.settingsBody",
+    ctaKey: "education.done",
+    targets: [
+      "settings-language",
+      "settings-currency",
+      "settings-appearance",
+      "settings-translate",
+      "settings-passkey",
+    ],
+    href: "/settings",
+    doneOn: ["step.acknowledged"],
+    acknowledge: true,
   },
-  staffAccept: {
-    id: "staffAccept",
-    icon: "jobs",
-    titleKey: "education.staffAcceptTitle",
-    bodyKey: "education.staffAcceptBody",
-  },
-};
+];
 
-export function educationStepsFor(input: {
-  role: UserRole;
-  orgKind: "personal" | "company" | null;
-}): EducationStep[] {
-  const { role, orgKind } = input;
-  const company = orgKind === "company";
+export type EducationStepsMap = Record<
+  string,
+  { status: EducationStepStatus; at?: string }
+>;
 
-  if (role === "guest") {
-    return [STEP.guestWelcome, STEP.settings];
+export function emptyStepsMap(): EducationStepsMap {
+  const map: EducationStepsMap = {};
+  for (const id of EDUCATION_STEP_IDS) {
+    map[id] = { status: "pending" };
   }
+  return map;
+}
 
-  if (role === "staff" || role === "cleaner") {
-    return [STEP.staffBoard, STEP.staffAccept, STEP.settings, STEP.jobsVsTasks];
+export function firstPendingStepId(steps: EducationStepsMap): EducationStepId | null {
+  for (const id of EDUCATION_STEP_IDS) {
+    if ((steps[id]?.status ?? "pending") === "pending") return id;
   }
+  return null;
+}
 
-  // Owner or manager
-  const ids: EducationStepId[] = [
-    "welcome",
-    "settings",
-    "properties",
-  ];
-  if (company) ids.push("staff");
-  ids.push("jobsVsTasks", "createWork");
-  if (company && (role === "owner" || role === "manager")) {
-    ids.push("transferOwner");
-  }
-  return ids.map((id) => STEP[id]);
+export function progressPercent(steps: EducationStepsMap): number {
+  const done = EDUCATION_STEP_IDS.filter(
+    (id) => steps[id]?.status === "done" || steps[id]?.status === "skipped",
+  ).length;
+  return Math.round((done / EDUCATION_STEP_IDS.length) * 100);
 }

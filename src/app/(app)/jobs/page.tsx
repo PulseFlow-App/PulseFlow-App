@@ -346,7 +346,7 @@ function JobsPageInner() {
             </Button>
           ) : null}
           {booker ? (
-            <Link href="/contacts">
+            <Link href="/contacts" data-tour="add-job" data-tour-label={t("jobs.orderStaff")}>
               <Button size="sm" className="w-full">
                 {t("jobs.orderStaff")}
               </Button>

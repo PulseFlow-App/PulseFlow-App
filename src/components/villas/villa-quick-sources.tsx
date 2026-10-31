@@ -41,6 +41,8 @@ type Props = {
   uploadDoc: (file: File) => Promise<string | null>;
   /** Pull Airbnb / Booking.com iCal into the bookings calendar. */
   onSyncCalendar?: (feedUrl: string) => Promise<void>;
+  /** Clear export URL and cancel imported channel nights. */
+  onUnlinkCalendar?: () => Promise<void>;
   icalSyncedAt?: string | null;
   /** Hide the section title when wrapped in VillaExpandSection. */
   embedded?: boolean;
@@ -85,6 +87,7 @@ export function VillaQuickSources({
   onEnrich,
   uploadDoc,
   onSyncCalendar,
+  onUnlinkCalendar,
   icalSyncedAt = null,
   embedded = false,
 }: Props) {
@@ -103,8 +106,10 @@ export function VillaQuickSources({
   const [enrichError, setEnrichError] = useState<string | null>(null);
   const [enrichNote, setEnrichNote] = useState<string | null>(null);
   const [icalBusy, setIcalBusy] = useState(false);
+  const [unlinkBusy, setUnlinkBusy] = useState(false);
   const [icalError, setIcalError] = useState<string | null>(null);
   const [icalNote, setIcalNote] = useState<string | null>(null);
+  const hasFeed = Boolean(value.ical_import_url.trim() || icalSyncedAt);
 
   const set = (patch: Partial<VillaQuickSourcesValue>) =>
     onChange({ ...value, ...patch });
@@ -278,6 +283,8 @@ export function VillaQuickSources({
           ? "space-y-3"
           : "pf-panel-soft space-y-3 rounded-2xl border border-sky/20 p-3"
       }
+      data-tour="quick-fill"
+      data-tour-label={t("villas.quickSources")}
     >
       {!embedded ? (
         <div>
@@ -318,37 +325,75 @@ export function VillaQuickSources({
             set({ ical_import_url: next });
           }}
           action={
-            onSyncCalendar ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                className="shrink-0"
-                reflectGlobalBusy={false}
-                busy={icalBusy}
-                disabled={!value.ical_import_url.trim()}
-                onClick={() => {
-                  void (async () => {
-                    setIcalBusy(true);
-                    setIcalError(null);
-                    setIcalNote(null);
-                    try {
-                      await onSyncCalendar(value.ical_import_url.trim());
-                      setIcalNote(t("villas.icalSyncOk"));
-                    } catch (e) {
-                      setIcalError(
-                        e instanceof Error
-                          ? e.message
-                          : t("villas.icalSyncFail"),
-                      );
-                    } finally {
-                      setIcalBusy(false);
-                    }
-                  })();
-                }}
-              >
-                {icalBusy ? t("common.saving") : t("villas.icalSync")}
-              </Button>
+            onSyncCalendar || onUnlinkCalendar ? (
+              <div className="flex shrink-0 items-center gap-1.5">
+                {onSyncCalendar ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="shrink-0"
+                    reflectGlobalBusy={false}
+                    busy={icalBusy}
+                    disabled={!value.ical_import_url.trim() || unlinkBusy}
+                    onClick={() => {
+                      void (async () => {
+                        setIcalBusy(true);
+                        setIcalError(null);
+                        setIcalNote(null);
+                        try {
+                          await onSyncCalendar(value.ical_import_url.trim());
+                          setIcalNote(t("villas.icalSyncOk"));
+                        } catch (e) {
+                          setIcalError(
+                            e instanceof Error
+                              ? e.message
+                              : t("villas.icalSyncFail"),
+                          );
+                        } finally {
+                          setIcalBusy(false);
+                        }
+                      })();
+                    }}
+                  >
+                    {icalBusy ? t("common.saving") : t("villas.icalSync")}
+                  </Button>
+                ) : null}
+                {onUnlinkCalendar && hasFeed ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="shrink-0"
+                    reflectGlobalBusy={false}
+                    busy={unlinkBusy}
+                    disabled={icalBusy}
+                    onClick={() => {
+                      if (!window.confirm(t("villas.icalUnlinkConfirm"))) return;
+                      void (async () => {
+                        setUnlinkBusy(true);
+                        setIcalError(null);
+                        setIcalNote(null);
+                        try {
+                          await onUnlinkCalendar();
+                          set({ ical_import_url: "" });
+                          setIcalNote(t("villas.icalUnlinkOk"));
+                        } catch (e) {
+                          setIcalError(
+                            e instanceof Error
+                              ? e.message
+                              : t("villas.icalUnlinkFail"),
+                          );
+                        } finally {
+                          setUnlinkBusy(false);
+                        }
+                      })();
+                    }}
+                  >
+                    {t("villas.icalUnlink")}
+                  </Button>
+                ) : null}
+              </div>
             ) : null
           }
         />

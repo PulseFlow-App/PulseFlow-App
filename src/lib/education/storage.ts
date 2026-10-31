@@ -1,33 +1,53 @@
-const STORAGE_KEY = "pulseflow_education_done_v1";
+/**
+ * Thin local cache for education progress. DB is source of truth via API.
+ */
 
-type DoneMap = Record<string, boolean>;
+import type { EducationStepsMap } from "@/lib/education/steps";
+import { emptyStepsMap } from "@/lib/education/steps";
 
-function readMap(): DoneMap {
-  if (typeof window === "undefined") return {};
+const CACHE_KEY = "pulseflow_education_progress_v2";
+
+export type EducationProgressCache = {
+  profileId: string;
+  started_at: string | null;
+  current_step_id: string | null;
+  steps: EducationStepsMap;
+  completed_at: string | null;
+  dismissed_at: string | null;
+};
+
+export function readEducationCache(
+  profileId: string,
+): EducationProgressCache | null {
+  if (typeof window === "undefined" || !profileId) return null;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as unknown;
-    if (!parsed || typeof parsed !== "object") return {};
-    return parsed as DoneMap;
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as EducationProgressCache;
+    if (parsed.profileId !== profileId) return null;
+    return {
+      ...parsed,
+      steps: { ...emptyStepsMap(), ...parsed.steps },
+    };
   } catch {
-    return {};
+    return null;
   }
 }
 
-function writeMap(map: DoneMap): void {
+export function writeEducationCache(cache: EducationProgressCache): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    /* ignore quota */
+  }
 }
 
-export function hasCompletedEducation(profileId: string): boolean {
-  if (!profileId) return true;
-  return Boolean(readMap()[profileId]);
-}
-
-export function markEducationCompleted(profileId: string): void {
-  if (!profileId) return;
-  const map = readMap();
-  map[profileId] = true;
-  writeMap(map);
+export function clearEducationCache(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(CACHE_KEY);
+  } catch {
+    /* ignore */
+  }
 }

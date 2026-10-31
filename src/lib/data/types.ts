@@ -349,4 +349,6 @@ export type AppData = {
     events: number;
     syncedAt: string;
   }>;
+  /** Clear calendar export URL and cancel imported channel nights for a property. */
+  unlinkVillaCalendar: (villaId: string) => Promise<void>;
 };

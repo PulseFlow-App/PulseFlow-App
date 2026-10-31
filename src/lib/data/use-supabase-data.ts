@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { buildVillaList } from "@/lib/demo/store";
 import type { AppData } from "@/lib/data/types";
+import { emitEducationEvent } from "@/lib/education/events";
 import type {
   AppNotification,
   Bill,
@@ -388,6 +389,9 @@ export function useSupabaseData(enabled: boolean): AppData {
     addStayPhoto: async () => undefined,
     syncVillaCalendar: async () => {
       throw new Error("Connect Supabase to sync calendars.");
+    },
+    unlinkVillaCalendar: async () => {
+      throw new Error("Connect Supabase to unlink calendars.");
     },
   };
 
@@ -1491,6 +1495,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       }
 
       await refresh();
+      emitEducationEvent("job.created");
       return order as ServiceOrder;
     },
     agreeServiceOrder: async (orderId) => {
@@ -1971,6 +1976,15 @@ export function useSupabaseData(enabled: boolean): AppData {
         }
       }
       await refresh();
+      if (patch.ical_import_url?.trim()) {
+        emitEducationEvent("calendar.saved");
+      }
+      if (
+        (patch.check_in != null && patch.check_in !== villa?.check_in) ||
+        (patch.check_out != null && patch.check_out !== villa?.check_out)
+      ) {
+        emitEducationEvent("checkin.created");
+      }
     },
     createVilla: async (input) => {
       if (!profile || !canCreateVillas(profile.role)) {
@@ -2056,6 +2070,10 @@ export function useSupabaseData(enabled: boolean): AppData {
         throw insertRes.error ?? new Error("Could not add property.");
       }
       await refresh();
+      emitEducationEvent("property.created");
+      if (input.ical_import_url?.trim()) {
+        emitEducationEvent("calendar.saved");
+      }
       return insertRes.data.id as string;
     },
     deleteVilla: async (id) => {
@@ -2276,6 +2294,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         },
       ]);
       await refresh();
+      emitEducationEvent("task.created");
     },
     setTaskStatus: async (id, status) => {
       if (!profile) throw new Error("Not signed in.");
@@ -2503,6 +2522,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         .insert({ org_id: profile.org_id, ...input });
       if (error) throw error;
       await refresh();
+      emitEducationEvent("contact.created");
     },
     updateContact: async (id, patch) => {
       requireCurrentOrgWrite();
@@ -4096,6 +4116,7 @@ export function useSupabaseData(enabled: boolean): AppData {
         throw new Error(payload.error || "Calendar sync failed.");
       }
       await refresh();
+      emitEducationEvent("calendar.saved");
       return {
         imported: payload.imported ?? 0,
         updated: payload.updated ?? 0,
@@ -4103,6 +4124,27 @@ export function useSupabaseData(enabled: boolean): AppData {
         events: payload.events ?? 0,
         syncedAt: payload.syncedAt ?? new Date().toISOString(),
       };
+    },
+    unlinkVillaCalendar: async (villaId) => {
+      if (!profile || (profile.role !== "owner" && profile.role !== "manager")) {
+        throw new Error("Only owners or managers can unlink calendars.");
+      }
+      const villa = villas.find((v) => v.id === villaId);
+      if (!villa) throw new Error("Property not found.");
+      requireOrgWrite(villa.org_id);
+
+      const res = await fetch("/api/calendar/sync-ical", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ villaId }),
+      });
+      const payload = (await res.json().catch(() => ({}))) as {
+        error?: string;
+      };
+      if (!res.ok) {
+        throw new Error(payload.error || "Calendar unlink failed.");
+      }
+      await refresh();
     },
   };
 }

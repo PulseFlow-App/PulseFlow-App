@@ -227,6 +227,8 @@ export default function VillasPage() {
                   );
                   setShowAdd(true);
                 }}
+                data-tour="add-property"
+                data-tour-label={t("villas.addNew")}
               >
                 <Plus className="size-3.5" strokeWidth={2.4} />{" "}
                 {t("villas.addNew")}

@@ -200,7 +200,13 @@ function ContactsPageInner() {
           </p>
         </div>
         {canEdit ? (
-          <Button size="xs" className="shrink-0" onClick={() => setCreating(true)}>
+          <Button
+            size="xs"
+            className="shrink-0"
+            onClick={() => setCreating(true)}
+            data-tour="add-contact"
+            data-tour-label={t("common.addNew")}
+          >
             <Plus className="size-3.5" strokeWidth={2.4} /> {t("common.addNew")}
           </Button>
         ) : null}

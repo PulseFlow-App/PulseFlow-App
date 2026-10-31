@@ -16,6 +16,8 @@ const PUBLIC_PREFIXES = [
   "/terms",
   "/privacy",
   "/support",
+  // Read-only Education mode UI mock for screenshots / design review (no data).
+  "/education-preview",
   "/api/auth",
   "/api/account",
   "/api/invites",

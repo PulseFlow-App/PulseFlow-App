@@ -15,6 +15,7 @@ import {
 import { useIsDemoMode } from "@/lib/demo/use-is-demo-mode";
 import { assertDemoWritable } from "@/lib/demo/guard";
 import { useSupabaseData } from "@/lib/data/use-supabase-data";
+import { emitEducationEvent } from "@/lib/education/events";
 import {
   buildVillaList,
   demoAgreeServiceOrder,
@@ -598,7 +599,9 @@ function useDemoData(): AppData {
       if (!profile || !canBookServices(profile.role, org?.kind)) {
         throw new Error("Only company owners or managers can book services.");
       }
-      return demoCreateServiceOrder(profile, input);
+      const created = await demoCreateServiceOrder(profile, input);
+      emitEducationEvent("job.created");
+      return created;
     },
     agreeServiceOrder: async (orderId) => {
       assertDemoWritable();
@@ -641,6 +644,15 @@ function useDemoData(): AppData {
             : v,
         ),
       }));
+      if (patch.ical_import_url?.trim()) {
+        emitEducationEvent("calendar.saved");
+      }
+      if (
+        (patch.check_in != null && patch.check_in !== before?.check_in) ||
+        (patch.check_out != null && patch.check_out !== before?.check_out)
+      ) {
+        emitEducationEvent("checkin.created");
+      }
       if (!before || !profile) return;
       const alerts = buildVillaDateNotifications({
         org_id: before.org_id,
@@ -717,6 +729,10 @@ function useDemoData(): AppData {
           ...s.villas,
         ],
       }));
+      emitEducationEvent("property.created");
+      if (input.ical_import_url?.trim()) {
+        emitEducationEvent("calendar.saved");
+      }
       return id;
     },
     deleteVilla: async (id) => {
@@ -903,6 +919,7 @@ function useDemoData(): AppData {
           audience_profile_ids: audience.length ? audience : null,
         }),
       ]);
+      emitEducationEvent("task.created");
     },
     setTaskStatus: async (id, status) => {
       assertDemoWritable();
@@ -1089,6 +1106,7 @@ function useDemoData(): AppData {
           ...s.contacts,
         ],
       }));
+      emitEducationEvent("contact.created");
     },
     updateContact: async (id, patch) => {
       assertDemoWritable();
@@ -2364,6 +2382,7 @@ function useDemoData(): AppData {
           ),
         };
       });
+      emitEducationEvent("calendar.saved");
       return {
         imported: inserted.length,
         updated: plan.toUpdate.length,
@@ -2371,6 +2390,36 @@ function useDemoData(): AppData {
         events: plan.toInsert.length + existing.length - plan.toCancelIds.length,
         syncedAt: plan.syncedAt,
       };
+    },
+    unlinkVillaCalendar: async (villaId) => {
+      assertDemoWritable();
+      if (!profile || (profile.role !== "owner" && profile.role !== "manager")) {
+        throw new Error("Only owners or managers can unlink calendars.");
+      }
+      const villa = store.villas.find((v) => v.id === villaId);
+      if (!villa) throw new Error("Property not found.");
+      const now = new Date().toISOString();
+      const channel = new Set(["ical", "airbnb", "booking", "vrbo"]);
+      updateDemoStore((s) => ({
+        ...s,
+        calendarBookings: (s.calendarBookings ?? []).map((b) =>
+          b.villa_id === villaId &&
+          channel.has(b.source) &&
+          b.status !== "cancelled"
+            ? { ...b, status: "cancelled" as const, last_seen_at: now }
+            : b,
+        ),
+        villas: s.villas.map((v) =>
+          v.id === villaId
+            ? {
+                ...v,
+                ical_import_url: null,
+                ical_synced_at: null,
+                updated_at: now,
+              }
+            : v,
+        ),
+      }));
     },
   };
 }

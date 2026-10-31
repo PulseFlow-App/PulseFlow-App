@@ -66,7 +66,11 @@ export function CalendarExportField({
   };
 
   return (
-    <div className={cn("space-y-1.5", className)}>
+    <div
+      className={cn("space-y-1.5", className)}
+      data-tour="calendar-import"
+      data-tour-label={t("villas.icalUrl")}
+    >
       <Label>{t("villas.icalUrl")}</Label>
       <div className="flex flex-wrap gap-1.5">
         {SOURCES.map((item) => {

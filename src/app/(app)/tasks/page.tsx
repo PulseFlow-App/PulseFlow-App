@@ -159,6 +159,8 @@ export default function TasksPage() {
             size="xs"
             className="shrink-0"
             onClick={() => setShowForm((v) => !v)}
+            data-tour="add-task"
+            data-tour-label={t("tasks.add")}
           >
             {showForm ? (
               t("common.cancel")

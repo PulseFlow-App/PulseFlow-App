@@ -147,6 +147,7 @@ export function AppMenuButton() {
       icon: "invite",
     });
   }
+  // invites tour target is set on MenuRow via href match
   if (!isGuest && profile.role !== "owner") {
     manage.push({
       href: "/settings#talent-profile",
@@ -200,17 +201,35 @@ export function AppMenuButton() {
     icon: "shield",
   });
 
-  const accountActions: MenuAction[] = [
-    {
-      id: "education",
-      label: t("education.mode"),
-      icon: "guide",
-      onClick: () => {
-        setOpen(false);
-        window.setTimeout(() => education.start(), 180);
-      },
-    },
-  ];
+  const educationLabel =
+    education.menuLabel === "startAgain"
+      ? `${t("education.mode")} · ${t("education.startAgain")}`
+      : education.menuLabel === "resume"
+        ? `${t("education.mode")} · ${t("education.resume")}`
+        : t("education.mode");
+
+  const accountActions: MenuAction[] =
+    education.eligible
+      ? [
+          {
+            id: "education",
+            label: educationLabel,
+            icon: "guide",
+            onClick: () => {
+              setOpen(false);
+              window.setTimeout(() => {
+                if (education.menuLabel === "startAgain") {
+                  education.openChecklist();
+                } else if (education.menuLabel === "resume") {
+                  education.resume();
+                } else {
+                  education.start();
+                }
+              }, 180);
+            },
+          },
+        ]
+      : [];
 
   const sections: MenuSection[] = [
     { id: "primary", links: primary },
@@ -353,6 +372,8 @@ export function AppMenuButton() {
         aria-label={t("nav.menu")}
         aria-expanded={open}
         aria-haspopup="dialog"
+        data-tour="burger-menu"
+        data-tour-label={t("nav.menu")}
       >
         <Menu className="size-4" strokeWidth={1.9} />
       </button>
@@ -371,6 +392,15 @@ function MenuRow({
   const className =
     "flex min-h-11 w-full items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-[0.9375rem] font-semibold text-ink transition hover:bg-primary-soft hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
 
+  const tourId =
+    link.href === "/invites"
+      ? "nav-invites"
+      : link.href === "/bookings"
+        ? "nav-bookings"
+        : link.href === "/jobs"
+          ? "nav-jobs"
+          : undefined;
+
   if (link.external) {
     return (
       <a
@@ -387,7 +417,13 @@ function MenuRow({
   }
 
   return (
-    <Link href={link.href} onClick={onNavigate} className={className}>
+    <Link
+      href={link.href}
+      onClick={onNavigate}
+      className={className}
+      data-tour={tourId}
+      data-tour-label={link.label}
+    >
       <PulseIcon name={link.icon} className="size-5" />
       <span className="truncate">{link.label}</span>
     </Link>

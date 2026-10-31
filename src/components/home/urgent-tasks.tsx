@@ -125,7 +125,11 @@ export function UrgentTasks({
 
   if (open.length === 0 && closed.length === 0) {
     return (
-      <Card className="px-3 py-2.5">
+      <Card
+        className="px-3 py-2.5"
+        data-tour="home-focus"
+        data-tour-label={t("home.focusToday")}
+      >
         <h2 className="type-section">{t("home.focusToday")}</h2>
         <p className="mt-1 text-sm text-ink/70">{t("home.focusTodayClear")}</p>
       </Card>
@@ -133,7 +137,11 @@ export function UrgentTasks({
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card
+      className="overflow-hidden"
+      data-tour="home-focus"
+      data-tour-label={t("home.focusToday")}
+    >
       <div className="border-b border-[var(--color-border)] px-3 py-2">
         <h2 className="type-section">{t("home.focusToday")}</h2>
       </div>
