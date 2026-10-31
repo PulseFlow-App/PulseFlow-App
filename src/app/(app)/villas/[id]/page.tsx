@@ -390,8 +390,8 @@ export default function VillaDetailPage({
         )}
 
         {villaItem && data.orgKind === "company" ? (
-          <div className="rounded-2xl bg-canvas-deep px-3 py-3 text-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+          <div className="rounded-xl bg-canvas-deep px-3 py-2 text-sm">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-ink/65">
               Belongs to
             </p>
             <p className="mt-0.5 font-semibold text-ink">{villaItem.orgLabel}</p>
@@ -415,22 +415,22 @@ export default function VillaDetailPage({
           </Button>
         ) : null}
 
-        <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-canvas-deep/40 p-3">
+        <div className="space-y-2 rounded-xl border border-[var(--color-border)] bg-canvas-deep/40 p-2.5">
           <p className="text-sm font-semibold text-ink">
             {t("villas.opsSection")}
           </p>
           {isOwner && !isPersonal && data.orgKind === "company" ? (
             <div>
               <Label>{t("villas.assignedTo")}</Label>
-              <ul className="mt-2 space-y-2">
+              <ul className="mt-1.5 space-y-1">
                 {team.map((person) => {
                   const checked = assigneeIds.includes(person.id);
                   return (
                     <li key={person.id}>
-                      <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-card px-3 py-2.5 text-sm">
+                      <label className="flex cursor-pointer items-center gap-2 rounded-xl bg-card px-2.5 py-1.5 text-sm">
                         <input
                           type="checkbox"
-                          className="size-5 shrink-0 accent-primary"
+                          className="size-4 shrink-0 accent-primary"
                           checked={checked}
                           onChange={() => {
                             setAssigneeIds((prev) =>
@@ -443,7 +443,7 @@ export default function VillaDetailPage({
                         <span className="font-semibold text-ink">
                           {person.full_name}
                         </span>
-                        <span className="text-muted">
+                        <span className="text-ink/70">
                           {labelRole(t, person.role)}
                         </span>
                       </label>
@@ -525,7 +525,7 @@ export default function VillaDetailPage({
             <Label htmlFor="notes">{t("common.notes")}</Label>
             <Textarea
               id="notes"
-              rows={4}
+              rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />

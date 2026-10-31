@@ -85,9 +85,9 @@ export default function SettingsPage() {
     <Screen>
       <ScreenHeader title={t("settings.title")} description={t("brand.tagline")} />
 
-      <Card id="language" className="scroll-mt-4 space-y-4 p-4 sm:p-5">
+      <Card id="language" className="scroll-mt-4 space-y-3 p-3 sm:p-4">
         <LanguageSwitcher hideHint={isGuest} />
-        <div className="space-y-2 border-t border-[var(--color-border)] pt-4">
+        <div className="space-y-1.5 border-t border-[var(--color-border)] pt-3">
           <div>
             <p className="text-sm font-bold text-ink">{t("bills.currency")}</p>
             {!isGuest && t("bills.displayCurrencyHint") ? (
@@ -97,12 +97,12 @@ export default function SettingsPage() {
           <DisplayCurrencySelect aria-label={t("bills.currency")} />
         </div>
         <TranslateContentSettingsCard />
-        <div className="border-t border-[var(--color-border)] pt-4">
+        <div className="border-t border-[var(--color-border)] pt-3">
           <AppearanceSettingsCard />
         </div>
       </Card>
 
-      <Card className="space-y-4 p-4 sm:p-5">
+      <Card className="space-y-2.5 p-3 sm:p-4">
         <div>
           <Label>{t("common.name")}</Label>
           {nameEditing ? (

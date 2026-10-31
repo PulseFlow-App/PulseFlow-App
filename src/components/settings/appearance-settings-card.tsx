@@ -26,14 +26,14 @@ export function AppearanceSettingsCard() {
   const current = normalizeAppearance(appearance);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div>
         <p className="font-display text-base font-bold text-ink">
           {t("settings.appearance")}
         </p>
-        <p className="text-sm text-muted">{t("settings.appearanceHint")}</p>
+        <p className="text-sm text-ink/70">{t("settings.appearanceHint")}</p>
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
         {APPEARANCE_OPTIONS.map((option) => {
           const selected = current === option;
           return (
@@ -43,26 +43,16 @@ export function AppearanceSettingsCard() {
               onClick={() => setAppearance(option)}
               aria-pressed={selected}
               className={cn(
-                "rounded-2xl border px-3 py-3 text-left transition",
+                "rounded-xl border px-3 py-2 text-left transition",
                 selected
-                  ? "border-primary bg-primary text-white ring-1 ring-primary/40"
-                  : "border-[var(--color-border)] bg-canvas-deep hover:border-sky/40",
+                  ? "border-sky bg-sky/20 text-ink ring-1 ring-sky/35"
+                  : "border-[var(--color-border)] bg-canvas-deep text-ink hover:border-sky/40",
               )}
             >
-              <span
-                className={cn(
-                  "block text-sm font-bold",
-                  selected ? "text-white" : "text-ink",
-                )}
-              >
+              <span className="block text-sm font-bold text-ink">
                 {t(LABEL_KEYS[option])}
               </span>
-              <span
-                className={cn(
-                  "mt-0.5 block text-xs",
-                  selected ? "text-white/85" : "text-muted",
-                )}
-              >
+              <span className="mt-0.5 block text-xs text-ink/70">
                 {t(HINT_KEYS[option])}
               </span>
             </button>

@@ -63,10 +63,10 @@ function AcceptTick({
       disabled={disabled || busy}
       onClick={onClick}
       className={cn(
-        "inline-flex size-9 shrink-0 items-center justify-center rounded-full border transition",
+        "inline-flex size-8 shrink-0 items-center justify-center rounded-full border transition",
         disabled
-          ? "border-[var(--color-border)] text-muted opacity-40"
-          : "border-secondary/40 bg-secondary-soft text-secondary-dark hover:border-secondary",
+          ? "border-[var(--color-border)] text-ink/40 opacity-40"
+          : "border-sky/50 bg-sky/15 text-ink hover:border-sky",
       )}
     >
       {busy ? (

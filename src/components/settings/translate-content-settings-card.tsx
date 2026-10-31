@@ -1,40 +1,33 @@
 "use client";
 
+import { useEffect } from "react";
 import { useI18n } from "@/lib/i18n/provider";
 import { useData } from "@/lib/data/use-app-data";
 import { translateContentHintKey } from "@/lib/settings/audience-copy";
 import { useTranslateContentSettings } from "@/lib/translate/use-localized-content";
-import { Label } from "@/components/ui/input";
 
+/** Translate team content stays on for everyone (no off toggle). */
 export function TranslateContentSettingsCard() {
   const { t } = useI18n();
   const data = useData();
   const { enabled, setEnabled } = useTranslateContentSettings();
   const hintKey = translateContentHintKey(data.profile?.role ?? "staff");
 
+  useEffect(() => {
+    if (!enabled) setEnabled(true);
+  }, [enabled, setEnabled]);
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <div>
         <p className="font-display text-base font-bold text-ink">
           {t("settings.translateContent")}
         </p>
-        <p className="text-sm text-muted">{t(hintKey)}</p>
+        <p className="text-sm text-ink/70">{t(hintKey)}</p>
       </div>
-      <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl bg-canvas-deep px-4 py-3">
-        <span className="text-sm font-medium text-ink">
-          {enabled ? t("common.on") : t("common.off")}
-        </span>
-        <input
-          type="checkbox"
-          className="size-5 accent-primary"
-          checked={enabled}
-          onChange={(e) => setEnabled(e.target.checked)}
-          aria-labelledby="translate-content-label"
-        />
-      </label>
-      <Label id="translate-content-label" className="sr-only">
-        {t("settings.translateContent")}
-      </Label>
+      <p className="rounded-xl bg-sky-soft/40 px-3 py-2 text-sm font-semibold text-ink">
+        {t("common.on")} · {t("settings.translateContentAlwaysOn")}
+      </p>
     </div>
   );
 }

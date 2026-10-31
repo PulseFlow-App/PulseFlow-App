@@ -410,7 +410,7 @@ export default function VillasPage() {
                         <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-card px-3 py-2.5 text-sm">
                           <input
                             type="checkbox"
-                            className="size-5 shrink-0 accent-primary"
+                            className="size-4 shrink-0 accent-primary"
                             checked={checked}
                             onChange={() => {
                               setAssigneeIds((prev) =>

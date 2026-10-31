@@ -59,33 +59,6 @@ export function summarizeRatings(
   };
 }
 
-export function leaderboardForOrg(
-  endorsements: Endorsement[],
-  profiles: Profile[],
-  orgId: string,
-  memberProfileIds?: Set<string>,
-) {
-  const employees = profiles.filter((p) => {
-    if (p.role === "owner") return false;
-    if (memberProfileIds) return memberProfileIds.has(p.id);
-    return p.org_id === orgId;
-  });
-  return employees
-    .map((p) => ({
-      profile: p,
-      rating: summarizeRatings(
-        endorsements.filter((e) => e.org_id === orgId),
-        p.id,
-      ),
-    }))
-    .sort((a, b) => {
-      if (b.rating.average !== a.rating.average) {
-        return b.rating.average - a.rating.average;
-      }
-      return b.rating.voteCount - a.rating.voteCount;
-    });
-}
-
 export function orgsForProfile(
   profileId: string,
   memberships: { profile_id: string; org_id: string }[],

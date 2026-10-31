@@ -56,7 +56,7 @@ Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll chec
 - **Jobs → calendar** - download a job (or this week’s jobs) as `.ics` for Google / Apple Calendar  
 - **Reports / exports** - CSV (bills, tasks, villas, jobs, occupancy), printable weekly ops, handoff snapshots  
 - **Talent directory** - browse opted-in field talent by skills / place / map  
-- **Endorsements + leaderboard** - weekly stars for the team  
+- **Endorsements / reviews** - weekly stars for the team  
 - **Connect your agent** - Settings connection key + `npx @pulseflow/mcp` config so Cursor, Claude (or another AI agent) can list/create villas, tasks, and jobs in this workspace (no database key or local clone; revocable)  
 
 ### Company control
@@ -104,7 +104,7 @@ Home, villas (edit), house guides, tasks, contacts + Order, jobs, bills finance,
 - **Team chat** - company thread  
 - **Bills** - submit own receipts (not company-wide finance)  
 - **Talent profile** - opt in: skills, bio, location + map pin  
-- **Reputation** - receive endorsements; share public `/u/{slug}`; company leaderboard  
+- **Reputation** - receive endorsements; share public `/u/{slug}`  
 - **Invite anyone** only (referral) - no staff/guest company invites  
 - **Personal villas** - optional side personal workspace for own clients  
 
@@ -148,7 +148,7 @@ Team chat with cleaners, contacts, talent, endorsements voting, company tasks/op
 | Villas, tasks, own bills | Team invites, team chat, Order bookings |
 | Contacts as a simple phone book | Company vendor Order / WA-LINE ops stack |
 | Invite anyone (grow Pulse Flow) | Invite staff/guest into a company |
-| Rename personal workspace (owner of that org) | App Store Full company billing, endorsements, leaderboard, talent browse, Guests panel |
+| Rename personal workspace (owner of that org) | App Store Full company billing, endorsements, talent browse, Guests panel |
 
 ---
 
@@ -178,7 +178,7 @@ Legend: ● yes · ◐ limited · ○ no
 | Support chat (host↔guest) | ● | ● | ○ | ●* | ○ |
 | Talent browse | ● | ● | ○ | ○ | ○ |
 | Talent opt-in | ○ | ◐ | ● | ○ | ○ |
-| Endorsements / leaderboard | ● | ● | ● | ○ | ○ |
+| Endorsements / reviews | ● | ● | ● | ○ | ○ |
 | Reports / CSV | ● | ●† | ○ | ○ | ○ |
 | Villa assignments | ● | ○ | ○ | ○ | ○ |
 | Invite staff / guest | ● | ● | ○ | ○ | ○ |

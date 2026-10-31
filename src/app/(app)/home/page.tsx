@@ -122,6 +122,7 @@ export default function HomePage() {
         />
         <DateStrip
           villas={data.villas}
+          calendarBookings={data.calendarBookings}
           selected={selectedDay}
           onSelect={setSelectedDay}
         />

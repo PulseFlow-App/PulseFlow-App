@@ -21,7 +21,6 @@ export default function robots(): MetadataRoute.Robots {
           "/reports",
           "/contacts",
           "/endorsements",
-          "/leaderboard",
           "/join/",
         ],
       },

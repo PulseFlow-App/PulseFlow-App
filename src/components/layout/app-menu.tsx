@@ -91,11 +91,6 @@ export function AppMenuButton() {
       label: t("nav.endorsements"),
       icon: "star",
     });
-    primary.push({
-      href: "/leaderboard",
-      label: t("nav.leaderboard"),
-      icon: "trophy",
-    });
   }
   if (showReports) {
     primary.push({

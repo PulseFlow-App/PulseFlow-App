@@ -266,8 +266,8 @@ export default function ReportsPage() {
         </p>
       ) : null}
 
-      <Card className="space-y-4 p-4 sm:p-5">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <Card className="space-y-3 p-3 sm:p-4">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div className="min-w-0">
             <Label>{t("reports.period")}</Label>
             <Select
@@ -300,35 +300,39 @@ export default function ReportsPage() {
         <div className="min-w-0">
           <Label>{t("bills.currency")}</Label>
           <DisplayCurrencySelect aria-label={t("bills.currency")} />
-          <p className="mt-1 text-xs text-muted">{t("bills.displayCurrencyHint")}</p>
-        </div>
-        <p className="text-xs text-muted">{t("reports.exportHint")}</p>
-        <div className="flex flex-col gap-2">
-          {exportActions.map((action) => (
-            <Button
-              key={action.key}
-              size="sm"
-              variant="secondary"
-              className="h-auto min-h-10 w-full justify-start px-4 py-2.5 text-left"
-              onClick={action.onClick}
-            >
-              <Download className="size-4 shrink-0" />
-              <span className="min-w-0 flex-1 leading-snug">{action.label}</span>
-            </Button>
-          ))}
+          <p className="mt-1 text-xs text-ink/65">{t("bills.displayCurrencyHint")}</p>
         </div>
         <Button className="w-full" size="sm" onClick={printWeekly}>
           <Printer className="size-4" />
           {t("reports.printWeekly")}
         </Button>
+        <details className="rounded-xl border border-[var(--color-border)] bg-canvas-deep/40">
+          <summary className="cursor-pointer list-none px-3 py-2 font-display text-sm font-bold text-ink [&::-webkit-details-marker]:hidden">
+            {t("reports.exportHint")}
+          </summary>
+          <div className="flex flex-col gap-1.5 border-t border-[var(--color-border)] px-3 py-2">
+            {exportActions.map((action) => (
+              <Button
+                key={action.key}
+                size="sm"
+                variant="secondary"
+                className="h-auto min-h-9 w-full justify-start px-3 py-2 text-left"
+                onClick={action.onClick}
+              >
+                <Download className="size-4 shrink-0" />
+                <span className="min-w-0 flex-1 leading-snug">{action.label}</span>
+              </Button>
+            ))}
+          </div>
+        </details>
       </Card>
 
-      <Card className="space-y-3 p-4">
+      <Card className="space-y-2.5 p-3 sm:p-4">
         <div>
           <h2 className="font-display text-base font-bold text-ink">
             {t("reports.handoffTitle")}
           </h2>
-          <p className="mt-1 text-sm text-muted">{t("reports.handoffHint")}</p>
+          <p className="mt-0.5 text-sm text-ink/70">{t("reports.handoffHint")}</p>
         </div>
         <Input
           value={snapshotLabel}
@@ -345,24 +349,24 @@ export default function ReportsPage() {
           {t("reports.saveSnapshot")}
         </Button>
         {snapshots.length > 0 ? (
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink/65">
             {t("reports.savedSnapshots")}
           </p>
         ) : null}
         {snapshots.length === 0 ? (
           <EmptyState title={t("reports.noSnapshots")} />
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-1.5">
             {snapshots.map((snapshot) => (
               <li
                 key={snapshot.id}
-                className="flex items-center justify-between rounded-2xl bg-canvas-deep px-3 py-2"
+                className="flex items-center justify-between rounded-xl bg-canvas-deep px-3 py-1.5"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">
                     {snapshot.label || t("reports.handoffTitle")}
                   </p>
-                  <p className="text-xs text-muted">
+                  <p className="text-xs text-ink/65">
                     {formatShortDate(snapshot.created_at)}
                   </p>
                 </div>

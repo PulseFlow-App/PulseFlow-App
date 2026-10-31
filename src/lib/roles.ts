@@ -85,7 +85,7 @@ export function canManageVillaAssignments(
   return isCompanyWorkspace(orgKind) && role === "owner";
 }
 
-/** Endorsements / leaderboard / public reputation - company teams only. */
+/** Endorsements / public reputation - company teams only. */
 export function canUseTeamReputation(orgKind?: OrgKind | null) {
   return isCompanyWorkspace(orgKind);
 }

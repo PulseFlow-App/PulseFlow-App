@@ -253,7 +253,7 @@ export function PushSettingsCard() {
                   </span>
                   <input
                     type="checkbox"
-                    className="mt-0.5 size-5 shrink-0 accent-primary"
+                    className="mt-0.5 size-4 shrink-0 accent-primary"
                     checked={prefs[category]}
                     disabled={prefsBusy}
                     onChange={(e) =>

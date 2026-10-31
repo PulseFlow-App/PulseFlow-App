@@ -38,7 +38,7 @@ export type AppData = {
   orgName: string;
   orgKind: "personal" | "company" | null;
   profiles: Profile[];
-  /** All profiles in the demo/db (for multi-company leaderboards). */
+  /** All profiles in the demo/db (for multi-company reputation views). */
   allProfiles: Profile[];
   orgs: Organization[];
   villas: Villa[];

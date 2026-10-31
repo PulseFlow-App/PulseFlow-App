@@ -8,7 +8,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label, Textarea } from "@/components/ui/input";
 import { LoadingState, EmptyState } from "@/components/ui/empty-state";
-import { PulseIcon } from "@/components/icons/pulse-icon";
 import { StarsDisplay, StarsPicker } from "@/components/endorsements/stars";
 import { useData } from "@/lib/data/use-app-data";
 import {
@@ -103,12 +102,6 @@ function EndorsementsPageInner() {
             {weekLabel(currentWeek, locale)} · weekly reputation
           </p>
         </div>
-        <Link href="/leaderboard">
-          <Button size="sm" variant="secondary">
-            <PulseIcon name="trophy" surface="nav" className="size-4" />
-            {t("endorsements.board")}
-          </Button>
-        </Link>
       </div>
 
       {canVote ? (

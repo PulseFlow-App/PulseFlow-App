@@ -40,7 +40,7 @@ function LocalePickerSheet({
                 className={cn(
                   "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-start transition",
                   selected
-                    ? "bg-primary-soft text-ink ring-1 ring-primary/25"
+                    ? "bg-sky/20 text-ink ring-1 ring-sky/35"
                     : "text-ink hover:bg-canvas-deep",
                   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                 )}
@@ -104,7 +104,7 @@ function SettingsLanguageButton() {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "flex w-full items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-card px-4 py-3 text-ink soft-shadow transition",
+          "flex w-full items-center gap-2 rounded-xl border border-[var(--color-border)] bg-card px-3 py-2 text-ink soft-shadow transition",
           "hover:bg-canvas-deep",
           "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
         )}
@@ -112,14 +112,14 @@ function SettingsLanguageButton() {
         aria-haspopup="dialog"
         aria-expanded={open}
       >
-        <Languages className="size-4 shrink-0 text-muted" aria-hidden />
-        <span className="min-w-0 flex-1 text-start text-sm font-semibold">
+        <Languages className="size-4 shrink-0 text-ink/65" aria-hidden />
+        <span className="min-w-0 flex-1 text-start text-sm font-semibold text-ink">
           {meta.native}
-          <span className="ms-1.5 text-xs font-medium text-muted">{meta.label}</span>
+          <span className="ms-1.5 text-xs font-medium text-ink/65">{meta.label}</span>
         </span>
         <ChevronDown
           className={cn(
-            "size-4 shrink-0 text-muted",
+            "size-4 shrink-0 text-ink/65",
             dir === "rtl" && "rotate-180",
           )}
           aria-hidden
@@ -146,11 +146,13 @@ export function LanguageSwitcher({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       <div>
-        <p className="text-lg font-bold text-ink">{t("settings.language")}</p>
+        <p className="font-display text-base font-bold text-ink">
+          {t("settings.language")}
+        </p>
         {!hideHint && t("settings.languageHint") ? (
-          <p className="text-sm text-muted">{t("settings.languageHint")}</p>
+          <p className="text-sm text-ink/70">{t("settings.languageHint")}</p>
         ) : null}
       </div>
       <SettingsLanguageButton />

@@ -83,10 +83,10 @@ function AcceptTick({
       disabled={disabled || busy}
       onClick={onClick}
       className={cn(
-        "inline-flex size-9 shrink-0 items-center justify-center rounded-full border transition",
+        "inline-flex size-8 shrink-0 items-center justify-center rounded-full border transition",
         disabled
-          ? "border-[var(--color-border)] text-muted opacity-40"
-          : "border-secondary/40 bg-secondary-soft text-secondary-dark hover:border-secondary",
+          ? "border-[var(--color-border)] text-ink/40 opacity-40"
+          : "border-sky/50 bg-sky/15 text-ink hover:border-sky",
       )}
     >
       {busy ? (
@@ -421,7 +421,7 @@ export function VillaMasterInfoEditor(props: Props) {
         <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-canvas-deep px-3 py-2.5 text-sm">
           <input
             type="checkbox"
-            className="size-5 shrink-0 accent-primary"
+            className="size-4 shrink-0 accent-primary"
             checked={draft.allow_manager_view}
             onChange={(e) =>
               setDraft({ allow_manager_view: e.target.checked })

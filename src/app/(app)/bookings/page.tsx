@@ -19,7 +19,7 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/input";
+import { Input, Label, Select } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
@@ -69,6 +69,12 @@ export default function BookingsPage() {
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [villaFilter, setVillaFilter] = useState<string>("all");
   const [selectedDay, setSelectedDay] = useState(() => startOfDay(new Date()));
+  const [connectOpen, setConnectOpen] = useState(false);
+  const [connectVillaId, setConnectVillaId] = useState("");
+  const [connectUrl, setConnectUrl] = useState("");
+  const [connectBusy, setConnectBusy] = useState(false);
+  const [connectMsg, setConnectMsg] = useState<string | null>(null);
+  const [connectErr, setConnectErr] = useState<string | null>(null);
 
   const canManage =
     data.profile?.role === "owner" || data.profile?.role === "manager";
@@ -129,22 +135,120 @@ export default function BookingsPage() {
 
   const villasWithFeed = data.villas.filter((v) => v.ical_import_url);
 
+  useEffect(() => {
+    if (!connectVillaId && data.villas[0]) {
+      setConnectVillaId(data.villas[0].id);
+      setConnectUrl(data.villas[0].ical_import_url ?? "");
+    }
+  }, [connectVillaId, data.villas]);
+
+  const runConnect = async () => {
+    if (!connectVillaId || !connectUrl.trim()) return;
+    setConnectBusy(true);
+    setConnectErr(null);
+    setConnectMsg(null);
+    try {
+      const result = await data.syncVillaCalendar({
+        villaId: connectVillaId,
+        feedUrl: connectUrl.trim(),
+      });
+      setConnectMsg(
+        t("bookings.connectOk", {
+          count: result.imported + result.updated,
+        }),
+      );
+      setConnectOpen(false);
+    } catch (e) {
+      setConnectErr(
+        e instanceof Error ? e.message : t("bookings.connectFail"),
+      );
+    } finally {
+      setConnectBusy(false);
+    }
+  };
+
   if (!data.ready || !data.profile) return <LoadingState />;
   if (!canManage) return <LoadingState />;
 
   return (
-    <div className="space-y-4 animate-rise font-sans">
+    <div className="space-y-3 animate-rise font-sans">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-2xl font-bold text-ink">{t("bookings.title")}</h1>
-          <p className="text-sm text-muted">{t("bookings.subtitle")}</p>
+          <p className="text-sm text-ink/70">{t("bookings.subtitle")}</p>
         </div>
-        <Link href="/villas" className="shrink-0">
-          <Button size="sm" variant="secondary">
-            {t("bookings.connectFeed")}
-          </Button>
-        </Link>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="shrink-0"
+          onClick={() => {
+            setConnectOpen((o) => !o);
+            setConnectErr(null);
+            setConnectMsg(null);
+            const seed =
+              data.villas.find((v) => !v.ical_import_url) ?? data.villas[0];
+            if (seed) {
+              setConnectVillaId(seed.id);
+              setConnectUrl(seed.ical_import_url ?? "");
+            }
+          }}
+        >
+          {t("bookings.connectFeed")}
+        </Button>
       </div>
+
+      {connectOpen ? (
+        <Card className="space-y-2.5 p-3">
+          <p className="text-sm font-semibold text-ink">
+            {t("bookings.connectTitle")}
+          </p>
+          <p className="text-xs text-ink/70">{t("bookings.connectHint")}</p>
+          <div>
+            <Label>{t("bookings.allProperties")}</Label>
+            <Select
+              value={connectVillaId}
+              onChange={(e) => {
+                const id = e.target.value;
+                setConnectVillaId(id);
+                const v = data.villas.find((x) => x.id === id);
+                setConnectUrl(v?.ical_import_url ?? "");
+              }}
+            >
+              {data.villas.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                  {v.ical_import_url ? ` · ${t("bookings.feedLinked")}` : ""}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <Label>{t("villas.icalUrl")}</Label>
+            <Input
+              value={connectUrl}
+              onChange={(e) => setConnectUrl(e.target.value)}
+              placeholder="https://www.airbnb.com/calendar/ical/…"
+              autoComplete="off"
+              className="mt-1"
+            />
+          </div>
+          {connectErr ? (
+            <p className="text-sm font-semibold text-danger">{connectErr}</p>
+          ) : null}
+          {connectMsg ? (
+            <p className="text-sm font-semibold text-sky">{connectMsg}</p>
+          ) : null}
+          <Button
+            size="sm"
+            className="w-full"
+            busy={connectBusy}
+            disabled={!connectVillaId || !connectUrl.trim()}
+            onClick={() => void runConnect()}
+          >
+            {t("villas.icalSync")}
+          </Button>
+        </Card>
+      ) : null}
 
       {data.villas.length === 0 ? (
         <EmptyState
@@ -153,7 +257,7 @@ export default function BookingsPage() {
         />
       ) : (
         <>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center">
             <Select
               value={villaFilter}
               onChange={(e) => setVillaFilter(e.target.value)}
@@ -167,7 +271,7 @@ export default function BookingsPage() {
                 </option>
               ))}
             </Select>
-            <p className="text-xs text-muted">
+            <p className="text-xs text-ink/70">
               {villasWithFeed.length
                 ? t("bookings.feedsLinked", { count: villasWithFeed.length })
                 : t("bookings.noFeedsYet")}

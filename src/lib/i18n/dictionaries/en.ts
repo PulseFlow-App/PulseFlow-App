@@ -57,7 +57,6 @@ const en = {
   "nav.settings": "Settings",
   "nav.notifications": "Notifications",
   "nav.endorsements": "Endorsements",
-  "nav.leaderboard": "Leaderboard",
   "nav.language": "Language",
   "nav.menu": "Menu",
   "nav.reports": "Reports & handoffs",
@@ -146,7 +145,9 @@ const en = {
   "home.focusClosedTask": "Closed task",
   "home.focusClosedJob": "Closed job",
   "home.focusOpenInJobs": "Open in Jobs",
-  "home.downloadTaskReports": "Download task reports",
+  "home.downloadTaskReports": "Download job reports",
+  "home.downloadJobReports": "Download job reports",
+  "home.openBookingCalendar": "Booking calendar",
   "home.focusDue": "Due today",
   "home.focusVerify": "Needs verify",
   "home.focusJob": "Open job",
@@ -413,7 +414,7 @@ const en = {
   "schedule.timing": "Timing",
   "schedule.window": "Time window",
   "schedule.visits": "Visit times",
-  "schedule.windowHint": "On site between these hours (e.g. 09:00–18:00).",
+  "schedule.windowHint": "On site between these hours (e.g. 09:00-18:00).",
   "schedule.visitsHint":
     "Come only at these clock times - not during the hours in between (e.g. 09:00 and 18:00).",
   "schedule.addVisit": "Add time",
@@ -885,6 +886,7 @@ const en = {
   "settings.appearanceDarkHint": "Night glass with soft glows",
   "settings.translateContentHint.staff":
     "Tasks, chat, and messages from your team appear in your app language.",
+  "settings.translateContentAlwaysOn": "Always on for your app language",
 
   "billing.title": "Billing",
   "billing.subtitle":
@@ -1097,7 +1099,6 @@ const en = {
 
   "endorsements.title": "Endorsements",
   "endorsements.subtitle": "weekly reputation",
-  "endorsements.board": "Board",
   "endorsements.vote": "Vote this week",
   "endorsements.voteHint":
     "Rate each teammate once per week. Stars build their public reputation for future companies.",
@@ -1110,15 +1111,6 @@ const en = {
   "endorsements.average": "Average rating",
   "endorsements.starsFrom": "{stars} stars from {votes} weekly votes",
 
-  "leaderboard.title": "Leaderboard",
-  "leaderboard.back": "← Endorsements",
-  "leaderboard.ownerHint": "Your company ranking from weekly owner votes",
-  "leaderboard.staffHint":
-    "Rankings by company - switch tabs if you work with more than one",
-  "leaderboard.sorted": "Sorted by average stars",
-  "leaderboard.empty": "No team endorsements yet for this company.",
-  "leaderboard.overall": "Your overall Pulse Flow rating",
-  "leaderboard.public": "Public profile",
 
   "roles.owner": "Owner",
   "roles.manager": "Management",
@@ -1434,6 +1426,12 @@ const en = {
   "bookings.subtitle":
     "Direct stays and Airbnb / Booking.com nights pulled from each property’s calendar export.",
   "bookings.connectFeed": "Connect calendar",
+  "bookings.connectTitle": "Link a property calendar",
+  "bookings.connectHint":
+    "Paste the Export calendar (iCal) URL from Airbnb, Booking.com, or VRBO. We pull stays into this calendar. There is no Airbnb OAuth login.",
+  "bookings.connectOk":
+    "{count} night synced|{count} nights synced",
+  "bookings.connectFail": "Could not sync that calendar link.",
   "bookings.emptyVillas": "No properties yet",
   "bookings.emptyVillasHint": "Add a property, then paste its Airbnb or Booking.com calendar link.",
   "bookings.allProperties": "All properties",
@@ -1441,7 +1439,7 @@ const en = {
   "bookings.feedsLinked":
     "{count} property with calendar linked|{count} properties with calendar linked",
   "bookings.noFeedsYet":
-    "No calendar feeds yet. Open a property → Quick fill → paste Export calendar URL → Sync.",
+    "No calendar feeds yet. Tap Connect calendar, paste an Export calendar URL, then Sync.",
   "bookings.prevMonth": "Previous month",
   "bookings.nextMonth": "Next month",
   "bookings.dayEmpty": "Nothing booked this day",

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { PulseWordmark } from "@/components/brand/pulse-wordmark";
+import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
 import { useBrandName } from "@/lib/i18n/use-brand-name";
 import { useI18n } from "@/lib/i18n/provider";
 import { useData } from "@/lib/data/use-app-data";
@@ -12,6 +13,10 @@ import { AppMenuButton } from "./app-menu";
 const headerIconBtn =
   "relative flex size-8 shrink-0 items-center justify-center text-ink/85 transition hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
 
+/**
+ * Top-right icons (visual right → left): burger, theme, settings, chat, notifications.
+ * DOM order is L→R so flex row yields that visual order at the end of the header.
+ */
 export function AppHeader({
   unreadMessages = 0,
   unreadNotifications = 0,
@@ -40,7 +45,7 @@ export function AppHeader({
           textClassName="text-[1.05rem]"
         />
       </Link>
-      <div className="flex shrink-0 items-center">
+      <div className="flex shrink-0 items-center gap-0.5">
         <Link
           href="/notifications"
           className={headerIconBtn}
@@ -67,11 +72,12 @@ export function AppHeader({
         ) : null}
         <Link
           href="/settings"
-          className={`${headerIconBtn} md:hidden`}
+          className={headerIconBtn}
           aria-label={t("nav.settings")}
         >
           <PulseIcon name="settings" className="size-4" />
         </Link>
+        <ThemeIconToggle className="border-0 bg-transparent shadow-none" />
         <AppMenuButton />
       </div>
     </header>

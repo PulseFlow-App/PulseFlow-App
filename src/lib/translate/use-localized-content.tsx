@@ -12,10 +12,7 @@ import { useI18n } from "@/lib/i18n/provider";
 import { localizeDemoText, isKnownDemoPhrase } from "@/lib/demo/localize";
 import { fetchTranslation } from "@/lib/translate/client";
 import { likelySameLanguage } from "@/lib/translate/locale-script";
-import {
-  readTranslateContentEnabled,
-  writeTranslateContentEnabled,
-} from "@/lib/translate/preferences";
+import { writeTranslateContentEnabled } from "@/lib/translate/preferences";
 
 type TranslateContentContextValue = {
   enabled: boolean;
@@ -30,15 +27,14 @@ export function TranslateContentProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [enabled, setEnabledState] = useState(true);
+  const enabled = true;
 
   useEffect(() => {
-    setEnabledState(readTranslateContentEnabled());
+    writeTranslateContentEnabled(true);
   }, []);
 
-  const setEnabled = useCallback((next: boolean) => {
-    setEnabledState(next);
-    writeTranslateContentEnabled(next);
+  const setEnabled = useCallback((_next: boolean) => {
+    writeTranslateContentEnabled(true);
   }, []);
 
   const value = useMemo(
