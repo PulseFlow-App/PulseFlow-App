@@ -25,7 +25,7 @@ export function TranslateContentSettingsCard() {
         </p>
         <p className="text-sm text-ink/70">{t(hintKey)}</p>
       </div>
-      <p className="rounded-xl bg-sky-soft/40 px-3 py-2 text-sm font-semibold text-ink">
+      <p className="pf-choice-selected rounded-xl px-3 py-2 text-sm font-semibold text-ink">
         {t("common.on")} · {t("settings.translateContentAlwaysOn")}
       </p>
     </div>

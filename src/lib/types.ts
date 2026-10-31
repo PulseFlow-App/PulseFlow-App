@@ -175,6 +175,8 @@ export type Villa = {
   ical_import_url: string | null;
   /** Last successful pull of ical_import_url */
   ical_synced_at: string | null;
+  /** Guesty listing id when imported via Guesty Open API */
+  guesty_listing_id?: string | null;
   status: VillaStatus;
   check_in: string | null;
   check_out: string | null;

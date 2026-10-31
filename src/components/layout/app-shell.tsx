@@ -11,11 +11,15 @@ import { DataProvider } from "@/lib/data/data-provider";
 import { useData } from "@/lib/data/use-app-data";
 import { useIsDemoMode } from "@/lib/demo/use-is-demo-mode";
 import { useI18n } from "@/lib/i18n/provider";
+import { EducationProvider } from "@/lib/education/provider";
+import { EducationTour } from "@/components/education/education-tour";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <DataProvider>
-      <AppShellInner>{children}</AppShellInner>
+      <EducationProvider>
+        <AppShellInner>{children}</AppShellInner>
+      </EducationProvider>
     </DataProvider>
   );
 }
@@ -95,6 +99,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         </div>
         <BottomNav />
         <ReviewOfferBanner />
+        <EducationTour />
       </div>
     </div>
   );

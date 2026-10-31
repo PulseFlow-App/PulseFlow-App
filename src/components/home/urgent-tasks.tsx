@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Download, Trash2 } from "lucide-react";
+import { ChevronRight, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/provider";
 import type { FocusItem, FocusTodayBundle } from "@/lib/home/focus-today";
 import type { MessageKey } from "@/lib/i18n";
@@ -65,7 +64,7 @@ function FocusLinkRow({
     <div className="flex items-start gap-2">
       <Link
         href={item.href}
-        className="flex min-w-0 flex-1 items-start gap-2 rounded-xl px-1 py-0.5 transition hover:bg-sky-soft/30"
+        className="flex min-w-0 flex-1 items-start gap-2 rounded-xl px-1 py-0.5 transition hover:bg-[color-mix(in_srgb,var(--color-ink)_6%,transparent)]"
       >
         <div className="min-w-0 flex-1 space-y-0.5">
           <span className="inline-block text-[10px] font-bold uppercase leading-none tracking-wide text-primary">
@@ -85,13 +84,13 @@ function FocusLinkRow({
             <LocalizedText text={item.title} />
           </p>
           {meta ? (
-            <p className="truncate text-[11px] leading-snug text-ink/75">
+            <p className="truncate text-[11px] font-medium leading-snug text-ink">
               {meta}
             </p>
           ) : null}
         </div>
         <ChevronRight
-          className="mt-1 size-4 shrink-0 text-ink/50"
+          className="mt-1 size-4 shrink-0 text-ink/60"
           aria-hidden
         />
       </Link>
@@ -127,15 +126,7 @@ export function UrgentTasks({
   if (open.length === 0 && closed.length === 0) {
     return (
       <Card className="px-3 py-2.5">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="type-section">{t("home.focusToday")}</h2>
-          <Link href="/reports">
-            <Button size="xs" variant="ghost">
-              <Download className="size-3.5" />
-              {t("home.downloadJobReports")}
-            </Button>
-          </Link>
-        </div>
+        <h2 className="type-section">{t("home.focusToday")}</h2>
         <p className="mt-1 text-sm text-ink/70">{t("home.focusTodayClear")}</p>
       </Card>
     );
@@ -143,14 +134,8 @@ export function UrgentTasks({
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center justify-between gap-2 border-b border-[var(--color-border)] px-3 py-2">
+      <div className="border-b border-[var(--color-border)] px-3 py-2">
         <h2 className="type-section">{t("home.focusToday")}</h2>
-        <Link href="/reports">
-          <Button size="xs" variant="ghost">
-            <Download className="size-3.5" />
-            {t("home.downloadJobReports")}
-          </Button>
-        </Link>
       </div>
 
       {open.length > 0 ? (
@@ -161,8 +146,8 @@ export function UrgentTasks({
               className={cn(
                 "border-s-4 px-3 py-2",
                 item.kind === "urgent_task" || item.kind === "verify_task"
-                  ? "border-s-primary bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)]"
-                  : "border-s-sky bg-[color-mix(in_srgb,var(--color-sky)_14%,transparent)]",
+                  ? "border-s-primary bg-[color-mix(in_srgb,var(--color-primary)_14%,transparent)]"
+                  : "border-s-sky bg-[color-mix(in_srgb,var(--color-ink)_5%,transparent)]",
               )}
             >
               <FocusLinkRow item={item} onDelete={onDelete} />

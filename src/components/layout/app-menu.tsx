@@ -26,6 +26,7 @@ import {
   type PulseIconName,
 } from "@/components/icons/pulse-icon";
 import { AppVersionMark } from "@/components/layout/app-version-mark";
+import { useEducation } from "@/lib/education/provider";
 
 type MenuLink = {
   href: string;
@@ -34,16 +35,25 @@ type MenuLink = {
   external?: boolean;
 };
 
+type MenuAction = {
+  id: string;
+  label: string;
+  icon: PulseIconName;
+  onClick: () => void;
+};
+
 type MenuSection = {
   id: string;
   label?: string;
   links: MenuLink[];
+  actions?: MenuAction[];
 };
 
 export function AppMenuButton() {
   const data = useData();
   const { t, locale } = useI18n();
   const router = useRouter();
+  const education = useEducation();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const titleId = useId();
@@ -190,6 +200,18 @@ export function AppMenuButton() {
     icon: "shield",
   });
 
+  const accountActions: MenuAction[] = [
+    {
+      id: "education",
+      label: t("education.mode"),
+      icon: "guide",
+      onClick: () => {
+        setOpen(false);
+        window.setTimeout(() => education.start(), 180);
+      },
+    },
+  ];
+
   const sections: MenuSection[] = [
     { id: "primary", links: primary },
     { id: "manage", label: t("nav.menuManage"), links: manage },
@@ -197,8 +219,12 @@ export function AppMenuButton() {
       id: "account",
       label: t("nav.menuAccount"),
       links: account,
+      actions: accountActions,
     },
-  ].filter((section) => section.links.length > 0);
+  ].filter(
+    (section) =>
+      section.links.length > 0 || (section.actions?.length ?? 0) > 0,
+  );
 
   const signOut = async () => {
     setOpen(false);
@@ -276,6 +302,18 @@ export function AppMenuButton() {
                       </p>
                     ) : null}
                     <ul className="space-y-1">
+                      {section.actions?.map((action) => (
+                        <li key={action.id}>
+                          <button
+                            type="button"
+                            onClick={action.onClick}
+                            className="flex min-h-11 w-full items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-[0.9375rem] font-semibold text-ink transition hover:bg-primary-soft hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                          >
+                            <PulseIcon name={action.icon} className="size-5" />
+                            <span className="truncate">{action.label}</span>
+                          </button>
+                        </li>
+                      ))}
                       {section.links.map((link) => (
                         <li key={link.href + link.label}>
                           <MenuRow

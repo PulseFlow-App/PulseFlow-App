@@ -16,6 +16,7 @@ import { UpgradeToCompanyCard } from "@/components/settings/upgrade-to-company-c
 import { PasskeySettingsCard } from "@/components/auth/passkey-settings-card";
 import { JobSearchSettingsCard } from "@/components/settings/job-search-settings-card";
 import { McpSettingsCard } from "@/components/settings/mcp-settings-card";
+import { GuestySettingsCard } from "@/components/settings/guesty-settings-card";
 import { DeleteAccountCard } from "@/components/settings/delete-account-card";
 import { BlockedUsersCard } from "@/components/settings/blocked-users-card";
 import { PushSettingsCard } from "@/components/settings/push-settings-card";
@@ -91,7 +92,9 @@ export default function SettingsPage() {
           <div>
             <p className="text-sm font-bold text-ink">{t("bills.currency")}</p>
             {!isGuest && t("bills.displayCurrencyHint") ? (
-              <p className="type-meta mt-0.5">{t("bills.displayCurrencyHint")}</p>
+              <p className="mt-0.5 text-sm text-ink/70">
+                {t("bills.displayCurrencyHint")}
+              </p>
             ) : null}
           </div>
           <DisplayCurrencySelect aria-label={t("bills.currency")} />
@@ -170,7 +173,9 @@ export default function SettingsPage() {
               {isPersonal ? t("settings.workspace") : t("settings.organization")}
             </Label>
             {isCompany ? (
-              <p className="type-meta mt-0.5">{t("settings.orgNameHint")}</p>
+              <p className="mt-0.5 text-sm text-ink/70">
+                {t("settings.orgNameHint")}
+              </p>
             ) : null}
             {orgEditing ? (
               <div className="mt-2 space-y-2">
@@ -244,7 +249,7 @@ export default function SettingsPage() {
               {t("plan.title")}
             </h2>
             {planNote ? (
-              <p className="type-meta mt-1">{planNote}</p>
+              <p className="mt-1 text-sm text-ink/70">{planNote}</p>
             ) : null}
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1">
@@ -252,17 +257,19 @@ export default function SettingsPage() {
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-3 py-1.5 text-xs font-bold uppercase tracking-wide",
                 plan.tier === "full" || plan.tier === "trial"
-                  ? "bg-primary-soft text-primary-dark"
+                  ? "bg-primary-soft text-ink"
                   : plan.tier === "expired"
                     ? "bg-danger/10 text-danger"
-                    : "bg-sand text-ink",
+                    : "pf-panel-soft text-ink",
               )}
             >
               <NotebookPen className="size-3.5" aria-hidden />
               {t(plan.labelKey)}
             </span>
             {isGuest ? (
-              <span className="type-meta">{t("plan.guestFree")}</span>
+              <span className="text-xs font-medium text-ink/70">
+                {t("plan.guestFree")}
+              </span>
             ) : null}
           </div>
         </div>
@@ -272,6 +279,7 @@ export default function SettingsPage() {
 
       <PasskeySettingsCard hideHint={isGuest} />
       <PushSettingsCard />
+      <GuestySettingsCard />
       <McpSettingsCard />
 
       {profile.role !== "owner" ? (
@@ -289,7 +297,9 @@ export default function SettingsPage() {
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="type-meta uppercase tracking-[0.04em]">{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-ink/65">
+        {label}
+      </p>
       <p className="mt-0.5 break-words font-semibold text-ink">{value}</p>
     </div>
   );

@@ -289,7 +289,7 @@ export default function VillasPage() {
             />
           ) : null}
           {inCompany && personalOnly && canAdd ? (
-            <p className="rounded-2xl bg-canvas-deep px-3 py-2 text-xs text-muted">
+            <p className="pf-panel-soft rounded-2xl px-3 py-2 text-xs text-ink/70">
               {t("villas.personalHint")}
             </p>
           ) : null}
@@ -392,7 +392,7 @@ export default function VillasPage() {
 
           <VillaDetailsFields value={details} onChange={setDetails} />
 
-          <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-canvas-deep/40 p-3">
+          <div className="pf-panel-soft space-y-3 rounded-2xl border border-sky/20 p-3">
             <p className="text-sm font-semibold text-ink">
               {t("villas.opsSection")}
             </p>

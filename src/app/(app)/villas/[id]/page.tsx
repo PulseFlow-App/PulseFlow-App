@@ -390,7 +390,7 @@ export default function VillaDetailPage({
         )}
 
         {villaItem && data.orgKind === "company" ? (
-          <div className="rounded-xl bg-canvas-deep px-3 py-2 text-sm">
+          <div className="pf-panel-soft rounded-xl px-3 py-2 text-sm">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-ink/65">
               Belongs to
             </p>
@@ -415,7 +415,7 @@ export default function VillaDetailPage({
           </Button>
         ) : null}
 
-        <div className="space-y-2 rounded-xl border border-[var(--color-border)] bg-canvas-deep/40 p-2.5">
+        <div className="pf-panel-soft space-y-2 rounded-xl border border-sky/20 p-2.5">
           <p className="text-sm font-semibold text-ink">
             {t("villas.opsSection")}
           </p>

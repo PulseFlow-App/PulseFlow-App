@@ -39,15 +39,13 @@ function LocalePickerSheet({
                 }}
                 className={cn(
                   "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-start transition",
-                  selected
-                    ? "bg-sky/20 text-ink ring-1 ring-sky/35"
-                    : "text-ink hover:bg-canvas-deep",
+                  selected ? "pf-choice-selected" : "pf-choice hover:border-sky/35",
                   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                 )}
               >
-                <span className="min-w-0 flex-1 truncate font-display text-sm font-semibold leading-snug">
+                <span className="min-w-0 flex-1 truncate font-display text-sm font-semibold leading-snug text-ink">
                   {meta.native}
-                  <span className="ms-1.5 font-sans text-[11px] font-medium text-muted">
+                  <span className="ms-1.5 font-sans text-[11px] font-medium text-ink/65">
                     {meta.label}
                   </span>
                 </span>

@@ -291,10 +291,10 @@ export function VillaMasterInfoEditor(props: Props) {
       ) : null}
 
       {canEdit || controlled ? (
-        <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-canvas-deep/50">
+        <div className="pf-panel-soft overflow-hidden rounded-2xl border border-sky/20">
           <button
             type="button"
-            className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition hover:bg-sand/50"
+            className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition hover:bg-[color-mix(in_srgb,var(--color-sky)_10%,transparent)]"
             aria-expanded={quickOpen}
             onClick={() => setQuickOpen((o) => !o)}
           >
@@ -418,7 +418,7 @@ export function VillaMasterInfoEditor(props: Props) {
       {field("master-handoff", t("villas.masterHandoff"), "handoff_notes")}
 
       {isOwner || controlled ? (
-        <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-canvas-deep px-3 py-2.5 text-sm">
+        <label className="pf-panel-soft flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 text-sm">
           <input
             type="checkbox"
             className="size-4 shrink-0 accent-primary"

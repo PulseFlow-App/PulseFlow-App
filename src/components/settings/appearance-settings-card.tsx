@@ -43,10 +43,8 @@ export function AppearanceSettingsCard() {
               onClick={() => setAppearance(option)}
               aria-pressed={selected}
               className={cn(
-                "rounded-xl border px-3 py-2 text-left transition",
-                selected
-                  ? "border-sky bg-sky/20 text-ink ring-1 ring-sky/35"
-                  : "border-[var(--color-border)] bg-canvas-deep text-ink hover:border-sky/40",
+                "rounded-xl px-3 py-2 text-left transition",
+                selected ? "pf-choice-selected" : "pf-choice hover:border-sky/40",
               )}
             >
               <span className="block text-sm font-bold text-ink">

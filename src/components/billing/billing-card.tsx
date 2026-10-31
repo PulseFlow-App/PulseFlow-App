@@ -34,24 +34,24 @@ export function BillingSettingsCard({
           <h2 className="font-display text-lg font-bold text-ink">
             {t("billing.title")}
           </h2>
-          <p className="mt-1 text-sm text-muted" dir="auto">
+          <p className="mt-1 text-sm text-ink/70" dir="auto">
             {t("billing.subtitle")}
           </p>
         </div>
       ) : (
-        <p className="text-sm text-muted" dir="auto">
+        <p className="text-sm text-ink/70" dir="auto">
           {t("billing.subtitle")}
         </p>
       )}
 
-      <div className="rounded-[var(--radius-control)] bg-sand px-3 py-3 text-sm">
+      <div className="pf-panel-soft rounded-[var(--radius-control)] px-3 py-3 text-sm">
         <div className="flex justify-between gap-3 py-1">
-          <span className="text-muted">{t("billing.status")}</span>
+          <span className="text-ink/70">{t("billing.status")}</span>
           <span className="font-semibold capitalize text-ink">{status}</span>
         </div>
         {days != null ? (
           <div className="flex justify-between gap-3 py-1">
-            <span className="text-muted">{t("billing.trial")}</span>
+            <span className="text-ink/70">{t("billing.trial")}</span>
             <span className="font-semibold text-ink">
               {days > 0
                 ? days > COMPANY_TRIAL_DAYS
@@ -65,18 +65,18 @@ export function BillingSettingsCard({
           </div>
         ) : null}
         <div className="flex justify-between gap-3 py-1">
-          <span className="text-muted">{t("billing.writesEnabled")}</span>
+          <span className="text-ink/70">{t("billing.writesEnabled")}</span>
           <span className="font-semibold text-ink">
             {entitled ? t("billing.yes") : t("billing.readOnly")}
           </span>
         </div>
       </div>
 
-      <p className="text-sm text-muted" dir="auto">
+      <p className="text-sm text-ink/70" dir="auto">
         {t("billing.appStoreHint")}
       </p>
 
-      <p className="text-xs text-muted">
+      <p className="text-xs text-ink/65">
         <Link href="/terms" className="font-semibold text-primary">
           {t("billing.terms")}
         </Link>

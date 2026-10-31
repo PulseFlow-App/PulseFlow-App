@@ -137,8 +137,8 @@ function EndorsementsPageInner() {
                     active
                       ? "bg-primary-soft"
                       : done
-                        ? "bg-canvas-deep opacity-70"
-                        : "bg-canvas-deep hover:bg-primary-soft/60"
+                        ? "pf-panel-soft opacity-70"
+                        : "pf-panel-soft hover:bg-primary-soft/60"
                   }`}
                 >
                   <div className="min-w-0">
@@ -250,7 +250,7 @@ function EndorsementsPageInner() {
             </p>
           </div>
 
-          <div className="rounded-2xl bg-canvas-deep px-3 py-3 text-sm">
+          <div className="pf-panel-soft rounded-2xl px-3 py-3 text-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">
               Shareable profile
             </p>

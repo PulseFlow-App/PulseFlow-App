@@ -19,8 +19,9 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input, Label, Select } from "@/components/ui/input";
+import { Label, Select } from "@/components/ui/input";
 import { EmptyState, LoadingState } from "@/components/ui/empty-state";
+import { CalendarExportField } from "@/components/villas/calendar-export-field";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
 import {
@@ -222,16 +223,10 @@ export default function BookingsPage() {
               ))}
             </Select>
           </div>
-          <div>
-            <Label>{t("villas.icalUrl")}</Label>
-            <Input
-              value={connectUrl}
-              onChange={(e) => setConnectUrl(e.target.value)}
-              placeholder="https://www.airbnb.com/calendar/ical/…"
-              autoComplete="off"
-              className="mt-1"
-            />
-          </div>
+          <CalendarExportField
+            value={connectUrl}
+            onChange={setConnectUrl}
+          />
           {connectErr ? (
             <p className="text-sm font-semibold text-danger">{connectErr}</p>
           ) : null}
@@ -301,7 +296,7 @@ export default function BookingsPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-muted">
+            <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-ink/65">
               {monthDays.slice(0, 7).map((d) => (
                 <div key={`wd-${format(d, "EEEE")}`}>
                   {formatWeekdayShort(d, locale)}
@@ -322,20 +317,25 @@ export default function BookingsPage() {
                     className={cn(
                       "flex min-h-[44px] flex-col items-center rounded-xl px-1 py-1.5 transition",
                       selected
-                        ? "bg-primary text-white shadow-sm"
+                        ? "bg-[color-mix(in_srgb,var(--color-sky)_18%,transparent)] text-ink ring-1 ring-sky/40"
                         : inMonth
-                          ? "bg-sand/70 text-ink hover:bg-sand"
-                          : "text-muted/50",
+                          ? "bg-canvas-deep/60 text-ink hover:bg-[color-mix(in_srgb,var(--color-sky)_10%,transparent)]"
+                          : "text-ink/35",
                     )}
                   >
-                    <span className="font-display text-sm font-bold">
+                    <span
+                      className={cn(
+                        "font-display text-sm font-bold",
+                        inMonth || selected ? "text-ink" : "text-ink/35",
+                      )}
+                    >
                       {day.getDate()}
                     </span>
                     {count > 0 ? (
                       <span
                         className={cn(
                           "mt-0.5 size-1.5 rounded-full",
-                          selected ? "bg-white" : "bg-primary",
+                          selected ? "bg-sky" : "bg-primary",
                         )}
                       />
                     ) : (
@@ -348,7 +348,7 @@ export default function BookingsPage() {
           </Card>
 
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted">
+            <h2 className="text-sm font-semibold text-ink/70">
               {formatShortDate(selectedDay.toISOString().slice(0, 10))}
             </h2>
             {dayEvents.length === 0 ? (
@@ -375,14 +375,14 @@ export default function BookingsPage() {
                         <p className="font-display text-base font-bold text-ink">
                           {ev.villaName}
                         </p>
-                        <p className="text-sm text-muted">{ev.label}</p>
+                        <p className="text-sm text-ink/75">{ev.label}</p>
                       </div>
                       <span
                         className={cn(
-                          "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                          "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold text-ink",
                           ev.kind === "direct"
-                            ? "bg-secondary-soft text-secondary-dark"
-                            : "bg-[color-mix(in_srgb,var(--color-sun)_28%,white)] text-ink",
+                            ? "bg-[color-mix(in_srgb,var(--color-sky)_18%,transparent)]"
+                            : "bg-[color-mix(in_srgb,var(--color-sun)_22%,transparent)]",
                         )}
                       >
                         {ev.kind === "direct"
@@ -390,7 +390,7 @@ export default function BookingsPage() {
                           : t("bookings.badgeChannel")}
                       </span>
                     </div>
-                    <p className="text-xs font-semibold text-muted">
+                    <p className="text-xs font-semibold text-ink/70">
                       {formatShortDate(ev.checkIn)} →{" "}
                       {formatShortDate(ev.checkOut)}
                     </p>
@@ -410,7 +410,7 @@ export default function BookingsPage() {
                         openTurnover ? (
                           <Link
                             href="/jobs"
-                            className="text-xs font-semibold text-secondary-dark"
+                            className="text-xs font-semibold text-sky"
                           >
                             {t("bookings.turnoverOpen")}
                           </Link>

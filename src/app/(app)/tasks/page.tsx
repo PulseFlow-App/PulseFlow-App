@@ -154,8 +154,7 @@ export default function TasksPage() {
           <h1 className="type-title">{t("tasks.title")}</h1>
           <p className="type-meta mt-1">{t("tasks.openCount", { count: openCount })}</p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <ReportsEntryLink />
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
           <Button
             size="xs"
             className="shrink-0"
@@ -169,6 +168,7 @@ export default function TasksPage() {
               </>
             )}
           </Button>
+          <ReportsEntryLink />
         </div>
       </div>
 

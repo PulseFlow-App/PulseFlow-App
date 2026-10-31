@@ -48,7 +48,7 @@ export function Button({
         variant === "secondary" &&
           "bg-sky text-white shadow-[0_8px_18px_rgba(33,158,188,0.28)] hover:brightness-95",
         variant === "ghost" &&
-          "border border-[var(--color-border)] bg-card text-ink hover:bg-canvas-deep",
+          "border border-[var(--color-border)] bg-card text-ink hover:bg-[color-mix(in_srgb,var(--color-sky)_10%,transparent)]",
         variant === "danger" && "bg-danger text-white",
         showBusy && "pointer-events-none",
         className,

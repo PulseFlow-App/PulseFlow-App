@@ -200,7 +200,7 @@ Legend: ● yes · ◐ limited · ○ no
 - Soft auto-archive of completed stays; richer host tools  
 - Google Sheets sync; **subscribe** feed out to Google / Apple Calendar; LINE/WhatsApp ops alerts  
 
-- Full channel-manager / PMS APIs (Hostaway, Guesty) — basic Airbnb/Booking.com **iCal import is already live**  
+- Full Hostaway PMS API — Guesty Open API connect (listings + export calendars) is available for company Owner/Manager in Settings; Airbnb/Booking.com **iCal import** remains for single listings  
 - Long-term tenant screening / e-lease (not Pulse Flow’s vacation-ops focus)  
 - Full accounting product, “integrate with everything”
 

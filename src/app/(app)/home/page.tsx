@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { startOfDay } from "date-fns";
 import { HeroCard } from "@/components/home/hero-card";
 import { StatGrid } from "@/components/home/stat-grid";
@@ -32,7 +32,6 @@ export default function HomePage() {
   const data = useData();
   const { t } = useI18n();
   const { displayCurrency, convertToDisplay } = useDisplayCurrency();
-  const [selectedDay, setSelectedDay] = useState(() => startOfDay(new Date()));
 
   const counts = useMemo(() => {
     const base: Record<VillaStatus, number> = {
@@ -123,8 +122,6 @@ export default function HomePage() {
         <DateStrip
           villas={data.villas}
           calendarBookings={data.calendarBookings}
-          selected={selectedDay}
-          onSelect={setSelectedDay}
         />
         <WeeklyChart tasks={data.tasks} />
       </div>

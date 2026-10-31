@@ -125,7 +125,7 @@ export function WorkspaceSwitcherCard() {
         <h2 className="text-lg font-bold tracking-tight text-ink">
           {t("settings.yourCompanies")}
         </h2>
-        <p className="type-meta mt-1">{t("settings.yourCompaniesHint")}</p>
+        <p className="mt-1 text-sm text-ink/70">{t("settings.yourCompaniesHint")}</p>
       </div>
       <ul className="space-y-2">
         {rows.map((row) => {

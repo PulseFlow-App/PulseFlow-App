@@ -9,7 +9,7 @@ import {
 } from "@/lib/legal/audiences";
 
 /** Bump when Terms or Privacy substantive text changes. */
-export const LEGAL_LAST_UPDATED = "29 October 2026";
+export const LEGAL_LAST_UPDATED = "31 October 2026";
 
 export function LegalIntro({
   kind,
@@ -239,14 +239,45 @@ export function TermsOwnerSection() {
           accurate; protect access codes.
         </li>
         <li>
-          Calendar export links you paste (for example Airbnb or Booking.com)
-          are secrets. You authorize us to fetch occupancy. Guests still book
-          and pay on that channel. We are not affiliated with those platforms.
+          Optional Airbnb, Booking.com or Guesty calendar export (.ics) links,
+          and Guesty Open API Client ID / Client secret in company Settings, are
+          secrets. You authorize us to pull occupancy and listing metadata into
+          your workspace. Guests still book and pay on that channel. We do not
+          take your Airbnb, Booking.com or Guesty login passwords. We are not
+          affiliated with those platforms.
         </li>
         <li>
           Vet staff, supervise work and process guest data lawfully. Managers
           share ops access; company settings and some inventory controls stay
           with the owner as configured in the product.
+        </li>
+      </ul>
+    </section>
+  );
+}
+
+export function TermsChannelsSection() {
+  return (
+    <section className="space-y-2">
+      <h2 className="font-display text-lg font-bold">
+        Channel calendars and Guesty
+      </h2>
+      <ul className="list-disc space-y-1 pl-5 text-muted">
+        <li>
+          Owners and managers may paste a private calendar export link from
+          Airbnb, Booking.com or Guesty, or connect Guesty Open API credentials
+          once for the company. That authorizes sync into Bookings and related
+          property records only.
+        </li>
+        <li>
+          Treat export links and Guesty Client ID / Client secret like
+          passwords. Anyone with the link can often read the feed. Disconnect
+          Guesty or clear a calendar link anytime in the app.
+        </li>
+        <li>
+          {brand.name} is not a booking channel. Listings, checkout and guest
+          payments stay on Airbnb, Booking.com, Guesty or wherever you sell the
+          stay.
         </li>
       </ul>
     </section>
@@ -320,6 +351,7 @@ export function TermsCommonSections({
       <TermsRolesOverview />
       <TermsMoneySection />
       {includeResponsibilities ? <TermsResponsibilitiesSection /> : null}
+      <TermsChannelsSection />
       <TermsAgentSection />
 
       <section className="space-y-2">
@@ -436,6 +468,11 @@ export function PrivacySummary() {
           We do not sell personal information, and we do not share it with
           advertisers.
         </li>
+        <li>
+          Guesty API secrets and channel calendar export links stay private to
+          your company. Readable Guesty Client ID and Client secret are never
+          stored in our databases.
+        </li>
       </ul>
     </section>
   );
@@ -468,6 +505,12 @@ export function PrivacyWhoCanSeeSection() {
         <li>
           Invites: when you invite someone, we store the invite and join record
           tied to your company.
+        </li>
+        <li>
+          Guesty Client ID and Client secret are never shown to staff, guests or
+          other companies. Owners and managers see only connection status, not
+          the secret again after save. Calendar export links stay inside your
+          company workspace.
         </li>
       </ul>
     </section>
@@ -512,6 +555,12 @@ export function PrivacyOwnerSection() {
           the organization, such as product and expiry date. Payment card
           details stay with Apple.
         </li>
+        <li>
+          Guesty API credentials and calendar export links you connect stay
+          private to your company. Readable Guesty Client ID and Client secret
+          are never stored in our databases (only encrypted ciphertext). Staff
+          and guests cannot view those secrets.
+        </li>
       </ul>
     </section>
   );
@@ -540,6 +589,47 @@ export function PrivacyStaffSection() {
   );
 }
 
+export function PrivacyChannelsSection() {
+  return (
+    <section className="space-y-2">
+      <h2 className="font-display text-lg font-bold">
+        Channel calendars and Guesty secrets
+      </h2>
+      <ul className="list-disc space-y-1 pl-5 text-muted">
+        <li>
+          We do not collect or store your Airbnb, Booking.com or Guesty login
+          passwords.
+        </li>
+        <li>
+          Guesty Open API Client ID and Client secret that an owner or manager
+          enters in Settings are encrypted before save. Our databases hold only
+          ciphertext. Readable (plaintext) Client ID and Client secret are never
+          stored in any database table, never shown again in the app after you
+          save, and are not visible to staff, guests, other companies, or anyone
+          browsing database records. Our servers decrypt them momentarily only
+          to call Guesty on your behalf, then discard the plaintext.
+        </li>
+        <li>
+          Private calendar export (.ics) links from Airbnb, Booking.com or
+          Guesty that you paste are treated as secrets. We use them only to
+          fetch occupancy for your property workspace. They are not sold, not
+          shared with advertisers, and not exposed to other companies. Only
+          people in your company with the right role can manage those links in
+          the app.
+        </li>
+        <li>
+          Occupancy and listing facts imported from those feeds stay in your
+          workspace under the same role rules as other operations data.
+        </li>
+        <li>
+          You can disconnect Guesty or remove a calendar link at any time. We
+          then stop using those credentials for new syncs.
+        </li>
+      </ul>
+    </section>
+  );
+}
+
 export function PrivacyCommonSections({
   includeWhoCanSee = true,
 }: {
@@ -558,8 +648,15 @@ export function PrivacyCommonSections({
             Operations data: properties (including photos and listing links),
             tasks, jobs, contacts, team chat, expense bills and receipts,
             reports, guest stays, house guides, property details and access
-            information, maintenance logs, and optional calendar-export links
-            and imported occupancy.
+            information, maintenance logs, optional calendar-export links from
+            Airbnb, Booking.com or Guesty, and occupancy imported from those
+            feeds.
+          </li>
+          <li>
+            Channel integration data: if an owner or manager connects Guesty, we
+            store encrypted Guesty Open API Client ID and Client secret, sync
+            status, and Guesty listing IDs linked to properties. We do not
+            collect Airbnb, Booking.com or Guesty account passwords.
           </li>
           <li>
             Guest stay data: date requests, quotes, confirmed stays, deposit
@@ -589,6 +686,8 @@ export function PrivacyCommonSections({
 
       {includeWhoCanSee ? <PrivacyWhoCanSeeSection /> : null}
 
+      <PrivacyChannelsSection />
+
       <section className="space-y-2">
         <h2 className="font-display text-lg font-bold">How we use data</h2>
         <ul className="list-disc space-y-1 pl-5 text-muted">
@@ -596,6 +695,10 @@ export function PrivacyCommonSections({
           <li>
             Provide the features you use and keep workspaces separate from each
             other
+          </li>
+          <li>
+            Sync occupancy and listings you authorize from Airbnb, Booking.com
+            or Guesty calendar feeds and Guesty Open API
           </li>
           <li>Send the notifications you enable</li>
           <li>
@@ -670,10 +773,12 @@ export function PrivacyCommonSections({
         <p className="text-muted">
           We keep data while your organization is active and for a reasonable
           period afterward for backups, dispute handling and legal compliance.
-          We use HTTPS, access controls and role-based views, so guests, staff
-          and owners do not see each other’s private channels by default. No
-          method is completely secure: use strong passwords or passkeys, limit
-          invites, and protect your access codes and connection keys.
+          We use HTTPS, encryption for Guesty API secrets, access controls and
+          role-based views, so guests, staff and owners do not see each other’s
+          private channels by default. Readable Guesty Client ID and Client
+          secret are never stored in our databases. No method is completely
+          secure: use strong passwords or passkeys, limit invites, and protect
+          your access codes, calendar export links and connection keys.
         </p>
       </section>
 

@@ -182,7 +182,7 @@ export default function CompanyPage() {
                 const checked = selectedVillas.includes(villa.id);
                 return (
                   <li key={villa.id}>
-                    <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-canvas-deep px-3 py-2.5 text-sm">
+                    <label className="pf-panel-soft flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 text-sm">
                       <input
                         type="checkbox"
                         className="size-4 shrink-0 accent-primary"
@@ -226,7 +226,7 @@ export default function CompanyPage() {
         {team.map((p) => (
           <div
             key={p.id}
-            className="flex items-center justify-between gap-3 rounded-2xl bg-canvas-deep px-3 py-2.5 text-sm"
+            className="pf-panel-soft flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm"
           >
             <div className="min-w-0">
               <span className="font-semibold text-ink">{p.full_name}</span>

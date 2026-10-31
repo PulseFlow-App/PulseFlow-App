@@ -177,11 +177,11 @@ export function PushSettingsCard() {
         <h2 className="font-display text-lg font-bold text-ink">
           {t("settings.pushTitle")}
         </h2>
-        <p className="mt-1 text-sm text-muted">{t(pushHint)}</p>
+        <p className="mt-1 text-sm text-ink/70">{t(pushHint)}</p>
       </div>
 
       {iosNeedsInstall ? (
-        <p className="rounded-2xl bg-canvas-deep px-3 py-2 text-sm text-muted">
+        <p className="pf-panel-soft rounded-2xl px-3 py-2 text-sm text-ink">
           {t("settings.pushIosHint")}
         </p>
       ) : null}
@@ -215,7 +215,7 @@ export function PushSettingsCard() {
       )}
 
       {subscribed ? (
-        <div className="overflow-hidden rounded-2xl border border-black/5 bg-canvas-deep/40">
+        <div className="pf-panel-soft overflow-hidden rounded-2xl border border-[var(--color-border)]">
           <button
             type="button"
             className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left"
@@ -227,15 +227,15 @@ export function PushSettingsCard() {
             </span>
             <ChevronDown
               className={cn(
-                "size-4 shrink-0 text-muted transition",
+                "size-4 shrink-0 text-ink/65 transition",
                 categoriesOpen && "rotate-180",
               )}
               aria-hidden
             />
           </button>
           {categoriesOpen ? (
-            <div className="space-y-2 border-t border-black/5 px-3 pb-3 pt-2">
-              <p className="px-1 text-xs text-muted">
+            <div className="space-y-2 border-t border-[var(--color-border)] px-3 pb-3 pt-2">
+              <p className="px-1 text-xs text-ink/70">
                 {t("settings.pushCategoriesHint")}
               </p>
               {categories.map((category) => (
@@ -247,7 +247,7 @@ export function PushSettingsCard() {
                     <span className="block text-sm font-medium text-ink">
                       {t(pushCategoryLabelKey(category))}
                     </span>
-                    <span className="mt-0.5 block text-xs text-muted">
+                    <span className="mt-0.5 block text-xs text-ink/70">
                       {t(pushCategoryHintKey(category))}
                     </span>
                   </span>

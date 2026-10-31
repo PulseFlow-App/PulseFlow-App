@@ -175,9 +175,17 @@ const he: Dictionary = {
   "villas.listingUrl": "Listing link (Airbnb)",
   "villas.listingUrlPh": "",
   "villas.listingUrlHint": "",
-  "villas.icalUrl": "ייצוא יומן (Airbnb / Booking.com)",
-  "villas.icalUrlHint":
-    "ב-Airbnb או Booking.com: יומן → סנכרון יומנים → ייצוא. הדביקו את קישור ה-.ics הפרטי כאן, ואז סנכרנו.",
+  "villas.icalUrl": "ייצוא יומן",
+  "villas.icalUrlHint": "",
+  "calendarExport.airbnb": "Airbnb",
+  "calendarExport.booking": "Booking",
+  "calendarExport.guesty": "Guesty",
+  "calendarExport.airbnbSteps":
+    "יומן המארח → בחרו נכס → זמינות → חיבור יומנים → חיבור לאתר אחר → העתיקו את קישור ייצוא היומן (.ics). הדביקו למטה ולחצו סנכרון.",
+  "calendarExport.bookingSteps":
+    "Booking.com Extranet → Rates & Availability (או Calendar) → Sync calendars → Export calendar → העתיקו את הקישור הפרטי. הדביקו למטה ולחצו סנכרון.",
+  "calendarExport.guestySteps":
+    "Guesty → Properties → נכס → Calendar → Calendar sync (iCal) → Export Guesty calendar → העתיקו את כתובת ה-iCalendar. הדביקו למטה ולחצו סנכרון. לכל התיק, השתמשו בהגדרות → Guesty.",
   "villas.icalSync": "סנכרון",
   "villas.icalSyncOk": "ההזמנות נמשכו ל-Pulse Flow.",
   "villas.icalSyncFail": "לא ניתן לסנכרן את היומן.",
@@ -1125,7 +1133,8 @@ const he: Dictionary = {
   "bookings.connectFeed": "חיבור יומן",
   "bookings.connectFail": "Could not sync that calendar link.",
   "bookings.connectOk": "{count} night synced|{count} nights synced",
-  "bookings.connectHint": "Paste the Export calendar (iCal) URL from Airbnb, Booking.com, or VRBO. We pull stays into this calendar. There is no Airbnb OAuth login.",
+  "bookings.connectHint":
+    "בחרו Airbnb, Booking או Guesty להנחיות איפה למצוא את קישור הייצוא, הדביקו וסנכרנו.",
   "bookings.connectTitle": "Link a property calendar",
   "bookings.emptyVillas": "אין נכסים עדיין",
   "bookings.emptyVillasHint": "הוסיפו נכס, ואז הדביקו את קישור היומן מ-Airbnb או Booking.com.",
@@ -1627,6 +1636,66 @@ const he: Dictionary = {
   "home.downloadJobReports": "Download job reports",
   "home.openBookingCalendar": "Booking calendar",
   "jobs.workWindowsCta": "Work windows by property",
+  "education.mode": "Education mode",
+  "education.next": "Next",
+  "education.finish": "Got it",
+  "education.skip": "Skip tour",
+  "education.progress": "{current} of {total}",
+  "education.welcomeTitle": "Start here after sign-in",
+  "education.welcomeBody":
+    "Home shows Focus of today and check-ins. Bottom icons open properties, stays, jobs, team, and bills. Open the burger menu anytime for Education mode again.",
+  "education.guestWelcomeTitle": "Your stay in one place",
+  "education.guestWelcomeBody":
+    "Open your house guide, support chat with the host team, and stay notes from Home. Use Settings to pick your language.",
+  "education.settingsTitle": "Settings worth setting once",
+  "education.settingsBody":
+    "Set Language and Currency under Settings. Pick Frost or Dark for appearance. Team content translation stays on so chat and tasks follow your app language.",
+  "education.propertiesTitle": "Add your properties",
+  "education.propertiesBody":
+    "Open Properties, add a villa, then fill Stay and team, Master info, and Quick fill. Paste an Airbnb or Booking.com Export calendar URL to sync nights.",
+  "education.staffTitle": "Invite staff",
+  "education.staffBody":
+    "From Invites or Company, create a link for Manager or Staff. They join with that link. Assign people on each property so jobs reach the right hands.",
+  "education.jobsVsTasksTitle": "Jobs vs tasks",
+  "education.jobsVsTasksBody":
+    "Jobs are service orders to a person (clean, turnover, repair). They must Read and agree before work counts as contacted. Tasks are property to-dos with due times, photos, and verify when needed.",
+  "education.createWorkTitle": "Create jobs and tasks",
+  "education.createWorkBody":
+    "Owners and managers create jobs from Jobs or Contacts. Tasks live under Tasks or on a property. Staff see their board on Home and open an item to accept or finish.",
+  "education.transferTitle": "Bring the Owner later",
+  "education.transferBody":
+    "If you run as Manager first, open Invites and use Transfer ownership. The new Owner takes billing; you stay as Manager on the company.",
+  "education.staffBoardTitle": "Your board on Home",
+  "education.staffBoardBody":
+    "Home lists jobs waiting for you and today's focus. Open a job to read details. Properties you are assigned to keep Master info and notes for the place.",
+  "education.staffAcceptTitle": "Accept before you start",
+  "education.staffAcceptBody":
+    "Tap Read and agreed on a job so the owner sees you as contacted. Mark done when finished. For tasks, complete or request verify if the owner asked for a photo check.",
+  "guesty.title": "Guesty",
+  "guesty.hint":
+    "Connect your Guesty company account to import listings into Pulse and pull each property calendar.",
+  "guesty.demoHint":
+    "Guesty connect is available on a live company workspace, not in demo.",
+  "guesty.clientId": "Client ID",
+  "guesty.clientSecret": "Client secret",
+  "guesty.whereKeys":
+    "In Guesty: Integrations → OAuth applications → New application. Copy Client ID and Client secret (secret is shown once).",
+  "guesty.connect": "Connect Guesty",
+  "guesty.connectOk": "Guesty connected. Run Sync listings next.",
+  "guesty.connectFail": "Could not connect Guesty. Check Client ID and secret.",
+  "guesty.connected": "Guesty connected",
+  "guesty.readyToSync": "Ready to import listings into this company.",
+  "guesty.lastSync": "Last sync {when} · {count} listings seen",
+  "guesty.syncNow": "Sync listings",
+  "guesty.syncOk":
+    "Seen {seen}: created {created}, updated {updated}, calendars synced {calendars}.",
+  "guesty.syncFail": "Could not sync Guesty listings.",
+  "guesty.disconnect": "Disconnect",
+  "guesty.disconnectConfirm":
+    "Remove Guesty credentials from Pulse? Existing properties stay; calendars stop auto-updating from Guesty until you reconnect.",
+  "guesty.disconnected": "Guesty disconnected.",
+  "guesty.needsMigration":
+    "Ask your admin to apply database migration 064 before connecting Guesty.",
 };
 
 export default he;

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, FileText, Loader2, Mic, Square, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
+import { CalendarExportField } from "@/components/villas/calendar-export-field";
 import { useI18n } from "@/lib/i18n/provider";
 import type { VillaEnrichment } from "@/lib/villas/enrich-from-source";
 import {
@@ -275,7 +276,7 @@ export function VillaQuickSources({
       className={
         embedded
           ? "space-y-3"
-          : "space-y-3 rounded-2xl border border-[var(--color-border)] bg-canvas-deep/60 p-3"
+          : "pf-panel-soft space-y-3 rounded-2xl border border-sky/20 p-3"
       }
     >
       {!embedded ? (
@@ -309,51 +310,48 @@ export function VillaQuickSources({
       </div>
 
       <div>
-        <Label>{t("villas.icalUrl")}</Label>
-        <p className="mt-0.5 text-xs text-muted">{t("villas.icalUrlHint")}</p>
-        <div className="mt-1 flex items-center gap-2">
-          <Input
-            value={value.ical_import_url}
-            onChange={(e) => {
-              setIcalError(null);
-              setIcalNote(null);
-              set({ ical_import_url: e.target.value });
-            }}
-            placeholder="https://www.airbnb.com/calendar/ical/…"
-            className="min-w-0 flex-1 pl-4"
-            autoComplete="off"
-          />
-          {onSyncCalendar ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              className="shrink-0"
-              reflectGlobalBusy={false}
-              busy={icalBusy}
-              disabled={!value.ical_import_url.trim()}
-              onClick={() => {
-                void (async () => {
-                  setIcalBusy(true);
-                  setIcalError(null);
-                  setIcalNote(null);
-                  try {
-                    await onSyncCalendar(value.ical_import_url.trim());
-                    setIcalNote(t("villas.icalSyncOk"));
-                  } catch (e) {
-                    setIcalError(
-                      e instanceof Error ? e.message : t("villas.icalSyncFail"),
-                    );
-                  } finally {
-                    setIcalBusy(false);
-                  }
-                })();
-              }}
-            >
-              {icalBusy ? t("common.saving") : t("villas.icalSync")}
-            </Button>
-          ) : null}
-        </div>
+        <CalendarExportField
+          value={value.ical_import_url}
+          onChange={(next) => {
+            setIcalError(null);
+            setIcalNote(null);
+            set({ ical_import_url: next });
+          }}
+          action={
+            onSyncCalendar ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="shrink-0"
+                reflectGlobalBusy={false}
+                busy={icalBusy}
+                disabled={!value.ical_import_url.trim()}
+                onClick={() => {
+                  void (async () => {
+                    setIcalBusy(true);
+                    setIcalError(null);
+                    setIcalNote(null);
+                    try {
+                      await onSyncCalendar(value.ical_import_url.trim());
+                      setIcalNote(t("villas.icalSyncOk"));
+                    } catch (e) {
+                      setIcalError(
+                        e instanceof Error
+                          ? e.message
+                          : t("villas.icalSyncFail"),
+                      );
+                    } finally {
+                      setIcalBusy(false);
+                    }
+                  })();
+                }}
+              >
+                {icalBusy ? t("common.saving") : t("villas.icalSync")}
+              </Button>
+            ) : null
+          }
+        />
         {icalSyncedAt ? (
           <p className="mt-1 text-xs text-muted">
             {t("villas.icalSyncedAt", {

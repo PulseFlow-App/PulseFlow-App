@@ -213,7 +213,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-sky);
+  color: color-mix(in srgb, var(--color-ink) 72%, transparent);
 }
 
 /* Home / card section headings */
@@ -340,6 +340,36 @@ label {
   box-shadow: var(--shadow-lift);
 }
 
+/*
+  Soft inset panels: light sky wash in Frost; neutral lift in Dark
+  (avoid sky fill + cyan ink = blue-on-blue).
+*/
+.pf-panel-soft {
+  background-color: color-mix(in srgb, var(--color-sky) 11%, #ffffff);
+}
+.pf-panel-soft-strong {
+  background-color: color-mix(in srgb, var(--color-sky) 18%, #ffffff);
+}
+html[data-appearance="dark"] .pf-panel-soft {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+html[data-appearance="dark"] .pf-panel-soft-strong {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Choice chips (appearance, language, filters): selected = primary soft */
+.pf-choice {
+  border: 1px solid var(--color-border);
+  background-color: var(--color-card);
+  color: var(--color-ink);
+}
+.pf-choice-selected {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+  background-color: var(--color-primary-soft);
+  color: var(--color-ink);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
 /* Screen rhythm */
 .pf-screen {
   display: flex;
@@ -424,15 +454,16 @@ html[data-appearance="dark"] {
   --color-sand: #15202a;
   --color-sand-deep: #1c2936;
   --color-canvas: #15202a;
-  --color-canvas-deep: #1c2936;
+  --color-canvas-deep: #1a3140;
   --color-card: rgba(30, 42, 54, 0.88);
   --color-surface: rgba(30, 42, 54, 0.88);
-  --color-ink: #e8f4f8;
-  --color-muted: #9bb4c0;
-  --color-border: rgba(232, 244, 248, 0.14);
+  /* Near-white ink (less cyan) so text stays clear on soft panels */
+  --color-ink: #f3f6f8;
+  --color-muted: #b4c0c8;
+  --color-border: rgba(243, 246, 248, 0.14);
   /* Bottom nav bar stays dark glass (not light ink) */
   --color-nav: #121c26;
-  --color-foreground: #e8f4f8;
+  --color-foreground: #f3f6f8;
   --color-background: #15202a;
   --color-primary-soft: rgba(242, 106, 54, 0.22);
   --color-secondary-soft: rgba(42, 157, 143, 0.22);
@@ -536,6 +567,12 @@ html[data-appearance="dark"] .text-ink {
 }
 html[data-appearance="dark"] .text-muted {
   color: var(--color-muted);
+}
+html[data-appearance="dark"] .type-meta {
+  color: color-mix(in srgb, var(--color-ink) 72%, transparent);
+}
+html[data-appearance="dark"] .text-sky {
+  color: #7ec8de;
 }
 html[data-appearance="dark"] .border-\[var\(--color-border\)\] {
   border-color: var(--color-border);

@@ -306,11 +306,11 @@ export default function ReportsPage() {
           <Printer className="size-4" />
           {t("reports.printWeekly")}
         </Button>
-        <details className="rounded-xl border border-[var(--color-border)] bg-canvas-deep/40">
+        <details className="pf-panel-soft rounded-xl border border-sky/25">
           <summary className="cursor-pointer list-none px-3 py-2 font-display text-sm font-bold text-ink [&::-webkit-details-marker]:hidden">
             {t("reports.exportHint")}
           </summary>
-          <div className="flex flex-col gap-1.5 border-t border-[var(--color-border)] px-3 py-2">
+          <div className="flex flex-col gap-1.5 border-t border-sky/20 px-3 py-2">
             {exportActions.map((action) => (
               <Button
                 key={action.key}
@@ -360,7 +360,7 @@ export default function ReportsPage() {
             {snapshots.map((snapshot) => (
               <li
                 key={snapshot.id}
-                className="flex items-center justify-between rounded-xl bg-canvas-deep px-3 py-1.5"
+                className="pf-panel-soft flex items-center justify-between rounded-xl px-3 py-1.5"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">

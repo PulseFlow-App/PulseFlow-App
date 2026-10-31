@@ -121,7 +121,7 @@ function ReopenOrderPanel({ orderId }: { orderId: string }) {
   }
 
   return (
-    <div className="space-y-2 rounded-xl bg-sand/50 p-3">
+    <div className="pf-panel-soft space-y-2 rounded-xl p-3">
       <p className="text-xs text-muted">{t("jobs.repostHint")}</p>
       <div>
         <Label>{t("jobs.assigneeOptional")}</Label>
