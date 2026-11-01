@@ -48,6 +48,10 @@ export type RegisterWorkspaceInput = {
     country?: string;
     listNow?: boolean;
   };
+  /** ISO time. Registration is refused without it. */
+  termsAcceptedAt?: string | null;
+  /** Optional email. Unset means no. */
+  emailOptIn?: boolean;
 };
 
 export const COMPANY_TRIAL_DAYS = 90;

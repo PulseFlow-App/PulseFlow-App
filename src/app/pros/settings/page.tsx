@@ -1,22 +1,285 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { readPhoto } from "@/components/pros/parts";
 import { Button } from "@/components/ui/button";
+import { Input, Label, Textarea } from "@/components/ui/input";
+import { useAppearance } from "@/lib/appearance/provider";
+import { AREAS, CATEGORIES, PROS_LANGS, localizedName } from "@/lib/pros/catalog";
+import {
+  ensureMyServiceListing,
+  serviceInviteCode,
+  updateServiceListing,
+} from "@/lib/pros/join";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
+import { useI18n } from "@/lib/i18n/provider";
+import { cn } from "@/lib/utils";
+
+function splitAbout(description: string) {
+  const about = description.replace(/\n\nAvailable:[\s\S]*$/, "").trim();
+  const when = description.match(/\n\nAvailable: ([\s\S]*)$/);
+  return { about, availability: when?.[1]?.trim() ?? "" };
+}
+
+function Chip({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full px-3 py-1 text-xs font-semibold",
+        active ? "bg-primary text-white" : "bg-canvas-deep text-ink",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function ListingForm() {
+  const { actor, t } = usePros();
+  const { locale } = useI18n();
+  const [name, setName] = useState("");
+  const [about, setAbout] = useState("");
+  const [availability, setAvailability] = useState("");
+  const [phone, setPhone] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [lineId, setLineId] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [areaIds, setAreaIds] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<string[]>(["en"]);
+  const [open, setOpen] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!actor) return;
+    const row = ensureMyServiceListing(actor);
+    const parts = splitAbout(row.description);
+    setName(row.name);
+    setAbout(parts.about);
+    setAvailability(parts.availability);
+    setPhone(row.phone ?? "");
+    setWhatsapp(row.whatsapp ?? "");
+    setLineId(row.lineId ?? "");
+    setPhotoUrl(row.photoUrl);
+    setCategoryIds(row.categoryIds);
+    setAreaIds(row.areaIds);
+    setLanguages(row.languages.length ? row.languages : ["en"]);
+    setOpen(row.visibility === "public");
+    setReady(true);
+  }, [actor]);
+
+  if (!actor || !ready) return null;
+
+  const places = AREAS.filter((area) => area.level === "locality" || area.level === "district");
+  const toggle = (list: string[], id: string, set: (next: string[]) => void) => {
+    set(list.includes(id) ? list.filter((item) => item !== id) : [...list, id]);
+  };
+
+  return (
+    <form
+      className="space-y-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const ok = updateServiceListing({
+          name,
+          description: about,
+          availability,
+          phone: phone.trim() || null,
+          whatsapp: whatsapp.trim() || null,
+          lineId: lineId.trim() || null,
+          photoUrl,
+          categoryIds,
+          areaIds,
+          languages,
+          visibility: open ? "public" : "private",
+        });
+        setNote(ok ? t("saved") : null);
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-canvas-deep text-lg font-semibold text-ink">
+          {photoUrl ? (
+            <img src={photoUrl} alt="" className="size-full object-cover" />
+          ) : (
+            name.trim().slice(0, 1).toUpperCase()
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <Label htmlFor="listing-photo">{t("photo")}</Label>
+          <Input
+            id="listing-photo"
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              void readPhoto(file).then((url) => {
+                if (!url) {
+                  setPhotoError(t("photoTooBig"));
+                  return;
+                }
+                setPhotoError(null);
+                setPhotoUrl(url);
+              });
+            }}
+          />
+        </div>
+      </div>
+      {photoError ? <p className="text-sm text-danger">{photoError}</p> : null}
+      <div>
+        <Label htmlFor="listing-name">{t("name")}</Label>
+        <Input id="listing-name" value={name} onChange={(e) => setName(e.target.value)} required />
+      </div>
+      <div>
+        <Label htmlFor="listing-about">{t("about")}</Label>
+        <Textarea id="listing-about" value={about} onChange={(e) => setAbout(e.target.value)} rows={3} />
+      </div>
+      <div>
+        <Label htmlFor="listing-when">{t("availability")}</Label>
+        <Input id="listing-when" value={availability} onChange={(e) => setAvailability(e.target.value)} />
+      </div>
+      <div>
+        <Label htmlFor="listing-phone">{t("phone")}</Label>
+        <Input id="listing-phone" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
+      </div>
+      <div>
+        <Label htmlFor="listing-wa">{t("whatsapp")}</Label>
+        <Input id="listing-wa" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+      </div>
+      <div>
+        <Label htmlFor="listing-line">{t("line")}</Label>
+        <Input id="listing-line" value={lineId} onChange={(e) => setLineId(e.target.value)} />
+      </div>
+      <div>
+        <p className="mb-1 text-sm font-medium text-ink">{t("trades")}</p>
+        <div className="flex flex-wrap gap-1.5">
+          {CATEGORIES.filter((row) => row.slug !== "other").map((row) => (
+            <Chip
+              key={row.id}
+              active={categoryIds.includes(row.id)}
+              label={localizedName(row.names, locale)}
+              onClick={() => toggle(categoryIds, row.id, setCategoryIds)}
+            />
+          ))}
+        </div>
+      </div>
+      <div>
+        <p className="mb-1 text-sm font-medium text-ink">{t("areas")}</p>
+        <div className="flex flex-wrap gap-1.5">
+          {places.map((row) => (
+            <Chip
+              key={row.id}
+              active={areaIds.includes(row.id)}
+              label={localizedName(row.names, locale)}
+              onClick={() => toggle(areaIds, row.id, setAreaIds)}
+            />
+          ))}
+        </div>
+      </div>
+      <div>
+        <p className="mb-1 text-sm font-medium text-ink">{t("languages")}</p>
+        <div className="flex flex-wrap gap-1.5">
+          {PROS_LANGS.map((lang) => (
+            <Chip
+              key={lang}
+              active={languages.includes(lang)}
+              label={lang}
+              onClick={() => toggle(languages, lang, setLanguages)}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        <Chip active={open} label={t("listingOpen")} onClick={() => setOpen(true)} />
+        <Chip active={!open} label={t("listingHidden")} onClick={() => setOpen(false)} />
+      </div>
+      {note ? <p className="text-sm font-semibold text-ink">{note}</p> : null}
+      <Button type="submit" className="min-h-12 w-full">
+        {t("saveListing")}
+      </Button>
+    </form>
+  );
+}
 
 export default function ServicesSettingsPage() {
   const { actor, actorReady, plan, setPlan, t } = usePros();
   const pathname = usePathname();
+  const router = useRouter();
+  const { appearance, setAppearance } = useAppearance();
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
+  const [invite, setInvite] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!actorReady || actor) return;
+    router.replace(`${start}?mode=sign-in&next=${encodeURIComponent(servicesPath(pathname, "/settings"))}`);
+  }, [actor, actorReady, pathname, router, start]);
+
+  useEffect(() => {
+    if (!actor) return;
+    setInvite(serviceInviteCode());
+  }, [actor]);
+
+  if (!actor) return null;
+
+  const inviteLink =
+    invite && typeof window !== "undefined"
+      ? `${window.location.origin}/register?from=${invite}`
+      : "";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h1 className="font-display text-2xl font-semibold text-ink">{t("settings")}</h1>
-      <p className="text-sm leading-relaxed text-muted">{t("trialBody")}</p>
 
-      <section className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+      <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+        <h2 className="font-display text-lg font-semibold text-ink">{t("yourListing")}</h2>
+        <p className="text-sm leading-relaxed text-muted">{t("listingHint")}</p>
+        <ListingForm />
+      </section>
+
+      <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+        <h2 className="font-display text-lg font-semibold text-ink">{t("theme")}</h2>
+        <div className="flex flex-wrap gap-1.5">
+          <Chip active={appearance !== "dark"} label={t("themeFrost")} onClick={() => setAppearance("frost")} />
+          <Chip active={appearance === "dark"} label={t("themeDark")} onClick={() => setAppearance("dark")} />
+        </div>
+      </section>
+
+      <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+        <h2 className="font-display text-lg font-semibold text-ink">{t("inviteCode")}</h2>
+        <p className="text-sm leading-relaxed text-muted">{t("inviteHint")}</p>
+        <p className="font-display text-lg font-semibold tracking-wide text-ink">{invite}</p>
+        <Button
+          type="button"
+          variant="secondary"
+          className="min-h-12 w-full"
+          onClick={() => {
+            const link = `${window.location.origin}/register?from=${invite}`;
+            void navigator.clipboard.writeText(link).then(() => {
+              setCopied(true);
+            });
+          }}
+        >
+          {copied ? t("copied") : t("copyInvite")}
+        </Button>
+        {inviteLink ? <p className="break-all text-xs text-muted">{inviteLink}</p> : null}
+      </section>
+
+      <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-display text-lg font-semibold text-ink">Premium</h2>
           {plan.premium ? <span className="text-sm font-semibold text-ink">{t("planOn")}</span> : null}
@@ -34,7 +297,7 @@ export default function ServicesSettingsPage() {
         ) : null}
       </section>
 
-      <section className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+      <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-display text-lg font-semibold text-ink">Pro</h2>
           {plan.pro ? <span className="text-sm font-semibold text-ink">{t("planOn")}</span> : null}
@@ -53,18 +316,6 @@ export default function ServicesSettingsPage() {
       </section>
 
       <p className="text-xs leading-relaxed text-muted">{t("paymentNotCharged")}</p>
-
-      {actorReady && !actor ? (
-        <div className="space-y-3">
-          <p className="text-sm text-ink">{t("settingsNeedAccount")}</p>
-          <Link
-            href={`${start}?next=${encodeURIComponent(servicesPath(pathname, "/settings"))}`}
-            className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
-          >
-            {t("createServicesAccount")}
-          </Link>
-        </div>
-      ) : null}
     </div>
   );
 }

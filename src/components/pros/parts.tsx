@@ -13,6 +13,7 @@ import {
   SolarDelivery,
   SolarFridge,
   SolarHammer,
+  SolarHomeSmile,
   SolarKeyMinimal,
   SolarLeaf,
   SolarPaintRoller,
@@ -51,6 +52,7 @@ const TRADE_ICONS = {
   trash: SolarTrashBin,
   truck: SolarDelivery,
   users: SolarUsersGroup,
+  home: SolarHomeSmile,
   more: SolarWidget,
 } as const;
 
@@ -101,15 +103,22 @@ export function ServicesAccountGate({ next }: { next: string }) {
   const pathname = usePathname();
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
   return (
-    <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-card p-4">
-      <h2 className="font-display text-lg font-semibold text-ink">{t("trialTitle")}</h2>
-      <p className="text-sm text-muted">{t("trialBody")}</p>
-      <Link
-        href={`${start}?next=${encodeURIComponent(next)}`}
-        className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
-      >
-        {t("createServicesAccount")}
-      </Link>
+    <div className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+      <p className="text-sm leading-relaxed text-muted">{t("trialBody")}</p>
+      <div className="flex flex-col gap-1">
+        <Link
+          href={`${start}?next=${encodeURIComponent(next)}`}
+          className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
+        >
+          {t("signUp")}
+        </Link>
+        <Link
+          href={`${start}?mode=sign-in&next=${encodeURIComponent(next)}`}
+          className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink"
+        >
+          {t("signIn")}
+        </Link>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { DEMO_USER_COOKIE, isDemoMode } from "@/lib/env";
+import { authCookieDomain } from "@/lib/supabase/cookie-domain";
 import {
   isMarketplaceHost,
   marketplaceOriginForHost,
@@ -59,6 +60,8 @@ const MARKET_PREFIXES = [
   "/admin",
   "/start",
   "/settings",
+  "/terms",
+  "/privacy",
 ];
 
 function onMarketplaceHost(request: NextRequest) {
@@ -106,14 +109,14 @@ export async function updateSession(request: NextRequest) {
     );
     return NextResponse.redirect(dest);
   }
-  if (prosHost && isMarketplacePath(pathname)) {
-    return rewriteMarketplace(request, supabaseResponse);
-  }
   const demoCookie = request.cookies.get(DEMO_USER_COOKIE);
   const demoSession =
     isDemoMode(request.headers.get("cookie")) || Boolean(demoCookie?.value);
 
   if (demoSession) {
+    if (prosHost && isMarketplacePath(pathname)) {
+      return rewriteMarketplace(request, supabaseResponse);
+    }
     if (!demoCookie && !isPublicPath(pathname)) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
@@ -148,10 +151,14 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
+  const domain = authCookieDomain(
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host"),
+  );
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      ...(domain ? { cookieOptions: { domain } } : {}),
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -172,6 +179,10 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (prosHost && isMarketplacePath(pathname)) {
+    return rewriteMarketplace(request, supabaseResponse);
+  }
 
   if (!user && !isPublicPath(pathname)) {
     const url = request.nextUrl.clone();

@@ -26,7 +26,10 @@ import {
 } from "@/lib/billing/plans";
 import { DEMO_READ_ONLY_MESSAGE } from "@/lib/demo/guard";
 import { AREAS, CATEGORIES } from "@/lib/pros/catalog";
-import { isMarketplaceHost, MARKETPLACE_ORIGIN } from "@/lib/pros/paths";
+import { appOriginForHost, isMarketplaceHost, MARKETPLACE_ORIGIN } from "@/lib/pros/paths";
+import { LegalAccept } from "@/components/pros/legal-accept";
+import { prosT } from "@/lib/pros/i18n";
+import { saveServicesCustomer } from "@/lib/pros/trial";
 import {
   areaLabels,
   joinProfessional,
@@ -34,7 +37,7 @@ import {
   talentSkillsForCategories,
 } from "@/lib/pros/join";
 
-type Track = "maintenance" | "management";
+type Track = "maintenance" | "management" | "customer";
 type Plan = "personal" | "company";
 type CompanySeat = Extract<UserRole, "owner" | "manager">;
 
@@ -65,22 +68,29 @@ export default function RegisterPage() {
   const [orgName, setOrgName] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [description, setDescription] = useState("");
   const [availability, setAvailability] = useState("");
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [areaIds, setAreaIds] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>(["en"]);
-  const [listNow, setListNow] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+  const [emails, setEmails] = useState(false);
   const [listingId, setListingId] = useState<string | null>(null);
   const [servicesHref, setServicesHref] = useState("/");
+  const [appHref, setAppHref] = useState("https://app.pulseflow.site/");
+  const [onServices, setOnServices] = useState(false);
+  const [ready, setReady] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [acquisitionSource, setAcquisitionSource] = useState<string | null>(null);
 
   useEffect(() => {
-    const { protocol, hostname, port } = window.location;
-    if (isMarketplaceHost(window.location.host)) {
+    const { protocol, hostname, port, host } = window.location;
+    const services = isMarketplaceHost(host);
+    setOnServices(services);
+    setReady(true);
+    setAppHref(`${appOriginForHost(host, protocol)}/`);
+    if (services) {
       setServicesHref("/");
     } else if (hostname === "localhost" || hostname.endsWith(".localhost")) {
       setServicesHref(`${protocol}//services.localhost${port ? `:${port}` : ""}/`);
@@ -109,7 +119,7 @@ export default function RegisterPage() {
       null;
     setAcquisitionSource(src);
     const trackParam = params.get("track");
-    if (trackParam === "maintenance" || trackParam === "management") {
+    if (trackParam === "maintenance" || (trackParam === "management" && !services)) {
       setTrack(trackParam);
     }
   }, []);
@@ -139,6 +149,11 @@ export default function RegisterPage() {
       setError("Passwords do not match.");
       return;
     }
+    if ((track === "maintenance" || track === "customer") && !accepted) {
+      setError(prosT(locale, "legalNeedScroll"));
+      return;
+    }
+    const termsAcceptedAt = new Date().toISOString();
     if (track === "management" && plan === "company") {
       if (!orgName.trim()) {
         setError("Company name is required.");
@@ -150,18 +165,55 @@ export default function RegisterPage() {
       }
     }
     if (track === "maintenance") {
-      if (!categoryIds.length || !areaIds.length) {
-        setError("Choose at least one trade and one area.");
+      if (!whatsapp.trim() && !lineId.trim()) {
+        setError(t("register.contactEither"));
         return;
       }
-      if (description.trim().length < 12) {
-        setError("Add a short description of the work you do.");
+      if (!categoryIds.length || !areaIds.length) {
+        setError(t("register.needProfession"));
         return;
       }
     }
 
     setSaving(true);
     try {
+      if (track === "customer") {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName,
+            email,
+            password,
+            orgName: `${fullName.trim().split(" ")[0] || "My"}'s services`,
+            kind: "personal",
+            track: "management",
+            role: "owner",
+            termsAcceptedAt,
+            emailOptIn: emails,
+          }),
+        });
+        const payload = (await res.json()) as { error?: string };
+        if (!res.ok) {
+          const message = payload.error ?? "Could not register.";
+          if (/supabase|demo/i.test(message)) {
+            saveServicesCustomer({ name: fullName, email, termsAcceptedAt, emailOptIn: emails });
+            router.replace("/");
+            return;
+          }
+          throw new Error(message);
+        }
+        const { createClient } = await import("@/lib/supabase/client");
+        const { error: signInError } = await createClient().auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+        if (signInError) throw signInError;
+        router.replace("/");
+        router.refresh();
+        return;
+      }
+
       let createdListing: string | null = null;
       if (track === "maintenance") {
         createdListing = joinProfessional({
@@ -170,13 +222,15 @@ export default function RegisterPage() {
           phone,
           whatsapp,
           lineId,
-          description,
+          description: "",
           availability,
           categoryIds,
           areaIds,
           languages,
-          listNow,
+          listNow: false,
           referrer: referralCode,
+          emailOptIn: emails,
+          termsAcceptedAt,
         }).id;
         setListingId(createdListing);
       } else if (plan) {
@@ -188,6 +242,8 @@ export default function RegisterPage() {
           role: plan === "company" ? companySeat : "owner",
           payer: plan === "company" ? payer : null,
           referrer: referralCode,
+          emailOptIn: emails,
+          termsAcceptedAt,
         });
       }
 
@@ -216,16 +272,16 @@ export default function RegisterPage() {
             track,
             referredBy: referralCode,
             acquisitionSource,
+            termsAcceptedAt,
+            emailOptIn: emails,
             service:
               track === "maintenance"
                 ? {
                     skills: talentSkillsForCategories(categoryIds),
-                    bio: [description.trim(), availability.trim() ? `Available: ${availability.trim()}` : ""]
-                      .filter(Boolean)
-                      .join("\n\n"),
+                    bio: availability.trim() ? `Available: ${availability.trim()}` : "",
                     location: areaLabels(areaIds).join(", "),
                     country: "Thailand",
-                    listNow,
+                    listNow: false,
                   }
                 : undefined,
           }),
@@ -264,13 +320,14 @@ export default function RegisterPage() {
         </div>
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex justify-center">
-            <PulseMark className="size-12" />
+            {ready && onServices ? <ServicesMark className="size-12" /> : <PulseMark className="size-12" />}
           </div>
           <h1 className="font-display text-2xl font-bold text-ink">
             {t("register.accountTitle")}
           </h1>
         </div>
 
+        {ready ? (
         <div className="grid grid-cols-2 gap-3">
           <Choice
             icon={<ServicesMark className="size-7" />}
@@ -282,20 +339,39 @@ export default function RegisterPage() {
               setPlan(null);
               setError(null);
               setListingId(null);
+              setAccepted(false);
             }}
           />
-          <Choice
-            icon={<PulseIcon name="properties" className="size-5" />}
-            title={t("register.management")}
-            description={t("register.managementHint")}
-            active={track === "management"}
-            onClick={() => {
-              setTrack("management");
-              setError(null);
-              setListingId(null);
-            }}
-          />
+          {onServices ? (
+            <Choice
+              icon={<PulseIcon name="search" className="size-5" />}
+              title={t("register.seeking")}
+              description={t("register.seekingHint")}
+              active={track === "customer"}
+              onClick={() => {
+                setTrack("customer");
+                setPlan(null);
+                setError(null);
+                setListingId(null);
+                setAccepted(false);
+              }}
+            />
+          ) : (
+            <Choice
+              icon={<PulseIcon name="properties" className="size-5" />}
+              title={t("register.management")}
+              description={t("register.managementHint")}
+              active={track === "management"}
+              onClick={() => {
+                setTrack("management");
+                setError(null);
+                setListingId(null);
+                setAccepted(false);
+              }}
+            />
+          )}
         </div>
+        ) : null}
 
         {track === "management" ? (
           <div className="mt-3 grid gap-3">
@@ -320,15 +396,13 @@ export default function RegisterPage() {
           </div>
         ) : null}
 
-        {track === "maintenance" || (track === "management" && plan) ? (
-          <Card className="mt-4 space-y-3 p-5">
+        {track === "maintenance" || track === "customer" || (track === "management" && plan) ? (
+          <Card className="mt-4 space-y-2 p-4">
             {listingId ? (
               <div className="space-y-3">
                 <p className="text-sm font-semibold text-ink">{t("register.savedListing")}</p>
                 <p className="text-sm text-muted">
-                  {listNow
-                    ? "Your listing is open in the directory. Phone and LINE stay hidden until someone is signed in."
-                    : "The listing stays private until you open it in Settings."}
+                  The listing stays hidden until you open it.
                 </p>
                 <div className="flex gap-2">
                   <Button className="flex-1" type="button" onClick={() => router.push(`/pros/p/${listingId}`)}>
@@ -346,6 +420,11 @@ export default function RegisterPage() {
                     {t("register.maintenanceLead")}
                   </p>
                 ) : null}
+                {track === "customer" ? (
+                  <p className="font-display text-lg font-semibold text-ink">
+                    {t("register.seeking")}
+                  </p>
+                ) : null}
                 <div>
                   <Label>Full name</Label>
                   <Input value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" />
@@ -354,13 +433,16 @@ export default function RegisterPage() {
                   <Label>Email</Label>
                   <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
                 </div>
-                <div>
-                  <Label>Phone (optional)</Label>
-                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
-                </div>
+                {track !== "customer" ? (
+                  <div>
+                    <Label>Phone (optional)</Label>
+                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
+                  </div>
+                ) : null}
 
                 {track === "maintenance" ? (
                   <>
+                    <p className="text-xs leading-relaxed text-muted">{t("register.contactEither")}</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
                         <Label>{t("register.whatsapp")}</Label>
@@ -423,10 +505,6 @@ export default function RegisterPage() {
                       </div>
                     </fieldset>
                     <div>
-                      <Label>What you do</Label>
-                      <Input value={description} onChange={(e) => setDescription(e.target.value)} />
-                    </div>
-                    <div>
                       <Label>{t("register.availability")}</Label>
                       <Input
                         value={availability}
@@ -434,18 +512,6 @@ export default function RegisterPage() {
                         placeholder="Weekdays, or call the day before"
                       />
                     </div>
-                    <label className="flex items-start gap-3 rounded-2xl bg-canvas-deep px-3 py-3">
-                      <input
-                        type="checkbox"
-                        checked={listNow}
-                        onChange={(e) => setListNow(e.target.checked)}
-                        className="mt-1 size-4"
-                      />
-                      <span>
-                        <span className="block text-sm font-semibold text-ink">{t("register.listNow")}</span>
-                        <span className="mt-0.5 block text-xs text-muted">{t("register.listNowHint")}</span>
-                      </span>
-                    </label>
                   </>
                 ) : null}
 
@@ -510,13 +576,36 @@ export default function RegisterPage() {
                 {error ? <p className="text-sm font-semibold text-danger">{error}</p> : null}
                 {plan === "company" && companySeat && payer ? (
                   <p className="text-xs text-muted">
-                    {youPay ? t("register.trialNow") : t("register.limitedUntil")}{" "}
+                    {youPay ? (
+                      <>
+                        {t("register.trialNow")}{" "}
+                        <Link href="/terms" className="font-semibold text-primary">Terms</Link>
+                        {" and "}
+                        <Link href="/privacy" className="font-semibold text-primary">Privacy</Link>.
+                      </>
+                    ) : (
+                      t("register.limitedUntil")
+                    )}
+                  </p>
+                ) : null}
+                {track === "management" && !(plan === "company" && youPay) ? (
+                  <p className="text-xs leading-relaxed text-muted">
+                    By creating an account you agree to the Pulse Flow{" "}
                     <Link href="/terms" className="font-semibold text-primary">Terms</Link>
                     {" and "}
                     <Link href="/privacy" className="font-semibold text-primary">Privacy</Link>.
                   </p>
                 ) : null}
-                <Button className="w-full" busy={saving} onClick={() => void submit()}>
+                {track === "maintenance" || track === "customer" ? (
+                  <LegalAccept
+                    audience={track === "maintenance" ? "staff" : "customer"}
+                    accepted={accepted}
+                    onAccepted={setAccepted}
+                    emails={emails}
+                    onEmails={setEmails}
+                  />
+                ) : null}
+                <Button className="w-full" busy={saving} disabled={(track === "maintenance" || track === "customer") && !accepted} onClick={() => void submit()}>
                   {saving ? "Creating…" : "Create account"}
                 </Button>
               </>
@@ -524,10 +613,18 @@ export default function RegisterPage() {
           </Card>
         ) : null}
 
-        <p className="mt-4 text-center text-sm text-muted">
-          Looking for house maintenance services specifically?{" "}
-          <a href={servicesHref} className="font-semibold text-primary">Click here</a>
-        </p>
+        {ready && onServices ? (
+          <p className="mt-4 text-center text-sm text-muted">
+            Platform for property operations{" "}
+            <a href={appHref} className="font-semibold text-primary">Click here</a>
+          </p>
+        ) : null}
+        {ready && !onServices ? (
+          <p className="mt-4 text-center text-sm text-muted">
+            Looking for house maintenance services specifically?{" "}
+            <a href={servicesHref} className="font-semibold text-primary">Click here</a>
+          </p>
+        ) : null}
         <p className="mt-2 text-center text-sm text-muted">
           Already have an account?{" "}
           <Link href="/login" className="font-semibold text-primary">Sign in</Link>

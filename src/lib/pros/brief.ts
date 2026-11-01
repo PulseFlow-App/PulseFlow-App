@@ -21,6 +21,7 @@ const HINTS: Record<string, string[]> = {
   waste: ["waste", "rubbish", "garbage", "trash", "ขยะ", "мусор", "אשפה"],
   moving: ["moving", "delivery", "relocat", "ขนย้าย", "переезд", "הובלה"],
   babysitting: ["babysit", "babysitter", "nanny", "childcare", "พี่เลี้ยง", "няня", "בייביסיטר"],
+  "pet-sitting": ["pet sitter", "petsitter", "pet sitting", "dog", "cat", "walk the dog", "สัตว์เลี้ยง", "питом", "собак", "кошк", "כלב", "חתול", "חיות מחמד"],
 };
 
 export type BriefMatch = {
@@ -53,7 +54,7 @@ export function briefTitle(text: string) {
   return `${clean.slice(0, 57)}…`;
 }
 
-/** Read a short job note and pick one trade, then one available professional in the selected area. */
+/** Read a short job note and pick one profession, then one available professional in the selected area. */
 export function suggestFromBrief(state: ProsState, raw: string): BriefMatch | null {
   const text = raw.toLowerCase().replace(/\s+/g, " ").trim();
   if (text.length < 12) return null;

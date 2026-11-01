@@ -1,6 +1,6 @@
 import type { UserRole } from "@/lib/design-tokens";
 
-/** Trades a person can list on Pulse Flow Services. */
+/** Professions a person can list on Pulse Flow Services. */
 export const TALENT_SKILLS = [
   "cleaner",
   "electrician",
@@ -12,6 +12,7 @@ export const TALENT_SKILLS = [
   "handyman",
   "manager",
   "babysitter",
+  "pet-sitter",
 ] as const;
 
 export type TalentSkill = (typeof TALENT_SKILLS)[number];

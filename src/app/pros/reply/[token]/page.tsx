@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { areaName, categoryName } from "@/lib/pros/matching";
-import { preferredDateKey } from "@/lib/pros/i18n";
+import { preferredDateKey, preferredTimeKey } from "@/lib/pros/i18n";
 import { usePros } from "@/lib/pros/store";
 import { formatLongDateLocalized } from "@/lib/i18n/date-format";
 import { useI18n } from "@/lib/i18n/provider";
@@ -57,17 +57,21 @@ export default function ReplyPage() {
       ) : request.preferredDate && /^\d{4}-\d{2}-\d{2}/.test(request.preferredDate) ? (
         <p className="text-sm text-ink">{formatLongDateLocalized(parseISO(request.preferredDate.slice(0, 10)), locale)}</p>
       ) : null}
-      {request.preferredTime ? <p className="text-sm text-ink">{request.preferredTime}</p> : null}
+      {request.preferredTime ? (
+        <p className="text-sm text-ink">
+          {preferredTimeKey(request.preferredTime) ? t(preferredTimeKey(request.preferredTime)!) : request.preferredTime}
+        </p>
+      ) : null}
       {done ? <p className="text-sm font-semibold text-ink">{done}</p> : null}
       {offer.status !== "pending" || done ? null : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           <div>
             <Label>{t("price")}</Label>
-            <Input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} className="min-h-12" />
+            <Input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
           </div>
           <div>
             <Label>{t("currency")}</Label>
-            <Input value={currency} onChange={(e) => setCurrency(e.target.value)} className="min-h-12" />
+            <Input value={currency} onChange={(e) => setCurrency(e.target.value)} />
           </div>
           <div>
             <Label>{t("message")}</Label>
@@ -75,7 +79,7 @@ export default function ReplyPage() {
           </div>
           <div>
             <Label>{t("proposedTime")}</Label>
-            <Input value={when} onChange={(e) => setWhen(e.target.value)} className="min-h-12" />
+            <Input value={when} onChange={(e) => setWhen(e.target.value)} />
           </div>
           {error ? <p className="text-sm text-danger">{error}</p> : null}
           <Button type="button" className="min-h-12 w-full" reflectGlobalBusy={false} onClick={() => send("quote")}>

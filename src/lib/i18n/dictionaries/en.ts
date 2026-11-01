@@ -1634,7 +1634,11 @@ const en = {
   "register.trialNow":
     "No payment is taken. A 90-day trial starts now. By creating an account you agree to our",
   "register.maintenanceLead": "Join Pulse Flow Services",
-  "register.trades": "Trades",
+  "register.trades": "Professions",
+  "register.seeking": "Looking for services",
+  "register.seekingHint": "Request a quote and contact a professional.",
+  "register.contactEither": "Add WhatsApp or LINE. One is enough.",
+  "register.needProfession": "Choose at least one profession and one area.",
   "register.areas": "Areas you cover",
   "register.languages": "Languages",
   "register.availability": "When you can work",
@@ -1720,8 +1724,8 @@ const en = {
     "Turn this on to appear in the Pulse Flow Services directory. Company staff use this same list.",
   "talent.settingsVisible": "List me on Pulse Flow Services",
   "talent.settingsVisibleHint":
-    "Your name, trade, and area show in the directory. Phone and LINE stay off the public list.",
-  "talent.settingsSkills": "Skills & trades",
+    "Your name, profession, and area show in the directory. Phone and LINE stay off the public list.",
+  "talent.settingsSkills": "Skills & professions",
   "talent.settingsLocation": "City / area",
   "talent.settingsLocationPlaceholder": "e.g. Koh Samui",
   "talent.settingsCountry": "Country",
@@ -1758,6 +1762,7 @@ const en = {
   "talent.skill.handyman": "Handyman",
   "talent.skill.manager": "On-site manager",
   "talent.skill.babysitter": "Babysitters",
+  "talent.skill.pet-sitter": "Pet sitter",
   "talent.reviewsSection": "Reviews & endorsements",
   "talent.browseLink": "Start search",
 

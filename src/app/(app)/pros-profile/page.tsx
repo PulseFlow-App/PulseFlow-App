@@ -80,7 +80,7 @@ function Editor() {
 
   return (
     <form
-      className="mx-auto max-w-lg space-y-4 px-4 py-4"
+      className="mx-auto max-w-lg space-y-2 px-4 py-4"
       onSubmit={(e) => {
         e.preventDefault();
         const result = saveProfile(
@@ -98,7 +98,7 @@ function Editor() {
       <h1 className="font-display text-2xl font-semibold text-ink">{t("makeProfile")}</h1>
       <div>
         <Label>{t("name")}</Label>
-        <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="min-h-12" required />
+        <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} required />
       </div>
       <div>
         <Label>{t("about")}</Label>
@@ -142,7 +142,6 @@ function Editor() {
         <Select
           value={draft.visibility}
           onChange={(e) => setDraft({ ...draft, visibility: e.target.value as ProProfile["visibility"] })}
-          className="min-h-12"
         >
           <option value="private">{t("private")}</option>
           <option value="public">{t("public")}</option>
@@ -158,7 +157,6 @@ function Editor() {
         <Input
           type="file"
           accept="image/*"
-          className="min-h-12"
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (!file) return;

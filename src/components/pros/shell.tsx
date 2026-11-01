@@ -2,22 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { Settings } from "lucide-react";
 import { ServicesMark } from "@/components/brand/services-mark";
 import { PulseIcon, type PulseIconName } from "@/components/icons/pulse-icon";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { PlacePicker } from "@/components/pros/place-picker";
 import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
 import { ProsProvider, usePros } from "@/lib/pros/store";
-import { allAreas, areaName } from "@/lib/pros/matching";
 import { servicesPath } from "@/lib/pros/paths";
-import { useI18n } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 
 function Frame({ children }: { children: React.ReactNode }) {
-  const { state, t, setPlace } = usePros();
-  const { locale } = useI18n();
+  const { t, actor } = usePros();
   const pathname = usePathname();
-  const areas = allAreas(state).filter((a) => a.level === "locality" || a.level === "district");
   const onAppPath = pathname === "/pros" || pathname.startsWith("/pros/");
   const here = onAppPath ? (pathname === "/pros" ? "/" : pathname.slice("/pros".length)) : pathname;
   const wide = here.startsWith("/admin") || here.startsWith("/profile");
@@ -54,51 +51,25 @@ function Frame({ children }: { children: React.ReactNode }) {
                 ) : null}
               </span>
             </Link>
-            <label className="relative ms-auto inline-flex h-10 max-w-[6.5rem] min-w-0 items-center sm:h-8 sm:max-w-[7rem]">
-                <span className="sr-only">{t("place")}</span>
-                <select
-                  className="h-full w-full appearance-none truncate rounded-full border border-[var(--color-border)] bg-card py-0 pe-6 ps-2 text-xs font-semibold text-ink"
-                  value={state.placeId ?? ""}
-                  onChange={(e) => setPlace(e.target.value || null)}
-                >
-                  <option value="">{t("any")}</option>
-                  {areas
-                    .filter((area) => area.level === "locality")
-                    .map((island) => (
-                      <optgroup
-                        key={island.id}
-                        label={areaName(state, island.id, locale)}
-                      >
-                        <option value={island.id}>
-                          {areaName(state, island.id, locale)}
-                        </option>
-                        {areas
-                          .filter((area) => area.parentId === island.id)
-                          .map((area) => (
-                            <option key={area.id} value={area.id}>
-                              {areaName(state, area.id, locale)}
-                            </option>
-                          ))}
-                      </optgroup>
-                    ))}
-                </select>
-                <ChevronDown
-                  className="pointer-events-none absolute end-1.5 size-3.5 text-muted"
-                  aria-hidden
-                />
-              </label>
+            <PlacePicker />
             <LanguageSwitcher variant="inline" />
-            <Link
-              href={onAppPath ? "/pros/settings" : "/settings"}
-              aria-label={t("settings")}
-              aria-current={here.startsWith("/settings") ? "page" : undefined}
-              className={cn(
-                "flex size-10 shrink-0 items-center justify-center rounded-full text-ink sm:size-8",
-                here.startsWith("/settings") && "text-primary",
-              )}
-            >
-              <PulseIcon name="settings" className="size-5" />
-            </Link>
+            {actor ? (
+              <Link
+                href={onAppPath ? "/pros/settings" : "/settings"}
+                aria-label={t("settings")}
+                aria-current={here.startsWith("/settings") ? "page" : undefined}
+                className={cn(
+                  "inline-flex size-10 shrink-0 items-center justify-center rounded-full",
+                  "border border-[var(--color-border)] bg-card text-ink",
+                  "hover:bg-canvas-deep",
+                  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                  "sm:size-8",
+                  here.startsWith("/settings") && "text-primary",
+                )}
+              >
+                <Settings className="size-3.5 shrink-0" aria-hidden strokeWidth={2} />
+              </Link>
+            ) : null}
             <ThemeIconToggle className="size-10 shrink-0 sm:size-8" />
           </div>
         </div>
@@ -112,7 +83,18 @@ function Frame({ children }: { children: React.ReactNode }) {
         <div className={cn("mx-auto w-full px-4 py-4", wide ? "max-w-3xl" : "max-w-lg")}>
           {children}
           {here.startsWith("/admin") ? null : (
-            <p className="mt-8 text-center text-xs text-muted">{t("terms")}</p>
+            <div className="mt-8 space-y-2 text-center">
+              <p className="text-xs text-muted">{t("terms")}</p>
+              <p className="text-xs">
+                <Link href={servicesPath(pathname, "/terms")} className="font-semibold text-primary">
+                  {t("termsLink")}
+                </Link>
+                <span className="text-muted"> · </span>
+                <Link href={servicesPath(pathname, "/privacy")} className="font-semibold text-primary">
+                  {t("privacyLink")}
+                </Link>
+              </p>
+            </div>
           )}
         </div>
       </main>

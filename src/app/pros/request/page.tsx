@@ -17,6 +17,7 @@ import { orderAllowance, SERVICES_PAYMENTS_ENABLED } from "@/lib/pros/trial";
 type DateChoice = "today" | "tomorrow" | "this_week" | "flexible";
 
 const DRAFT_KEY = "pulseflow.services.requestDraft";
+const TIME_OPTIONS = ["morning", "afternoon", "evening", "any"] as const;
 
 type RequestDraft = {
   categoryId: string;
@@ -59,7 +60,7 @@ function RequestInner() {
   const [description, setDescription] = useState(params.get("brief") ?? "");
   const [urgency, setUrgency] = useState<ProsUrgency>("flexible");
   const [dateChoice, setDateChoice] = useState<DateChoice>("today");
-  const [preferredTime, setPreferredTime] = useState("");
+  const [preferredTime, setPreferredTime] = useState<(typeof TIME_OPTIONS)[number]>("morning");
   const [language, setLanguage] = useState<string>(locale);
   const [photos, setPhotos] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +81,11 @@ function RequestInner() {
         ? draft.dateChoice
         : "today",
     );
-    setPreferredTime(draft.preferredTime);
+    setPreferredTime(
+      TIME_OPTIONS.includes(draft.preferredTime as (typeof TIME_OPTIONS)[number])
+        ? (draft.preferredTime as (typeof TIME_OPTIONS)[number])
+        : "morning",
+    );
     setLanguage(draft.language);
     setPhotos(draft.photos ?? []);
   }, []);
@@ -137,35 +142,10 @@ function RequestInner() {
 
   return (
       <form
-        className="space-y-4"
+        className="space-y-2"
         onSubmit={(e) => {
           e.preventDefault();
-          if (!actorReady) return;
-          if (!actor) {
-            const draft: RequestDraft = {
-              categoryId,
-              title,
-              description,
-              photos,
-              urgency,
-              dateChoice,
-              preferredTime,
-              language,
-              profileId: invited?.id ?? profileParam,
-              taskId: params.get("taskId"),
-              orgId: params.get("orgId"),
-              villaId: params.get("villaId"),
-              pending: true,
-            };
-            try {
-              sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-            } catch {
-              sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draft, photos: [] }));
-            }
-            const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
-            router.push(`${start}?next=${encodeURIComponent(servicesPath(pathname, "/request?resume=1"))}`);
-            return;
-          }
+          if (!actorReady || !actor) return;
           if (sent.current) return;
           sent.current = true;
           const result = createRequest({
@@ -192,7 +172,7 @@ function RequestInner() {
         }}
       >
         <h1 className="font-display text-2xl font-semibold text-ink">{t("sendRequest")}</h1>
-        {actorReady && !actor ? <p className="text-sm text-muted">{t("describeOpen")}</p> : null}
+        {actorReady && !actor ? <p className="text-sm text-muted">{t("requestNeedsAccount")}</p> : null}
         {gate?.ok && gate.via === "monthly" ? <p className="text-sm text-muted">{t("monthlyNote")}</p> : null}
         {gate?.ok && gate.via === "trial" ? <p className="text-sm text-muted">{t("trialNote")}</p> : null}
         {gate?.ok && gate.via === "plan" && !SERVICES_PAYMENTS_ENABLED ? (
@@ -212,7 +192,7 @@ function RequestInner() {
         {invited ? <p className="text-sm text-ink">{t("directTo", { name: invited.name })}</p> : null}
         <div>
           <Label>{t("category")}</Label>
-          <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="min-h-12">
+          <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {localizedName(cat.names, locale)}
@@ -222,31 +202,70 @@ function RequestInner() {
         </div>
         <div>
           <Label>{t("title")}</Label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} className="min-h-12" required />
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
         </div>
         <div>
           <Label>{t("description")}</Label>
-          <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} required />
+          <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} required />
         </div>
         <div>
-          <Label>{t("photos")}</Label>
+          <Label htmlFor="request-photos">{t("photos")}</Label>
           <p className="mb-1 text-xs text-muted">{t("photosMax")}</p>
-          <Input
+          <label
+            htmlFor="request-photos"
+            className="flex cursor-pointer items-center gap-2 rounded-xl border border-[var(--color-border)] bg-canvas-deep px-2 py-1"
+          >
+            <span className="shrink-0 rounded-full bg-primary px-3 py-1 text-sm font-semibold text-white">
+              {t("addPhoto")}
+            </span>
+            <span className="text-muted" aria-hidden>
+              —
+            </span>
+            <span className="min-w-0 truncate text-sm text-muted">
+              {photos.length === 0 ? t("noPhoto") : t("photosChosen", { count: photos.length })}
+            </span>
+          </label>
+          <input
+            id="request-photos"
             type="file"
             accept="image/*"
-            className="min-h-12"
+            className="sr-only"
+            disabled={photos.length >= 3}
             onChange={(e) => {
               const file = e.target.files?.[0];
+              e.target.value = "";
               if (!file || photos.length >= 3) return;
               void readPhoto(file).then((url) => {
-                if (url) setPhotos((prev) => [...prev, url].slice(0, 3));
+                if (!url) {
+                  setError(t("photoTooBig"));
+                  return;
+                }
+                setError(null);
+                setPhotos((prev) => [...prev, url].slice(0, 3));
               });
             }}
           />
+          {photos.length > 0 ? (
+            <div className="mt-2 flex gap-2">
+              {photos.map((url, index) => (
+                <div key={url.slice(-24)} className="relative">
+                  <img src={url} alt="" className="size-14 rounded-xl object-cover" />
+                  <button
+                    type="button"
+                    className="absolute -end-1 -top-1 flex size-5 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white"
+                    aria-label={t("removePhoto")}
+                    onClick={() => setPhotos((prev) => prev.filter((_, item) => item !== index))}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
         <div>
           <Label>{t("urgency")}</Label>
-          <Select value={urgency} onChange={(e) => setUrgency(e.target.value as ProsUrgency)} className="min-h-12">
+          <Select value={urgency} onChange={(e) => setUrgency(e.target.value as ProsUrgency)}>
             <option value="today">{t("today")}</option>
             <option value="this_week">{t("thisWeek")}</option>
             <option value="flexible">{t("flexible")}</option>
@@ -254,7 +273,7 @@ function RequestInner() {
         </div>
         <div>
           <Label>{t("preferredDate")}</Label>
-          <Select value={dateChoice} onChange={(e) => setDateChoice(e.target.value as DateChoice)} className="min-h-12">
+          <Select value={dateChoice} onChange={(e) => setDateChoice(e.target.value as DateChoice)}>
             <option value="today">{t("today")}</option>
             <option value="tomorrow">{t("tomorrow")}</option>
             <option value="this_week">{t("thisWeek")}</option>
@@ -263,11 +282,17 @@ function RequestInner() {
         </div>
         <div>
           <Label>{t("preferredTime")}</Label>
-          <Input value={preferredTime} onChange={(e) => setPreferredTime(e.target.value)} className="min-h-12" />
+          <Select value={preferredTime} onChange={(e) => setPreferredTime(e.target.value as (typeof TIME_OPTIONS)[number])}>
+            {TIME_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {t(option === "any" ? "anyTime" : option)}
+              </option>
+            ))}
+          </Select>
         </div>
         <div>
           <Label>{t("yourLanguage")}</Label>
-          <Select value={language} onChange={(e) => setLanguage(e.target.value)} className="min-h-12">
+          <Select value={language} onChange={(e) => setLanguage(e.target.value)}>
             {PROS_LANGS.map((lang) => (
               <option key={lang} value={lang}>
                 {lang}
@@ -276,10 +301,27 @@ function RequestInner() {
           </Select>
         </div>
         {error ? <p className="text-sm text-danger">{error}</p> : null}
-        <p className="text-xs text-muted">{t("terms")}</p>
-        <Button type="submit" className="min-h-12 w-full" disabled={Boolean(actor && gate && !gate.ok)}>
-          {t("submit")}
-        </Button>
+        {actorReady && !actor ? (
+          <div className="space-y-2">
+            <p className="text-sm leading-relaxed text-muted">{t("trialBody")}</p>
+            <Link
+              href={`${pathname.startsWith("/pros") ? "/pros/start" : "/start"}?next=${encodeURIComponent(servicesPath(pathname, "/request"))}`}
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
+            >
+              {t("signUp")}
+            </Link>
+            <Link
+              href={`${pathname.startsWith("/pros") ? "/pros/start" : "/start"}?mode=sign-in&next=${encodeURIComponent(servicesPath(pathname, "/request"))}`}
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink"
+            >
+              {t("signIn")}
+            </Link>
+          </div>
+        ) : (
+          <Button type="submit" className="min-h-12 w-full" disabled={!actor || Boolean(gate && !gate.ok)}>
+            {t("submit")}
+          </Button>
+        )}
       </form>
   );
 }

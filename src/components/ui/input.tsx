@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 /** Shared control chrome - same padding/type for Input, Textarea, Select. */
 const controlClass =
-  "w-full max-w-full min-w-0 rounded-xl border border-[var(--color-border)] bg-canvas-deep px-3 py-2 text-sm leading-snug text-ink outline-none ring-primary/25 placeholder:text-ink/50 focus:border-primary focus:ring-2 sm:px-3.5";
+  "w-full max-w-full min-w-0 rounded-xl border border-[var(--color-border)] bg-canvas-deep px-3 py-[0.375rem] text-sm leading-snug text-ink outline-none ring-primary/25 placeholder:text-ink/50 focus:border-primary focus:ring-2";
 
 /** Native date/time controls overflow rounded parents unless capped. */
 const dateTimeClass =
@@ -70,7 +70,7 @@ export function Label({
   return (
     <label
       className={cn(
-        "mb-1 block text-sm font-medium leading-snug text-ink break-words",
+        "mb-0.5 block text-sm font-medium leading-snug text-ink break-words",
         className,
       )}
       {...props}

@@ -307,7 +307,7 @@ export default function LoginPage() {
               </div>
             ) : null}
 
-            <form onSubmit={onSubmit} className="space-y-4">
+            <form onSubmit={onSubmit} className="space-y-2">
               <div>
                 <Label htmlFor="email">{t("auth.email")}</Label>
                 <Input

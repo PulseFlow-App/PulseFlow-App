@@ -4,6 +4,7 @@ import type { ProProfile } from "@/lib/pros/types";
 
 export const SIGNUP_LOG_KEY = "pulseflow.signups.v1";
 export const SERVICE_PROFILE_KEY = "pulseflow.services.profile";
+export const SERVICE_INVITE_KEY = "pulseflow.services.invite";
 
 const SKILL_BY_SLUG: Record<string, string> = {
   hvac: "ac",
@@ -15,6 +16,7 @@ const SKILL_BY_SLUG: Record<string, string> = {
   gardening: "gardener",
   handyman: "handyman",
   babysitting: "babysitter",
+  "pet-sitting": "pet-sitter",
 };
 
 export type SignupRow = {
@@ -27,6 +29,8 @@ export type SignupRow = {
   role: string | null;
   payer: string | null;
   referrer: string | null;
+  emailOptIn?: boolean;
+  termsAcceptedAt?: string | null;
 };
 
 export function talentSkillsForCategories(ids: string[]) {
@@ -81,6 +85,8 @@ export function joinProfessional(input: {
   languages: string[];
   listNow: boolean;
   referrer: string | null;
+  emailOptIn?: boolean;
+  termsAcceptedAt?: string | null;
 }) {
   const state = readProsState() ?? createSeedState();
   const id = crypto.randomUUID();
@@ -138,11 +144,69 @@ export function joinProfessional(input: {
     role: "staff",
     payer: null,
     referrer: input.referrer,
+    emailOptIn: Boolean(input.emailOptIn),
+    termsAcceptedAt: input.termsAcceptedAt ?? null,
   });
   return { id };
 }
 
+export function serviceInviteCode() {
+  if (typeof window === "undefined") return "";
+  const stored = localStorage.getItem(SERVICE_INVITE_KEY)?.trim();
+  if (stored) return stored;
+  const code = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+  localStorage.setItem(SERVICE_INVITE_KEY, code);
+  return code;
+}
+
+export function ensureMyServiceListing(actor: { id: string; name: string }) {
+  const state = readProsState() ?? createSeedState();
+  const stored = localStorage.getItem(SERVICE_PROFILE_KEY);
+  const found =
+    state.profiles.find((row) => row.id === stored) ??
+    state.profiles.find((row) => row.linkedProfileId === actor.id);
+  if (found) {
+    localStorage.setItem(SERVICE_PROFILE_KEY, found.id);
+    return found;
+  }
+  const now = new Date().toISOString();
+  const profile: ProProfile = {
+    id: crypto.randomUUID(),
+    contactId: null,
+    orgId: null,
+    linkedProfileId: actor.id,
+    name: actor.name.trim() || "Professional",
+    description: "",
+    descriptionLocale: "en",
+    translations: {},
+    photoUrl: null,
+    photos: [],
+    categoryIds: [],
+    areaIds: [],
+    languages: ["en"],
+    phone: null,
+    lineId: null,
+    whatsapp: null,
+    visibility: "private",
+    status: "active",
+    available: true,
+    consentAt: null,
+    consentBy: null,
+    consentNote: null,
+    claimToken: crypto.randomUUID(),
+    claimedAt: now,
+    listingTier: "free",
+    checks: { email: null, phone: null, identity: null, business: null, qualification: null },
+    createdAt: now,
+  };
+  state.profiles = [profile, ...state.profiles];
+  writeProsState(state);
+  localStorage.setItem(SERVICE_PROFILE_KEY, profile.id);
+  return profile;
+}
+
 export function updateServiceListing(patch: {
+  name?: string;
   description?: string;
   availability?: string;
   visibility?: "private" | "public";
@@ -150,6 +214,9 @@ export function updateServiceListing(patch: {
   lineId?: string | null;
   languages?: string[];
   phone?: string | null;
+  categoryIds?: string[];
+  areaIds?: string[];
+  photoUrl?: string | null;
 }) {
   if (typeof window === "undefined") return false;
   const id = localStorage.getItem(SERVICE_PROFILE_KEY);
@@ -170,10 +237,14 @@ export function updateServiceListing(patch: {
       row.consentNote = "Opened the listing from settings.";
     }
   }
+  if (patch.name != null) row.name = patch.name.trim() || row.name;
   if (patch.whatsapp !== undefined) row.whatsapp = patch.whatsapp;
   if (patch.lineId !== undefined) row.lineId = patch.lineId;
   if (patch.languages) row.languages = patch.languages;
   if (patch.phone !== undefined) row.phone = patch.phone;
+  if (patch.categoryIds) row.categoryIds = patch.categoryIds;
+  if (patch.areaIds) row.areaIds = patch.areaIds;
+  if (patch.photoUrl !== undefined) row.photoUrl = patch.photoUrl;
   writeProsState(state);
   return true;
 }

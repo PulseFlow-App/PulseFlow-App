@@ -29,6 +29,8 @@ export type ServicesCustomer = {
   email: string;
   /** ISO time. The assistant stays locked until this is in the future. */
   agentUntil?: string | null;
+  termsAcceptedAt?: string | null;
+  emailOptIn?: boolean;
 };
 
 /** Premium is the 9 USD plan. Pro is the assistant, 5 USD on top of Premium. */
@@ -183,11 +185,18 @@ export function saveServicePlan(actorId: string, input: { premium?: boolean; pro
   return next;
 }
 
-export function saveServicesCustomer(input: { name: string; email: string }) {
+export function saveServicesCustomer(input: {
+  name: string;
+  email: string;
+  termsAcceptedAt?: string | null;
+  emailOptIn?: boolean;
+}) {
   const row: ServicesCustomer = {
     id: crypto.randomUUID(),
     name: input.name.trim(),
     email: input.email.trim().toLowerCase(),
+    termsAcceptedAt: input.termsAcceptedAt ?? null,
+    emailOptIn: Boolean(input.emailOptIn),
   };
   localStorage.setItem(SERVICES_CUSTOMER_KEY, JSON.stringify(row));
   window.dispatchEvent(new Event(SERVICES_CUSTOMER_EVENT));

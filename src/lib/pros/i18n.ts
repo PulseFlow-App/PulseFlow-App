@@ -5,10 +5,10 @@ export const PRODUCT_NAME = "Pulse Flow Services";
 const COPY = {
   productName: { en: PRODUCT_NAME, th: PRODUCT_NAME, ru: PRODUCT_NAME, he: PRODUCT_NAME },
   tagline: {
-    en: "Local services, made accessible.",
+    en: "Local services, made accessible",
     th: "บริการใกล้คุณ เข้าถึงได้ง่าย",
-    ru: "Местные услуги — просто найти.",
-    he: "שירותים מקומיים, בלי סיבוך.",
+    ru: "Местные услуги — просто найти",
+    he: "שירותים מקומיים, בלי סיבוך",
   },
   home: { en: "Home", th: "หน้าแรก", ru: "Главная", he: "בית" },
   find: { en: "Find", th: "ค้นหา", ru: "Поиск", he: "חיפוש" },
@@ -85,10 +85,23 @@ const COPY = {
     he: "הרשמה לניסיון חינם עכשיו",
   },
   agentPriceNote: {
-    en: "Pro is 5 USD a month on top of Premium (9 USD a month). Turn it on in Settings. Payment is not collected yet.",
-    th: "Pro คือ 5 ดอลลาร์ต่อเดือน เพิ่มจาก Premium (9 ดอลลาร์ต่อเดือน) เปิดได้ในตั้งค่า ยังไม่เก็บเงิน",
-    ru: "Pro — 5 USD в месяц сверх Premium (9 USD в месяц). Включите в настройках. Оплату пока не берём.",
-    he: "Pro הוא 5 דולר לחודש מעל Premium (9 דולר לחודש). אפשר להפעיל בהגדרות. התשלום עדיין לא נגבה.",
+    en: "You need Pro plan to use AI agent mode (14 $USD). Sign up for trial",
+    th: "ต้องใช้แผน Pro เพื่อใช้โหมดผู้ช่วย AI (14 $USD) สมัครทดลองใช้",
+    ru: "Для режима ИИ-агента нужен план Pro (14 $USD). Зарегистрируйтесь на пробный период",
+    he: "צריך תוכנית Pro כדי להשתמש במצב סוכן ה-AI‏ (14 $USD). הירשמו לניסיון",
+  },
+  signUp: { en: "Sign up", th: "สมัคร", ru: "Регистрация", he: "הרשמה" },
+  payPro: {
+    en: "Pay 14 USD a month",
+    th: "จ่าย 14 ดอลลาร์ต่อเดือน",
+    ru: "Оплатить 14 USD в месяц",
+    he: "תשלום 14 דולר לחודש",
+  },
+  payLater: {
+    en: "Payment is not collected yet, so this is not charged.",
+    th: "ยังไม่เก็บเงิน จึงยังไม่มีการเรียกเก็บ",
+    ru: "Оплату пока не берём, поэтому списания нет.",
+    he: "התשלום עדיין לא נגבה, אז אין כאן חיוב.",
   },
   sendYourself: { en: "Write the request yourself", th: "เขียนคำขอเอง", ru: "Написать заявку самому", he: "כתבו את הבקשה בעצמכם" },
   agentIntro: {
@@ -105,9 +118,9 @@ const COPY = {
     he: "אתם שולחים את הבקשה. העוזר לא שולח אותה.",
   },
   noTrade: {
-    en: "That note did not match a trade. You can still write the request yourself.",
-    th: "ข้อความนี้ยังไม่ตรงกับประเภทงาน คุณเขียนคำขอเองได้",
-    ru: "По этой заметке услуга не нашлась. Заявку всё равно можно написать самому.",
+    en: "That note did not match a profession. You can still write the request yourself.",
+    th: "ข้อความนี้ยังไม่ตรงกับอาชีพ คุณเขียนคำขอเองได้",
+    ru: "По этой заметке профессия не нашлась. Заявку всё равно можно написать самому.",
     he: "ההערה הזו לא התאימה למקצוע. עדיין אפשר לכתוב את הבקשה בעצמכם.",
   },
   popular: { en: "Services categories", th: "หมวดบริการ", ru: "Категории услуг", he: "קטגוריות שירות" },
@@ -145,6 +158,10 @@ const COPY = {
   description: { en: "What happened?", th: "เกิดอะไรขึ้น?", ru: "Что случилось?", he: "מה קרה?" },
   photos: { en: "Photos", th: "รูป", ru: "Фото", he: "תמונות" },
   photosMax: { en: "Up to 3 photos.", th: "ได้สูงสุด 3 รูป", ru: "До 3 фото.", he: "עד 3 תמונות." },
+  addPhoto: { en: "Add photo", th: "เพิ่มรูป", ru: "Добавить фото", he: "הוספת תמונה" },
+  noPhoto: { en: "No photo yet", th: "ยังไม่มีรูป", ru: "Фото пока нет", he: "עדיין אין תמונה" },
+  photosChosen: { en: "{count} of 3", th: "{count} จาก 3", ru: "{count} из 3", he: "{count} מתוך 3" },
+  removePhoto: { en: "Remove photo", th: "ลบรูป", ru: "Удалить фото", he: "הסרת תמונה" },
   urgency: { en: "Urgency", th: "ความเร่งด่วน", ru: "Срочность", he: "דחיפות" },
   today: { en: "Today", th: "วันนี้", ru: "Сегодня", he: "היום" },
   tomorrow: { en: "Tomorrow", th: "พรุ่งนี้", ru: "Завтра", he: "מחר" },
@@ -152,6 +169,10 @@ const COPY = {
   flexible: { en: "Flexible", th: "ยืดหยุ่น", ru: "Не срочно", he: "גמיש" },
   preferredDate: { en: "Preferred date", th: "วันที่สะดวก", ru: "Удобная дата", he: "תאריך מועדף" },
   preferredTime: { en: "Preferred time", th: "เวลาที่สะดวก", ru: "Удобное время", he: "זמן מועדף" },
+  morning: { en: "Morning, 8:00–12:00", th: "เช้า 8:00–12:00", ru: "Утро, 8:00–12:00", he: "בוקר, 8:00–12:00" },
+  afternoon: { en: "Afternoon, 12:00–17:00", th: "บ่าย 12:00–17:00", ru: "День, 12:00–17:00", he: "אחר הצהריים, 12:00–17:00" },
+  evening: { en: "Evening, 17:00–20:00", th: "เย็น 17:00–20:00", ru: "Вечер, 17:00–20:00", he: "ערב, 17:00–20:00" },
+  anyTime: { en: "Any time", th: "เวลาใดก็ได้", ru: "В любое время", he: "כל זמן" },
   yourLanguage: { en: "Language", th: "ภาษา", ru: "Язык", he: "שפה" },
   submit: { en: "Send request", th: "ส่งคำขอ", ru: "Отправить", he: "שליחת בקשה" },
   offers: { en: "Offers", th: "ข้อเสนอ", ru: "Предложения", he: "הצעות" },
@@ -190,10 +211,48 @@ const COPY = {
     he: "אפשר לענות מהקישור. בלי סיסמה.",
   },
   terms: {
-    en: "Pulse Flow Services introduces you. It does not take payment and does not guarantee the work.",
-    th: "Pulse Flow Services แนะนำช่างให้เท่านั้น ไม่รับชำระเงิน และไม่รับประกันผลงาน",
-    ru: "Pulse Flow Services только знакомит. Оплату не принимает и работу не гарантирует.",
-    he: "Pulse Flow Services רק מפגיש. אין כאן תשלום ואין התחייבות לאיכות העבודה.",
+    en: "Pulse Flow Services does not take payment and does not guarantee the work will be accepted.",
+    th: "Pulse Flow Services ไม่รับชำระเงิน และไม่รับประกันว่างานจะได้รับการตอบรับ",
+    ru: "Pulse Flow Services не принимает оплату и не гарантирует, что работу примут.",
+    he: "Pulse Flow Services לא גובה תשלום ואינו ערב לכך שהעבודה תתקבל.",
+  },
+  termsLink: { en: "Terms", th: "ข้อกำหนด", ru: "Условия", he: "תנאים" },
+  privacyLink: { en: "Privacy", th: "ความเป็นส่วนตัว", ru: "Конфиденциальность", he: "פרטיות" },
+  legalNote: {
+    en: "View our Terms and Privacy and accept them. Scroll to the end, then tick.",
+    th: "อ่านข้อกำหนดและความเป็นส่วนตัว เลื่อนจนจบ แล้วติ๊กยอมรับ",
+    ru: "Прочитайте условия и конфиденциальность. Прокрутите до конца и отметьте согласие.",
+    he: "קראו את התנאים ואת הפרטיות. גללו עד הסוף וסמנו הסכמה.",
+  },
+  acceptLegal: {
+    en: "I accept the Terms and Privacy",
+    th: "ฉันยอมรับข้อกำหนดและความเป็นส่วนตัว",
+    ru: "Я принимаю условия и конфиденциальность",
+    he: "אני מקבל את התנאים ואת הפרטיות",
+  },
+  legalNeedScroll: {
+    en: "Scroll to the end of the terms and privacy, then tick accept.",
+    th: "เลื่อนอ่านข้อกำหนดและความเป็นส่วนตัวจนจบ แล้วติ๊กยอมรับ",
+    ru: "Прокрутите условия и конфиденциальность до конца, затем отметьте согласие.",
+    he: "גללו את התנאים והפרטיות עד הסוף, ואז סמנו הסכמה.",
+  },
+  emailOptIn: {
+    en: "Send me informational email from Pulse Flow Services",
+    th: "ส่งอีเมลข้อมูลจาก Pulse Flow Services ให้ฉัน",
+    ru: "Присылать мне информационные письма от Pulse Flow Services",
+    he: "שלחו לי דוא״ל מידעי מ-Pulse Flow Services",
+  },
+  emailOptInHint: {
+    en: "Leave this unticked and we will not send optional email.",
+    th: "ถ้าไม่ติ๊ก เราจะไม่ส่งอีเมลที่ไม่จำเป็น",
+    ru: "Если не отметить, необязательные письма не отправим.",
+    he: "אם לא מסמנים, לא נשלח דוא״ל שאינו הכרחי.",
+  },
+  legalEnd: {
+    en: "End of Terms and Privacy",
+    th: "จบข้อกำหนดและความเป็นส่วนตัว",
+    ru: "Конец условий и конфиденциальности",
+    he: "סוף התנאים והפרטיות",
   },
   report: { en: "Report", th: "รายงาน", ru: "Пожаловаться", he: "דיווח" },
   reason: { en: "Reason", th: "เหตุผล", ru: "Причина", he: "סיבה" },
@@ -287,8 +346,8 @@ const COPY = {
   reports: { en: "Reports", th: "รายงาน", ru: "Жалобы", he: "דיווחים" },
   noReports: { en: "No reports.", th: "ไม่มีรายงาน", ru: "Жалоб нет.", he: "אין דיווחים." },
   byArea: { en: "By area", th: "ตามพื้นที่", ru: "По районам", he: "לפי אזור" },
-  byTrade: { en: "By trade", th: "ตามประเภท", ru: "По услугам", he: "לפי מקצוע" },
-  addCategory: { en: "Add trade", th: "เพิ่มประเภท", ru: "Добавить услугу", he: "הוספת מקצוע" },
+  byTrade: { en: "By profession", th: "ตามอาชีพ", ru: "По профессиям", he: "לפי מקצוע" },
+  addCategory: { en: "Add profession", th: "เพิ่มอาชีพ", ru: "Добавить профессию", he: "הוספת מקצוע" },
   addArea: { en: "Add area", th: "เพิ่มพื้นที่", ru: "Добавить район", he: "הוספת אזור" },
   name: { en: "Name", th: "ชื่อ", ru: "Имя", he: "שם" },
   pulseFlow: { en: "Pulse Flow", th: "Pulse Flow", ru: "Pulse Flow", he: "Pulse Flow" },
@@ -322,10 +381,10 @@ const COPY = {
     he: "הזמנות חינם",
   },
   trialBody: {
-    en: "Three orders are free. Each next one unlocks after the review on the finished job. After that, stay on the free plan if you need a service only once a month, or turn on Premium and Pro in Settings.",
-    th: "สามคำสั่งแรกฟรี คำสั่งถัดไปเปิดหลังรีวิวเมื่องานเสร็จ หลังจากนั้น อยู่แผนฟรีได้ถ้าใช้บริการเดือนละครั้ง หรือเปิด Premium และ Pro ในตั้งค่า",
-    ru: "Три заказа бесплатные. Каждый следующий открывается после отзыва о законченной работе. Дальше оставайтесь на бесплатном плане, если услуга нужна раз в месяц, или включите Premium и Pro в настройках.",
-    he: "שלוש הזמנות הן בחינם. כל אחת הבאה נפתחת אחרי הביקורת על העבודה שנגמרה. אחר כך אפשר להישאר בתוכנית החינמית אם צריך שירות רק פעם בחודש, או להפעיל Premium ו-Pro בהגדרות.",
+    en: "You need to have an account to continue. Trial: 3 free orders, each followed by a review, then 1 free order a month. Premium - 9 $USD and Pro 14 $USD (includes AI agent)",
+    th: "ต้องมีบัญชีเพื่อดำเนินการต่อ ทดลองใช้: คำสั่งฟรี 3 ครั้ง แต่ละงานต้องมีรีวิว จากนั้นคำสั่งฟรี 1 ครั้งต่อเดือน Premium - 9 $USD และ Pro 14 $USD (รวมผู้ช่วย AI)",
+    ru: "Чтобы продолжить, нужен аккаунт. Пробный период: 3 бесплатных заказа, каждый с отзывом, затем 1 бесплатный заказ в месяц. Premium - 9 $USD и Pro 14 $USD (включая ИИ-агента)",
+    he: "כדי להמשיך צריך חשבון. ניסיון: 3 הזמנות חינם, כל אחת עם ביקורת, ואז הזמנה חינם אחת בחודש. Premium - 9 $USD ו-Pro 14 $USD (כולל סוכן AI)",
   },
   createServicesAccount: {
     en: "Create a Pulse Flow Services account",
@@ -381,7 +440,7 @@ const COPY = {
     ru: "Заказы появятся здесь после аккаунта Pulse Flow Services.",
     he: "ההזמנות יופיעו כאן אחרי יצירת חשבון Pulse Flow Services.",
   },
-  position: { en: "Trade", th: "งาน", ru: "Услуга", he: "מקצוע" },
+  position: { en: "Profession", th: "อาชีพ", ru: "Профессия", he: "מקצוע" },
   welcomeTitle: {
     en: "Pulse Flow Services",
     th: "Pulse Flow Services",
@@ -443,6 +502,35 @@ const COPY = {
     he: "לעיון בשירותים",
   },
   settings: { en: "Settings", th: "ตั้งค่า", ru: "Настройки", he: "הגדרות" },
+  yourListing: { en: "Your listing", th: "โปรไฟล์ของคุณ", ru: "Ваша карточка", he: "הכרטיס שלך" },
+  listingHint: {
+    en: "This is what people see after they sign in. It stays hidden until you open it.",
+    th: "นี่คือสิ่งที่คนเห็นหลังเข้าสู่ระบบ จะซ่อนไว้จนกว่าคุณจะเปิด",
+    ru: "Это видят после входа. Карточка скрыта, пока вы её не откроете.",
+    he: "זה מה שרואים אחרי התחברות. נשאר מוסתר עד שתפתחו אותו.",
+  },
+  photo: { en: "Photo", th: "รูป", ru: "Фото", he: "תמונה" },
+  phone: { en: "Phone", th: "โทรศัพท์", ru: "Телефон", he: "טלפון" },
+  whatsapp: { en: "WhatsApp", th: "WhatsApp", ru: "WhatsApp", he: "וואטסאפ" },
+  line: { en: "LINE", th: "LINE", ru: "LINE", he: "LINE" },
+  availability: { en: "When you can work", th: "เวลาที่รับงาน", ru: "Когда можете работать", he: "מתי אפשר לעבוד" },
+  trades: { en: "Professions", th: "อาชีพ", ru: "Профессии", he: "מקצועות" },
+  areas: { en: "Areas", th: "พื้นที่", ru: "Районы", he: "אזורים" },
+  listingOpen: { en: "Open in the directory", th: "เปิดในสารบบ", ru: "Открыть в каталоге", he: "פתוח במדריך" },
+  listingHidden: { en: "Hidden", th: "ซ่อน", ru: "Скрыто", he: "מוסתר" },
+  saveListing: { en: "Save listing", th: "บันทึกโปรไฟล์", ru: "Сохранить карточку", he: "שמירת הכרטיס" },
+  photoTooBig: { en: "Use a photo under 1.4 MB.", th: "ใช้รูปที่เล็กกว่า 1.4 MB", ru: "Фото меньше 1.4 МБ.", he: "תמונה מתחת ל-1.4 MB." },
+  theme: { en: "Theme", th: "ธีม", ru: "Тема", he: "ערכת נושא" },
+  themeFrost: { en: "Light", th: "สว่าง", ru: "Светлая", he: "בהיר" },
+  themeDark: { en: "Dark", th: "มืด", ru: "Тёмная", he: "כהה" },
+  inviteCode: { en: "Invite code", th: "รหัสเชิญ", ru: "Код приглашения", he: "קוד הזמנה" },
+  inviteHint: {
+    en: "Share this code. People who register with it are recorded as your invite.",
+    th: "แชร์รหัสนี้ คนที่สมัครด้วยรหัสนี้จะถูกบันทึกว่าคุณเชิญ",
+    ru: "Поделитесь кодом. Кто зарегистрируется с ним, будет записан как ваш приглашённый.",
+    he: "שתפו את הקוד. מי שנרשם איתו נרשם כמוזמן שלכם.",
+  },
+  copyInvite: { en: "Copy invite link", th: "คัดลอกลิงก์เชิญ", ru: "Скопировать ссылку", he: "העתקת קישור הזמנה" },
   openSettings: { en: "Open Settings", th: "เปิดตั้งค่า", ru: "Открыть настройки", he: "פתיחת ההגדרות" },
   premiumBody: {
     en: "9 USD a month. After the 3 free orders, this is how you place more than one order a month.",
@@ -484,6 +572,12 @@ export type ProsKey = keyof typeof COPY;
 export function preferredDateKey(value: string | null | undefined): ProsKey | null {
   if (value === "today" || value === "tomorrow" || value === "flexible") return value;
   if (value === "this_week") return "thisWeek";
+  return null;
+}
+
+export function preferredTimeKey(value: string | null | undefined): ProsKey | null {
+  if (value === "morning" || value === "afternoon" || value === "evening") return value;
+  if (value === "any") return "anyTime";
   return null;
 }
 

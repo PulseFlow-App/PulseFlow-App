@@ -45,6 +45,12 @@ export async function POST(request: Request) {
   const maintenance = body.track === "maintenance";
   const payer = body.payer === "manager" ? "manager" : "owner";
 
+  if (!body.termsAcceptedAt) {
+    return NextResponse.json(
+      { error: "Scroll to the end of the terms and privacy, then tick accept." },
+      { status: 400 },
+    );
+  }
   if (!fullName || !email || password.length < 6) {
     return NextResponse.json(
       { error: "Name, email, and a password (6+ chars) are required." },
@@ -99,7 +105,11 @@ export async function POST(request: Request) {
     email,
     password,
     email_confirm: true,
-    user_metadata: { full_name: fullName },
+    user_metadata: {
+      full_name: fullName,
+      terms_accepted_at: body.termsAcceptedAt,
+      email_opt_in: Boolean(body.emailOptIn),
+    },
   });
   if (createErr || !created.user) {
     return NextResponse.json(

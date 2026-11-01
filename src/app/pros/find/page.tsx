@@ -1,7 +1,8 @@
 "use client";
 
 import { Suspense, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ProCard } from "@/components/pros/parts";
 import { Input, Label, Select } from "@/components/ui/input";
 import { PROS_LANGS, localizedName } from "@/lib/pros/catalog";
@@ -11,7 +12,8 @@ import { useI18n } from "@/lib/i18n/provider";
 
 function FindInner() {
   const params = useSearchParams();
-  const { state, actor, t } = usePros();
+  const pathname = usePathname();
+  const { state, actor, actorReady, t } = usePros();
   const { locale } = useI18n();
   const [categoryId, setCategoryId] = useState(params.get("category") ?? "");
   const [language, setLanguage] = useState("");
@@ -37,12 +39,14 @@ function FindInner() {
       ),
     [state, actor?.orgId, taskId, categoryId, language, verified, available, query],
   );
+  const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
+  const back = encodeURIComponent(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`);
 
   return (
       <div className="space-y-3">
         <h1 className="font-display text-2xl font-semibold text-ink">{t("findProfessional")}</h1>
         {taskId ? <p className="text-sm text-muted">{t("fromTask")}</p> : null}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div>
             <Label htmlFor="find-name" className="mb-0.5">{t("findName")}</Label>
             <Input
@@ -109,6 +113,25 @@ function FindInner() {
             <ProCard key={pro.id} pro={pro} compact />
           ))}
         </div>
+        {actorReady && !actor ? (
+          <div className="space-y-2">
+            <p className="text-sm leading-relaxed text-muted">{t("trialBody")}</p>
+            <div className="flex flex-col gap-1">
+              <Link
+                href={`${start}?next=${back}`}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
+              >
+                {t("signUp")}
+              </Link>
+              <Link
+                href={`${start}?mode=sign-in&next=${back}`}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink"
+              >
+                {t("signIn")}
+              </Link>
+            </div>
+          </div>
+        ) : null}
       </div>
   );
 }

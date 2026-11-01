@@ -18,7 +18,7 @@ function AdminLock() {
 
   return (
     <form
-      className="mx-auto max-w-sm space-y-3"
+      className="mx-auto max-w-sm space-y-2"
       onSubmit={(e) => {
         e.preventDefault();
         setError(null);
@@ -52,7 +52,6 @@ function AdminLock() {
           autoComplete="off"
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
-          className="min-h-12"
         />
       </div>
       <div>
@@ -63,7 +62,6 @@ function AdminLock() {
           autoComplete="off"
           value={word}
           onChange={(e) => setWord(e.target.value)}
-          className="min-h-12"
         />
       </div>
       {error ? <p className="text-sm font-semibold text-danger">{error}</p> : null}

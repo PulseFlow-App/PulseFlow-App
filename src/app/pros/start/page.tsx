@@ -2,10 +2,10 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ServicesMark } from "@/components/brand/services-mark";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { usePros } from "@/lib/pros/store";
+import { LegalAccept } from "@/components/pros/legal-accept";
 import { saveServicesCustomer } from "@/lib/pros/trial";
 
 function safeNext(raw: string | null) {
@@ -18,12 +18,16 @@ function StartForm() {
   const params = useSearchParams();
   const { t } = usePros();
   const next = safeNext(params.get("next"));
-  const [mode, setMode] = useState<"create" | "sign-in">("create");
+  const [mode, setMode] = useState<"create" | "sign-in">(
+    params.get("mode") === "sign-in" ? "sign-in" : "create",
+  );
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+  const [emails, setEmails] = useState(false);
 
   const go = () => {
     router.replace(next);
@@ -36,6 +40,11 @@ function StartForm() {
       setError("Name, email, and a password (6+ characters) are required.");
       return;
     }
+    if (mode === "create" && !accepted) {
+      setError(t("legalNeedScroll"));
+      return;
+    }
+    const termsAcceptedAt = new Date().toISOString();
     setSaving(true);
     try {
       if (mode === "sign-in") {
@@ -59,13 +68,15 @@ function StartForm() {
           kind: "personal",
           track: "management",
           role: "owner",
+          termsAcceptedAt,
+          emailOptIn: emails,
         }),
       });
       const payload = (await res.json()) as { error?: string };
       if (!res.ok) {
         const message = payload.error ?? "Could not create the account.";
         if (/supabase|demo/i.test(message)) {
-          saveServicesCustomer({ name, email });
+          saveServicesCustomer({ name, email, termsAcceptedAt, emailOptIn: emails });
           go();
           return;
         }
@@ -86,41 +97,61 @@ function StartForm() {
   };
 
   return (
-    <div className="mx-auto max-w-lg space-y-5">
-      <div className="flex items-center gap-3">
-        <ServicesMark className="size-12" />
-        <h1 className="font-display text-2xl font-semibold text-ink">{t("trialTitle")}</h1>
-      </div>
-      <p className="text-sm text-muted">{t("trialBody")}</p>
-      <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+    <div className="mx-auto max-w-lg space-y-3">
+      <p className="text-sm leading-relaxed text-muted">{t("trialBody")}</p>
+      <div className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
         {mode === "create" ? (
           <div>
             <Label>Full name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="min-h-12" />
+            <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
           </div>
         ) : null}
         <div>
           <Label>Email</Label>
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" className="min-h-12" />
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
         </div>
         <div>
           <Label>Password</Label>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "create" ? "new-password" : "current-password"} className="min-h-12" />
+          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "create" ? "new-password" : "current-password"} />
         </div>
+        {mode === "create" ? (
+          <LegalAccept audience="customer" accepted={accepted} onAccepted={setAccepted} emails={emails} onEmails={setEmails} />
+        ) : null}
         {error ? <p className="text-sm font-semibold text-danger">{error}</p> : null}
-        <Button className="w-full" busy={saving} onClick={() => void submit()}>
-          {mode === "create" ? t("createServicesAccount") : t("signIn")}
-        </Button>
-        <button
-          type="button"
-          className="min-h-12 text-sm font-semibold text-primary"
-          onClick={() => {
-            setMode(mode === "create" ? "sign-in" : "create");
-            setError(null);
-          }}
-        >
-          {mode === "create" ? "Already have a Pulse Flow Services account? Sign in" : "Need an account? Create one"}
-        </button>
+        <div className="flex flex-col gap-1">
+          <Button
+            type="button"
+            className="min-h-12 w-full"
+            disabled={mode === "create" && !accepted}
+            busy={saving && mode === "create"}
+            reflectGlobalBusy={false}
+            onClick={() => {
+              if (mode !== "create") {
+                setMode("create");
+                setError(null);
+                return;
+              }
+              void submit();
+            }}
+          >
+            {t("signUp")}
+          </Button>
+          <button
+            type="button"
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink disabled:opacity-50"
+            disabled={saving && mode === "sign-in"}
+            onClick={() => {
+              if (mode !== "sign-in") {
+                setMode("sign-in");
+                setError(null);
+                return;
+              }
+              void submit();
+            }}
+          >
+            {t("signIn")}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -28,6 +28,7 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
   const { locale } = useI18n();
   const pathname = usePathname();
   const to = (path: string) => servicesPath(pathname, path);
+  const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
   const [text, setText] = useState("");
   const [interim, setInterim] = useState("");
   const [listening, setListening] = useState(false);
@@ -35,6 +36,7 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
   const [asked, setAsked] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [locked, setLocked] = useState(false);
+  const [payOffered, setPayOffered] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const rec = useRef<SpeechRecognitionLike | null>(null);
   const listeningRef = useRef(false);
@@ -52,7 +54,7 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
     const read = () => {
       const customer = readServicesCustomer();
       const allowed = canUseAssistant(customer, plan);
-      setLocked(Boolean(actorReady && actor && !allowed));
+      setLocked(Boolean(actorReady && !allowed));
     };
     read();
     window.addEventListener(SERVICES_CUSTOMER_EVENT, read);
@@ -200,27 +202,35 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
       </div>
       {locked ? (
         <div className="space-y-2">
-          <Link
-            href={to("/settings")}
-            className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
-          >
-            {t("openSettings")}
-          </Link>
-          <p className="text-xs leading-relaxed text-muted">{t("agentPriceNote")}</p>
-        </div>
-      ) : (
-        <p className="text-xs leading-relaxed text-muted">{t("agentPriceNote")}</p>
-      )}
-      {asked && locked ? (
-        <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-card p-4 soft-shadow">
-          <p className="text-sm text-ink">{t("agentLocked")}</p>
-          {match ? null : <p className="text-sm text-muted">{t("noTrade")}</p>}
-          <Link
-            href={requestHref(false)}
-            className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink"
-          >
-            {t("sendYourself")}
-          </Link>
+          {actor ? (
+            <>
+              <Button
+                type="button"
+                className="min-h-12 w-full"
+                reflectGlobalBusy={false}
+                onClick={() => setPayOffered(true)}
+              >
+                {t("payPro")}
+              </Button>
+              {payOffered ? <p className="text-xs leading-relaxed text-muted">{t("payLater")}</p> : null}
+            </>
+          ) : (
+            <>
+              <p className="text-xs leading-relaxed text-muted">{t("agentPriceNote")}</p>
+              <Link
+                href={`${start}?next=${encodeURIComponent(pathname)}`}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
+              >
+                {t("signUp")}
+              </Link>
+              <Link
+                href={`${start}?mode=sign-in&next=${encodeURIComponent(pathname)}`}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink"
+              >
+                {t("signIn")}
+              </Link>
+            </>
+          )}
         </div>
       ) : null}
       {asked && !locked && !match ? <p className="text-sm text-muted">{t("noTrade")}</p> : null}

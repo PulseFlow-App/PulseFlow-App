@@ -45,7 +45,8 @@ export const CATEGORIES: CatalogCategory[] = [
   { id: "c2000001-0000-4000-8000-000000000017", slug: "waste", icon: "trash", names: n("Waste collection", "เก็บขยะ", "Вывоз мусора", "פינוי פסולת"), descriptions: n("Rubbish and haul-away", "ขนขยะ", "Мусор и вывоз", "אשפה ופינוי") },
   { id: "c2000001-0000-4000-8000-000000000018", slug: "moving", icon: "truck", names: n("Moving and delivery", "ขนย้ายและส่งของ", "Переезд и доставка", "הובלה ומשלוחים"), descriptions: n("Moving things locally", "ย้ายของในพื้นที่", "Местные перевозки", "הובלה מקומית") },
   { id: "c2000001-0000-4000-8000-000000000020", slug: "babysitting", icon: "users", names: n("Babysitters", "พี่เลี้ยงเด็ก", "Няни", "בייביסיטר"), descriptions: n("Childcare at the property", "ดูแลเด็กที่บ้าน", "Присмотр за детьми", "שמירה על ילדים") },
-  { id: "c2000001-0000-4000-8000-000000000019", slug: "other", icon: "more", names: n("Other", "อื่นๆ", "Другое", "אחר"), descriptions: n("A trade that is not listed yet", "งานที่ยังไม่มีหมวด", "Услуга вне списка", "מקצוע שעוד לא ברשימה") },
+  { id: "c2000001-0000-4000-8000-000000000021", slug: "pet-sitting", icon: "home", names: n("Pet sitter", "พี่เลี้ยงสัตว์เลี้ยง", "Присмотр за питомцами", "שמירה על חיות מחמד"), descriptions: n("Care for pets at the property", "ดูแลสัตว์เลี้ยงที่บ้าน", "Присмотр за питомцами на объекте", "שמירה על חיות מחמד בנכס") },
+  { id: "c2000001-0000-4000-8000-000000000019", slug: "other", icon: "more", names: n("Other", "อื่นๆ", "Другое", "אחר"), descriptions: n("A profession that is not listed yet", "อาชีพที่ยังไม่มีหมวด", "Профессия вне списка", "מקצוע שעוד לא ברשימה") },
 ];
 
 export const AREAS: CatalogArea[] = [

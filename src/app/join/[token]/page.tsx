@@ -347,7 +347,7 @@ export default function JoinPage({
           </Card>
         ) : null}
 
-        <Card className="space-y-4 p-5">
+        <Card className="space-y-2 p-4">
           <div className="rounded-2xl bg-canvas-deep px-4 py-3 text-sm">
             <div className="flex justify-between gap-3 py-1">
               <span className="text-muted">{t("common.role")}</span>
