@@ -42,7 +42,7 @@ function Frame({ children }: { children: React.ReactNode }) {
               className="flex min-w-0 shrink items-center gap-2 overflow-hidden text-ink"
             >
               <ServicesMark className="size-10 shrink-0 sm:size-11" />
-              <span className="hidden min-w-0 font-display text-sm font-semibold leading-tight min-[420px]:block">
+              <span className="hidden min-w-0 font-display text-sm font-semibold leading-tight sm:block">
                 <span className="block truncate">
                   {nameBreak > 0 ? productName.slice(0, nameBreak) : productName}
                 </span>

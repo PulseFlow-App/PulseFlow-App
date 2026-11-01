@@ -61,7 +61,7 @@ export function PlacePicker() {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "relative ms-auto inline-flex h-10 max-w-[11rem] shrink-0 items-center gap-1 rounded-full border border-[var(--color-border)] bg-card pe-2 ps-2.5 text-xs font-semibold text-ink sm:h-8 sm:max-w-[12rem]",
+          "relative inline-flex h-10 min-w-0 flex-1 items-center gap-1 rounded-full border border-[var(--color-border)] bg-card pe-2 ps-2.5 text-xs font-semibold text-ink sm:h-8 sm:w-auto sm:flex-none",
           "hover:bg-canvas-deep",
           "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
         )}
