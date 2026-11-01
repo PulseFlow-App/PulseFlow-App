@@ -5,8 +5,11 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { areaName, categoryName } from "@/lib/pros/matching";
+import { preferredDateKey } from "@/lib/pros/i18n";
 import { usePros } from "@/lib/pros/store";
+import { formatLongDateLocalized } from "@/lib/i18n/date-format";
 import { useI18n } from "@/lib/i18n/provider";
+import { parseISO } from "date-fns";
 
 export default function ReplyPage() {
   const params = useParams<{ token: string }>();
@@ -49,6 +52,11 @@ export default function ReplyPage() {
         {categoryName(state, request.categoryId, locale)}
         {request.areaId ? ` · ${areaName(state, request.areaId, locale)}` : ""}
       </p>
+      {preferredDateKey(request.preferredDate) ? (
+        <p className="text-sm text-ink">{t(preferredDateKey(request.preferredDate)!)}</p>
+      ) : request.preferredDate && /^\d{4}-\d{2}-\d{2}/.test(request.preferredDate) ? (
+        <p className="text-sm text-ink">{formatLongDateLocalized(parseISO(request.preferredDate.slice(0, 10)), locale)}</p>
+      ) : null}
       {request.preferredTime ? <p className="text-sm text-ink">{request.preferredTime}</p> : null}
       {done ? <p className="text-sm font-semibold text-ink">{done}</p> : null}
       {offer.status !== "pending" || done ? null : (

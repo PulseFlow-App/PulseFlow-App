@@ -1,5 +1,7 @@
 /** Public site. Pages are served from services.pulseflow.site. */
 export const MARKETPLACE_ORIGIN = "https://services.pulseflow.site";
+/** Property ops app. Pages are served from app.pulseflow.site. */
+export const APP_ORIGIN = "https://app.pulseflow.site";
 
 export function isMarketplaceHost(host: string) {
   const name = host.split(":")[0]?.toLowerCase() ?? "";
@@ -11,21 +13,60 @@ export function isMarketplaceHost(host: string) {
   );
 }
 
-/** Origin for the public site, including the local services.localhost host. */
-export function marketplaceOriginForHost(hostHeader: string, protocol = "https:") {
+function hostParts(hostHeader: string) {
   const host = hostHeader.split(",")[0]?.trim() ?? "";
   const hostname = host.split(":")[0]?.toLowerCase() ?? "";
   const port = host.includes(":") ? host.slice(hostname.length + 1) : "";
-  const withPort = (name: string) => (port ? `${name}:${port}` : name);
-  const scheme = protocol.endsWith(":") ? protocol.slice(0, -1) : protocol;
+  return { host, hostname, port };
+}
+
+function withPort(name: string, port: string) {
+  return port ? `${name}:${port}` : name;
+}
+
+function schemeOf(protocol: string) {
+  return protocol.endsWith(":") ? protocol.slice(0, -1) : protocol;
+}
+
+/** Origin for the public site, including the local services.localhost host. */
+export function marketplaceOriginForHost(hostHeader: string, protocol = "https:") {
+  const { host, hostname, port } = hostParts(hostHeader);
+  const scheme = schemeOf(protocol);
   if (isMarketplaceHost(host)) return `${scheme}://${host}`;
   if (hostname === "localhost" || hostname.endsWith(".localhost")) {
-    return `${scheme}://${withPort("services.localhost")}`;
+    return `${scheme}://${withPort("services.localhost", port)}`;
   }
   if (hostname === "pulseflow.site" || hostname.endsWith(".pulseflow.site")) {
     return MARKETPLACE_ORIGIN;
   }
-  return `${scheme}://${withPort(`services.${hostname}`)}`;
+  return `${scheme}://${withPort(`services.${hostname}`, port)}`;
+}
+
+/** Origin for the Pulse Flow app. Localhost keeps the current port. */
+export function appOriginForHost(hostHeader: string, protocol = "https:") {
+  const { host, hostname, port } = hostParts(hostHeader);
+  const scheme = schemeOf(protocol);
+  if (isMarketplaceHost(host)) {
+    if (
+      hostname === "localhost" ||
+      hostname === "services.localhost" ||
+      hostname.endsWith(".localhost")
+    ) {
+      return `${scheme}://${withPort("localhost", port)}`;
+    }
+    return APP_ORIGIN;
+  }
+  if (hostname === "localhost" || hostname.endsWith(".localhost")) {
+    return `${scheme}://${host}`;
+  }
+  if (
+    hostname === "app.pulseflow.site" ||
+    hostname === "pulseflow.site" ||
+    hostname.endsWith(".pulseflow.site")
+  ) {
+    return APP_ORIGIN;
+  }
+  return `${scheme}://${host}`;
 }
 
 /** Browser path on the public site. /pros is the internal rewrite only. */

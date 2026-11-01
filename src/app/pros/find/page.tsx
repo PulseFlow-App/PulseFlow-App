@@ -3,7 +3,7 @@
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ProCard } from "@/components/pros/parts";
-import { Input, Select } from "@/components/ui/input";
+import { Input, Label, Select } from "@/components/ui/input";
 import { PROS_LANGS, localizedName } from "@/lib/pros/catalog";
 import { allCategories, filterPros, sortOrganic } from "@/lib/pros/matching";
 import { usePros } from "@/lib/pros/store";
@@ -39,38 +39,76 @@ function FindInner() {
   );
 
   return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         <h1 className="font-display text-2xl font-semibold text-ink">{t("findProfessional")}</h1>
         {taskId ? <p className="text-sm text-muted">{t("fromTask")}</p> : null}
-        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("nameSearch")} aria-label={t("nameSearch")} className="min-h-12" />
-        <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} aria-label={t("category")}>
-          <option value="">{t("any")}</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {localizedName(cat.names, locale)}
-            </option>
-          ))}
-        </Select>
-        <Select value={language} onChange={(e) => setLanguage(e.target.value)} aria-label={t("yourLanguage")}>
-          <option value="">{t("any")}</option>
-          {PROS_LANGS.map((lang) => (
-            <option key={lang} value={lang}>
-              {lang}
-            </option>
-          ))}
-        </Select>
-        <label className="flex min-h-12 items-center gap-2 text-sm">
-          <input type="checkbox" checked={verified} onChange={(e) => setVerified(e.target.checked)} />
-          {t("verifiedOnly")}
-        </label>
-        <label className="flex min-h-12 items-center gap-2 text-sm">
-          <input type="checkbox" checked={available} onChange={(e) => setAvailable(e.target.checked)} />
-          {t("filterAvailability")}
-        </label>
+        <div className="space-y-2">
+          <div>
+            <Label htmlFor="find-name" className="mb-0.5">{t("findName")}</Label>
+            <Input
+              id="find-name"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("findName")}
+              aria-describedby="find-name-note"
+            />
+            <p id="find-name-note" className="mt-0.5 text-xs leading-snug text-muted">
+              {t("findNameNote")}
+            </p>
+          </div>
+          <div>
+            <Label htmlFor="find-profession" className="mb-0.5">{t("findProfession")}</Label>
+            <Select
+              id="find-profession"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              aria-describedby="find-profession-note"
+            >
+              <option value="">{t("any")}</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {localizedName(cat.names, locale)}
+                </option>
+              ))}
+            </Select>
+            <p id="find-profession-note" className="mt-0.5 text-xs leading-snug text-muted">
+              {t("findProfessionNote")}
+            </p>
+          </div>
+          <div>
+            <Label htmlFor="find-language" className="mb-0.5">{t("yourLanguage")}</Label>
+            <Select
+              id="find-language"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              aria-describedby="find-language-note"
+            >
+              <option value="">{t("any")}</option>
+              {PROS_LANGS.map((lang) => (
+                <option key={lang} value={lang}>
+                  {lang}
+                </option>
+              ))}
+            </Select>
+            <p id="find-language-note" className="mt-0.5 text-xs leading-snug text-muted">
+              {t("findLanguageNote")}
+            </p>
+          </div>
+          <label className="flex items-center gap-2 pt-0.5 text-sm">
+            <input type="checkbox" checked={verified} onChange={(e) => setVerified(e.target.checked)} />
+            {t("verifiedOnly")}
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={available} onChange={(e) => setAvailable(e.target.checked)} />
+            {t("filterAvailability")}
+          </label>
+        </div>
         {pros.length === 0 ? <p className="text-sm text-muted">{t("noPros")}</p> : null}
-        {pros.map((pro) => (
-          <ProCard key={pro.id} pro={pro} />
-        ))}
+        <div className="flex flex-wrap gap-1.5">
+          {pros.map((pro) => (
+            <ProCard key={pro.id} pro={pro} compact />
+          ))}
+        </div>
       </div>
   );
 }

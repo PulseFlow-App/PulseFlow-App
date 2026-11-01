@@ -63,9 +63,8 @@ function LocalePickerSheet({
 
 /** Compact header control — opens Horizon bottom sheet (not native select). */
 function InlineLanguageButton() {
-  const { locale, t } = useI18n();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
-  const native = LOCALE_META[locale].native;
 
   return (
     <>
@@ -73,18 +72,17 @@ function InlineLanguageButton() {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "relative z-10 inline-flex h-8 max-w-[7rem] items-center gap-1 rounded-full px-2",
+          "relative z-10 inline-flex size-10 shrink-0 items-center justify-center rounded-full",
           "border border-[var(--color-border)] bg-card text-ink",
           "hover:bg-canvas-deep",
           "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+          "sm:size-8",
         )}
         aria-label={t("language.choose")}
         aria-haspopup="dialog"
         aria-expanded={open}
       >
         <Languages className="size-3.5 shrink-0 text-muted" aria-hidden />
-        <span className="min-w-0 truncate text-xs font-semibold">{native}</span>
-        <ChevronDown className="size-3.5 shrink-0 text-muted" aria-hidden />
       </button>
       <LocalePickerSheet open={open} onClose={() => setOpen(false)} />
     </>

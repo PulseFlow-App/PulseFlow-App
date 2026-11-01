@@ -20,6 +20,7 @@ import {
   SolarSwimming,
   SolarTrashBin,
   SolarTuning,
+  SolarUsersGroup,
   SolarWaterdrop,
   SolarWidget,
   SolarWifiRouter,
@@ -49,6 +50,7 @@ const TRADE_ICONS = {
   key: SolarKeyMinimal,
   trash: SolarTrashBin,
   truck: SolarDelivery,
+  users: SolarUsersGroup,
   more: SolarWidget,
 } as const;
 
@@ -112,26 +114,67 @@ export function ServicesAccountGate({ next }: { next: string }) {
   );
 }
 
-export function ProCard({ pro }: { pro: ProProfile }) {
-  const { state, t } = usePros();
+export function ProCard({
+  pro,
+  compact = false,
+  reveal = false,
+}: {
+  pro: ProProfile;
+  compact?: boolean;
+  /** Keep the name readable. Used for the assistant suggestion before an account. */
+  reveal?: boolean;
+}) {
+  const { state, actor, t } = usePros();
   const { locale } = useI18n();
   const pathname = usePathname();
   const rating = reviewAverage(state.reviews, pro.id);
   const trade = categoryName(state, pro.categoryIds[0] ?? null, locale);
-  const href = pathname.startsWith("/pros") ? `/pros/p/${pro.id}` : `/p/${pro.id}`;
+  const onAppPath = pathname === "/pros" || pathname.startsWith("/pros/");
+  const profilePath = onAppPath ? `/pros/p/${pro.id}` : `/p/${pro.id}`;
+  const start = onAppPath ? "/pros/start" : "/start";
+  const guest = !reveal && !actor;
+  const href = guest ? `${start}?next=${encodeURIComponent(profilePath)}` : profilePath;
+  const veil = guest ? "select-none blur-[2px]" : undefined;
+  if (compact) {
+    return (
+      <Link
+        href={href}
+        aria-label={guest ? t("signInToSee") : undefined}
+        className="inline-flex h-11 max-w-[16rem] items-center gap-1.5 rounded-xl border border-[var(--color-border)] bg-card px-2"
+      >
+        <span className={cn("flex min-w-0 items-center gap-1.5", veil)} aria-hidden={guest || undefined}>
+          <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-canvas-deep font-display text-sm leading-none text-ink">
+            {pro.photoUrl ? (
+              <img src={pro.photoUrl} alt="" className="size-full object-cover" />
+            ) : (
+              pro.name.slice(0, 1)
+            )}
+          </span>
+          <span className="min-w-0 truncate text-xs font-semibold text-ink">{pro.name}</span>
+          <span className="min-w-0 truncate text-xs text-muted">{trade || t("position")}</span>
+          {rating != null ? (
+            <span className="shrink-0 text-[10px] text-ink/70">{rating.toFixed(1)}</span>
+          ) : null}
+        </span>
+      </Link>
+    );
+  }
   return (
     <Link
       href={href}
+      aria-label={guest ? t("signInToSee") : undefined}
       className="flex min-h-16 items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-card p-3 soft-shadow"
     >
-      <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-canvas-deep font-display text-lg text-ink">
-        {pro.name.slice(0, 1)}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate font-semibold text-ink">{pro.name}</span>
-        <span className="block truncate text-sm text-muted">{trade || t("position")}</span>
-        <span className="mt-1 block text-xs text-ink/70">
-          {rating == null ? t("noReviews") : rating.toFixed(1)}
+      <span className={cn("flex min-w-0 flex-1 items-center gap-3", veil)} aria-hidden={guest || undefined}>
+        <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-canvas-deep font-display text-lg text-ink">
+          {pro.name.slice(0, 1)}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-semibold text-ink">{pro.name}</span>
+          <span className="block truncate text-sm text-muted">{trade || t("position")}</span>
+          <span className="mt-1 block text-xs text-ink/70">
+            {rating == null ? t("noReviews") : rating.toFixed(1)}
+          </span>
         </span>
       </span>
     </Link>

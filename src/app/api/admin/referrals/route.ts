@@ -1,27 +1,17 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import { isDemoMode } from "@/lib/env";
-
-function adminIds() {
-  return (process.env.PROS_ADMIN_IDS ?? process.env.NEXT_PUBLIC_PROS_ADMIN_IDS ?? "")
-    .split(",")
-    .map((id) => id.trim())
-    .filter(Boolean);
-}
+import { ADMIN_COOKIE, tokenMatches } from "@/lib/pros/admin-lock";
 
 /** Live referral ledger. Demo signups stay on this device and are read by the panel directly. */
 export async function GET() {
+  const jar = await cookies();
+  if (!tokenMatches(jar.get(ADMIN_COOKIE)?.value)) {
+    return NextResponse.json({ error: "Admin only." }, { status: 403 });
+  }
   if (isDemoMode()) {
     return NextResponse.json({ rows: [], demo: true });
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user || !adminIds().includes(user.id)) {
-    return NextResponse.json({ error: "Admin only." }, { status: 403 });
   }
 
   const admin = createAdminClient();

@@ -108,6 +108,10 @@ export default function RegisterPage() {
       stored?.utm_source ||
       null;
     setAcquisitionSource(src);
+    const trackParam = params.get("track");
+    if (trackParam === "maintenance" || trackParam === "management") {
+      setTrack(trackParam);
+    }
   }, []);
 
   const islands = useMemo(

@@ -22,10 +22,14 @@ import { matchPros } from "@/lib/pros/matching";
 import {
   answersToComment,
   orderAllowance,
+  readServicePlan,
   readServicesCustomer,
+  saveServicePlan,
   SERVICES_CUSTOMER_EVENT,
+  SERVICES_PLAN_EVENT,
   starsFromAnswers,
   type ServiceAnswers,
+  type ServicePlan,
 } from "@/lib/pros/trial";
 import type {
   ProOffer,
@@ -43,6 +47,7 @@ type RequestInput = {
   photos: string[];
   areaId: string | null;
   urgency: ProsUrgency;
+  preferredDate: string | null;
   preferredTime: string;
   language: string | null;
   taskId: string | null;
@@ -58,7 +63,10 @@ type Api = {
   actor: ProsActor | null;
   actorReady: boolean;
   isAdmin: boolean;
+  adminReady: boolean;
   state: ProsState;
+  plan: ServicePlan;
+  setPlan: (next: { premium?: boolean; pro?: boolean }) => void;
   t: (key: ProsKey, params?: Record<string, string | number>) => string;
   setPlace: (id: string | null) => void;
   createRequest: (input: RequestInput) => StoreResult & { matches?: ProOffer[] };
@@ -226,17 +234,39 @@ export function ProsProvider({ children }: { children: ReactNode }) {
     setState((prev) => updater(prev));
   }, []);
 
-  const isAdmin = useMemo(() => {
-    if (!actor) return false;
-    if (isDemoMode() || hasDemoUserCookie()) {
-      return actor.role === "owner" || actor.role === "manager";
-    }
-    const extra = (process.env.NEXT_PUBLIC_PROS_ADMIN_IDS ?? "")
-      .split(",")
-      .map((id) => id.trim())
-      .filter(Boolean);
-    return extra.includes(actor.id);
-  }, [actor]);
+  const [plan, setPlanState] = useState<ServicePlan>({ premium: false, pro: false });
+  useEffect(() => {
+    const read = () => setPlanState(readServicePlan(actor?.id));
+    read();
+    window.addEventListener(SERVICES_PLAN_EVENT, read);
+    return () => window.removeEventListener(SERVICES_PLAN_EVENT, read);
+  }, [actor?.id]);
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminReady, setAdminReady] = useState(false);
+
+  useEffect(() => {
+    let cancel = false;
+    const read = () => {
+      void fetch("/api/admin/session")
+        .then((res) => res.json())
+        .then((payload: { ok?: boolean }) => {
+          if (!cancel) setIsAdmin(Boolean(payload.ok));
+        })
+        .catch(() => {
+          if (!cancel) setIsAdmin(false);
+        })
+        .finally(() => {
+          if (!cancel) setAdminReady(true);
+        });
+    };
+    read();
+    window.addEventListener("pros-admin", read);
+    return () => {
+      cancel = true;
+      window.removeEventListener("pros-admin", read);
+    };
+  }, []);
 
   const t = useCallback(
     (key: ProsKey, params?: Record<string, string | number>) => prosT(locale, key, params),
@@ -249,12 +279,18 @@ export function ProsProvider({ children }: { children: ReactNode }) {
       actor,
       actorReady,
       isAdmin,
+      adminReady,
       state,
+      plan,
+      setPlan: (next) => {
+        if (!actor) return;
+        setPlanState(saveServicePlan(actor.id, next));
+      },
       t,
       setPlace: (id) => persist((prev) => ({ ...prev, placeId: id })),
       createRequest: (input) => {
         if (!actor) return { ok: false, error: "auth" };
-        const allowance = orderAllowance(state.requests, state.reviews, actor.id);
+        const allowance = orderAllowance(state.requests, state.reviews, actor.id, new Date(), plan.premium);
         if (!allowance.ok) return { ok: false, error: allowance.error };
         const description = input.description.trim();
         const title = input.title.trim();
@@ -289,6 +325,7 @@ export function ProsProvider({ children }: { children: ReactNode }) {
           photos: input.photos.slice(0, 3),
           areaId: input.areaId,
           urgency: input.urgency,
+          preferredDate: input.preferredDate,
           preferredTime: input.preferredTime,
           language: input.language,
           status: "requested",
@@ -650,7 +687,7 @@ export function ProsProvider({ children }: { children: ReactNode }) {
         }));
       },
     };
-  }, [ready, actor, actorReady, isAdmin, state, t, persist, locale]);
+  }, [ready, actor, actorReady, isAdmin, adminReady, state, plan, t, persist, locale]);
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
 }

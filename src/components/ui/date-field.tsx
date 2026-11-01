@@ -104,8 +104,9 @@ export function DateField({
 
   useEffect(() => {
     if (!open) return;
-    setCursor(value && value >= minIso ? toDay(value) : minDay);
-  }, [open, value, minIso, minDay]);
+    const floor = toDay(minIso);
+    setCursor(value && value >= minIso ? toDay(value) : floor);
+  }, [open, value, minIso]);
 
   useLayoutEffect(() => {
     if (!open) return;

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { RequireUser } from "@/components/pros/parts";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 import { readSignups, type SignupRow } from "@/lib/pros/join";
@@ -21,7 +20,7 @@ type LiveRow = {
 };
 
 export default function ReferralAdminPage() {
-  const { isAdmin } = usePros();
+  const { isAdmin, adminReady } = usePros();
   const pathname = usePathname();
   const [localRows, setLocalRows] = useState<SignupRow[]>([]);
   const [liveRows, setLiveRows] = useState<LiveRow[]>([]);
@@ -45,16 +44,12 @@ export default function ReferralAdminPage() {
       .catch(() => setLiveNote("The live ledger could not be loaded."));
   }, []);
 
+  if (!adminReady) return null;
   if (!isAdmin) {
-    return (
-      <RequireUser account="app">
-        <p className="text-sm text-muted">This panel is for platform admins.</p>
-      </RequireUser>
-    );
+    return <p className="text-sm text-muted">This panel is locked.</p>;
   }
 
   return (
-    <RequireUser account="app">
       <div className="space-y-6">
         <div className="flex items-center justify-between gap-3">
           <h1 className="font-display text-2xl font-semibold text-ink">Who invited whom</h1>
@@ -104,6 +99,5 @@ export default function ReferralAdminPage() {
           </section>
         ) : null}
       </div>
-    </RequireUser>
   );
 }

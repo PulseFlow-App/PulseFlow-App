@@ -9,6 +9,7 @@ import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
 import { ProsProvider, usePros } from "@/lib/pros/store";
 import { allAreas, areaName } from "@/lib/pros/matching";
+import { servicesPath } from "@/lib/pros/paths";
 import { useI18n } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 
@@ -30,42 +31,76 @@ function Frame({ children }: { children: React.ReactNode }) {
   ];
   return (
     <div className="flex h-dvh min-h-0 w-full flex-col overflow-hidden text-ink">
-      <header className="z-20 shrink-0 border-b border-[var(--color-border)] bg-canvas/95 backdrop-blur">
-        <div className={cn("mx-auto flex items-center gap-2 px-4 py-3", wide ? "max-w-3xl" : "max-w-lg")}>
-          <Link href={onAppPath ? "/pros" : "/"} className="flex min-w-0 items-center gap-2 text-ink">
-            <ServicesMark className="size-11 shrink-0" />
-            <span className="font-display text-sm font-semibold leading-tight">
-              <span className="block">{nameBreak > 0 ? productName.slice(0, nameBreak) : productName}</span>
-              {nameBreak > 0 ? <span className="block">{productName.slice(nameBreak + 1)}</span> : null}
-            </span>
-          </Link>
-          <label className="relative ms-auto inline-flex h-8 max-w-[7rem] min-w-0 items-center">
-            <span className="sr-only">{t("place")}</span>
-            <select
-              className="h-8 w-full appearance-none truncate rounded-full border border-[var(--color-border)] bg-card py-0 pe-6 ps-2 text-xs font-semibold text-ink"
-              value={state.placeId ?? ""}
-              onChange={(e) => setPlace(e.target.value || null)}
+      <header className="z-20 shrink-0 border-b border-[var(--color-border)] bg-canvas/95 pt-[env(safe-area-inset-top)] backdrop-blur">
+        <div
+          className={cn(
+            "mx-auto px-3 sm:px-4",
+            wide ? "max-w-3xl" : "max-w-lg",
+            "flex items-center gap-1.5 py-2.5 sm:gap-2 sm:py-3",
+          )}
+        >
+          <div className="flex w-full min-w-0 items-center gap-1.5 sm:gap-2">
+            <Link
+              href={servicesPath(pathname, "/")}
+              className="flex min-w-0 shrink items-center gap-2 overflow-hidden text-ink"
             >
-              <option value="">{t("any")}</option>
-              {areas
-                .filter((area) => area.level === "locality")
-                .map((island) => (
-                  <optgroup key={island.id} label={areaName(state, island.id, locale)}>
-                    <option value={island.id}>{areaName(state, island.id, locale)}</option>
-                    {areas
-                      .filter((area) => area.parentId === island.id)
-                      .map((area) => (
-                        <option key={area.id} value={area.id}>
-                          {areaName(state, area.id, locale)}
+              <ServicesMark className="size-10 shrink-0 sm:size-11" />
+              <span className="hidden min-w-0 font-display text-sm font-semibold leading-tight min-[420px]:block">
+                <span className="block truncate">
+                  {nameBreak > 0 ? productName.slice(0, nameBreak) : productName}
+                </span>
+                {nameBreak > 0 ? (
+                  <span className="block truncate">{productName.slice(nameBreak + 1)}</span>
+                ) : null}
+              </span>
+            </Link>
+            <label className="relative ms-auto inline-flex h-10 max-w-[6.5rem] min-w-0 items-center sm:h-8 sm:max-w-[7rem]">
+                <span className="sr-only">{t("place")}</span>
+                <select
+                  className="h-full w-full appearance-none truncate rounded-full border border-[var(--color-border)] bg-card py-0 pe-6 ps-2 text-xs font-semibold text-ink"
+                  value={state.placeId ?? ""}
+                  onChange={(e) => setPlace(e.target.value || null)}
+                >
+                  <option value="">{t("any")}</option>
+                  {areas
+                    .filter((area) => area.level === "locality")
+                    .map((island) => (
+                      <optgroup
+                        key={island.id}
+                        label={areaName(state, island.id, locale)}
+                      >
+                        <option value={island.id}>
+                          {areaName(state, island.id, locale)}
                         </option>
-                      ))}
-                  </optgroup>
-                ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute end-1.5 size-3.5 text-muted" aria-hidden />
-          </label>
-          <LanguageSwitcher variant="inline" />
-          <ThemeIconToggle />
+                        {areas
+                          .filter((area) => area.parentId === island.id)
+                          .map((area) => (
+                            <option key={area.id} value={area.id}>
+                              {areaName(state, area.id, locale)}
+                            </option>
+                          ))}
+                      </optgroup>
+                    ))}
+                </select>
+                <ChevronDown
+                  className="pointer-events-none absolute end-1.5 size-3.5 text-muted"
+                  aria-hidden
+                />
+              </label>
+            <LanguageSwitcher variant="inline" />
+            <Link
+              href={onAppPath ? "/pros/settings" : "/settings"}
+              aria-label={t("settings")}
+              aria-current={here.startsWith("/settings") ? "page" : undefined}
+              className={cn(
+                "flex size-10 shrink-0 items-center justify-center rounded-full text-ink sm:size-8",
+                here.startsWith("/settings") && "text-primary",
+              )}
+            >
+              <PulseIcon name="settings" className="size-5" />
+            </Link>
+            <ThemeIconToggle className="size-10 shrink-0 sm:size-8" />
+          </div>
         </div>
       </header>
       <main
@@ -83,21 +118,28 @@ function Frame({ children }: { children: React.ReactNode }) {
       </main>
       {hideNav ? null : (
         <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-20 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-          <ul className="pointer-events-auto mx-auto flex h-12 w-full max-w-lg items-stretch overflow-hidden rounded-2xl bg-nav px-0.5 shadow-[var(--shadow-nav)]">
-            {tabs.map(([publicHref, label, appHref, icon]) => {
+          <ul className="pointer-events-auto mx-auto flex h-12 w-full max-w-lg items-stretch overflow-hidden rounded-2xl bg-nav shadow-[var(--shadow-nav)]">
+            {tabs.map(([publicHref, label, appHref, icon], index) => {
               const href = onAppPath ? appHref : publicHref;
               const active = publicHref === "/" ? here === "/" : here.startsWith(publicHref);
+              const edge =
+                index === 0
+                  ? "rounded-s-none rounded-e-xl"
+                  : index === tabs.length - 1
+                    ? "rounded-e-none rounded-s-xl"
+                    : "rounded-xl";
               return (
                 <li key={publicHref} className="min-w-0 flex-1">
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-xl px-0.5",
+                      "flex h-full w-full flex-col items-center justify-center gap-0.5 px-0.5",
+                      edge,
                       active ? "pf-nav-active" : "text-white/75",
                     )}
                   >
-                    <PulseIcon name={icon} surface={active ? "canvas" : "nav"} className="size-5" />
+                    <PulseIcon name={icon} surface={active ? "canvas" : "nav"} className="size-[1rem]" />
                     <span className="max-w-full truncate text-[10px] font-bold leading-none">{label}</span>
                   </Link>
                 </li>

@@ -7,9 +7,12 @@ import { ServiceReviewForm } from "@/components/pros/service-review";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { assignRequestToTask } from "@/lib/pros/assign-task";
-import { statusKey } from "@/lib/pros/i18n";
+import { preferredDateKey, statusKey } from "@/lib/pros/i18n";
 import { nextKey, offerHasReply } from "@/lib/pros/matching";
 import { usePros } from "@/lib/pros/store";
+import { formatLongDateLocalized } from "@/lib/i18n/date-format";
+import { useI18n } from "@/lib/i18n/provider";
+import { parseISO } from "date-fns";
 import { lineDeepLink } from "@/lib/utils";
 import type { ProOffer, ProProfile, ProsStatus } from "@/lib/pros/types";
 
@@ -36,6 +39,7 @@ function channels(pro: ProProfile, text: string) {
 export default function RequestDetailPage() {
   const params = useParams<{ id: string }>();
   const { state, actor, t, chooseOffer, setRequestStatus, rememberTranslation, recordCost } = usePros();
+  const { locale } = useI18n();
   const request = state.requests.find((row) => row.id === params.id);
   const [assigned, setAssigned] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
@@ -65,6 +69,12 @@ export default function RequestDetailPage() {
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t(statusKey(request.status))}</p>
           <h1 className="font-display text-2xl font-semibold text-ink">{request.title}</h1>
           <p className="mt-1 text-sm text-ink">{t(nextKey(request.status))}</p>
+          {preferredDateKey(request.preferredDate) ? (
+            <p className="mt-1 text-sm text-ink">{t(preferredDateKey(request.preferredDate)!)}</p>
+          ) : request.preferredDate && /^\d{4}-\d{2}-\d{2}/.test(request.preferredDate) ? (
+            <p className="mt-1 text-sm text-ink">{formatLongDateLocalized(parseISO(request.preferredDate.slice(0, 10)), locale)}</p>
+          ) : null}
+          {request.preferredTime ? <p className="text-sm text-muted">{request.preferredTime}</p> : null}
         </div>
         <OriginalText
           text={request.description}

@@ -30,6 +30,8 @@ const PUBLIC_PREFIXES = [
   "/api/invites",
   "/api/handoff",
   "/api/public",
+  // Services admin checks PROS_ADMIN_KEY itself. The path is not a role.
+  "/api/admin",
   "/api/billing/webhook",
   // Vercel Cron / ops: route checks Authorization: Bearer CRON_SECRET.
   "/api/cron",
@@ -45,7 +47,19 @@ function isPublicPath(pathname: string) {
   );
 }
 
-const MARKET_PREFIXES = ["/find", "/request", "/requests", "/p", "/c", "/a", "/reply", "/claim", "/admin", "/start"];
+const MARKET_PREFIXES = [
+  "/find",
+  "/request",
+  "/requests",
+  "/p",
+  "/c",
+  "/a",
+  "/reply",
+  "/claim",
+  "/admin",
+  "/start",
+  "/settings",
+];
 
 function onMarketplaceHost(request: NextRequest) {
   return isMarketplaceHost(request.headers.get("host") ?? "");
@@ -77,6 +91,9 @@ export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
   const { pathname } = request.nextUrl;
   const prosHost = onMarketplaceHost(request);
+  if (pathname === "/welcome" || pathname === "/pros/welcome" || pathname.startsWith("/welcome/") || pathname.startsWith("/pros/welcome/")) {
+    return NextResponse.redirect("https://www.pulseflow.site/services");
+  }
   if (pathname === "/pros" || pathname.startsWith("/pros/")) {
     if (prosHost) return redirectMarketplace(request);
     const origin = marketplaceOriginForHost(

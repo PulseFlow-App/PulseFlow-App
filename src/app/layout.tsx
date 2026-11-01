@@ -163,14 +163,20 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headerList = await headers();
+  const host =
+    headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
+  const site = isMarketplaceHost(host) ? "services" : "app";
+
   return (
     <html
       lang="en"
+      data-site={site}
       suppressHydrationWarning
       className={`${heebo.variable} ${sora.variable} ${noto.variable} ${thai.variable} ${myanmar.variable} ${arabic.variable} h-full`}
     >

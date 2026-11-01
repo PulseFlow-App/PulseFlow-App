@@ -143,27 +143,26 @@ export function WelcomeScreen() {
       }}
     >
       <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <header className="flex flex-wrap items-center gap-x-1.5 gap-y-2 pb-4 sm:gap-2">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <PulseMark className="size-8 shrink-0 sm:size-9" />
-            <span className="hidden font-display text-sm font-bold tracking-tight min-[400px]:inline sm:text-base">
-              {brandName}
-            </span>
-            <span className="sr-only">{brandName}</span>
+        <header className="flex items-center gap-2 pb-4">
+          <PulseMark className="size-8 shrink-0 sm:size-9" />
+          <span className="min-w-0 truncate font-display text-sm font-bold tracking-tight sm:text-base">
+            {brandName}
+          </span>
+          <div className="ms-auto flex shrink-0 items-center gap-1.5">
+            <LanguageSwitcher variant="inline" />
+            <Link
+              href="/login"
+              className={cn(
+                "inline-flex h-8 shrink-0 items-center justify-center rounded-full px-2",
+                "text-xs font-semibold text-ink",
+                "hover:bg-canvas-deep",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+              )}
+            >
+              {t("welcome.signIn")}
+            </Link>
+            <ThemeIconToggle className="relative z-10 shrink-0" />
           </div>
-          <LanguageSwitcher variant="inline" />
-          <Link
-            href="/login"
-            className={cn(
-              "inline-flex h-8 shrink-0 items-center justify-center rounded-full px-2",
-              "text-xs font-semibold text-ink",
-              "hover:bg-canvas-deep",
-              "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-            )}
-          >
-            {t("welcome.signIn")}
-          </Link>
-          <ThemeIconToggle className="relative z-10 shrink-0" />
         </header>
 
         <main className="flex flex-1 flex-col gap-8">

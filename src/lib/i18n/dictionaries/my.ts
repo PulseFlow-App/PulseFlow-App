@@ -1400,6 +1400,7 @@ const my: Dictionary = {
   "talent.skill.maintenance": "Maintenance",
   "talent.skill.handyman": "Handyman",
   "talent.skill.manager": "On-site manager",
+  "talent.skill.babysitter": "Babysitters",
   "talent.reviewsSection": "Reviews & endorsements",
   "talent.browseLink": "Start search",
   "common.on": "On",

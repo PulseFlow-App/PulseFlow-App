@@ -20,6 +20,7 @@ const HINTS: Record<string, string[]> = {
   locksmith: ["locksmith", "lock", "key stuck", "กุญแจ", "замок", "מנעול"],
   waste: ["waste", "rubbish", "garbage", "trash", "ขยะ", "мусор", "אשפה"],
   moving: ["moving", "delivery", "relocat", "ขนย้าย", "переезд", "הובלה"],
+  babysitting: ["babysit", "babysitter", "nanny", "childcare", "พี่เลี้ยง", "няня", "בייביסיטר"],
 };
 
 export type BriefMatch = {

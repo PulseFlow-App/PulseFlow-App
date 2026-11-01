@@ -1401,6 +1401,7 @@ const de: Dictionary = {
   "talent.skill.maintenance": "Wartung",
   "talent.skill.handyman": "Heimwerker",
   "talent.skill.manager": "Vor-Ort-Manager",
+  "talent.skill.babysitter": "Babysitter",
   "talent.reviewsSection": "Bewertungen und Vermerke",
   "talent.browseLink": "Start search",
   "common.on": "Ein",

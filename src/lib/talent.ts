@@ -11,6 +11,7 @@ export const TALENT_SKILLS = [
   "maintenance",
   "handyman",
   "manager",
+  "babysitter",
 ] as const;
 
 export type TalentSkill = (typeof TALENT_SKILLS)[number];

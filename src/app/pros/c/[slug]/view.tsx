@@ -21,13 +21,15 @@ export function CategoryView({ slug }: { slug: string }) {
   );
   if (!cat) return <p className="text-sm text-muted">{t("noPros")}</p>;
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h1 className="font-display text-2xl font-semibold text-ink">{localizedName(cat.names, locale)}</h1>
       <p className="text-sm text-muted">{localizedName(cat.descriptions, locale)}</p>
       {pros.length === 0 ? <p className="text-sm text-muted">{t("noPros")}</p> : null}
-      {pros.map((pro) => (
-        <ProCard key={pro.id} pro={pro} />
-      ))}
+      <div className="flex flex-wrap gap-1.5">
+        {pros.map((pro) => (
+          <ProCard key={pro.id} pro={pro} compact />
+        ))}
+      </div>
     </div>
   );
 }

@@ -25,15 +25,15 @@ export function ProfileView({ id }: { id: string }) {
   }
   const trade = pro.categoryIds.map((cat) => categoryName(state, cat, locale)).filter(Boolean).join(" · ");
   const rating = reviewAverage(state.reviews, pro.id);
-  if (actorReady && !actor) {
+  if (!actor) {
     return (
       <div className="space-y-4">
-        <div>
+        <div className="select-none blur-[2px]" aria-hidden>
           <h1 className="font-display text-2xl font-semibold text-ink">{pro.name}</h1>
           <p className="text-sm text-muted">{trade}</p>
           <p className="mt-1 text-sm text-ink/80">{rating == null ? t("noReviews") : rating.toFixed(1)}</p>
         </div>
-        <ServicesAccountGate next={pathname} />
+        {actorReady ? <ServicesAccountGate next={pathname} /> : null}
       </div>
     );
   }

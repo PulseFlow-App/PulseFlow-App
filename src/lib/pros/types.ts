@@ -58,6 +58,8 @@ export type ProRequest = {
   photos: string[];
   areaId: string | null;
   urgency: ProsUrgency;
+  /** today, tomorrow, this_week, or flexible. Older requests may store YYYY-MM-DD. */
+  preferredDate?: string | null;
   preferredTime: string;
   language: string | null;
   status: ProsStatus;

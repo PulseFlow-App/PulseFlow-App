@@ -14,6 +14,7 @@ const SKILL_BY_SLUG: Record<string, string> = {
   pool: "pool",
   gardening: "gardener",
   handyman: "handyman",
+  babysitting: "babysitter",
 };
 
 export type SignupRow = {

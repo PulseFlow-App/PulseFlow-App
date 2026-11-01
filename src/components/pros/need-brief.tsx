@@ -9,7 +9,11 @@ import { Input } from "@/components/ui/input";
 import { briefTitle, suggestFromBrief } from "@/lib/pros/brief";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
-import { hasAgentPlan, readServicesCustomer, SERVICES_CUSTOMER_EVENT } from "@/lib/pros/trial";
+import {
+  canUseAssistant,
+  readServicesCustomer,
+  SERVICES_CUSTOMER_EVENT,
+} from "@/lib/pros/trial";
 import {
   getSpeechRecognitionCtor,
   speechLocale,
@@ -20,7 +24,7 @@ import { useI18n } from "@/lib/i18n/provider";
 import type { Locale } from "@/lib/i18n";
 
 export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
-  const { state, t } = usePros();
+  const { state, actor, actorReady, plan, t } = usePros();
   const { locale } = useI18n();
   const pathname = usePathname();
   const to = (path: string) => servicesPath(pathname, path);
@@ -30,7 +34,7 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
   const [supported, setSupported] = useState(true);
   const [asked, setAsked] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
-  const [agent, setAgent] = useState(false);
+  const [locked, setLocked] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const rec = useRef<SpeechRecognitionLike | null>(null);
   const listeningRef = useRef(false);
@@ -45,7 +49,11 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
 
   useEffect(() => {
     setSupported(speechRecognitionSupported());
-    const read = () => setAgent(hasAgentPlan(readServicesCustomer()));
+    const read = () => {
+      const customer = readServicesCustomer();
+      const allowed = canUseAssistant(customer, plan);
+      setLocked(Boolean(actorReady && actor && !allowed));
+    };
     read();
     window.addEventListener(SERVICES_CUSTOMER_EVENT, read);
     return () => {
@@ -53,7 +61,7 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
       rec.current?.abort();
       listeningRef.current = false;
     };
-  }, []);
+  }, [actor, actorReady, plan]);
 
   const match = useMemo(
     () => (text.trim().length >= 12 ? suggestFromBrief(state, text) : null),
@@ -140,38 +148,70 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
       <p id="need-hint" className="text-sm text-muted">
         {t("searchHint")}
       </p>
-      <Input
-        id="need-brief"
-        value={listening && interim ? `${text} ${interim}`.trim() : text}
-        onChange={(e) => {
-          setText(e.target.value);
-          setAsked(false);
-          setConfirmed(false);
-          setError(null);
-        }}
-        readOnly={listening}
-        placeholder={t("searchPlaceholder")}
-        aria-label={t("searchPlaceholder")}
-        aria-describedby="need-hint"
-        className="min-h-12 text-base"
-      />
-      <Button
-        type="button"
-        variant="secondary"
-        className="min-h-12 w-full"
-        aria-pressed={listening}
-        onClick={toggleVoice}
+      <div
+        className={
+          locked
+            ? "pointer-events-none select-none space-y-2 blur-[4px]"
+            : "space-y-2"
+        }
+        aria-hidden={locked || undefined}
       >
-        {listening ? t("voiceStop") : t("voiceDescribe")}
-      </Button>
-      <p className="text-xs text-muted" aria-live="polite">
-        {listening ? t("voiceListening") : supported ? "" : t("voiceUnsupported")}
-      </p>
-      {error ? <p className="text-sm text-danger">{error}</p> : null}
-      <Button type="button" className="min-h-12 w-full" reflectGlobalBusy={false} onClick={ask}>
-        {t("askAssistant")}
-      </Button>
-      {asked && !agent ? (
+        <Input
+          id="need-brief"
+          value={listening && interim ? `${text} ${interim}`.trim() : text}
+          onChange={(e) => {
+            setText(e.target.value);
+            setAsked(false);
+            setConfirmed(false);
+            setError(null);
+          }}
+          readOnly={listening || locked}
+          tabIndex={locked ? -1 : 0}
+          placeholder={t("searchPlaceholder")}
+          aria-label={t("searchPlaceholder")}
+          aria-describedby="need-hint"
+          className="min-h-12 text-base"
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          className="min-h-12 w-full"
+          aria-pressed={listening}
+          tabIndex={locked ? -1 : 0}
+          onClick={toggleVoice}
+        >
+          {listening ? t("voiceStop") : t("voiceDescribe")}
+        </Button>
+        {locked ? null : (
+          <p className="text-xs text-muted" aria-live="polite">
+            {listening ? t("voiceListening") : supported ? "" : t("voiceUnsupported")}
+          </p>
+        )}
+        {error && !locked ? <p className="text-sm text-danger">{error}</p> : null}
+        <Button
+          type="button"
+          className="min-h-12 w-full"
+          reflectGlobalBusy={false}
+          tabIndex={locked ? -1 : 0}
+          onClick={ask}
+        >
+          {t("askAssistant")}
+        </Button>
+      </div>
+      {locked ? (
+        <div className="space-y-2">
+          <Link
+            href={to("/settings")}
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
+          >
+            {t("openSettings")}
+          </Link>
+          <p className="text-xs leading-relaxed text-muted">{t("agentPriceNote")}</p>
+        </div>
+      ) : (
+        <p className="text-xs leading-relaxed text-muted">{t("agentPriceNote")}</p>
+      )}
+      {asked && locked ? (
         <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-card p-4 soft-shadow">
           <p className="text-sm text-ink">{t("agentLocked")}</p>
           {match ? null : <p className="text-sm text-muted">{t("noTrade")}</p>}
@@ -183,12 +223,12 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
           </Link>
         </div>
       ) : null}
-      {asked && agent && !match ? <p className="text-sm text-muted">{t("noTrade")}</p> : null}
-      {asked && agent && match && !match.profile ? <p className="text-sm text-muted">{t("noPros")}</p> : null}
-      {asked && agent && match?.profile ? (
+      {asked && !locked && !match ? <p className="text-sm text-muted">{t("noTrade")}</p> : null}
+      {asked && !locked && match && !match.profile ? <p className="text-sm text-muted">{t("noPros")}</p> : null}
+      {asked && !locked && match?.profile ? (
         <div className="space-y-3">
           <p className="text-sm text-ink">{t("agentIntro")}</p>
-          <ProCard pro={match.profile} />
+          <ProCard pro={match.profile} reveal />
           {confirmed ? (
             <>
               <p className="text-sm text-muted">{t("youSend")}</p>

@@ -1390,6 +1390,7 @@ const tr: Dictionary = {
   "talent.skill.maintenance": "Bakım",
   "talent.skill.handyman": "Tamirci",
   "talent.skill.manager": "Site yöneticisi",
+  "talent.skill.babysitter": "Bebek bakıcısı",
   "talent.reviewsSection": "İncelemeler ve onaylar",
   "talent.browseLink": "Aramaya başla",
   "villas.acceptListing": "Apply listing",

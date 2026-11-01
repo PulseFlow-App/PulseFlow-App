@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { NeedBrief } from "@/components/pros/need-brief";
@@ -12,6 +12,33 @@ import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 import { useI18n } from "@/lib/i18n/provider";
 
+/** Wider chips go down first so a shorter one can sit in the gap and the list uses fewer lines. */
+function packCategoryIds(
+  categories: { id: string }[],
+  widths: Map<string, number>,
+  maxWidth: number,
+  gap: number,
+) {
+  const ordered = [...categories].sort(
+    (a, b) => (widths.get(b.id) ?? 0) - (widths.get(a.id) ?? 0),
+  );
+  const rows: { ids: string[]; used: number }[] = [];
+  for (const cat of ordered) {
+    const width = widths.get(cat.id) ?? 0;
+    let placed = false;
+    for (const row of rows) {
+      if (row.used + gap + width <= maxWidth - 1) {
+        row.ids.push(cat.id);
+        row.used += gap + width;
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) rows.push({ ids: [cat.id], used: width });
+  }
+  return rows.flatMap((row) => row.ids);
+}
+
 export default function ProsHomePage() {
   const { state, actor, t } = usePros();
   const { locale } = useI18n();
@@ -19,7 +46,13 @@ export default function ProsHomePage() {
   const pathname = usePathname();
   const to = (path: string) => servicesPath(pathname, path);
   const [needOpen, setNeedOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const categoryListRef = useRef<HTMLDivElement>(null);
+  const [packedIds, setPackedIds] = useState<string[] | null>(null);
   const categories = allCategories(state).filter((c) => c.active);
+  const categoryKey = categories.map((cat) => cat.id).join("|");
+  const categoriesRef = useRef(categories);
+  categoriesRef.current = categories;
   const active = actor
     ? state.requests.filter(
         (row) => row.createdBy === actor.id && row.status !== "completed" && row.status !== "cancelled",
@@ -40,6 +73,50 @@ export default function ProsHomePage() {
     .filter((pro): pro is NonNullable<typeof pro> => Boolean(pro && pro.status === "active"))
     .slice(0, 4);
 
+  useLayoutEffect(() => {
+    if (!categoriesOpen) return;
+    const wrap = categoryListRef.current;
+    if (!wrap) return;
+
+    const pack = () => {
+      const list = categoriesRef.current;
+      const style = getComputedStyle(wrap);
+      const gap = Number.parseFloat(style.columnGap) || 0;
+      const pad =
+        (Number.parseFloat(style.paddingLeft) || 0) +
+        (Number.parseFloat(style.paddingRight) || 0);
+      const maxWidth = wrap.clientWidth - pad;
+      if (maxWidth <= 0) return;
+      const widths = new Map<string, number>();
+      for (const node of wrap.querySelectorAll<HTMLElement>("[data-cat]")) {
+        const id = node.dataset.cat;
+        if (!id) continue;
+        widths.set(id, node.getBoundingClientRect().width);
+      }
+      if (list.some((cat) => !widths.has(cat.id))) return;
+      const next = packCategoryIds(list, widths, maxWidth, gap);
+      setPackedIds((prev) =>
+        prev && prev.length === next.length && prev.every((id, i) => id === next[i])
+          ? prev
+          : next,
+      );
+    };
+
+    pack();
+    const observer = new ResizeObserver(pack);
+    observer.observe(wrap);
+    return () => observer.disconnect();
+  }, [categoriesOpen, categoryKey, locale]);
+
+  const shownCategories = packedIds
+    ? [
+        ...packedIds
+          .map((id) => categories.find((cat) => cat.id === id))
+          .filter((cat): cat is (typeof categories)[number] => Boolean(cat)),
+        ...categories.filter((cat) => !packedIds.includes(cat.id)),
+      ]
+    : categories;
+
   return (
     <div className="space-y-6">
       <div>
@@ -56,11 +133,12 @@ export default function ProsHomePage() {
       <section className="rounded-2xl border border-[var(--color-border)] bg-card soft-shadow">
         <button
           type="button"
-          className="flex min-h-12 w-full items-center px-3 text-start text-sm font-semibold text-ink"
+          className="flex min-h-12 w-full items-center gap-3 px-3 text-start text-sm font-semibold text-ink"
           aria-expanded={needOpen}
           onClick={() => setNeedOpen((open) => !open)}
         >
-          {t("searchPlaceholder")}
+          <span className="min-w-0 flex-1">{t("searchPlaceholder")}</span>
+          <span className="shrink-0 text-xs font-semibold text-muted">{t("agentMode")}</span>
         </button>
         {needOpen ? (
           <div className="px-3 pb-3">
@@ -90,20 +168,30 @@ export default function ProsHomePage() {
           {recent.map((pro) => <ProCard key={pro.id} pro={pro} />)}
         </section>
       ) : null}
-      <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-ink">{t("popular")}</h2>
-        <div className="grid grid-cols-2 gap-2">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={to(`/c/${cat.slug}`)}
-              className="flex min-h-14 items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-card px-3 py-2 soft-shadow"
-            >
-              <CategoryIcon name={cat.icon} className="size-6" />
-              <span className="text-sm font-semibold text-ink">{localizedName(cat.names, locale)}</span>
-            </Link>
-          ))}
-        </div>
+      <section className="rounded-2xl border border-[var(--color-border)] bg-card soft-shadow">
+        <button
+          type="button"
+          className="flex min-h-12 w-full items-center px-3 text-start text-sm font-semibold text-ink"
+          aria-expanded={categoriesOpen}
+          onClick={() => setCategoriesOpen((open) => !open)}
+        >
+          {t("popular")}
+        </button>
+        {categoriesOpen ? (
+          <div ref={categoryListRef} className="flex flex-wrap items-start gap-1.5 px-3 pb-3">
+            {shownCategories.map((cat) => (
+              <Link
+                key={cat.id}
+                data-cat={cat.id}
+                href={to(`/c/${cat.slug}`)}
+                className="inline-flex min-h-8 max-w-full items-center gap-1 rounded-xl border border-[var(--color-border)] bg-canvas px-2 py-1"
+              >
+                <CategoryIcon name={cat.icon} className="size-[0.875rem]" />
+                <span className="text-xs font-semibold leading-tight text-ink">{localizedName(cat.names, locale)}</span>
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </section>
     </div>
   );

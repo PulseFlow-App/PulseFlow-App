@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { RequireUser, readPhoto } from "@/components/pros/parts";
+import { readPhoto } from "@/components/pros/parts";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { PROS_LANGS, localizedName } from "@/lib/pros/catalog";
@@ -13,30 +14,160 @@ import { useI18n } from "@/lib/i18n/provider";
 import type { ProsUrgency } from "@/lib/pros/types";
 import { orderAllowance, SERVICES_PAYMENTS_ENABLED } from "@/lib/pros/trial";
 
+type DateChoice = "today" | "tomorrow" | "this_week" | "flexible";
+
+const DRAFT_KEY = "pulseflow.services.requestDraft";
+
+type RequestDraft = {
+  categoryId: string;
+  title: string;
+  description: string;
+  photos: string[];
+  urgency: ProsUrgency;
+  dateChoice: DateChoice;
+  preferredTime: string;
+  language: string;
+  profileId: string | null;
+  taskId: string | null;
+  orgId: string | null;
+  villaId: string | null;
+  pending: boolean;
+};
+
+function readDraft(): RequestDraft | null {
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as RequestDraft;
+    return parsed && typeof parsed.title === "string" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 function RequestInner() {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const { state, actor, t, createRequest } = usePros();
+  const { state, actor, actorReady, plan, t, createRequest } = usePros();
   const { locale } = useI18n();
   const categories = allCategories(state).filter((c) => c.active);
-  const invited = state.profiles.find((pro) => pro.id === params.get("profile") && pro.status === "active");
+  const profileParam = params.get("profile");
+  const invited = state.profiles.find((pro) => pro.id === profileParam && pro.status === "active");
   const [categoryId, setCategoryId] = useState(params.get("category") ?? categories[0]?.id ?? "");
   const [title, setTitle] = useState(params.get("title") ?? "");
   const [description, setDescription] = useState(params.get("brief") ?? "");
   const [urgency, setUrgency] = useState<ProsUrgency>("flexible");
+  const [dateChoice, setDateChoice] = useState<DateChoice>("today");
   const [preferredTime, setPreferredTime] = useState("");
   const [language, setLanguage] = useState<string>(locale);
   const [photos, setPhotos] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const gate = actor ? orderAllowance(state.requests, state.reviews, actor.id) : null;
+  const sent = useRef(false);
+  const gate = actor
+    ? orderAllowance(state.requests, state.reviews, actor.id, new Date(), plan.premium)
+    : null;
+
+  useEffect(() => {
+    const draft = readDraft();
+    if (!draft) return;
+    setCategoryId(draft.categoryId);
+    setTitle(draft.title);
+    setDescription(draft.description);
+    setUrgency(draft.urgency);
+    setDateChoice(
+      draft.dateChoice === "tomorrow" || draft.dateChoice === "this_week" || draft.dateChoice === "flexible"
+        ? draft.dateChoice
+        : "today",
+    );
+    setPreferredTime(draft.preferredTime);
+    setLanguage(draft.language);
+    setPhotos(draft.photos ?? []);
+  }, []);
+
+  const fail = (code: string) => {
+    sent.current = false;
+    sessionStorage.removeItem(DRAFT_KEY);
+    setError(
+      code === "rate"
+        ? t("rateLimit")
+        : code === "duplicate"
+          ? t("duplicate")
+          : code === "review"
+            ? t("reviewRequired")
+            : code === "finish"
+              ? t("finishOrderFirst")
+              : code === "plan"
+                ? t("planRequired")
+                : code === "missing"
+                  ? t("notAvailable")
+                  : code === "auth"
+                    ? t("requestNeedsAccount")
+                    : t("tooShort"),
+    );
+  };
+
+  useEffect(() => {
+    if (params.get("resume") !== "1" || !actorReady || !actor || sent.current) return;
+    const draft = readDraft();
+    if (!draft?.pending) return;
+    sent.current = true;
+    const result = createRequest({
+      categoryId: draft.categoryId,
+      title: draft.title,
+      description: draft.description,
+      photos: draft.photos ?? [],
+      areaId: state.placeId,
+      urgency: draft.urgency,
+      preferredDate: draft.dateChoice ?? "today",
+      preferredTime: draft.preferredTime,
+      language: draft.language,
+      taskId: draft.taskId,
+      orgId: draft.orgId ?? actor.orgId,
+      villaId: draft.villaId,
+      invitedProfileId: draft.profileId,
+    });
+    if (!result.ok) {
+      fail(result.error);
+      return;
+    }
+    sessionStorage.removeItem(DRAFT_KEY);
+    router.replace(servicesPath(pathname, `/requests/${result.id}`));
+  }, [actor, actorReady, createRequest, params, pathname, router, state.placeId, t]);
 
   return (
-    <RequireUser>
       <form
         className="space-y-4"
         onSubmit={(e) => {
           e.preventDefault();
+          if (!actorReady) return;
+          if (!actor) {
+            const draft: RequestDraft = {
+              categoryId,
+              title,
+              description,
+              photos,
+              urgency,
+              dateChoice,
+              preferredTime,
+              language,
+              profileId: invited?.id ?? profileParam,
+              taskId: params.get("taskId"),
+              orgId: params.get("orgId"),
+              villaId: params.get("villaId"),
+              pending: true,
+            };
+            try {
+              sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+            } catch {
+              sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draft, photos: [] }));
+            }
+            const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
+            router.push(`${start}?next=${encodeURIComponent(servicesPath(pathname, "/request?resume=1"))}`);
+            return;
+          }
+          if (sent.current) return;
+          sent.current = true;
           const result = createRequest({
             categoryId,
             title,
@@ -44,35 +175,24 @@ function RequestInner() {
             photos,
             areaId: state.placeId,
             urgency,
+            preferredDate: dateChoice,
             preferredTime,
             language,
             taskId: params.get("taskId"),
-            orgId: params.get("orgId") ?? actor?.orgId ?? null,
+            orgId: params.get("orgId") ?? actor.orgId,
             villaId: params.get("villaId"),
             invitedProfileId: invited?.id ?? null,
           });
           if (!result.ok) {
-            setError(
-              result.error === "rate"
-                ? t("rateLimit")
-                : result.error === "duplicate"
-                  ? t("duplicate")
-                  : result.error === "review"
-                    ? t("reviewRequired")
-                    : result.error === "finish"
-                      ? t("finishOrderFirst")
-                      : result.error === "plan"
-                        ? t("planRequired")
-                        : result.error === "missing"
-                        ? t("notAvailable")
-                        : t("tooShort"),
-            );
+            fail(result.error);
             return;
           }
+          sessionStorage.removeItem(DRAFT_KEY);
           router.push(servicesPath(pathname, `/requests/${result.id}`));
         }}
       >
         <h1 className="font-display text-2xl font-semibold text-ink">{t("sendRequest")}</h1>
+        {actorReady && !actor ? <p className="text-sm text-muted">{t("describeOpen")}</p> : null}
         {gate?.ok && gate.via === "monthly" ? <p className="text-sm text-muted">{t("monthlyNote")}</p> : null}
         {gate?.ok && gate.via === "trial" ? <p className="text-sm text-muted">{t("trialNote")}</p> : null}
         {gate?.ok && gate.via === "plan" && !SERVICES_PAYMENTS_ENABLED ? (
@@ -82,6 +202,11 @@ function RequestInner() {
           <p className="text-sm text-danger">
             {gate.error === "plan" ? t("planRequired") : gate.error === "review" ? t("reviewRequired") : t("finishOrderFirst")}
           </p>
+        ) : null}
+        {gate && !gate.ok && gate.error === "plan" ? (
+          <Link href={servicesPath(pathname, "/settings")} className="text-sm font-semibold text-primary">
+            {t("openSettings")}
+          </Link>
         ) : null}
         {params.get("taskId") ? <p className="text-sm text-muted">{t("fromTask")}</p> : null}
         {invited ? <p className="text-sm text-ink">{t("directTo", { name: invited.name })}</p> : null}
@@ -128,6 +253,15 @@ function RequestInner() {
           </Select>
         </div>
         <div>
+          <Label>{t("preferredDate")}</Label>
+          <Select value={dateChoice} onChange={(e) => setDateChoice(e.target.value as DateChoice)} className="min-h-12">
+            <option value="today">{t("today")}</option>
+            <option value="tomorrow">{t("tomorrow")}</option>
+            <option value="this_week">{t("thisWeek")}</option>
+            <option value="flexible">{t("flexible")}</option>
+          </Select>
+        </div>
+        <div>
           <Label>{t("preferredTime")}</Label>
           <Input value={preferredTime} onChange={(e) => setPreferredTime(e.target.value)} className="min-h-12" />
         </div>
@@ -143,11 +277,10 @@ function RequestInner() {
         </div>
         {error ? <p className="text-sm text-danger">{error}</p> : null}
         <p className="text-xs text-muted">{t("terms")}</p>
-        <Button type="submit" className="min-h-12 w-full" disabled={Boolean(gate && !gate.ok)}>
+        <Button type="submit" className="min-h-12 w-full" disabled={Boolean(actor && gate && !gate.ok)}>
           {t("submit")}
         </Button>
       </form>
-    </RequireUser>
   );
 }
 
