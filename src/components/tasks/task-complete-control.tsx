@@ -20,6 +20,7 @@ import { useI18n } from "@/lib/i18n/provider";
 import { LocalizedText } from "@/components/i18n/localized-text";
 import { cn, formatShortDate } from "@/lib/utils";
 import { formatWorkWindow } from "@/lib/notifications";
+import { recordVerifiedJob } from "@/lib/pros/jobs";
 
 /** Mark-done / verify / approve control for a task row. */
 export function TaskCompleteControl({
@@ -98,6 +99,7 @@ export function TaskCompleteControl({
   const approveAndMaybeReview = async () => {
     const doerId = task.verify_submitted_by ?? task.assigned_to ?? null;
     await data.approveTaskVerify(task.id);
+    recordVerifiedJob(task.id);
     celebrate();
     openReviewForDoer(doerId);
   };
@@ -164,6 +166,7 @@ export function TaskCompleteControl({
             void run(async () => {
               const doerId = task.assigned_to;
               await data.setTaskStatus(task.id, "done");
+              recordVerifiedJob(task.id);
               celebrate();
               openReviewForDoer(doerId);
             });

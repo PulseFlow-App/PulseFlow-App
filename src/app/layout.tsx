@@ -2,6 +2,7 @@
  * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
  */
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import Script from "next/script";
 import {
   Heebo,
@@ -13,7 +14,8 @@ import {
 } from "next/font/google";
 import { brand, colors } from "@/lib/design-tokens";
 import { APPEARANCE_BOOT_SCRIPT } from "@/lib/appearance/apply";
-import { APP_URL, OG_IMAGE } from "@/lib/seo";
+import { APP_URL, OG_IMAGE, SERVICES_OG_IMAGE, SERVICES_URL } from "@/lib/seo";
+import { isMarketplaceHost } from "@/lib/pros/paths";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -61,7 +63,7 @@ const arabic = Noto_Sans_Arabic({
   display: "swap",
 });
 
-export const metadata: Metadata = {
+const appMetadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
     default: brand.name,
@@ -105,6 +107,53 @@ export const metadata: Metadata = {
     "og:image:height": String(OG_IMAGE.height),
   },
 };
+
+const servicesDescription = "Local services, made accessible.";
+
+const servicesMetadata: Metadata = {
+  ...appMetadata,
+  metadataBase: new URL(SERVICES_URL),
+  applicationName: "Pulse Flow Services",
+  description: servicesDescription,
+  manifest: "/services.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Pulse Flow Services",
+  },
+  icons: {
+    icon: [
+      { url: "/brand/services-icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/services-icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/brand/services-icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/brand/services-icon-180.png", sizes: "180x180" }],
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Pulse Flow Services",
+    title: "Pulse Flow Services",
+    description: servicesDescription,
+    url: SERVICES_URL,
+    images: [SERVICES_OG_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pulse Flow Services",
+    description: servicesDescription,
+    images: [SERVICES_OG_IMAGE.url],
+  },
+  other: {
+    "og:image:width": String(SERVICES_OG_IMAGE.width),
+    "og:image:height": String(SERVICES_OG_IMAGE.height),
+  },
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const headerList = await headers();
+  const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
+  return isMarketplaceHost(host) ? servicesMetadata : appMetadata;
+}
 
 export const viewport: Viewport = {
   themeColor: colors.background,

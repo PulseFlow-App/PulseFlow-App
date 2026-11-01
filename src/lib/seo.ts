@@ -6,12 +6,20 @@ import { brand } from "@/lib/design-tokens";
 
 export const APP_URL = "https://app.pulseflow.site";
 export const MARKETING_URL = "https://pulseflow.site";
+export const SERVICES_URL = "https://services.pulseflow.site";
 
 export const OG_IMAGE = {
   url: "/og-image.jpg",
   width: 1200,
   height: 630,
   alt: "Pulse Flow — The pulse of your rental operations. Property management without the chat chaos.",
+} as const;
+
+export const SERVICES_OG_IMAGE = {
+  url: "/brand/services-og.jpg",
+  width: 1200,
+  height: 630,
+  alt: "Pulse Flow Services — Local services, made accessible.",
 } as const;
 
 export function appUrl(path = ""): string {

@@ -1,0 +1,662 @@
+"use client";
+
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { createClient } from "@/lib/supabase/client";
+import { getDemoProfile, updateDemoStore } from "@/lib/demo/store";
+import { hasDemoUserCookie, isDemoMode } from "@/lib/env";
+import { useI18n } from "@/lib/i18n/provider";
+import { makeNotification } from "@/lib/notifications";
+import { createSeedState, SEED_PROFILES } from "@/lib/pros/catalog";
+import { PROS_EVENT, PROS_STORAGE_KEY, writeProsState } from "@/lib/pros/jobs";
+import { prosT, type ProsKey } from "@/lib/pros/i18n";
+import { matchPros } from "@/lib/pros/matching";
+import {
+  answersToComment,
+  orderAllowance,
+  readServicesCustomer,
+  SERVICES_CUSTOMER_EVENT,
+  starsFromAnswers,
+  type ServiceAnswers,
+} from "@/lib/pros/trial";
+import type {
+  ProOffer,
+  ProProfile,
+  ProRequest,
+  ProsActor,
+  ProsState,
+  ProsUrgency,
+} from "@/lib/pros/types";
+
+type RequestInput = {
+  categoryId: string;
+  title: string;
+  description: string;
+  photos: string[];
+  areaId: string | null;
+  urgency: ProsUrgency;
+  preferredTime: string;
+  language: string | null;
+  taskId: string | null;
+  orgId: string | null;
+  villaId: string | null;
+  invitedProfileId: string | null;
+};
+
+type StoreResult = { ok: true; id?: string } | { ok: false; error: "auth" | "short" | "rate" | "duplicate" | "consent" | "missing" | "review" | "finish" | "plan" };
+
+type Api = {
+  ready: boolean;
+  actor: ProsActor | null;
+  actorReady: boolean;
+  isAdmin: boolean;
+  state: ProsState;
+  t: (key: ProsKey, params?: Record<string, string | number>) => string;
+  setPlace: (id: string | null) => void;
+  createRequest: (input: RequestInput) => StoreResult & { matches?: ProOffer[] };
+  reply: (input: {
+    token: string;
+    action: "quote" | "decline" | "time";
+    amount: number | null;
+    currency: string | null;
+    message: string;
+    proposedTime: string | null;
+  }) => StoreResult;
+  chooseOffer: (offerId: string) => void;
+  setRequestStatus: (id: string, status: ProRequest["status"]) => void;
+  saveProfile: (input: ProProfile, consent: boolean) => StoreResult;
+  deleteProfile: (id: string) => void;
+  setProfileStatus: (id: string, status: ProProfile["status"]) => void;
+  setCheck: (id: string, check: keyof ProProfile["checks"], on: boolean) => void;
+  claim: (token: string) => boolean;
+  addReview: (input: { requestId: string; answers: ServiceAnswers }) => StoreResult;
+  report: (target: "profile" | "review", targetId: string, reason: string) => void;
+  rememberTranslation: (kind: "request" | "offer" | "profile" | "review", id: string, locale: string, text: string) => void;
+  addCategory: (name: string) => void;
+  addArea: (name: string, parentId: string | null) => void;
+  setCategoryActive: (id: string, active: boolean) => void;
+  toggleFavourite: (profileId: string) => void;
+  recordCost: (requestId: string, input: { amount: number | null; currency: string | null; paid: boolean }) => void;
+};
+
+const Ctx = createContext<Api | null>(null);
+
+function mergeSeed(saved: ProProfile[]) {
+  const byId = new Map(saved.map((row) => [row.id, row]));
+  for (const seed of SEED_PROFILES) {
+    if (!byId.has(seed.id)) byId.set(seed.id, seed);
+  }
+  return [...byId.values()];
+}
+
+function load(): ProsState {
+  try {
+    const raw = localStorage.getItem(PROS_STORAGE_KEY);
+    if (!raw) return createSeedState();
+    const parsed = JSON.parse(raw) as ProsState;
+    if (parsed?.version !== 1 || !Array.isArray(parsed.profiles)) return createSeedState();
+    const base = createSeedState();
+    return {
+      ...base,
+      ...parsed,
+      profiles: mergeSeed(parsed.profiles).map((pro) => ({
+        ...pro,
+        checks: { ...base.profiles[0]!.checks, ...pro.checks },
+      })),
+      requests: (parsed.requests ?? []).map((row) => ({
+        ...row,
+        source: row.source ?? "open",
+        invitedProfileId: row.invitedProfileId ?? null,
+        finalAmount: row.finalAmount ?? null,
+        finalCurrency: row.finalCurrency ?? null,
+        paidAt: row.paidAt ?? null,
+      })),
+      favourites: parsed.favourites ?? {},
+    };
+  } catch {
+    return createSeedState();
+  }
+}
+
+export function ProsProvider({ children }: { children: ReactNode }) {
+  const { locale } = useI18n();
+  const [state, setState] = useState<ProsState>(createSeedState);
+  const [ready, setReady] = useState(false);
+  const [actor, setActor] = useState<ProsActor | null>(null);
+  const [actorReady, setActorReady] = useState(false);
+  const remoteProfiles = useRef<ProProfile[]>([]);
+
+  const withRemote = useCallback((base: ProsState) => {
+    const ids = new Set(base.profiles.map((row) => row.id));
+    const extra = remoteProfiles.current.filter((row) => !ids.has(row.id));
+    return extra.length ? { ...base, profiles: [...extra, ...base.profiles] } : base;
+  }, []);
+
+  useEffect(() => {
+    setState(withRemote(load()));
+    setReady(true);
+    const sync = () => setState(withRemote(load()));
+    window.addEventListener(PROS_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(PROS_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [withRemote]);
+
+  useEffect(() => {
+    if (!ready) return;
+    let cancel = false;
+    void fetch("/api/public/services")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload: { profiles?: ProProfile[] } | null) => {
+        if (cancel || !payload?.profiles?.length) return;
+        remoteProfiles.current = payload.profiles;
+        setState((prev) => withRemote(prev));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancel = true;
+    };
+  }, [ready, withRemote]);
+
+  useEffect(() => {
+    if (ready) writeProsState(state, false);
+  }, [ready, state]);
+
+  useEffect(() => {
+    const apply = (next: ProsActor | null) => {
+      setActor(next);
+      setActorReady(true);
+    };
+    const localCustomer = () => {
+      const customer = readServicesCustomer();
+      return customer
+        ? { id: customer.id, name: customer.name, role: "guest", orgId: null }
+        : null;
+    };
+    const onCustomer = () => {
+      if (isDemoMode() || hasDemoUserCookie()) return;
+      apply(localCustomer());
+    };
+    if (isDemoMode() || hasDemoUserCookie()) {
+      const profile = getDemoProfile();
+      apply(
+        profile
+          ? { id: profile.id, name: profile.full_name, role: profile.role, orgId: profile.org_id }
+          : null,
+      );
+      return;
+    }
+    window.addEventListener(SERVICES_CUSTOMER_EVENT, onCustomer);
+    const supabase = createClient();
+    void supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) {
+        apply(localCustomer());
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, full_name, role, org_id")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      apply(
+        profile
+          ? {
+              id: profile.id,
+              name: profile.full_name,
+              role: profile.role,
+              orgId: profile.org_id,
+            }
+          : { id: data.user.id, name: data.user.email ?? "User", role: "owner", orgId: null },
+      );
+    });
+    return () => window.removeEventListener(SERVICES_CUSTOMER_EVENT, onCustomer);
+  }, []);
+
+  const persist = useCallback((updater: (prev: ProsState) => ProsState) => {
+    setState((prev) => updater(prev));
+  }, []);
+
+  const isAdmin = useMemo(() => {
+    if (!actor) return false;
+    if (isDemoMode() || hasDemoUserCookie()) {
+      return actor.role === "owner" || actor.role === "manager";
+    }
+    const extra = (process.env.NEXT_PUBLIC_PROS_ADMIN_IDS ?? "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    return extra.includes(actor.id);
+  }, [actor]);
+
+  const t = useCallback(
+    (key: ProsKey, params?: Record<string, string | number>) => prosT(locale, key, params),
+    [locale],
+  );
+
+  const api = useMemo<Api>(() => {
+    return {
+      ready,
+      actor,
+      actorReady,
+      isAdmin,
+      state,
+      t,
+      setPlace: (id) => persist((prev) => ({ ...prev, placeId: id })),
+      createRequest: (input) => {
+        if (!actor) return { ok: false, error: "auth" };
+        const allowance = orderAllowance(state.requests, state.reviews, actor.id);
+        if (!allowance.ok) return { ok: false, error: allowance.error };
+        const description = input.description.trim();
+        const title = input.title.trim();
+        if (description.length < 12 || title.length < 3) return { ok: false, error: "short" };
+        const hourAgo = Date.now() - 60 * 60 * 1000;
+        const recent = state.requests.filter(
+          (row) => row.createdBy === actor.id && new Date(row.createdAt).getTime() > hourAgo,
+        );
+        if (recent.length >= 8) return { ok: false, error: "rate" };
+        const tenMin = Date.now() - 10 * 60 * 1000;
+        if (
+          recent.some(
+            (row) =>
+              row.title === title &&
+              row.description === description &&
+              new Date(row.createdAt).getTime() > tenMin,
+          )
+        ) {
+          return { ok: false, error: "duplicate" };
+        }
+        const request: ProRequest = {
+          id: crypto.randomUUID(),
+          createdBy: actor.id,
+          orgId: input.orgId ?? actor.orgId,
+          taskId: input.taskId,
+          villaId: input.villaId,
+          categoryId: input.categoryId,
+          title,
+          description,
+          originalLocale: locale,
+          translations: {},
+          photos: input.photos.slice(0, 3),
+          areaId: input.areaId,
+          urgency: input.urgency,
+          preferredTime: input.preferredTime,
+          language: input.language,
+          status: "requested",
+          source: input.invitedProfileId ? "direct" : "open",
+          invitedProfileId: input.invitedProfileId,
+          chosenProfileId: null,
+          finalAmount: null,
+          finalCurrency: null,
+          paidAt: null,
+          createdAt: new Date().toISOString(),
+        };
+        const invited = input.invitedProfileId
+          ? state.profiles.find((pro) => pro.id === input.invitedProfileId && pro.status === "active")
+          : null;
+        if (input.invitedProfileId && !invited) return { ok: false, error: "missing" };
+        const matches = invited
+          ? [invited]
+          : matchPros({ ...state, requests: [...state.requests, request] }, request);
+        const offers: ProOffer[] = matches.map((pro) => ({
+          id: crypto.randomUUID(),
+          requestId: request.id,
+          profileId: pro.id,
+          token: crypto.randomUUID(),
+          amount: null,
+          currency: null,
+          message: "",
+          originalLocale: locale,
+          translations: {},
+          proposedTime: null,
+          status: "pending",
+          createdAt: new Date().toISOString(),
+        }));
+        persist((prev) => ({
+          ...prev,
+          requests: [request, ...prev.requests],
+          offers: [...offers, ...prev.offers],
+          events: [
+            { id: crypto.randomUUID(), name: "request_created", actorId: actor.id, ref: request.id, at: request.createdAt },
+            ...prev.events,
+          ],
+        }));
+        const linked = matches.filter((pro) => pro.linkedProfileId && request.orgId);
+        if ((isDemoMode() || hasDemoUserCookie()) && linked.length && request.orgId) {
+          updateDemoStore((store) => ({
+            ...store,
+            notifications: [
+              ...linked.map((pro) =>
+                makeNotification({
+                  org_id: request.orgId!,
+                  kind: "appointment",
+                  title: "New quote request",
+                  body: request.title,
+                  href: `/pros/reply/${offers.find((o) => o.profileId === pro.id)?.token ?? ""}`,
+                  entity_id: request.id,
+                  audience_profile_ids: [pro.linkedProfileId!],
+                  dedupe_key: `pros-request:${request.id}:${pro.id}`,
+                }),
+              ),
+              ...store.notifications,
+            ],
+          }));
+        }
+        return { ok: true, id: request.id, matches: offers };
+      },
+      reply: (input) => {
+        const offer = state.offers.find((row) => row.token === input.token);
+        if (!offer || offer.status !== "pending") return { ok: false, error: "missing" };
+        if (
+          input.action !== "decline" &&
+          input.amount == null &&
+          !input.message.trim() &&
+          !input.proposedTime
+        ) {
+          return { ok: false, error: "short" };
+        }
+        const now = new Date().toISOString();
+        persist((prev) => ({
+          ...prev,
+          offers: prev.offers.map((row) =>
+            row.token === input.token
+              ? {
+                  ...row,
+                  status: input.action === "decline" ? "declined" : "pending",
+                  amount: input.action === "quote" ? input.amount : row.amount,
+                  currency: input.action === "quote" ? input.currency : row.currency,
+                  message: input.action === "decline" ? row.message : input.message.trim(),
+                  proposedTime: input.proposedTime,
+                  originalLocale: locale,
+                  createdAt: now,
+                }
+              : row,
+          ),
+          requests: prev.requests.map((row) =>
+            row.id === offer.requestId && row.status === "requested"
+              ? { ...row, status: "offers_received" }
+              : row,
+          ),
+          events: [
+            { id: crypto.randomUUID(), name: "offer_sent", actorId: null, ref: offer.id, at: now },
+            ...prev.events,
+          ],
+        }));
+        return { ok: true, id: offer.id };
+      },
+      chooseOffer: (offerId) => {
+        const offer = state.offers.find((row) => row.id === offerId);
+        if (!offer || !actor) return;
+        const request = state.requests.find((row) => row.id === offer.requestId);
+        if (!request || request.createdBy !== actor.id) return;
+        persist((prev) => ({
+          ...prev,
+          offers: prev.offers.map((row) =>
+            row.requestId !== offer.requestId
+              ? row
+              : { ...row, status: row.id === offer.id ? "accepted" : row.status === "pending" ? "declined" : row.status },
+          ),
+          requests: prev.requests.map((row) =>
+            row.id === offer.requestId
+              ? { ...row, status: "chosen", chosenProfileId: offer.profileId }
+              : row,
+          ),
+          events: [
+            { id: crypto.randomUUID(), name: "offer_chosen", actorId: actor.id, ref: offer.id, at: new Date().toISOString() },
+            ...prev.events,
+          ],
+        }));
+      },
+      setRequestStatus: (id, status) => {
+        if (!actor) return;
+        persist((prev) => {
+          const request = prev.requests.find((row) => row.id === id);
+          if (!request || (request.createdBy !== actor.id && !isAdmin)) return prev;
+          let jobs = prev.jobs;
+          if (status === "completed" && request.chosenProfileId) {
+            const exists = jobs.some((job) => job.requestId === id);
+            if (!exists) {
+              jobs = [
+                ...jobs,
+                {
+                  id: crypto.randomUUID(),
+                  profileId: request.chosenProfileId,
+                  requestId: id,
+                  taskId: request.taskId,
+                  categoryId: request.categoryId,
+                  completedAt: new Date().toISOString(),
+                },
+              ];
+            }
+          }
+          return {
+            ...prev,
+            jobs,
+            requests: prev.requests.map((row) => (row.id === id ? { ...row, status } : row)),
+            events:
+              status === "completed"
+                ? [
+                    { id: crypto.randomUUID(), name: "job_verified", actorId: actor.id, ref: id, at: new Date().toISOString() },
+                    ...prev.events,
+                  ]
+                : prev.events,
+          };
+        });
+      },
+      saveProfile: (input, consent) => {
+        if (!actor) return { ok: false, error: "auth" };
+        const existing = state.profiles.find((row) => row.id === input.id);
+        if (!existing && !consent) return { ok: false, error: "consent" };
+        if (existing?.status === "suspended" && !isAdmin) return { ok: false, error: "missing" };
+        const next: ProProfile = {
+          ...input,
+          photos: input.photos.slice(0, 3),
+          listingTier: "free",
+          consentAt: existing?.consentAt ?? new Date().toISOString(),
+          consentBy: existing?.consentBy ?? actor.id,
+          orgId: input.orgId ?? actor.orgId,
+        };
+        if (next.status === "suspended" && !isAdmin) next.status = "active";
+        persist((prev) => ({
+          ...prev,
+          profiles: prev.profiles.some((row) => row.id === next.id)
+            ? prev.profiles.map((row) => (row.id === next.id ? next : row))
+            : [next, ...prev.profiles],
+        }));
+        return { ok: true, id: next.id };
+      },
+      deleteProfile: (id) => {
+        const pro = state.profiles.find((row) => row.id === id);
+        if (!pro || !actor) return;
+        const mine = pro.orgId && pro.orgId === actor.orgId;
+        if (!mine && !isAdmin) return;
+        persist((prev) => ({ ...prev, profiles: prev.profiles.filter((row) => row.id !== id) }));
+      },
+      setProfileStatus: (id, status) => {
+        if (!isAdmin) return;
+        persist((prev) => ({
+          ...prev,
+          profiles: prev.profiles.map((row) => (row.id === id ? { ...row, status } : row)),
+        }));
+      },
+      setCheck: (id, check, on) => {
+        if (!isAdmin) return;
+        persist((prev) => ({
+          ...prev,
+          profiles: prev.profiles.map((row) =>
+            row.id === id
+              ? { ...row, checks: { ...row.checks, [check]: on ? new Date().toISOString() : null } }
+              : row,
+          ),
+        }));
+      },
+      claim: (token) => {
+        const pro = state.profiles.find((row) => row.claimToken === token);
+        if (!pro) return false;
+        persist((prev) => ({
+          ...prev,
+          profiles: prev.profiles.map((row) =>
+            row.claimToken === token ? { ...row, claimedAt: new Date().toISOString() } : row,
+          ),
+        }));
+        return true;
+      },
+      addReview: ({ requestId, answers }) => {
+        if (!actor) return { ok: false, error: "auth" };
+        const request = state.requests.find((row) => row.id === requestId);
+        if (!request || request.status !== "completed" || request.createdBy !== actor.id || !request.chosenProfileId) {
+          return { ok: false, error: "missing" };
+        }
+        if (state.reviews.some((row) => row.requestId === requestId)) return { ok: true };
+        persist((prev) => ({
+          ...prev,
+          reviews: [
+            {
+              id: crypto.randomUUID(),
+              profileId: request.chosenProfileId!,
+              requestId,
+              taskId: request.taskId,
+              authorId: actor.id,
+              stars: starsFromAnswers(answers),
+              comment: answersToComment(answers),
+              answers,
+              originalLocale: locale,
+              translations: {},
+              createdAt: new Date().toISOString(),
+            },
+            ...prev.reviews,
+          ],
+        }));
+        return { ok: true };
+      },
+      report: (target, targetId, reason) => {
+        const text = reason.trim();
+        if (text.length < 3) return;
+        persist((prev) => ({
+          ...prev,
+          reports: [
+            { id: crypto.randomUUID(), target, targetId, reason: text, by: actor?.id ?? null, createdAt: new Date().toISOString() },
+            ...prev.reports,
+          ],
+          events: [
+            { id: crypto.randomUUID(), name: "report", actorId: actor?.id ?? null, ref: targetId, at: new Date().toISOString() },
+            ...prev.events,
+          ],
+        }));
+      },
+      rememberTranslation: (kind, id, lang, text) => {
+        persist((prev) => {
+          if (kind === "request") {
+            return {
+              ...prev,
+              requests: prev.requests.map((row) =>
+                row.id === id ? { ...row, translations: { ...row.translations, [lang]: text } } : row,
+              ),
+            };
+          }
+          if (kind === "offer") {
+            return {
+              ...prev,
+              offers: prev.offers.map((row) =>
+                row.id === id ? { ...row, translations: { ...row.translations, [lang]: text } } : row,
+              ),
+            };
+          }
+          if (kind === "review") {
+            return {
+              ...prev,
+              reviews: prev.reviews.map((row) =>
+                row.id === id ? { ...row, translations: { ...row.translations, [lang]: text } } : row,
+              ),
+            };
+          }
+          return {
+            ...prev,
+            profiles: prev.profiles.map((row) =>
+              row.id === id ? { ...row, translations: { ...row.translations, [lang]: text } } : row,
+            ),
+          };
+        });
+      },
+      addCategory: (name) => {
+        if (!isAdmin || name.trim().length < 2) return;
+        const id = crypto.randomUUID();
+        persist((prev) => ({
+          ...prev,
+          categoriesExtra: [
+            ...prev.categoriesExtra,
+            { id, slug: id.slice(0, 8), icon: "wrench", active: true, names: { en: name.trim() } },
+          ],
+        }));
+      },
+      addArea: (name, parentId) => {
+        if (!isAdmin || name.trim().length < 2) return;
+        const id = crypto.randomUUID();
+        persist((prev) => ({
+          ...prev,
+          areasExtra: [
+            ...prev.areasExtra,
+            {
+              id,
+              slug: id.slice(0, 8),
+              parentId,
+              level: parentId ? "district" : "locality",
+              countryCode: "ZZ",
+              names: { en: name.trim() },
+            },
+          ],
+        }));
+      },
+      toggleFavourite: (profileId) => {
+        if (!actor) return;
+        persist((prev) => {
+          const current = prev.favourites[actor.id] ?? [];
+          const next = current.includes(profileId)
+            ? current.filter((id) => id !== profileId)
+            : [profileId, ...current];
+          return { ...prev, favourites: { ...prev.favourites, [actor.id]: next } };
+        });
+      },
+      recordCost: (requestId, input) => {
+        if (!actor) return;
+        persist((prev) => ({
+          ...prev,
+          requests: prev.requests.map((row) =>
+            row.id === requestId && row.createdBy === actor.id
+              ? {
+                  ...row,
+                  finalAmount: input.amount,
+                  finalCurrency: input.currency,
+                  paidAt: input.paid ? row.paidAt ?? new Date().toISOString() : null,
+                }
+              : row,
+          ),
+        }));
+      },
+      setCategoryActive: (id, active) => {
+        if (!isAdmin) return;
+        persist((prev) => ({
+          ...prev,
+          categoriesExtra: prev.categoriesExtra.map((row) => (row.id === id ? { ...row, active } : row)),
+        }));
+      },
+    };
+  }, [ready, actor, actorReady, isAdmin, state, t, persist, locale]);
+
+  return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
+}
+
+export function usePros() {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error("usePros outside provider");
+  return ctx;
+}

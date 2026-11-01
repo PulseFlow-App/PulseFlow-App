@@ -51,13 +51,13 @@ export type Profile = {
   job_title: string | null;
   /** Public slug for shareable reputation page */
   share_slug: string;
-  /** Opt-in listing in the talent directory for owners/managers to discover staff */
+  /** Opt-in listing on Pulse Flow Services */
   job_search_visible: boolean;
   job_search_skills: string[];
   job_search_bio: string | null;
-  /** City / area label for talent search, e.g. "Koh Samui" */
+  /** City / area on Pulse Flow Services, e.g. "Koh Samui" */
   job_search_location: string | null;
-  /** Country label for talent search, e.g. "Thailand" */
+  /** Country on Pulse Flow Services, e.g. "Thailand" */
   job_search_country: string | null;
   job_search_lat: number | null;
   job_search_lng: number | null;

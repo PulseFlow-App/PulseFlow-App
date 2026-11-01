@@ -21,9 +21,15 @@ import {
   signInWithPasskey,
 } from "@/lib/auth/passkeys";
 import { isDemoMode, createClient } from "@/lib/supabase/client";
+import { prosReturnPath } from "@/lib/pros/paths";
 import { demoLogin, demoLogout } from "@/lib/demo/store";
 import type { MessageKey } from "@/lib/i18n";
 import { extractInviteToken } from "@/lib/billing/plans";
+
+function afterAuthPath() {
+  const next = new URLSearchParams(window.location.search).get("next");
+  return prosReturnPath(next) ?? "/home";
+}
 
 const schema = z.object({
   email: z.string().email(),
@@ -122,7 +128,7 @@ export default function LoginPage() {
           }
           const profile = demoLogin(account.email, DEMO_PASSWORD);
           if (!profile) return;
-          router.replace("/home");
+          router.replace(afterAuthPath());
           router.refresh();
         } catch {
           /* Prefill still available if auto-enter fails */
@@ -171,7 +177,7 @@ export default function LoginPage() {
           setError(t("auth.invalidCredentials"));
           return;
         }
-        router.replace("/home");
+        router.replace(afterAuthPath());
         router.refresh();
         return;
       }
@@ -186,7 +192,7 @@ export default function LoginPage() {
         setError(signInError.message);
         return;
       }
-      router.replace("/home");
+      router.replace(afterAuthPath());
       router.refresh();
     } catch {
       setError(t("common.error"));
@@ -203,7 +209,7 @@ export default function LoginPage() {
     try {
       demoLogout();
       await signInWithPasskey();
-      router.replace("/home");
+      router.replace(afterAuthPath());
       router.refresh();
     } catch (e) {
       setError(passkeyErrorMessage(e, t));

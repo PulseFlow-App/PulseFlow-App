@@ -1,6 +1,6 @@
 import type { UserRole } from "@/lib/design-tokens";
 
-/** Searchable service categories for the talent directory. */
+/** Trades a person can list on Pulse Flow Services. */
 export const TALENT_SKILLS = [
   "cleaner",
   "electrician",

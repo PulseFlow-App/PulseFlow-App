@@ -1,0 +1,33 @@
+{
+  "id": "/",
+  "name": "Pulse Flow Services",
+  "short_name": "Services",
+  "description": "Local services, made accessible.",
+  "lang": "en",
+  "dir": "auto",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F5FAFC",
+  "theme_color": "#F26A36",
+  "icons": [
+    {
+      "src": "/brand/services-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/services-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/services-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

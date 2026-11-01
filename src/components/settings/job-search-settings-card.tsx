@@ -22,6 +22,8 @@ import {
   geoErrorMessageKey,
   getDevicePosition,
 } from "@/lib/geo/device-position";
+import { readProsState } from "@/lib/pros/jobs";
+import { SERVICE_PROFILE_KEY, updateServiceListing } from "@/lib/pros/join";
 
 export function JobSearchSettingsCard() {
   const data = useData();
@@ -30,6 +32,9 @@ export function JobSearchSettingsCard() {
   const [visible, setVisible] = useState(false);
   const [skills, setSkills] = useState<string[]>([]);
   const [bio, setBio] = useState("");
+  const [availability, setAvailability] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [lineId, setLineId] = useState("");
   const [location, setLocation] = useState("");
   const [country, setCountry] = useState("");
   const [lat, setLat] = useState<number | null>(null);
@@ -45,7 +50,10 @@ export function JobSearchSettingsCard() {
     if (!profile) return;
     setVisible(Boolean(profile.job_search_visible));
     setSkills(profile.job_search_skills ?? []);
-    setBio(profile.job_search_bio ?? "");
+    const storedBio = profile.job_search_bio ?? "";
+    setBio(storedBio.replace(/\n\nAvailable:[\s\S]*$/, ""));
+    const fromBio = storedBio.match(/\n\nAvailable: ([\s\S]*)$/);
+    if (fromBio?.[1]) setAvailability(fromBio[1].trim());
     setLocation(
       findTalentPlace(profile.job_search_location)?.canonical ??
         profile.job_search_location ??
@@ -58,6 +66,15 @@ export function JobSearchSettingsCard() {
     );
     setLat(profile.job_search_lat ?? null);
     setLng(profile.job_search_lng ?? null);
+    const storedId = localStorage.getItem(SERVICE_PROFILE_KEY);
+    const listing = readProsState()?.profiles.find((row) => row.id === storedId);
+    if (listing) {
+      const when = listing.description.match(/\n\nAvailable: ([\s\S]*)$/);
+      setAvailability(when?.[1]?.trim() ?? "");
+      setWhatsapp(listing.whatsapp ?? "");
+      setLineId(listing.lineId ?? "");
+      if (listing.visibility === "public") setVisible(true);
+    }
   }, [
     profile?.id,
     profile?.job_search_visible,
@@ -111,8 +128,15 @@ export function JobSearchSettingsCard() {
     setSaving(true);
     setMessage(null);
     setError(null);
+    const listed = updateServiceListing({
+      availability,
+      visibility: visible ? "public" : "private",
+      whatsapp: whatsapp.trim() || null,
+      lineId: lineId.trim() || null,
+    });
     if (isDemoMode()) {
-      setError(t("talent.demoReadOnly"));
+      if (listed) setMessage(t("talent.settingsSaved"));
+      else setError(t("talent.demoReadOnly"));
       setSaving(false);
       return;
     }
@@ -123,7 +147,12 @@ export function JobSearchSettingsCard() {
         body: JSON.stringify({
           visible,
           skills,
-          bio: bio.trim() || null,
+          bio: [
+            bio.replace(/\n\nAvailable:[\s\S]*$/, "").trim(),
+            availability.trim() ? `Available: ${availability.trim()}` : "",
+          ]
+            .filter(Boolean)
+            .join("\n\n") || null,
           location: location.trim() || null,
           country: country.trim() || null,
           lat,
@@ -295,6 +324,25 @@ export function JobSearchSettingsCard() {
         )}
       </div>
 
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label htmlFor="job-search-whatsapp">{t("talent.settingsWhatsapp")}</Label>
+          <Input id="job-search-whatsapp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+        </div>
+        <div>
+          <Label htmlFor="job-search-line">{t("talent.settingsLine")}</Label>
+          <Input id="job-search-line" value={lineId} onChange={(e) => setLineId(e.target.value)} />
+        </div>
+      </div>
+      <div>
+        <Label htmlFor="job-search-availability">{t("talent.settingsAvailability")}</Label>
+        <Input
+          id="job-search-availability"
+          value={availability}
+          onChange={(e) => setAvailability(e.target.value)}
+          placeholder="Weekdays, or call the day before"
+        />
+      </div>
       <div>
         <Label htmlFor="job-search-bio">{t("talent.settingsBio")}</Label>
         <Textarea

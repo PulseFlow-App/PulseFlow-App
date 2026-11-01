@@ -42,6 +42,8 @@ export async function POST(request: Request) {
   const phone = body.phone?.trim() || null;
   const kind = body.kind;
   const role = body.role;
+  const maintenance = body.track === "maintenance";
+  const payer = body.payer === "manager" ? "manager" : "owner";
 
   if (!fullName || !email || password.length < 6) {
     return NextResponse.json(
@@ -60,7 +62,7 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  if (kind === "personal" && role && role !== "owner") {
+  if (kind === "personal" && role && role !== "owner" && !maintenance) {
     return NextResponse.json(
       { error: "Personal workspaces always start as owner of your own list." },
       { status: 400 },
@@ -81,8 +83,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const resolvedRole =
-    kind === "company" && role === "manager" ? ("manager" as const) : ("owner" as const);
+  const resolvedRole = maintenance
+    ? ("staff" as const)
+    : kind === "company" && role === "manager"
+      ? ("manager" as const)
+      : ("owner" as const);
+  const registrantPays =
+    kind !== "company" ||
+    (resolvedRole === "owner" && payer === "owner") ||
+    (resolvedRole === "manager" && payer === "manager");
 
   const admin = createAdminClient();
 
@@ -107,12 +116,13 @@ export async function POST(request: Request) {
       : fullName);
 
   const isCompany = kind === "company";
+  const openTrial = isCompany && registrantPays;
   const orgRow: Record<string, unknown> = {
     name: workspaceName,
     kind,
-    trial_ends_at: isCompany ? companyTrialEndsAt() : null,
-    subscription_status: isCompany ? "trialing" : "none",
-    billing_email: isCompany ? email : null,
+    trial_ends_at: openTrial ? companyTrialEndsAt() : null,
+    subscription_status: openTrial ? "trialing" : "none",
+    billing_email: openTrial ? email : null,
   };
   const acquisition = body.acquisitionSource?.trim();
   if (acquisition) orgRow.acquisition_source = acquisition;
@@ -164,7 +174,8 @@ export async function POST(request: Request) {
 
   const personal_org_id = kind === "personal" ? org.id : null;
 
-  const { error: profileErr } = await admin.from("profiles").insert({
+  const service = body.service;
+  const profileRow: Record<string, unknown> = {
     id: userId,
     org_id: org.id,
     personal_org_id,
@@ -172,14 +183,33 @@ export async function POST(request: Request) {
     full_name: fullName,
     phone,
     email,
-    job_title:
-      kind === "personal"
+    job_title: maintenance
+      ? "Maintenance"
+      : kind === "personal"
         ? "Personal"
         : resolvedRole === "manager"
           ? "Manager"
           : "Owner",
     share_slug,
-  });
+  };
+  if (maintenance) {
+    profileRow.job_search_visible = Boolean(service?.listNow);
+    profileRow.job_search_skills = service?.skills?.length
+      ? service.skills
+      : ["maintenance"];
+    profileRow.job_search_bio = service?.bio?.trim() || null;
+    profileRow.job_search_location = service?.location?.trim() || null;
+    profileRow.job_search_country = service?.country?.trim() || null;
+    profileRow.job_search_updated_at = new Date().toISOString();
+  }
+
+  let profileErr = (await admin.from("profiles").insert(profileRow)).error;
+  if (profileErr && maintenance && /job_search_/.test(profileErr.message)) {
+    for (const key of Object.keys(profileRow)) {
+      if (key.startsWith("job_search_")) delete profileRow[key];
+    }
+    profileErr = (await admin.from("profiles").insert(profileRow)).error;
+  }
 
   if (profileErr) {
     await admin.from("organizations").delete().eq("id", org.id);

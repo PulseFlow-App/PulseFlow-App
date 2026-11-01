@@ -139,7 +139,7 @@ export function taskAssignableProfiles<T extends { role: UserRole }>(
   return profiles.filter((p) => isTaskAssignableRole(p.role));
 }
 
-/** Owners and company managers can browse the talent directory. */
+/** Owners and company managers can browse Pulse Flow Services. */
 export function canBrowseTalent(role: UserRole, orgKind?: OrgKind | null) {
   if (role === "owner") return true;
   return role === "manager" && isCompanyWorkspace(orgKind);

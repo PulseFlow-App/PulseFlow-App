@@ -40,6 +40,7 @@ import {
   syncContactMessengerFields,
 } from "@/lib/contacts/messengers";
 import { useI18n } from "@/lib/i18n/provider";
+import { prosT } from "@/lib/pros/i18n";
 import { useLocalizedDemoText } from "@/lib/demo/use-localized-demo-text";
 import {
   WorkScheduleFields,
@@ -69,7 +70,7 @@ export default function ContactsPage() {
 
 function ContactsPageInner() {
   const data = useData();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const label = useLocalizedDemoText();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -316,6 +317,14 @@ function ContactsPageInner() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="font-semibold text-ink">{contact.name}</p>
+                      {canEdit ? (
+                        <Link
+                          href={`/pros-profile?contactId=${contact.id}`}
+                          className="mt-1 inline-flex min-h-12 items-center text-sm font-semibold text-primary"
+                        >
+                          {prosT(locale, "makeProfile")}
+                        </Link>
+                      ) : null}
                       {contact.notes ? (
                         <p className="text-xs text-muted">{contact.notes}</p>
                       ) : null}

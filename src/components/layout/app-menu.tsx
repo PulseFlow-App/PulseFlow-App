@@ -27,6 +27,9 @@ import {
 } from "@/components/icons/pulse-icon";
 import { AppVersionMark } from "@/components/layout/app-version-mark";
 import { useEducation } from "@/lib/education/provider";
+import { ServicesMark } from "@/components/brand/services-mark";
+import { prosT } from "@/lib/pros/i18n";
+import { MARKETPLACE_ORIGIN, marketplaceOriginForHost } from "@/lib/pros/paths";
 
 type MenuLink = {
   href: string;
@@ -56,11 +59,15 @@ export function AppMenuButton() {
   const education = useEducation();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [servicesHome, setServicesHome] = useState(`${MARKETPLACE_ORIGIN}/`);
   const titleId = useId();
   const profile = data.profile;
 
   useEffect(() => {
     setMounted(true);
+    setServicesHome(
+      `${marketplaceOriginForHost(window.location.host, window.location.protocol)}/`,
+    );
   }, []);
 
   useEffect(() => {
@@ -94,7 +101,13 @@ export function AppMenuButton() {
   const showInvites = !isGuest && canInviteAnyone(profile.role);
   const initial = (profile.full_name.trim().charAt(0) || "?").toUpperCase();
 
-  const primary: MenuLink[] = [];
+  const primary: MenuLink[] = [
+    {
+      href: servicesHome,
+      label: prosT(locale, "productName"),
+      icon: "maintenance",
+    },
+  ];
   if (showReputation) {
     primary.push({
       href: "/endorsements",
@@ -410,7 +423,7 @@ function MenuRow({
         onClick={onNavigate}
         className={className}
       >
-        <PulseIcon name={link.icon} className="size-5" />
+        {link.icon === "maintenance" ? <ServicesMark className="size-7 shrink-0" /> : <PulseIcon name={link.icon} className="size-5" />}
         <span className="truncate">{link.label}</span>
       </a>
     );
@@ -424,7 +437,7 @@ function MenuRow({
       data-tour={tourId}
       data-tour-label={link.label}
     >
-      <PulseIcon name={link.icon} className="size-5" />
+      {link.icon === "maintenance" ? <ServicesMark className="size-7 shrink-0" /> : <PulseIcon name={link.icon} className="size-5" />}
       <span className="truncate">{link.label}</span>
     </Link>
   );

@@ -55,7 +55,7 @@ Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll chec
 - **Bookings calendar** - month grid of direct stays + Airbnb / Booking.com / VRBO nights; paste each listing’s private Export calendar (.ics) URL on the property → Sync  
 - **Jobs → calendar** - download a job (or this week’s jobs) as `.ics` for Google / Apple Calendar  
 - **Reports / exports** - CSV (bills, tasks, villas, jobs, occupancy), printable weekly ops, handoff snapshots  
-- **Talent directory** - browse opted-in field talent by skills / place / map  
+- **Pulse Flow Services** - browse people who listed, by trade / place / map  
 - **Endorsements / reviews** - weekly stars for the team  
 - **Connect your agent** - Settings connection key + `npx @pulseflow/mcp` config so Cursor, Claude (or another AI agent) can list/create villas, tasks, and jobs in this workspace (no database key or local clone; revocable)  
 
@@ -74,7 +74,7 @@ Without it, everyone lives in WhatsApp threads, spreadsheets, and “I’ll chec
 
 ### Same as owner (ops)
 
-Home, villas (edit), house guides, tasks, contacts + Order, jobs, bills finance, team chat, Guests panel (deposit + briefings), date requests accept/decline, **Bookings calendar** + Airbnb/Booking.com iCal sync, talent browse, endorsements, **Connect your agent**, reports when company is entitled, invite staff / guests / anyone, referral progress, Face ID, push, rename own display name.
+Home, villas (edit), house guides, tasks, contacts + Order, jobs, bills finance, team chat, Guests panel (deposit + briefings), date requests accept/decline, **Bookings calendar** + Airbnb/Booking.com iCal sync, Pulse Flow Services, endorsements, **Connect your agent**, reports when company is entitled, invite staff / guests / anyone, referral progress, Face ID, push, rename own display name.
 
 ### Different from owner
 
@@ -103,14 +103,14 @@ Home, villas (edit), house guides, tasks, contacts + Order, jobs, bills finance,
 - **Villas** - only assigned / visible company properties  
 - **Team chat** - company thread  
 - **Bills** - submit own receipts (not company-wide finance)  
-- **Talent profile** - opt in: skills, bio, location + map pin  
+- **Pulse Flow Services** - opt in: skills, bio, location + map pin  
 - **Reputation** - receive endorsements; share public `/u/{slug}`  
 - **Invite anyone** only (referral) - no staff/guest company invites  
 - **Personal villas** - optional side personal workspace for own clients  
 
 ### Not for field staff
 
-Contacts Order booking UI, talent *browse*, reports CSV, mark-all-paid finance, villa ACL, guest invite, Guests panel, guest support inbox.
+Contacts Order booking UI, Pulse Flow Services browse, reports CSV, mark-all-paid finance, villa ACL, guest invite, Guests panel, guest support inbox.
 
 ---
 
@@ -135,7 +135,7 @@ Contacts Order booking UI, talent *browse*, reports CSV, mark-all-paid finance, 
 
 ### Explicitly not for guests
 
-Team chat with cleaners, contacts, talent, endorsements voting, company tasks/ops bills, Guests host panel.
+Team chat with cleaners, contacts, Pulse Flow Services, endorsements voting, company tasks/ops bills, Guests host panel.
 
 ---
 
@@ -148,7 +148,7 @@ Team chat with cleaners, contacts, talent, endorsements voting, company tasks/op
 | Villas, tasks, own bills | Team invites, team chat, Order bookings |
 | Contacts as a simple phone book | Company vendor Order / WA-LINE ops stack |
 | Invite anyone (grow Pulse Flow) | Invite staff/guest into a company |
-| Rename personal workspace (owner of that org) | App Store Full company billing, endorsements, talent browse, Guests panel |
+| Rename personal workspace (owner of that org) | App Store Full company billing, endorsements, Pulse Flow Services browse, Guests panel |
 
 ---
 
@@ -176,8 +176,8 @@ Legend: ● yes · ◐ limited · ○ no
 | Jobs → .ics download | ● | ● | ● | ○ | ○ |
 | Team chat | ● | ● | ● | ○ | ○ |
 | Support chat (host↔guest) | ● | ● | ○ | ●* | ○ |
-| Talent browse | ● | ● | ○ | ○ | ○ |
-| Talent opt-in | ○ | ◐ | ● | ○ | ○ |
+| Pulse Flow Services browse | ● | ● | ○ | ○ | ○ |
+| Pulse Flow Services listing | ○ | ◐ | ● | ○ | ○ |
 | Endorsements / reviews | ● | ● | ● | ○ | ○ |
 | Reports / CSV | ● | ●† | ○ | ○ | ○ |
 | Villa assignments | ● | ○ | ○ | ○ | ○ |

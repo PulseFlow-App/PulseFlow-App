@@ -212,7 +212,7 @@ Pulse Flow sells **digital SaaS access** (company Full / trial / reports). That 
 | User content (chat, photos, notes)           | Yes            | Yes             | No                        |
 | Identifiers (user ID)                        | Yes            | Yes             | No                        |
 | Purchases (subscription status)              | Yes (company)  | Yes             | No                        |
-| Location (talent map / near me / villa pins) | Optional       | Yes if saved    | No (unless ads—you don’t) |
+| Location (Pulse Flow Services map / near me / villa pins) | Optional       | Yes if saved    | No (unless ads—you don’t) |
 | Diagnostics                                  | If Sentry etc. | Often Yes       | No                        |
 
 
@@ -321,7 +321,7 @@ Only request what you use; explain clearly in `Info.plist`:
 | Permission             | Pulse Flow use                                  | Options                                            |
 | ---------------------- | ----------------------------------------------- | -------------------------------------------------- |
 | Camera / Photo Library | Villa photos, receipts, stay photos, task proof | Request at moment of use                           |
-| Location               | Talent near-me / map pin (optional)             | Don’t force for core login; allow manual area text |
+| Location               | Pulse Flow Services near-me / map pin (optional) | Don’t force for core login; allow manual area text |
 | Notifications          | Push alerts                                     | Optional; never gate core app on allowing push     |
 | Face ID                | Passkeys / LocalAuthentication                  | Already aligned with 2.5.13 spirit                 |
 

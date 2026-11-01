@@ -64,7 +64,7 @@ App: [app.pulseflow.site](https://app.pulseflow.site) · Guides by role: [`docs/
 | Only assigned properties | **Properties** |
 | Team chat | **Messages** |
 | Submit your own receipts | **Bills** |
-| Opt into skills / bio / map for hire | **Settings → Talent profile** |
+| Opt into skills / bio / map for hire | **Settings → Pulse Flow Services** |
 | Stars & public profile | **Endorsements** / **Leaderboard** (menu) |
 
 ### Guest

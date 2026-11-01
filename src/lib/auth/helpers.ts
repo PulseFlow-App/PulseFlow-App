@@ -37,6 +37,17 @@ export type RegisterWorkspaceInput = {
   referredBy?: string | null;
   /** Channel mark from ?src= / UTM (telegram_phuket, founder, …) */
   acquisitionSource?: string | null;
+  /** maintenance = independent professional. management = personal or company workspace. */
+  track?: "maintenance" | "management";
+  /** Who holds the company bill. Trial stays limited until that person has accepted, when it is not the registrant. */
+  payer?: "owner" | "manager";
+  service?: {
+    skills?: string[];
+    bio?: string;
+    location?: string;
+    country?: string;
+    listNow?: boolean;
+  };
 };
 
 export const COMPANY_TRIAL_DAYS = 90;

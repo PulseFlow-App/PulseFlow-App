@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ChevronDown, ImageIcon } from "lucide-react";
 import { TaskCompleteControl } from "@/components/tasks/task-complete-control";
 import { LocalizedText } from "@/components/i18n/localized-text";
@@ -8,6 +9,7 @@ import { formatWorkWindow } from "@/lib/notifications";
 import { formatShortDate, cn } from "@/lib/utils";
 import type { TaskWithRelations } from "@/lib/types";
 import { useI18n } from "@/lib/i18n/provider";
+import { prosT } from "@/lib/pros/i18n";
 
 /** Compact task row — tap the body to expand notes, photo, and details. */
 export function TaskRow({
@@ -27,7 +29,7 @@ export function TaskRow({
   showUrgentLabel?: boolean;
   collapseStatus?: boolean;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [expanded, setExpanded] = useState(false);
   const schedule =
     formatWorkWindow(task.due_date, task.time_start, task.time_end, {
@@ -138,6 +140,27 @@ export function TaskRow({
           <p className="mt-1 text-sm text-muted">{t("tasks.noNotes")}</p>
         )}
       </div>
+      {task.status !== "done" ? (
+        <Link
+          href={`/pros/find?${new URLSearchParams({
+            taskId: task.id,
+            orgId: task.org_id,
+            title: task.title,
+            ...(task.villa_id ? { villaId: task.villa_id } : {}),
+          }).toString()}`}
+          className="inline-flex min-h-12 items-center text-sm font-semibold text-primary"
+        >
+          {prosT(locale, "findProfessional")}
+        </Link>
+      ) : null}
+      {task.notes?.match(/Request: ([0-9a-f-]{36})/i)?.[1] ? (
+        <Link
+          href={`/pros/requests/${task.notes.match(/Request: ([0-9a-f-]{36})/i)?.[1]}`}
+          className="inline-flex min-h-12 items-center text-sm font-semibold text-sky"
+        >
+          {prosT(locale, "trackPros")}
+        </Link>
+      ) : null}
       {hasPhoto ? (
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wide text-muted">

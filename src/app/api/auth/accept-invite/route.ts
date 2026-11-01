@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { slugifyName, uniqueShareSlug } from "@/lib/auth/helpers";
+import { companyTrialEndsAt, slugifyName, uniqueShareSlug } from "@/lib/auth/helpers";
 import { ensureProfileShareSlug } from "@/lib/auth/share-slug";
 import { attachInviteToExistingProfile } from "@/lib/auth/attach-org";
 import { creditReferral } from "@/lib/billing/referrals";
@@ -158,6 +158,44 @@ async function finalizeOwnerSeat(
   if (billingEmail) {
     await applyOwnerBilling(admin, orgId, billingEmail);
   }
+  const { data: org } = await admin
+    .from("organizations")
+    .select("trial_ends_at")
+    .eq("id", orgId)
+    .maybeSingle();
+  if (!org?.trial_ends_at) {
+    await admin
+      .from("organizations")
+      .update({
+        trial_ends_at: companyTrialEndsAt(),
+        subscription_status: "trialing",
+      })
+      .eq("id", orgId);
+  }
+}
+
+/** Owner registered and named the manager as the payer. Trial opens when that manager accepts. */
+async function openTrialForPayerManager(admin: Admin, orgId: string) {
+  const { data: org } = await admin
+    .from("organizations")
+    .select("trial_ends_at, subscription_status")
+    .eq("id", orgId)
+    .maybeSingle();
+  if (org?.trial_ends_at || org?.subscription_status !== "none") return;
+  const { data: owners } = await admin
+    .from("org_memberships")
+    .select("id")
+    .eq("org_id", orgId)
+    .eq("role", "owner")
+    .limit(1);
+  if (!owners?.length) return;
+  await admin
+    .from("organizations")
+    .update({
+      trial_ends_at: companyTrialEndsAt(),
+      subscription_status: "trialing",
+    })
+    .eq("id", orgId);
 }
 
 async function notifyTeamJoined(
@@ -414,6 +452,8 @@ export async function POST(request: Request) {
       const billEmail =
         (existingProfile.email as string | null) ?? user.email ?? "";
       await finalizeOwnerSeat(admin, invite.org_id, user.id, billEmail);
+    } else if (invite.role === "manager") {
+      await openTrialForPayerManager(admin, invite.org_id);
     }
     return NextResponse.json({ ok: true, userId: user.id, joinedWithSession: true });
   }
@@ -496,6 +536,8 @@ export async function POST(request: Request) {
       });
       if (invite.role === "owner") {
         await finalizeOwnerSeat(admin, invite.org_id, existingAuth.id, email);
+      } else if (invite.role === "manager") {
+        await openTrialForPayerManager(admin, invite.org_id);
       }
       return NextResponse.json({
         ok: true,
@@ -625,6 +667,8 @@ export async function POST(request: Request) {
 
   if (invite.role === "owner") {
     await finalizeOwnerSeat(admin, invite.org_id, userId, email);
+  } else if (invite.role === "manager") {
+    await openTrialForPayerManager(admin, invite.org_id);
   }
 
   try {

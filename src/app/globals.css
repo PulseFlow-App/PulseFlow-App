@@ -541,10 +541,16 @@ html[data-appearance="dark"] .bg-card\/80 {
   backdrop-filter: blur(16px) saturate(1.05);
   -webkit-backdrop-filter: blur(16px) saturate(1.05);
 }
-html[data-appearance="dark"] .bg-sand\/95 {
-  background-color: rgba(21, 32, 42, 0.88);
+html[data-appearance="dark"] .bg-sand\/95,
+html[data-appearance="dark"] .bg-canvas\/95 {
+  background-color: rgba(21, 32, 42, 0.92);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+}
+html[data-appearance="dark"] input,
+html[data-appearance="dark"] select,
+html[data-appearance="dark"] textarea {
+  color-scheme: dark;
 }
 html[data-appearance="dark"] .bg-primary-soft {
   background-color: var(--color-primary-soft);
@@ -561,6 +567,16 @@ html[data-appearance="dark"] .bg-nav {
   background-color: var(--color-nav);
   backdrop-filter: blur(16px) saturate(1.05);
   -webkit-backdrop-filter: blur(16px) saturate(1.05);
+}
+.pf-nav-active {
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #023047;
+  --icon-ink: #023047;
+}
+html[data-appearance="dark"] .pf-nav-active {
+  background-color: rgba(232, 244, 248, 0.92);
+  color: #023047;
+  --icon-ink: #023047;
 }
 html[data-appearance="dark"] .text-ink {
   color: var(--color-ink);
