@@ -113,6 +113,10 @@ const servicesDescription = "Local services, made accessible.";
 const servicesMetadata: Metadata = {
   ...appMetadata,
   metadataBase: new URL(SERVICES_URL),
+  title: {
+    default: "Pulse Flow Services",
+    template: "%s · Pulse Flow Services",
+  },
   applicationName: "Pulse Flow Services",
   description: servicesDescription,
   manifest: "/services.webmanifest",

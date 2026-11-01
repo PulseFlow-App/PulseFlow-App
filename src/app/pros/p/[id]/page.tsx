@@ -8,9 +8,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const pro = SEED_PROFILES.find((row) => row.id === id && row.visibility === "public");
   return {
-    title: "Pulse Flow Services",
-    description: "Sign in to see this professional.",
-    robots: pro ? undefined : { index: false },
+    title: { absolute: pro ? `${pro.name} · Pulse Flow Services` : "Pulse Flow Services" },
+    description: "A full profile opens after you create a Pulse Flow Services account.",
+    robots: { index: false, follow: false },
     alternates: { canonical: `https://services.pulseflow.site/p/${id}` },
   };
 }

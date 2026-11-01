@@ -9,8 +9,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const cat = CATEGORIES.find((row) => row.slug === slug);
   const name = cat ? localizedName(cat.names, "en") : "Pulse Flow Services";
   return {
-    title: `${name} · Pulse Flow Services`,
-    description: cat ? localizedName(cat.descriptions, "en") : "Find a local professional.",
+    title: { absolute: cat ? `${name} · Pulse Flow Services` : "Pulse Flow Services" },
+    description: cat
+      ? `${localizedName(cat.descriptions, "en")} Find a local professional. Pulse Flow Services does not take payment.`
+      : "Find a local professional.",
+    robots: cat ? { index: true, follow: true } : { index: false, follow: false },
     alternates: { canonical: `https://services.pulseflow.site/c/${slug}` },
   };
 }

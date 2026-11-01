@@ -77,7 +77,9 @@ function rewriteMarketplace(request: NextRequest, session: NextResponse) {
   const url = request.nextUrl.clone();
   const path = request.nextUrl.pathname;
   url.pathname = path === "/" ? "/pros" : `/pros${path}`;
-  const rewritten = NextResponse.rewrite(url);
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-public-path", path || "/");
+  const rewritten = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
   for (const cookie of session.cookies.getAll()) {
     rewritten.cookies.set(cookie);
   }
@@ -93,6 +95,9 @@ function redirectMarketplace(request: NextRequest) {
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
   const { pathname } = request.nextUrl;
+  if (pathname === "/robots.txt" || pathname === "/sitemap.xml") {
+    return NextResponse.next();
+  }
   const prosHost = onMarketplaceHost(request);
   if (pathname === "/welcome" || pathname === "/pros/welcome" || pathname.startsWith("/welcome/") || pathname.startsWith("/pros/welcome/")) {
     return NextResponse.redirect("https://www.pulseflow.site/services");

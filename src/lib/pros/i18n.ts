@@ -515,7 +515,6 @@ const COPY = {
   line: { en: "LINE", th: "LINE", ru: "LINE", he: "LINE" },
   availability: { en: "When you can work", th: "เวลาที่รับงาน", ru: "Когда можете работать", he: "מתי אפשר לעבוד" },
   trades: { en: "Professions", th: "อาชีพ", ru: "Профессии", he: "מקצועות" },
-  areas: { en: "Areas", th: "พื้นที่", ru: "Районы", he: "אזורים" },
   listingOpen: { en: "Open in the directory", th: "เปิดในสารบบ", ru: "Открыть в каталоге", he: "פתוח במדריך" },
   listingHidden: { en: "Hidden", th: "ซ่อน", ru: "Скрыто", he: "מוסתר" },
   saveListing: { en: "Save listing", th: "บันทึกโปรไฟล์", ru: "Сохранить карточку", he: "שמירת הכרטיס" },

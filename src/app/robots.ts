@@ -1,7 +1,39 @@
 import type { MetadataRoute } from "next";
-import { APP_URL } from "@/lib/seo";
+import { headers } from "next/headers";
+import { isMarketplaceHost } from "@/lib/pros/paths";
+import { APP_URL, SERVICES_URL } from "@/lib/seo";
 
-export default function robots(): MetadataRoute.Robots {
+export const dynamic = "force-dynamic";
+
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const headerList = await headers();
+  const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
+  if (isMarketplaceHost(host)) {
+    return {
+      rules: [
+        {
+          userAgent: "*",
+          allow: ["/", "/find", "/c/", "/a/", "/terms", "/privacy", "/register"],
+          disallow: [
+            "/api/",
+            "/auth/",
+            "/settings",
+            "/requests",
+            "/request",
+            "/reply",
+            "/claim",
+            "/admin",
+            "/start",
+            "/p/",
+            "/join/",
+          ],
+        },
+      ],
+      sitemap: `${SERVICES_URL}/sitemap.xml`,
+      host: SERVICES_URL,
+    };
+  }
+
   return {
     rules: [
       {

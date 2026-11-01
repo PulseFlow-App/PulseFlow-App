@@ -1,31 +1,36 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { ProsShell } from "@/components/pros/shell";
-import { PRODUCT_NAME } from "@/lib/pros/i18n";
-import { SERVICES_OG_IMAGE, SERVICES_URL } from "@/lib/seo";
+import { servicesMetadataForPath, SERVICES_URL } from "@/lib/seo";
 
-const description = "Local services, made accessible.";
+export async function generateMetadata(): Promise<Metadata> {
+  const headerList = await headers();
+  const path = headerList.get("x-public-path") ?? "/";
+  return servicesMetadataForPath(path);
+}
 
-export const metadata: Metadata = {
-  title: { absolute: PRODUCT_NAME },
-  description,
-  applicationName: PRODUCT_NAME,
-  alternates: { canonical: `${SERVICES_URL}/` },
-  openGraph: {
-    type: "website",
-    siteName: PRODUCT_NAME,
-    title: PRODUCT_NAME,
-    description,
-    url: `${SERVICES_URL}/`,
-    images: [SERVICES_OG_IMAGE],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: PRODUCT_NAME,
-    description,
-    images: [SERVICES_OG_IMAGE.url],
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Pulse Flow Services",
+  url: SERVICES_URL,
+  description: "Local services, made accessible.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${SERVICES_URL}/find?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
   },
 };
 
-export default function ProsLayout({ children }: { children: React.ReactNode }) {
-  return <ProsShell>{children}</ProsShell>;
+export default async function ProsLayout({ children }: { children: React.ReactNode }) {
+  const headerList = await headers();
+  const path = headerList.get("x-public-path") ?? "/";
+  return (
+    <ProsShell>
+      {path === "/" ? (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
+      ) : null}
+      {children}
+    </ProsShell>
+  );
 }
