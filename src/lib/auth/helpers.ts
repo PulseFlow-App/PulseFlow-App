@@ -31,14 +31,21 @@ export type RegisterWorkspaceInput = {
   password: string;
   orgName: string;
   kind: OrgKind;
-  /** Company register: owner (pays) or manager (invites owner who pays). Personal ignores. */
-  role?: Extract<UserRole, "owner" | "manager">;
+  /** Company register: owner (pays) or manager (invites owner who pays). Personal ignores unless position is staff. */
+  role?: Extract<UserRole, "owner" | "manager" | "staff" | "cleaner">;
   /** Referrer share slug or profile id prefix from ?ref= */
   referredBy?: string | null;
   /** Channel mark from ?src= / UTM (telegram_phuket, founder, …) */
   acquisitionSource?: string | null;
-  /** maintenance = independent professional. management = personal or company workspace. */
-  track?: "maintenance" | "management";
+  /**
+   * services host: maintenance = professional, management unused, customer = seeker.
+   * app host: prefer `position` instead of maintenance/management cards.
+   */
+  track?: "maintenance" | "management" | "customer";
+  /** App register: management (owner/manager path) or on-site staff. */
+  position?: "management" | "staff";
+  /** App/join: create a private Services listing / mark job_search interest. */
+  listOnServices?: boolean;
   /** Who holds the company bill. Trial stays limited until that person has accepted, when it is not the registrant. */
   payer?: "owner" | "manager";
   service?: {

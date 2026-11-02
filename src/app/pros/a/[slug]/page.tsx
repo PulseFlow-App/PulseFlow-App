@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: { absolute: area ? `${name} · Pulse Flow Services` : "Pulse Flow Services" },
     description: area
-      ? `Local professionals in ${name}. Pulse Flow Services does not take payment.`
+      ? `Local professionals in ${name}. Describe the problem, compare, and book.`
       : "Find a local professional.",
     robots: area ? { index: true, follow: true } : { index: false, follow: false },
     alternates: { canonical: `https://services.pulseflow.site/a/${slug}` },

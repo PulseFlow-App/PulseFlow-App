@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: { absolute: cat ? `${name} · Pulse Flow Services` : "Pulse Flow Services" },
     description: cat
-      ? `${localizedName(cat.descriptions, "en")} Find a local professional. Pulse Flow Services does not take payment.`
+      ? `${localizedName(cat.descriptions, "en")} Find a local professional near you. You pay them directly.`
       : "Find a local professional.",
     robots: cat ? { index: true, follow: true } : { index: false, follow: false },
     alternates: { canonical: `https://services.pulseflow.site/c/${slug}` },

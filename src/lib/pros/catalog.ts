@@ -1,9 +1,11 @@
 import { DEMO_CLEANER_ID, DEMO_ORG_ID, DEMO_OWNER_ID } from "@/lib/demo/seed-data";
+import { LOCALES, isLocale } from "@/lib/i18n";
 import type { ProProfile, ProsLang, ProsState } from "@/lib/pros/types";
 
-export const PROS_LANGS: ProsLang[] = ["en", "th", "ru", "he"];
+export const PROS_LANGS: ProsLang[] = [...LOCALES];
 
-type Names = Record<ProsLang, string>;
+/** English required; other Pulse Flow locales optional (fall back to en). */
+type Names = { en: string } & Partial<Record<ProsLang, string>>;
 
 export type CatalogCategory = {
   id: string;
@@ -24,6 +26,14 @@ export type CatalogArea = {
 };
 
 const n = (en: string, th: string, ru: string, he: string): Names => ({ en, th, ru, he });
+
+/** Merge extra locale labels onto catalog names (fr/de/es/it/tr/ar/my, …). */
+export function withLocaleNames(
+  base: Names,
+  extra: Partial<Record<ProsLang, string>>,
+): Names {
+  return { ...base, ...extra };
+}
 
 export const CATEGORIES: CatalogCategory[] = [
   { id: "c2000001-0000-4000-8000-000000000001", slug: "hvac", icon: "wind", names: n("Air conditioning and HVAC", "แอร์และระบบปรับอากาศ", "Кондиционеры и HVAC", "מיזוג אוויר"), descriptions: n("Cooling, servicing, and repair", "ติดตั้ง ล้าง และซ่อม", "Обслуживание и ремонт", "התקנה, טיפול ותיקון") },
@@ -254,16 +264,44 @@ export const SEED_PROFILES: ProProfile[] = [
 ];
 
 export function prosLang(locale: string): ProsLang {
-  if (locale === "th" || locale === "ru" || locale === "he") return locale;
-  return "en";
+  return isLocale(locale) ? locale : "en";
 }
 
 export function localizedName(
   names: Record<string, string>,
   locale: string,
 ) {
-  return names[prosLang(locale)] || names.en || Object.values(names)[0] || "";
+  const lang = prosLang(locale);
+  return names[lang] || names.en || Object.values(names)[0] || "";
 }
+
+/** Merge fr/de/es/it/tr/ar/my labels from catalog-extra into in-memory catalog rows. */
+export function applyCatalogLocaleExtras() {
+  // Imported lazily to avoid circular init with generated packs.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const mod = require("@/lib/pros/catalog-extra") as {
+    CATALOG_NAME_EXTRAS: Record<string, Record<string, string>>;
+    CATALOG_DESC_EXTRAS: Record<string, Record<string, string>>;
+  };
+  for (const cat of CATEGORIES) {
+    for (const [loc, pack] of Object.entries(mod.CATALOG_NAME_EXTRAS || {})) {
+      const text = pack?.[cat.slug];
+      if (text) (cat.names as Record<string, string>)[loc] = text;
+    }
+    for (const [loc, pack] of Object.entries(mod.CATALOG_DESC_EXTRAS || {})) {
+      const text = pack?.[cat.slug];
+      if (text) (cat.descriptions as Record<string, string>)[loc] = text;
+    }
+  }
+  for (const area of AREAS) {
+    for (const [loc, pack] of Object.entries(mod.CATALOG_NAME_EXTRAS || {})) {
+      const text = pack?.[area.slug];
+      if (text) (area.names as Record<string, string>)[loc] = text;
+    }
+  }
+}
+
+applyCatalogLocaleExtras();
 
 export function createSeedState(): ProsState {
   const market = AREAS.find((a) => a.demoMarket);

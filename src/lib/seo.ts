@@ -20,7 +20,7 @@ export const SERVICES_OG_IMAGE = {
   url: "/brand/services-og.jpg",
   width: 1200,
   height: 630,
-  alt: "Pulse Flow Services — Local services, made accessible.",
+  alt: "Pulse Flow Services — find local plumbers, electricians, cleaners and more.",
 } as const;
 
 export function servicesUrl(path = "/"): string {
@@ -28,7 +28,8 @@ export function servicesUrl(path = "/"): string {
   return `${SERVICES_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-const SERVICES_DESCRIPTION = "Local services, made accessible.";
+const SERVICES_DESCRIPTION =
+  "Find local plumbers, electricians, cleaners and more. Describe the problem, compare, and book. In English, Thai, Russian and Hebrew.";
 
 /** Public Services pages search engines should list. Profiles stay out: a full profile needs an account. */
 export function servicesIndexable(path: string) {
@@ -55,17 +56,17 @@ export function servicesMetadataForPath(path: string): Metadata {
       ? localizedName(area.names, "en")
       : "";
   const description = category
-    ? `${localizedName(category.descriptions, "en")} Find a local professional. Pulse Flow Services does not take payment.`
+    ? `${localizedName(category.descriptions, "en")} Find a local professional near you. You pay them directly.`
     : area
-      ? `Local professionals in ${name}. Pulse Flow Services does not take payment.`
+      ? `Local professionals in ${name}. Describe the problem, compare, and book.`
       : clean === "/find"
-        ? "Find a local professional by profession and area. Pulse Flow Services does not take payment."
+        ? "Find a local professional by profession and area. In English, Thai, Russian and Hebrew."
         : clean === "/terms"
-          ? "Terms for people looking for a service, and for maintenance staff, on Pulse Flow Services."
+          ? "Terms for people looking for a service, and for professionals, on Pulse Flow Services."
           : clean === "/privacy"
-            ? "Privacy for people looking for a service, and for maintenance staff, on Pulse Flow Services."
+            ? "Privacy for people looking for a service, and for professionals, on Pulse Flow Services."
             : clean === "/register"
-              ? "Create a Pulse Flow Services account to request work or list a profession."
+              ? "Create a free Pulse Flow Services profile so people nearby can find you, or to request work."
               : SERVICES_DESCRIPTION;
   const title = name
     ? `${name} · Pulse Flow Services`
@@ -77,7 +78,7 @@ export function servicesMetadataForPath(path: string): Metadata {
           ? "Privacy · Pulse Flow Services"
           : clean === "/register"
             ? "Create an account · Pulse Flow Services"
-            : "Pulse Flow Services";
+            : "Find local professionals · Pulse Flow Services";
   const canonical = servicesUrl(clean);
   const index = servicesIndexable(clean);
   return {

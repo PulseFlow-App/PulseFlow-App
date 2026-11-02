@@ -37,8 +37,9 @@ import {
   talentSkillsForCategories,
 } from "@/lib/pros/join";
 
-type Track = "maintenance" | "management" | "customer";
+type Track = "maintenance" | "customer";
 type Plan = "personal" | "company";
+type Position = "management" | "staff";
 type CompanySeat = Extract<UserRole, "owner" | "manager">;
 
 function catalogName(names: { en: string }, locale: string) {
@@ -53,11 +54,16 @@ const LANGUAGES = [
   { id: "he", label: "עברית" },
 ];
 
+const MARKETING_SERVICES = "https://www.pulseflow.site/services";
+
 export default function RegisterPage() {
   const router = useRouter();
   const { t, locale } = useI18n();
   const [track, setTrack] = useState<Track | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
+  /** null until the user taps a top card — keeps Personal/Company hidden on first paint. */
+  const [position, setPosition] = useState<Position | null>(null);
+  const [listOnServices, setListOnServices] = useState(false);
   const [companySeat, setCompanySeat] = useState<CompanySeat | null>(null);
   const [payer, setPayer] = useState<CompanySeat | null>(null);
   const [fullName, setFullName] = useState("");
@@ -77,7 +83,7 @@ export default function RegisterPage() {
   const [accepted, setAccepted] = useState(false);
   const [emails, setEmails] = useState(false);
   const [listingId, setListingId] = useState<string | null>(null);
-  const [servicesHref, setServicesHref] = useState("/");
+  const [servicesHref, setServicesHref] = useState(MARKETING_SERVICES);
   const [appHref, setAppHref] = useState("https://app.pulseflow.site/");
   const [onServices, setOnServices] = useState(false);
   const [ready, setReady] = useState(false);
@@ -118,9 +124,19 @@ export default function RegisterPage() {
       stored?.utm_source ||
       null;
     setAcquisitionSource(src);
-    const trackParam = params.get("track");
-    if (trackParam === "maintenance" || (trackParam === "management" && !services)) {
-      setTrack(trackParam);
+
+    if (services) {
+      const as = params.get("as");
+      if (as === "pro" || params.get("track") === "maintenance") setTrack("maintenance");
+      else if (as === "seeker" || params.get("track") === "customer") setTrack("customer");
+    } else {
+      // Always start with only the two top cards. Sub-plans appear after a tap.
+      setPosition(null);
+      setPlan(null);
+      if (params.get("track") === "maintenance" || params.get("position") === "staff") {
+        setPosition("staff");
+        setPlan("personal");
+      }
     }
   }, []);
 
@@ -128,18 +144,14 @@ export default function RegisterPage() {
     () => AREAS.filter((area) => area.level === "locality"),
     [],
   );
-  const youPay =
-    plan === "company" &&
-    companySeat != null &&
-    payer != null &&
-    companySeat === payer;
+  const showAppForm = ready && !onServices && (position === "staff" || plan != null);
+  const showServicesForm = ready && onServices && track != null;
 
   const toggle = (list: string[], id: string, set: (next: string[]) => void) => {
     set(list.includes(id) ? list.filter((row) => row !== id) : [...list, id]);
   };
 
-  const submit = async () => {
-    setError(null);
+  const submitServices = async () => {
     if (!track) return;
     if (!fullName.trim() || !email.trim() || password.length < 6) {
       setError("Name, email, and a password (6+ chars) are required.");
@@ -149,21 +161,11 @@ export default function RegisterPage() {
       setError("Passwords do not match.");
       return;
     }
-    if ((track === "maintenance" || track === "customer") && !accepted) {
+    if (!accepted) {
       setError(prosT(locale, "legalNeedScroll"));
       return;
     }
     const termsAcceptedAt = new Date().toISOString();
-    if (track === "management" && plan === "company") {
-      if (!orgName.trim()) {
-        setError("Company name is required.");
-        return;
-      }
-      if (!companySeat || !payer) {
-        setError(t("register.seatRequired"));
-        return;
-      }
-    }
     if (track === "maintenance") {
       if (!whatsapp.trim() && !lineId.trim()) {
         setError(t("register.contactEither"));
@@ -189,6 +191,8 @@ export default function RegisterPage() {
             kind: "personal",
             track: "management",
             role: "owner",
+            referredBy: referralCode,
+            acquisitionSource,
             termsAcceptedAt,
             emailOptIn: emails,
           }),
@@ -214,26 +218,120 @@ export default function RegisterPage() {
         return;
       }
 
-      let createdListing: string | null = null;
-      if (track === "maintenance") {
-        createdListing = joinProfessional({
+      const createdListing = joinProfessional({
+        name: fullName,
+        email,
+        phone,
+        whatsapp,
+        lineId,
+        description: "",
+        availability,
+        categoryIds,
+        areaIds,
+        languages,
+        listNow: false,
+        referrer: referralCode,
+        emailOptIn: emails,
+        termsAcceptedAt,
+      }).id;
+      setListingId(createdListing);
+
+      if (isDemoMode()) return;
+
+      const { withActionBusy } = await import("@/lib/ui/action-busy");
+      await withActionBusy(async () => {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName,
+            email,
+            phone,
+            password,
+            orgName: `${fullName.trim().split(" ")[0] || "My"}'s properties`,
+            kind: "personal",
+            track: "maintenance",
+            position: "staff",
+            referredBy: referralCode,
+            acquisitionSource,
+            termsAcceptedAt,
+            emailOptIn: emails,
+            service: {
+              skills: talentSkillsForCategories(categoryIds),
+              bio: availability.trim() ? `Available: ${availability.trim()}` : "",
+              location: areaLabels(areaIds).join(", "),
+              country: "Thailand",
+              listNow: false,
+            },
+          }),
+        });
+        const payload = (await res.json()) as { error?: string };
+        if (!res.ok) throw new Error(payload.error ?? "Could not register.");
+        const { createClient } = await import("@/lib/supabase/client");
+        const { error: signInError } = await createClient().auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+        if (signInError) throw signInError;
+      });
+      router.replace("/settings");
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not register.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const submitApp = async () => {
+    if (!fullName.trim() || !email.trim() || password.length < 6) {
+      setError("Name, email, and a password (6+ chars) are required.");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Passwords do not match.");
+      return;
+    }
+    const onSite = position === "staff";
+    if (onSite && listOnServices && !accepted) {
+      setError(prosT(locale, "legalNeedScroll"));
+      return;
+    }
+    if (!onSite && !plan) {
+      return;
+    }
+    if (!onSite && plan === "company") {
+      if (!orgName.trim()) {
+        setError("Company name is required.");
+        return;
+      }
+      if (!companySeat) {
+        setError(t("register.seatRequired"));
+        return;
+      }
+    }
+
+    const termsAcceptedAt = new Date().toISOString();
+    setSaving(true);
+    try {
+      if (onSite && listOnServices) {
+        joinProfessional({
           name: fullName,
           email,
           phone,
-          whatsapp,
-          lineId,
+          whatsapp: "",
+          lineId: "",
           description: "",
-          availability,
-          categoryIds,
-          areaIds,
-          languages,
+          availability: "",
+          categoryIds: [],
+          areaIds: [],
+          languages: [locale],
           listNow: false,
           referrer: referralCode,
           emailOptIn: emails,
           termsAcceptedAt,
-        }).id;
-        setListingId(createdListing);
-      } else if (plan) {
+        });
+      } else if (!onSite && plan) {
         recordSignup({
           name: fullName.trim(),
           email: email.trim(),
@@ -248,7 +346,10 @@ export default function RegisterPage() {
       }
 
       if (isDemoMode()) {
-        if (track === "maintenance") return;
+        if (onSite) {
+          router.replace(listOnServices ? servicesHref + "settings" : "/home");
+          return;
+        }
         throw new Error(DEMO_READ_ONLY_MESSAGE);
       }
 
@@ -266,37 +367,38 @@ export default function RegisterPage() {
             phone,
             password,
             orgName: workspaceName,
-            kind: track === "maintenance" || plan === "personal" ? "personal" : "company",
-            role: track === "maintenance" ? undefined : plan === "company" ? companySeat : "owner",
-            payer: plan === "company" ? payer : undefined,
-            track,
+            kind: onSite || plan === "personal" ? "personal" : "company",
+            role: onSite ? "staff" : plan === "company" ? companySeat : "owner",
+            payer: !onSite && plan === "company" ? payer ?? companySeat ?? "owner" : undefined,
+            position: onSite ? "staff" : "management",
+            track: onSite ? "maintenance" : "management",
+            listOnServices: onSite ? listOnServices : false,
             referredBy: referralCode,
             acquisitionSource,
             termsAcceptedAt,
             emailOptIn: emails,
-            service:
-              track === "maintenance"
-                ? {
-                    skills: talentSkillsForCategories(categoryIds),
-                    bio: availability.trim() ? `Available: ${availability.trim()}` : "",
-                    location: areaLabels(areaIds).join(", "),
-                    country: "Thailand",
-                    listNow: false,
-                  }
-                : undefined,
+            service: onSite
+              ? {
+                  skills: ["maintenance"],
+                  listNow: false,
+                }
+              : undefined,
           }),
         });
         const payload = (await res.json()) as { error?: string };
         if (!res.ok) throw new Error(payload.error ?? "Could not register.");
         const { createClient } = await import("@/lib/supabase/client");
-        const supabase = createClient();
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await createClient().auth.signInWithPassword({
           email: email.trim().toLowerCase(),
           password,
         });
         if (signInError) throw signInError;
       });
-      router.replace(track === "maintenance" ? "/settings" : "/setup-passkey");
+      if (onSite && listOnServices) {
+        window.location.href = `${servicesHref.replace(/\/$/, "")}/settings`;
+        return;
+      }
+      router.replace("/setup-passkey");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not register.");
@@ -327,104 +429,119 @@ export default function RegisterPage() {
           </h1>
         </div>
 
-        {ready ? (
-        <div className="grid grid-cols-2 gap-3">
-          <Choice
-            icon={<ServicesMark className="size-7" />}
-            title={t("register.maintenance")}
-            description={t("register.maintenanceHint")}
-            active={track === "maintenance"}
-            onClick={() => {
-              setTrack("maintenance");
-              setPlan(null);
-              setError(null);
-              setListingId(null);
-              setAccepted(false);
-            }}
-          />
-          {onServices ? (
+        {/* Services host: seeker vs professional only */}
+        {ready && onServices ? (
+          <div className="grid grid-cols-2 gap-2">
             <Choice
-              icon={<PulseIcon name="search" className="size-5" />}
+              compact
+              icon={<PulseIcon name="maintenance" className="size-3.5" />}
+              title={t("register.proTitle")}
+              description={t("register.proHint")}
+              active={track === "maintenance"}
+              onClick={() => {
+                setTrack("maintenance");
+                setError(null);
+                setListingId(null);
+                setAccepted(false);
+              }}
+            />
+            <Choice
+              compact
+              icon={<PulseIcon name="search" className="size-3.5" />}
               title={t("register.seeking")}
               description={t("register.seekingHint")}
               active={track === "customer"}
               onClick={() => {
                 setTrack("customer");
-                setPlan(null);
                 setError(null);
                 setListingId(null);
                 setAccepted(false);
               }}
-            />
-          ) : (
-            <Choice
-              icon={<PulseIcon name="properties" className="size-5" />}
-              title={t("register.management")}
-              description={t("register.managementHint")}
-              active={track === "management"}
-              onClick={() => {
-                setTrack("management");
-                setError(null);
-                setListingId(null);
-                setAccepted(false);
-              }}
-            />
-          )}
-        </div>
-        ) : null}
-
-        {track === "management" ? (
-          <div className="mt-3 grid gap-3">
-            <Choice
-              icon={<PulseIcon name="home" className="size-5" />}
-              title={t("register.personalUse")}
-              description={t("register.personalPlanHint")}
-              active={plan === "personal"}
-              onClick={() => {
-                setPlan("personal");
-                setCompanySeat(null);
-                setPayer(null);
-              }}
-            />
-            <Choice
-              icon={<PulseIcon name="properties" className="size-5" />}
-              title={t("register.companyPlan")}
-              description={t("register.companyPlanHint")}
-              active={plan === "company"}
-              onClick={() => setPlan("company")}
             />
           </div>
         ) : null}
 
-        {track === "maintenance" || track === "customer" || (track === "management" && plan) ? (
+        {/* App host: two cards first; personal/company only after management */}
+        {ready && !onServices ? (
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <Choice
+                compact
+                icon={<PulseIcon name="properties" className="size-4" />}
+                title={t("register.positionManagement")}
+                description={t("register.positionManagementHint")}
+                active={position === "management"}
+                onClick={() => {
+                  setPosition("management");
+                  setPlan(null);
+                  setCompanySeat(null);
+                  setPayer(null);
+                  setListOnServices(false);
+                  setError(null);
+                }}
+              />
+              <Choice
+                compact
+                icon={<PulseIcon name="invite" className="size-4" />}
+                title={t("register.positionStaff")}
+                description={t("register.positionStaffHint")}
+                active={position === "staff"}
+                onClick={() => {
+                  setPosition("staff");
+                  setPlan("personal");
+                  setCompanySeat(null);
+                  setPayer(null);
+                  setError(null);
+                }}
+              />
+            </div>
+            {position === "management" && (
+              <div className="grid grid-cols-2 gap-2" key="management-plans">
+                <Choice
+                  compact
+                  icon={<PulseIcon name="home" className="size-4" />}
+                  title={t("register.personalUse")}
+                  description={t("register.personalPlanHint")}
+                  active={plan === "personal"}
+                  onClick={() => {
+                    setPlan("personal");
+                    setCompanySeat(null);
+                    setPayer(null);
+                  }}
+                />
+                <Choice
+                  compact
+                  icon={<PulseIcon name="properties" className="size-4" />}
+                  title={t("register.companyPlan")}
+                  description={t("register.companyPlanHint")}
+                  active={plan === "company"}
+                  onClick={() => setPlan("company")}
+                />
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {showServicesForm ? (
           <Card className="mt-4 space-y-2 p-4">
             {listingId ? (
               <div className="space-y-3">
                 <p className="text-sm font-semibold text-ink">{t("register.savedListing")}</p>
-                <p className="text-sm text-muted">
-                  The listing stays hidden until you open it.
-                </p>
+                <p className="text-sm text-muted">{t("register.listingStaysHidden")}</p>
                 <div className="flex gap-2">
-                  <Button className="flex-1" type="button" onClick={() => router.push(`/pros/p/${listingId}`)}>
+                  <Button className="flex-1" type="button" onClick={() => router.push(`/p/${listingId}`)}>
                     View profile
                   </Button>
-                  <Button className="flex-1" variant="secondary" type="button" onClick={() => router.push("/pros/find")}>
+                  <Button className="flex-1" variant="secondary" type="button" onClick={() => router.push("/find")}>
                     Directory
                   </Button>
                 </div>
               </div>
             ) : (
               <>
-                {track === "maintenance" ? (
-                  <p className="font-display text-lg font-semibold text-ink">
-                    {t("register.maintenanceLead")}
-                  </p>
-                ) : null}
-                {track === "customer" ? (
-                  <p className="font-display text-lg font-semibold text-ink">
-                    {t("register.seeking")}
-                  </p>
-                ) : null}
+                <p className="font-display text-lg font-semibold text-ink">
+                  {track === "maintenance" ? t("register.proTitle") : t("register.seeking")}
+                </p>
                 <div>
                   <Label>Full name</Label>
                   <Input value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" />
@@ -433,15 +550,12 @@ export default function RegisterPage() {
                   <Label>Email</Label>
                   <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
                 </div>
-                {track !== "customer" ? (
-                  <div>
-                    <Label>Phone (optional)</Label>
-                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
-                  </div>
-                ) : null}
-
                 {track === "maintenance" ? (
                   <>
+                    <div>
+                      <Label>Phone (optional)</Label>
+                      <Input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
+                    </div>
                     <p className="text-xs leading-relaxed text-muted">{t("register.contactEither")}</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
@@ -514,57 +628,6 @@ export default function RegisterPage() {
                     </div>
                   </>
                 ) : null}
-
-                {plan === "company" ? (
-                  <>
-                    <div>
-                      <Label>Company name</Label>
-                      <Input
-                        value={orgName}
-                        onChange={(e) => setOrgName(e.target.value)}
-                        placeholder="Phangan Properties Co."
-                      />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-ink">{t("register.yourRole")}</p>
-                      <div className="mt-2 grid gap-2">
-                        <Choice
-                          icon={<PulseIcon name="properties" className="size-5" />}
-                          title={t("register.seatOwner")}
-                          description={t("register.seatOwnerHint")}
-                          active={companySeat === "owner"}
-                          onClick={() => setCompanySeat("owner")}
-                        />
-                        <Choice
-                          icon={<PulseIcon name="contacts" className="size-5" />}
-                          title={t("register.seatManager")}
-                          description={t("register.seatManagerHint")}
-                          active={companySeat === "manager"}
-                          onClick={() => setCompanySeat("manager")}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-ink">{t("register.whoPays")}</p>
-                      <div className="mt-2 grid grid-cols-2 gap-2">
-                        <ChipButton active={payer === "owner"} label={t("register.whoPaysOwner")} onClick={() => setPayer("owner")} />
-                        <ChipButton active={payer === "manager"} label={t("register.whoPaysManager")} onClick={() => setPayer("manager")} />
-                      </div>
-                    </div>
-                  </>
-                ) : null}
-
-                {plan === "personal" ? (
-                  <div>
-                    <Label>Workspace name (optional)</Label>
-                    <Input
-                      value={orgName}
-                      onChange={(e) => setOrgName(e.target.value)}
-                      placeholder="Sam's properties"
-                    />
-                  </div>
-                ) : null}
-
                 <div>
                   <Label>Password</Label>
                   <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
@@ -574,42 +637,175 @@ export default function RegisterPage() {
                   <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
                 </div>
                 {error ? <p className="text-sm font-semibold text-danger">{error}</p> : null}
-                {plan === "company" && companySeat && payer ? (
-                  <p className="text-xs text-muted">
-                    {youPay ? (
-                      <>
-                        {t("register.trialNow")}{" "}
-                        <Link href="/terms" className="font-semibold text-primary">Terms</Link>
-                        {" and "}
-                        <Link href="/privacy" className="font-semibold text-primary">Privacy</Link>.
-                      </>
-                    ) : (
-                      t("register.limitedUntil")
-                    )}
-                  </p>
-                ) : null}
-                {track === "management" && !(plan === "company" && youPay) ? (
-                  <p className="text-xs leading-relaxed text-muted">
-                    By creating an account you agree to the Pulse Flow{" "}
-                    <Link href="/terms" className="font-semibold text-primary">Terms</Link>
-                    {" and "}
-                    <Link href="/privacy" className="font-semibold text-primary">Privacy</Link>.
-                  </p>
-                ) : null}
-                {track === "maintenance" || track === "customer" ? (
-                  <LegalAccept
-                    audience={track === "maintenance" ? "staff" : "customer"}
-                    accepted={accepted}
-                    onAccepted={setAccepted}
-                    emails={emails}
-                    onEmails={setEmails}
-                  />
-                ) : null}
-                <Button className="w-full" busy={saving} disabled={(track === "maintenance" || track === "customer") && !accepted} onClick={() => void submit()}>
+                <LegalAccept
+                  audience={track === "maintenance" ? "staff" : "customer"}
+                  accepted={accepted}
+                  onAccepted={setAccepted}
+                  emails={emails}
+                  onEmails={setEmails}
+                />
+                <Button className="w-full" busy={saving} disabled={!accepted} onClick={() => void submitServices()}>
                   {saving ? "Creating…" : "Create account"}
                 </Button>
               </>
             )}
+          </Card>
+        ) : null}
+
+        {showAppForm ? (
+          <Card className="mt-4 space-y-2 p-4">
+            <div>
+              <Label>Full name</Label>
+              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" />
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+            </div>
+            <div>
+              <Label>Phone (optional)</Label>
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
+            </div>
+
+            {position === "management" && plan === "company" ? (
+              <>
+                <div>
+                  <Label>Company name</Label>
+                  <Input
+                    value={orgName}
+                    onChange={(e) => setOrgName(e.target.value)}
+                    placeholder="Phangan Properties Co."
+                  />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-ink">{t("register.yourRole")}</p>
+                  <div className="mt-2 grid gap-2">
+                    <Choice
+                      icon={<PulseIcon name="properties" className="size-5" />}
+                      title={t("register.seatOwner")}
+                      description={t("register.seatOwnerHint")}
+                      active={companySeat === "owner"}
+                      onClick={() => {
+                        setCompanySeat("owner");
+                        setPayer("owner");
+                      }}
+                    />
+                    <Choice
+                      icon={<PulseIcon name="contacts" className="size-5" />}
+                      title={t("register.seatManager")}
+                      description={t("register.seatManagerHint")}
+                      active={companySeat === "manager"}
+                      onClick={() => {
+                        setCompanySeat("manager");
+                        setPayer("manager");
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-[var(--color-border)] bg-canvas-deep/60 p-3">
+                  <p className="text-sm font-semibold text-ink">{t("register.whoPays")}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted">
+                    {t("register.billingInactive")}{" "}
+                    <a
+                      href="https://www.pulseflow.site/#plans"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-primary"
+                    >
+                      {t("register.seePlans")}
+                    </a>
+                  </p>
+                  <div
+                    className="pointer-events-none mt-2 grid select-none grid-cols-2 gap-2 opacity-55"
+                    aria-disabled="true"
+                  >
+                    <ChipButton active={false} label={t("register.whoPaysOwner")} onClick={() => undefined} />
+                    <ChipButton active={false} label={t("register.whoPaysManager")} onClick={() => undefined} />
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {position === "management" && plan === "personal" ? (
+              <div>
+                <Label>Workspace name (optional)</Label>
+                <Input
+                  value={orgName}
+                  onChange={(e) => setOrgName(e.target.value)}
+                  placeholder="Sam's properties"
+                />
+              </div>
+            ) : null}
+
+            {position === "staff" ? (
+              <div className="space-y-2 rounded-2xl bg-canvas-deep p-3">
+                <label className="flex items-start gap-3 text-sm text-ink">
+                  <input
+                    type="checkbox"
+                    className="mt-1 size-4 accent-[var(--color-primary)]"
+                    checked={listOnServices}
+                    onChange={(e) => setListOnServices(e.target.checked)}
+                  />
+                  <span>
+                    <span className="font-semibold">{t("register.listOnServices")}</span>
+                    <span className="mt-1 block text-xs leading-relaxed text-muted">
+                      {t("register.listOnServicesHint")}{" "}
+                      <a
+                        href={MARKETING_SERVICES}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-semibold text-primary"
+                      >
+                        {t("register.whatIsServices")}
+                      </a>
+                    </span>
+                  </span>
+                </label>
+              </div>
+            ) : null}
+
+            <div>
+              <Label>Password</Label>
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
+            </div>
+            <div>
+              <Label>Confirm password</Label>
+              <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+            </div>
+            {error ? <p className="text-sm font-semibold text-danger">{error}</p> : null}
+            {position === "management" ? (
+              <p className="text-xs leading-relaxed text-muted">
+                By creating an account you agree to the Pulse Flow{" "}
+                <Link href="/terms" className="font-semibold text-primary">Terms</Link>
+                {" and "}
+                <Link href="/privacy" className="font-semibold text-primary">Privacy</Link>.
+              </p>
+            ) : null}
+            {position === "staff" && !listOnServices ? (
+              <p className="text-xs leading-relaxed text-muted">
+                By creating an account you agree to the Pulse Flow{" "}
+                <Link href="/terms" className="font-semibold text-primary">Terms</Link>
+                {" and "}
+                <Link href="/privacy" className="font-semibold text-primary">Privacy</Link>.
+              </p>
+            ) : null}
+            {position === "staff" && listOnServices ? (
+              <LegalAccept
+                audience="staff"
+                accepted={accepted}
+                onAccepted={setAccepted}
+                emails={emails}
+                onEmails={setEmails}
+              />
+            ) : null}
+            <Button
+              className="w-full"
+              busy={saving}
+              disabled={position === "staff" && listOnServices && !accepted}
+              onClick={() => void submitApp()}
+            >
+              {saving ? "Creating…" : "Create account"}
+            </Button>
           </Card>
         ) : null}
 
@@ -621,8 +817,10 @@ export default function RegisterPage() {
         ) : null}
         {ready && !onServices ? (
           <p className="mt-4 text-center text-sm text-muted">
-            Looking for house maintenance services specifically?{" "}
-            <a href={servicesHref} className="font-semibold text-primary">Click here</a>
+            {t("register.lookingForServices")}{" "}
+            <a href={servicesHref} className="font-semibold text-primary">
+              {t("register.goToServices")}
+            </a>
           </p>
         ) : null}
         <p className="mt-2 text-center text-sm text-muted">
@@ -640,27 +838,37 @@ function Choice({
   description,
   active,
   onClick,
+  compact = false,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
   active: boolean;
   onClick: () => void;
+  compact?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-2xl border px-3 py-3 text-start transition",
+        "rounded-2xl border text-start transition",
+        compact ? "px-2.5 py-2" : "px-3 py-3",
         active ? "border-primary bg-primary/10" : "border-[var(--color-border)] bg-card",
       )}
     >
-      <div className="flex items-center gap-2 font-semibold text-ink">
-        <span className="text-primary">{icon}</span>
-        {title}
+      <div
+        className={cn(
+          "flex items-center gap-1.5 font-semibold text-ink",
+          compact ? "text-sm leading-snug" : "",
+        )}
+      >
+        <span className="shrink-0 text-primary">{icon}</span>
+        <span className="min-w-0">{title}</span>
       </div>
-      <p className="mt-1 text-xs text-muted">{description}</p>
+      <p className={cn("text-xs leading-snug text-muted", compact ? "mt-0.5 line-clamp-2" : "mt-1")}>
+        {description}
+      </p>
     </button>
   );
 }

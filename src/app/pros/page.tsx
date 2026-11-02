@@ -1,58 +1,63 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { NeedBrief } from "@/components/pros/need-brief";
-import { CategoryIcon, ProCard } from "@/components/pros/parts";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { localizedName } from "@/lib/pros/catalog";
-import { allCategories } from "@/lib/pros/matching";
+import { GuestAuthStrip } from "@/components/pros/guest-auth-strip";
+import { HomeScreen } from "@/components/pros/home-screen";
+import { ProCard } from "@/components/pros/parts";
+import { statusKey } from "@/lib/pros/i18n";
+import {
+  isServicesWorker,
+  readMyListingId,
+  serviceInviteCode,
+  serviceInviteUrl,
+} from "@/lib/pros/join";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
-import { useI18n } from "@/lib/i18n/provider";
-
-/** Wider chips go down first so a shorter one can sit in the gap and the list uses fewer lines. */
-function packCategoryIds(
-  categories: { id: string }[],
-  widths: Map<string, number>,
-  maxWidth: number,
-  gap: number,
-) {
-  const ordered = [...categories].sort(
-    (a, b) => (widths.get(b.id) ?? 0) - (widths.get(a.id) ?? 0),
-  );
-  const rows: { ids: string[]; used: number }[] = [];
-  for (const cat of ordered) {
-    const width = widths.get(cat.id) ?? 0;
-    let placed = false;
-    for (const row of rows) {
-      if (row.used + gap + width <= maxWidth - 1) {
-        row.ids.push(cat.id);
-        row.used += gap + width;
-        placed = true;
-        break;
-      }
-    }
-    if (!placed) rows.push({ ids: [cat.id], used: width });
-  }
-  return rows.flatMap((row) => row.ids);
-}
 
 export default function ProsHomePage() {
   const { state, actor, t } = usePros();
-  const { locale } = useI18n();
-  const router = useRouter();
   const pathname = usePathname();
   const to = (path: string) => servicesPath(pathname, path);
-  const [needOpen, setNeedOpen] = useState(false);
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
-  const categoryListRef = useRef<HTMLDivElement>(null);
-  const [packedIds, setPackedIds] = useState<string[] | null>(null);
-  const categories = allCategories(state).filter((c) => c.active);
-  const categoryKey = categories.map((cat) => cat.id).join("|");
-  const categoriesRef = useRef(categories);
-  categoriesRef.current = categories;
+  const [worker, setWorker] = useState(false);
+  const [listingId, setListingId] = useState<string | null>(null);
+  const [inviteLink, setInviteLink] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const id = readMyListingId();
+    setListingId(id);
+    setWorker(Boolean(actor) && (isServicesWorker() || Boolean(id)));
+    if (typeof window !== "undefined") {
+      serviceInviteCode();
+      setInviteLink(serviceInviteUrl(window.location.origin));
+    }
+  }, [actor]);
+
+  const listing = listingId
+    ? state.profiles.find((row) => row.id === listingId) ?? null
+    : null;
+  const inboxPending = useMemo(() => {
+    if (!listingId) return [];
+    return state.offers.filter(
+      (offer) => offer.profileId === listingId && offer.status === "pending",
+    );
+  }, [listingId, state.offers]);
+  const nextJob = useMemo(() => {
+    if (!listingId) return null;
+    const statuses = new Set(["chosen", "scheduled", "in_progress", "awaiting_approval"]);
+    return (
+      state.requests.find(
+        (row) => row.chosenProfileId === listingId && statuses.has(row.status),
+      ) ?? null
+    );
+  }, [listingId, state.requests]);
+  const profileGaps =
+    listing &&
+    (!listing.photoUrl || !listing.categoryIds.length || !listing.areaIds.length);
+
   const active = actor
     ? state.requests.filter(
         (row) => row.createdBy === actor.id && row.status !== "completed" && row.status !== "cancelled",
@@ -73,126 +78,177 @@ export default function ProsHomePage() {
     .filter((pro): pro is NonNullable<typeof pro> => Boolean(pro && pro.status === "active"))
     .slice(0, 4);
 
-  useLayoutEffect(() => {
-    if (!categoriesOpen) return;
-    const wrap = categoryListRef.current;
-    if (!wrap) return;
+  if (worker && listing) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="type-title text-ink">{t("workerHome")}</h1>
+          <p className="mt-1 text-sm text-muted">{listing.name}</p>
+        </div>
 
-    const pack = () => {
-      const list = categoriesRef.current;
-      const style = getComputedStyle(wrap);
-      const gap = Number.parseFloat(style.columnGap) || 0;
-      const pad =
-        (Number.parseFloat(style.paddingLeft) || 0) +
-        (Number.parseFloat(style.paddingRight) || 0);
-      const maxWidth = wrap.clientWidth - pad;
-      if (maxWidth <= 0) return;
-      const widths = new Map<string, number>();
-      for (const node of wrap.querySelectorAll<HTMLElement>("[data-cat]")) {
-        const id = node.dataset.cat;
-        if (!id) continue;
-        widths.set(id, node.getBoundingClientRect().width);
-      }
-      if (list.some((cat) => !widths.has(cat.id))) return;
-      const next = packCategoryIds(list, widths, maxWidth, gap);
-      setPackedIds((prev) =>
-        prev && prev.length === next.length && prev.every((id, i) => id === next[i])
-          ? prev
-          : next,
-      );
-    };
+        <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+          <h2 className="text-sm font-semibold text-ink">{t("listingStatus")}</h2>
+          <p className="text-sm text-muted">
+            {listing.status === "suspended"
+              ? t("suspend")
+              : listing.visibility === "public"
+                ? t("listingOpen")
+                : t("listingHidden")}
+          </p>
+          {profileGaps ? <p className="text-sm text-muted">{t("profileChecklist")}</p> : null}
+          <Link href={to("/settings")} className="inline-flex text-sm font-semibold text-primary">
+            {t("settings")}
+          </Link>
+        </section>
 
-    pack();
-    const observer = new ResizeObserver(pack);
-    observer.observe(wrap);
-    return () => observer.disconnect();
-  }, [categoriesOpen, categoryKey, locale]);
+        <section className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-ink">{t("inbox")}</h2>
+            <Link href={to("/inbox")} className="text-xs font-semibold text-primary">
+              {t("inbox")}
+            </Link>
+          </div>
+          {inboxPending.length === 0 ? <p className="text-sm text-muted">{t("noInbox")}</p> : null}
+          {inboxPending.slice(0, 3).map((offer) => {
+            const request = state.requests.find((row) => row.id === offer.requestId);
+            return (
+              <Link
+                key={offer.id}
+                href={to(`/reply/${offer.token}`)}
+                className="block rounded-2xl border border-[var(--color-border)] bg-card px-3 py-3"
+              >
+                <p className="text-sm font-semibold text-ink">{request?.title ?? t("replyNow")}</p>
+                <p className="text-xs text-muted">{t("replyNow")}</p>
+              </Link>
+            );
+          })}
+        </section>
 
-  const shownCategories = packedIds
-    ? [
-        ...packedIds
-          .map((id) => categories.find((cat) => cat.id === id))
-          .filter((cat): cat is (typeof categories)[number] => Boolean(cat)),
-        ...categories.filter((cat) => !packedIds.includes(cat.id)),
-      ]
-    : categories;
+        <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+          <h2 className="text-sm font-semibold text-ink">{t("nextJob")}</h2>
+          {nextJob ? (
+            <Link href={to(`/requests/${nextJob.id}`)} className="block">
+              <p className="text-sm font-semibold text-ink">{nextJob.title}</p>
+              <p className="text-xs text-muted">{t(statusKey(nextJob.status))}</p>
+            </Link>
+          ) : (
+            <p className="text-sm text-muted">{t("noInbox")}</p>
+          )}
+        </section>
+
+        <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+          <h2 className="text-sm font-semibold text-ink">{t("shareInvite")}</h2>
+          <p className="text-sm text-muted">{t("inviteHint")}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="min-h-12 w-full"
+            onClick={() => {
+              const link = serviceInviteUrl(window.location.origin, { as: "pro" });
+              setInviteLink(link);
+              void navigator.clipboard.writeText(link).then(() => setCopied(true));
+            }}
+          >
+            {copied ? t("copied") : t("copyInvite")}
+          </Button>
+          {inviteLink ? <p className="break-all text-xs text-muted">{inviteLink}</p> : null}
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="type-title text-ink">{t("tagline")}</h1>
-      </div>
-      <div className="grid gap-2">
-        <Button className="min-h-12 w-full" reflectGlobalBusy={false} onClick={() => router.push(to("/find"))}>
-          {t("findProfessional")}
-        </Button>
-        <Button variant="ghost" className="min-h-12 w-full" reflectGlobalBusy={false} onClick={() => router.push(to("/request"))}>
-          {t("describeNeed")}
-        </Button>
-      </div>
-      <section className="rounded-2xl border border-[var(--color-border)] bg-card soft-shadow">
-        <button
-          type="button"
-          className="flex min-h-12 w-full items-center gap-3 px-3 text-start text-sm font-semibold text-ink"
-          aria-expanded={needOpen}
-          onClick={() => setNeedOpen((open) => !open)}
-        >
-          <span className="min-w-0 flex-1">{t("searchPlaceholder")}</span>
-          <span className="shrink-0 text-xs font-semibold text-muted">{t("agentMode")}</span>
-        </button>
-        {needOpen ? (
-          <div className="px-3 pb-3">
-            <NeedBrief embedded />
-          </div>
-        ) : null}
-      </section>
-      {active.length > 0 ? (
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-ink">{t("active")}</h2>
-          {active.slice(0, 3).map((row) => (
-            <Link key={row.id} href={to(`/requests/${row.id}`)} className="block rounded-2xl border border-[var(--color-border)] bg-card px-3 py-3">
-              <p className="text-sm font-semibold text-ink">{row.title}</p>
+      <HomeScreen />
+
+      {actor ? (
+        <section className="animate-rise-delay space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-base font-bold tracking-[-0.02em] text-ink">
+              {t("openRequests")}
+            </h2>
+            <Link href={to("/request")} className="text-xs font-semibold text-primary">
+              {t("newRequestCta")}
             </Link>
-          ))}
+          </div>
+          {active.length === 0 ? (
+            <p className="text-sm text-muted">{t("emptyRequests")}</p>
+          ) : (
+            active.slice(0, 4).map((row) => (
+              <Link
+                key={row.id}
+                href={to(`/requests/${row.id}`)}
+                className="block rounded-2xl border border-[var(--color-border)] bg-card px-3 py-3 soft-shadow transition active:scale-[0.99]"
+              >
+                <p className="text-sm font-semibold text-ink">{row.title}</p>
+                <p className="text-xs text-muted">{t(statusKey(row.status))}</p>
+              </Link>
+            ))
+          )}
+        </section>
+      ) : (
+        <GuestAuthStrip className="animate-rise-delay" nextPath="/" />
+      )}
+
+      {!listing ? (
+        <section
+          id="for-pros"
+          className="space-y-3 rounded-2xl border border-[color-mix(in_srgb,var(--color-sun)_34%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-sun)_12%,var(--color-card))] p-4 soft-shadow"
+        >
+          <div>
+            <p className="type-sign text-[var(--color-ink)]">{t("providerHomeTitle")}</p>
+            <p className="mt-1 text-sm leading-snug text-muted">{t("providerHomeBody")}</p>
+          </div>
+          <Link
+            href={to("/register?as=pro")}
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-cta)] transition hover:brightness-[1.03] active:scale-[0.98]"
+          >
+            {t("providerHomeCta")}
+          </Link>
         </section>
       ) : null}
+
+      {actor ? (
+        <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4 soft-shadow">
+          <h2 className="font-display text-sm font-bold tracking-[-0.02em] text-ink">
+            {t("shareInvite")}
+          </h2>
+          <p className="text-sm text-muted">{t("inviteHint")}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="min-h-12 w-full rounded-full"
+            onClick={() => {
+              const link = serviceInviteUrl(window.location.origin, { as: "seeker" });
+              setInviteLink(link);
+              void navigator.clipboard.writeText(link).then(() => setCopied(true));
+            }}
+          >
+            {copied ? t("copied") : t("copyInvite")}
+          </Button>
+        </section>
+      ) : null}
+
       {saved.length > 0 ? (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-ink">{t("favourites")}</h2>
-          {saved.map((pro) => <ProCard key={pro.id} pro={pro} />)}
+          <h2 className="font-display text-base font-bold tracking-[-0.02em] text-ink">
+            {t("favourites")}
+          </h2>
+          {saved.map((pro) => (
+            <ProCard key={pro.id} pro={pro} />
+          ))}
         </section>
       ) : null}
       {recent.length > 0 ? (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-ink">{t("recent")}</h2>
-          {recent.map((pro) => <ProCard key={pro.id} pro={pro} />)}
+          <h2 className="font-display text-base font-bold tracking-[-0.02em] text-ink">
+            {t("recent")}
+          </h2>
+          {recent.map((pro) => (
+            <ProCard key={pro.id} pro={pro} />
+          ))}
         </section>
       ) : null}
-      <section className="rounded-2xl border border-[var(--color-border)] bg-card soft-shadow">
-        <button
-          type="button"
-          className="flex min-h-12 w-full items-center px-3 text-start text-sm font-semibold text-ink"
-          aria-expanded={categoriesOpen}
-          onClick={() => setCategoriesOpen((open) => !open)}
-        >
-          {t("popular")}
-        </button>
-        {categoriesOpen ? (
-          <div ref={categoryListRef} className="flex flex-wrap items-start gap-1.5 px-3 pb-3">
-            {shownCategories.map((cat) => (
-              <Link
-                key={cat.id}
-                data-cat={cat.id}
-                href={to(`/c/${cat.slug}`)}
-                className="inline-flex min-h-8 max-w-full items-center gap-1 rounded-xl border border-[var(--color-border)] bg-canvas px-2 py-1"
-              >
-                <CategoryIcon name={cat.icon} className="size-[0.875rem]" />
-                <span className="text-xs font-semibold leading-tight text-ink">{localizedName(cat.names, locale)}</span>
-              </Link>
-            ))}
-          </div>
-        ) : null}
-      </section>
     </div>
   );
 }

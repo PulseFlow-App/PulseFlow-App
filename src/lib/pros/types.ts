@@ -1,4 +1,7 @@
-export type ProsLang = "en" | "th" | "ru" | "he";
+import type { Locale } from "@/lib/i18n/types";
+
+/** Same languages as the Pulse Flow operations app. */
+export type ProsLang = Locale;
 
 export type ProsStatus =
   | "requested"

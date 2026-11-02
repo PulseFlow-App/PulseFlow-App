@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { readPhoto } from "@/components/pros/parts";
 import { ProsProvider, usePros } from "@/lib/pros/store";
+import { LOCALE_META } from "@/lib/i18n";
 import { PROS_LANGS, localizedName } from "@/lib/pros/catalog";
 import { allAreas, allCategories } from "@/lib/pros/matching";
 import { useData } from "@/lib/data/use-app-data";
@@ -132,7 +133,7 @@ function Editor() {
           {PROS_LANGS.map((lang) => (
             <label key={lang} className="flex min-h-12 items-center gap-2 text-sm">
               <input type="checkbox" checked={draft.languages.includes(lang)} onChange={() => toggle("languages", lang)} />
-              {lang}
+              {LOCALE_META[lang].native}
             </label>
           ))}
         </div>

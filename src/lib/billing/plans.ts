@@ -8,14 +8,15 @@ import type { MessageKey } from "@/lib/i18n";
 
 /**
  * List prices (USD / month) when software billing is live.
- * Company covers the org; Pro is a flat add-on on Personal or Company.
+ * Company covers the org (10 seats included). Pro is a clear monthly price
+ * on Personal or Company (agent AI), not a “+$X on top” surcharge label.
  * Stay guests do not count toward included seats.
  */
 export const PRICING = {
   companyMonthlyUsd: 15,
   includedSeats: 10,
   extraSeatMonthlyUsd: 2,
-  proMonthlyUsd: 9,
+  proMonthlyUsd: 24,
 } as const;
 
 /** Purchasable / display tiers. Manager reporting is included with Full, not a separate tier. */

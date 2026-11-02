@@ -954,9 +954,9 @@ const en = {
   "plan.note.ownerTrial":
     "Full company features for about 90 days. Invite your team anytime. Billing is not charged yet.",
   "plan.note.ownerFull":
-    "Company is USD 15 / month with 10 seats included; extra seats USD 2 / month. Pro adds USD 9. Managers get reporting automatically.",
+    "Company is USD 15 / month with 10 seats included; extra seats USD 2 / month. Pro is USD 24 / month. Managers get reporting automatically.",
   "plan.note.ownerExpired":
-    "Company Full has ended. Subscribe (USD 15 / month, 10 seats; +USD 2 / extra seat; Pro +USD 9) to reopen invites, company properties, and service orders.",
+    "Company Full has ended. Subscribe (Company USD 15 / month, 10 seats; +USD 2 / extra seat; Pro USD 24 / month) to reopen invites, company properties, and service orders.",
   "plan.referralTitle": "Invite 5 people → Get 1 year Full free",
   "plan.referralHint":
     "Copy your referral link in Profile. Inviting someone to the app or as staff to your company both count. When billing starts, 5 credited joins unlock 1 year of Full from that date.",
@@ -1620,15 +1620,31 @@ const en = {
   "register.maintenance": "Maintenance Staff",
   "register.managementHint": "Run properties, bills, and a team.",
   "register.maintenanceHint": "Offer local services and list for work.",
+  "register.positionTitle": "How will you use Pulse Flow?",
+  "register.positionManagement": "Property management",
+  "register.positionManagementHint": "Track villas, bills, tasks, and your team.",
+  "register.positionStaff": "On-site staff",
+  "register.positionStaffHint": "Cleaner, maintenance, or other field work for a property team.",
+  "register.listOnServices": "Also list me on Pulse Flow Services",
+  "register.listOnServicesHint":
+    "Optional. People nearby can find you for local jobs. Your listing stays hidden until you open it.",
+  "register.whatIsServices": "What is Pulse Flow Services?",
+  "register.lookingForServices": "Looking for local house maintenance?",
+  "register.goToServices": "Go to Pulse Flow Services",
+  "register.proTitle": "I’m a professional",
+  "register.proHint": "Create a free listing so people nearby can find you.",
+  "register.listingStaysHidden": "The listing stays hidden until you open it.",
   "register.personalPlanHint":
     "Choose this plan if you simply want to track your work, bills and contacts in one place.",
   "register.companyPlan": "Company plan",
   "register.companyPlanHint":
     "Choose this plan if you are an owner or a manager of a company, able to invite your staff and have the whole team onboard.",
   "register.yourRole": "Your role",
-  "register.whoPays": "Who pays",
-  "register.whoPaysOwner": "Owner pays",
-  "register.whoPaysManager": "Manager pays",
+  "register.whoPays": "Subscription billing",
+  "register.whoPaysOwner": "Owner",
+  "register.whoPaysManager": "Manager",
+  "register.billingInactive": "Billing isn't active yet.",
+  "register.seePlans": "See plans",
   "register.limitedUntil":
     "No payment is taken. The company stays on a limited trial until the person who pays accepts their invite.",
   "register.trialNow":
@@ -1648,6 +1664,10 @@ const en = {
   "register.listNowHint":
     "Leave this off to finish the profile first. You can turn it on later in Settings.",
   "register.savedListing": "Your professional profile is saved.",
+  "join.listOnServices": "Also list me on Pulse Flow Services",
+  "join.listOnServicesHint":
+    "Optional. People nearby can find you for local jobs. Your listing stays hidden until you open it.",
+  "join.whatIsServices": "What is Pulse Flow Services?",
   "register.howTitle": "Create an account",
   "register.seatTitle": "Your seat in the company",
   "register.companyTitle": "Create your company",

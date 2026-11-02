@@ -1,35 +1,114 @@
 import { prosLang } from "@/lib/pros/catalog";
+import { PROS_EXTRA_LOCALES } from "@/lib/pros/i18n-extra";
 
 export const PRODUCT_NAME = "Pulse Flow Services";
 
 const COPY = {
   productName: { en: PRODUCT_NAME, th: PRODUCT_NAME, ru: PRODUCT_NAME, he: PRODUCT_NAME },
   tagline: {
-    en: "Local services, made accessible",
-    th: "บริการใกล้คุณ เข้าถึงได้ง่าย",
-    ru: "Местные услуги — просто найти",
-    he: "שירותים מקומיים, בלי סיבוך",
+    en: "Something broke? Find a local pro.",
+    th: "ของเสีย? หาช่างใกล้คุณ",
+    ru: "Что-то сломалось? Найдите мастера рядом.",
+    he: "משהו התקלקל? מצאו בעל מקצוע מקומי.",
+  },
+  languagesLine: {
+    en: "Plumbers, electricians, cleaners and more, in your language.",
+    th: "ช่างประปา ช่างไฟ แม่บ้าน และอื่นๆ ในภาษาของคุณ",
+    ru: "Сантехники, электрики, клининг и другие — на вашем языке.",
+    he: "אינסטלטורים, חשמלאים, ניקיון ועוד — בשפה שלכם.",
+  },
+  providerHomeTitle: {
+    en: "Offer your services",
+    th: "เสนอบริการของคุณ",
+    ru: "Предложите свои услуги",
+    he: "הציעו את השירותים שלכם",
+  },
+  providerHomeBody: {
+    en: "Maintenance staff and tradespeople: create a free listing so people nearby can find you.",
+    th: "ทีมซ่อมบำรุงและช่างฝีมือ: สร้างโปรไฟล์ฟรีให้คนใกล้เคียงหาคุณเจอ",
+    ru: "Техники и специалисты: создайте бесплатный профиль, чтобы вас находили рядом.",
+    he: "צוותי תחזוקה ובעלי מקצוע: צרו כרטיס חינם כדי שאנשים באזור ימצאו אתכם.",
+  },
+  providerHomeCta: {
+    en: "Create my profile",
+    th: "สร้างโปรไฟล์",
+    ru: "Создать профиль",
+    he: "צרו פרופיל",
+  },
+  guestAuthEyebrow: {
+    en: "Save your shortlist",
+    th: "บันทึกรายการโปรด",
+    ru: "Сохраните короткий список",
+    he: "שמרו את הרשימה",
+  },
+  guestAuthTitle: {
+    en: "Sign up to request a quote",
+    th: "สมัครเพื่อขอใบเสนอราคา",
+    ru: "Зарегистрируйтесь, чтобы запросить цену",
+    he: "הירשמו כדי לבקש הצעת מחיר",
+  },
+  guestAuthBody: {
+    en: "Trial: 3 free orders, each followed by a review, then 1 free order a month. The plan is 9 USD a month and includes the AI assistant.",
+    th: "ทดลองใช้ 3 คำสั่งฟรี แต่ละครั้งตามด้วยรีวิว แล้วได้ 1 คำสั่งฟรีต่อเดือน แผน 9 ดอลลาร์ต่อเดือน รวมผู้ช่วย AI",
+    ru: "Пробный период: 3 бесплатных заказа, каждый с отзывом, затем 1 бесплатный заказ в месяц. План: 9 USD в месяц, включая ИИ-помощника.",
+    he: "ניסיון: 3 הזמנות חינם, כל אחת עם ביקורת, ואז הזמנה חינם אחת בחודש. המסלול הוא 9 דולר לחודש וכולל את עוזר הבינה המלאכותית.",
+  },
+  browseExpand: {
+    en: "Browse by category",
+    th: "เลือกตามหมวด",
+    ru: "Выбрать категорию",
+    he: "עיון לפי קטגוריה",
+  },
+  browseCollapse: {
+    en: "Hide categories",
+    th: "ซ่อนหมวด",
+    ru: "Скрыть категории",
+    he: "הסתר קטגוריות",
+  },
+  quickFind: {
+    en: "Find a pro",
+    th: "หาช่าง",
+    ru: "Найти мастера",
+    he: "מצאו בעל מקצוע",
+  },
+  quickRequest: {
+    en: "New request",
+    th: "คำขอใหม่",
+    ru: "Новая заявка",
+    he: "בקשה חדשה",
   },
   home: { en: "Home", th: "หน้าแรก", ru: "Главная", he: "בית" },
   find: { en: "Find", th: "ค้นหา", ru: "Поиск", he: "חיפוש" },
-  requests: { en: "Requests", th: "คำขอ", ru: "Заявки", he: "בקשות" },
+  requests: { en: "My requests", th: "คำขอของฉัน", ru: "Мои заявки", he: "הבקשות שלי" },
   searchPlaceholder: {
-    en: "What do you need fixed?",
-    th: "ต้องการซ่อมอะไร?",
+    en: "What needs fixing?",
+    th: "อะไรที่ต้องซ่อม?",
     ru: "Что нужно починить?",
     he: "מה צריך לתקן?",
   },
   agentMode: {
-    en: "AI Agent mode",
-    th: "โหมด AI Agent",
-    ru: "Режим AI Agent",
-    he: "מצב AI Agent",
+    en: "Ask the assistant",
+    th: "ถามผู้ช่วย",
+    ru: "Спросить помощника",
+    he: "שאלו את העוזר",
+  },
+  agentHint: {
+    en: "Describe the problem and we'll find the right pro.",
+    th: "อธิบายปัญหา แล้วเราจะหาช่างที่เหมาะให้",
+    ru: "Опишите проблему — подберём подходящего мастера.",
+    he: "תארו את הבעיה ונמצא את בעל המקצוע המתאים.",
   },
   searchHint: {
-    en: "A short note for the assistant: what broke, and where. It reads this and suggests one specialist. You confirm, then you send the request yourself.",
-    th: "โน้ตสั้น ๆ ให้ผู้ช่วยว่าอะไรเสีย และที่ไหน ผู้ช่วยอ่านแล้วเสนอช่างหนึ่งคน คุณยืนยัน แล้วส่งคำขอเอง",
-    ru: "Короткая заметка для помощника: что сломалось и где. Он предложит одного специалиста. Вы подтверждаете и сами отправляете заявку.",
-    he: "הערה קצרה לעוזר: מה התקלקל ואיפה. הוא מציע בעל מקצוע אחד. אתם מאשרים, ואז שולחים את הבקשה בעצמכם.",
+    en: "Describe the problem and we'll find the right pro. You confirm, then you send the request yourself.",
+    th: "อธิบายปัญหา แล้วเราจะหาช่างที่เหมาะให้ คุณยืนยัน แล้วส่งคำขอเอง",
+    ru: "Опишите проблему — подберём подходящего мастера. Вы подтверждаете и сами отправляете заявку.",
+    he: "תארו את הבעיה ונמצא את בעל המקצוע המתאים. אתם מאשרים, ואז שולחים את הבקשה בעצמכם.",
+  },
+  browseByCategory: {
+    en: "or browse by category",
+    th: "หรือเลือกตามหมวด",
+    ru: "или выберите категорию",
+    he: "או עיינו לפי קטגוריה",
   },
   nameSearch: { en: "Name", th: "ชื่อ", ru: "Имя", he: "שם" },
   findName: {
@@ -73,10 +152,10 @@ const COPY = {
     he: "תיאור בקול צריך דפדפן שיכול לשמוע, למשל Chrome.",
   },
   agentLocked: {
-    en: "Pro is off, so the assistant stays locked. Turn it on in Settings.",
-    th: "Pro ปิดอยู่ ผู้ช่วยจึงถูกล็อก เปิดได้ในตั้งค่า",
-    ru: "Pro выключен, поэтому помощник закрыт. Включите его в настройках.",
-    he: "Pro כבוי, אז העוזר נעול. אפשר להפעיל בהגדרות.",
+    en: "The plan is off, so the assistant stays locked. Turn it on in Settings.",
+    th: "แผนปิดอยู่ ผู้ช่วยจึงถูกล็อก เปิดได้ในตั้งค่า",
+    ru: "План выключен, поэтому помощник закрыт. Включите его в настройках.",
+    he: "המסלול כבוי, אז העוזר נעול. אפשר להפעיל בהגדרות.",
   },
   agentTryFree: {
     en: "Register to try free now",
@@ -85,17 +164,17 @@ const COPY = {
     he: "הרשמה לניסיון חינם עכשיו",
   },
   agentPriceNote: {
-    en: "You need Pro plan to use AI agent mode (14 $USD). Sign up for trial",
-    th: "ต้องใช้แผน Pro เพื่อใช้โหมดผู้ช่วย AI (14 $USD) สมัครทดลองใช้",
-    ru: "Для режима ИИ-агента нужен план Pro (14 $USD). Зарегистрируйтесь на пробный период",
-    he: "צריך תוכנית Pro כדי להשתמש במצב סוכן ה-AI‏ (14 $USD). הירשמו לניסיון",
+    en: "The AI assistant is included in the 9 USD plan.",
+    th: "ผู้ช่วย AI รวมอยู่ในแผน 9 ดอลลาร์ต่อเดือน",
+    ru: "ИИ-помощник входит в план за 9 USD в месяц.",
+    he: "עוזר הבינה המלאכותית כלול במסלול של 9 דולר לחודש.",
   },
   signUp: { en: "Sign up", th: "สมัคร", ru: "Регистрация", he: "הרשמה" },
   payPro: {
-    en: "Pay 14 USD a month",
-    th: "จ่าย 14 ดอลลาร์ต่อเดือน",
-    ru: "Оплатить 14 USD в месяц",
-    he: "תשלום 14 דולר לחודש",
+    en: "9 USD a month",
+    th: "9 ดอลลาร์ต่อเดือน",
+    ru: "9 USD в месяц",
+    he: "9 דולר לחודש",
   },
   payLater: {
     en: "Payment is not collected yet, so this is not charged.",
@@ -123,7 +202,7 @@ const COPY = {
     ru: "По этой заметке профессия не нашлась. Заявку всё равно можно написать самому.",
     he: "ההערה הזו לא התאימה למקצוע. עדיין אפשר לכתוב את הבקשה בעצמכם.",
   },
-  popular: { en: "Services categories", th: "หมวดบริการ", ru: "Категории услуг", he: "קטגוריות שירות" },
+  popular: { en: "Browse by category", th: "เลือกตามหมวด", ru: "Выбрать категорию", he: "עיון לפי קטגוריה" },
   nearby: { en: "Professionals", th: "ช่าง", ru: "Специалисты", he: "בעלי מקצוע" },
   place: { en: "Area", th: "พื้นที่", ru: "Район", he: "אזור" },
   noPros: {
@@ -211,10 +290,10 @@ const COPY = {
     he: "אפשר לענות מהקישור. בלי סיסמה.",
   },
   terms: {
-    en: "Pulse Flow Services does not take payment and does not guarantee the work will be accepted.",
-    th: "Pulse Flow Services ไม่รับชำระเงิน และไม่รับประกันว่างานจะได้รับการตอบรับ",
-    ru: "Pulse Flow Services не принимает оплату и не гарантирует, что работу примут.",
-    he: "Pulse Flow Services לא גובה תשלום ואינו ערב לכך שהעבודה תתקבל.",
+    en: "You pay the professional directly. Pulse Flow does not guarantee the work, and professionals choose which requests to accept.",
+    th: "คุณจ่ายให้ผู้ประกอบอาชีพโดยตรง Pulse Flow ไม่รับประกันงาน และช่างเป็นผู้เลือกรับคำขอ",
+    ru: "Вы платите специалисту напрямую. Pulse Flow не гарантирует работу, а специалисты сами решают, какие заявки принять.",
+    he: "אתם משלמים לבעל המקצוע ישירות. Pulse Flow אינו ערב לעבודה, ובעלי המקצוע בוחרים אילו בקשות לקבל.",
   },
   termsLink: { en: "Terms", th: "ข้อกำหนด", ru: "Условия", he: "תנאים" },
   privacyLink: { en: "Privacy", th: "ความเป็นส่วนตัว", ru: "Конфиденциальность", he: "פרטיות" },
@@ -381,10 +460,10 @@ const COPY = {
     he: "הזמנות חינם",
   },
   trialBody: {
-    en: "You need to have an account to continue. Trial: 3 free orders, each followed by a review, then 1 free order a month. Premium - 9 $USD and Pro 14 $USD (includes AI agent)",
-    th: "ต้องมีบัญชีเพื่อดำเนินการต่อ ทดลองใช้: คำสั่งฟรี 3 ครั้ง แต่ละงานต้องมีรีวิว จากนั้นคำสั่งฟรี 1 ครั้งต่อเดือน Premium - 9 $USD และ Pro 14 $USD (รวมผู้ช่วย AI)",
-    ru: "Чтобы продолжить, нужен аккаунт. Пробный период: 3 бесплатных заказа, каждый с отзывом, затем 1 бесплатный заказ в месяц. Premium - 9 $USD и Pro 14 $USD (включая ИИ-агента)",
-    he: "כדי להמשיך צריך חשבון. ניסיון: 3 הזמנות חינם, כל אחת עם ביקורת, ואז הזמנה חינם אחת בחודש. Premium - 9 $USD ו-Pro 14 $USD (כולל סוכן AI)",
+    en: "You need to have an account to continue. Trial: 3 free orders, each followed by a review, then 1 free order a month. The plan is 9 USD a month and includes the AI assistant.",
+    th: "ต้องมีบัญชีเพื่อดำเนินการต่อ ทดลองใช้: คำสั่งฟรี 3 ครั้ง แต่ละงานต้องมีรีวิว จากนั้นคำสั่งฟรี 1 ครั้งต่อเดือน แผน 9 ดอลลาร์ต่อเดือน รวมผู้ช่วย AI",
+    ru: "Чтобы продолжить, нужен аккаунт. Пробный период: 3 бесплатных заказа, каждый с отзывом, затем 1 бесплатный заказ в месяц. План: 9 USD в месяц, включая ИИ-помощника.",
+    he: "כדי להמשיך צריך חשבון. ניסיון: 3 הזמנות חינם, כל אחת עם ביקורת, ואז הזמנה חינם אחת בחודש. המסלול הוא 9 דולר לחודש וכולל את עוזר הבינה המלאכותית.",
   },
   createServicesAccount: {
     en: "Create a Pulse Flow Services account",
@@ -405,10 +484,10 @@ const COPY = {
     he: "סיימו את ההזמנה הפתוחה לפני הזמנה חדשה.",
   },
   billingLater: {
-    en: "Premium is on. Payment is not collected yet, so this order is not charged.",
-    th: "Premium เปิดอยู่ ยังไม่เก็บเงิน จึงไม่มีการเรียกเก็บสำหรับคำสั่งนี้",
-    ru: "Premium включён. Оплату пока не берём, поэтому этот заказ не списывается.",
-    he: "Premium פעיל. התשלום עדיין לא נגבה, אז ההזמנה הזו לא מחויבת.",
+    en: "The plan is on. Payment is not collected yet, so this order is not charged.",
+    th: "แผนเปิดอยู่ ยังไม่เก็บเงิน จึงไม่มีการเรียกเก็บสำหรับคำสั่งนี้",
+    ru: "План включён. Оплату пока не берём, поэтому этот заказ не списывается.",
+    he: "המסלול פעיל. התשלום עדיין לא נגבה, אז ההזמנה הזו לא מחויבת.",
   },
   monthlyNote: {
     en: "This is your free order for the month.",
@@ -423,10 +502,10 @@ const COPY = {
     he: "זו אחת מ-3 ההזמנות החינמיות. הביקורת אחרי העבודה שנגמרה פותחת את הבאה.",
   },
   planRequired: {
-    en: "The 3 free orders are used, and this month already has its free order. Turn on Premium in Settings for more than one order a month.",
-    th: "ใช้ 3 คำสั่งฟรีแล้ว และเดือนนี้มีคำสั่งฟรีแล้ว เปิด Premium ในตั้งค่าหากต้องการสั่งมากกว่าหนึ่งครั้งต่อเดือน",
-    ru: "3 бесплатных заказа использованы, и в этом месяце бесплатный заказ уже есть. Включите Premium в настройках, если нужно больше одного заказа в месяц.",
-    he: "3 ההזמנות החינמיות נוצלו, ולחודש הזה כבר יש הזמנה חינמית. הפעילו Premium בהגדרות כדי להזמין יותר מפעם בחודש.",
+    en: "The 3 free orders are used, and this month already has its free order. Turn on the 9 USD plan in Settings for more than one order a month. It includes the AI assistant.",
+    th: "ใช้ 3 คำสั่งฟรีแล้ว และเดือนนี้มีคำสั่งฟรีแล้ว เปิดแผน 9 ดอลลาร์ในตั้งค่าหากต้องการสั่งมากกว่าหนึ่งครั้งต่อเดือน รวมผู้ช่วย AI",
+    ru: "3 бесплатных заказа использованы, и в этом месяце бесплатный заказ уже есть. Включите план за 9 USD в настройках, если нужно больше одного заказа в месяц. В него входит ИИ-помощник.",
+    he: "3 ההזמנות החינמיות נוצלו, ולחודש הזה כבר יש הזמנה חינמית. הפעילו את המסלול של 9 דולר בהגדרות כדי להזמין יותר מפעם בחודש. הוא כולל את עוזר הבינה המלאכותית.",
   },
   reviewUnlocks: {
     en: "This review unlocks the next order.",
@@ -448,16 +527,16 @@ const COPY = {
     he: "Pulse Flow Services",
   },
   welcomeLead: {
-    en: "Local maintenance for your property. You look first. We introduce you to people nearby. We do not take the job payment, and we do not guarantee the work.",
-    th: "งานซ่อมบำรุงใกล้ที่พัก คุณดูเองก่อน เราแนะนำคนในพื้นที่ เราไม่รับเงินค่างาน และไม่รับประกันผลงาน",
-    ru: "Местный ремонт для объекта. Сначала смотрите сами. Мы знакомим с людьми рядом. Мы не берём оплату за работу и не гарантируем результат.",
-    he: "תחזוקה מקומית לנכס. קודם אתם מחפשים. אנחנו מחברים אתכם לאנשים באזור. אנחנו לא לוקחים את תשלום העבודה ולא מתחייבים לתוצאה.",
+    en: "Local maintenance for your property. You look first. We introduce you to people nearby. You pay the professional directly. Pulse Flow does not guarantee the work, and professionals choose which requests to accept.",
+    th: "งานซ่อมบำรุงใกล้ที่พัก คุณดูเองก่อน เราแนะนำคนในพื้นที่ คุณจ่ายให้ผู้ประกอบอาชีพโดยตรง Pulse Flow ไม่รับประกันงาน และช่างเป็นผู้เลือกรับคำขอ",
+    ru: "Местный ремонт для объекта. Сначала смотрите сами. Мы знакомим с людьми рядом. Вы платите специалисту напрямую. Pulse Flow не гарантирует работу, а специалисты сами решают, какие заявки принять.",
+    he: "תחזוקה מקומית לנכס. קודם אתם מחפשים. אנחנו מחברים אתכם לאנשים באזור. אתם משלמים לבעל המקצוע ישירות. Pulse Flow אינו ערב לעבודה, ובעלי המקצוע בוחרים אילו בקשות לקבל.",
   },
   welcomeOrders: {
-    en: "Three orders are free. Each next one unlocks after the review on the finished job. After that, stay on the free plan if you need a service only once a month, or turn on Premium and Pro in Settings.",
-    th: "สามคำสั่งแรกฟรี คำสั่งถัดไปเปิดหลังรีวิวเมื่องานเสร็จ หลังจากนั้น อยู่แผนฟรีได้ถ้าใช้บริการเดือนละครั้ง หรือเปิด Premium และ Pro ในตั้งค่า",
-    ru: "Три заказа бесплатные. Каждый следующий открывается после отзыва о законченной работе. Дальше оставайтесь на бесплатном плане, если услуга нужна раз в месяц, или включите Premium и Pro в настройках.",
-    he: "שלוש הזמנות הן בחינם. כל אחת הבאה נפתחת אחרי הביקורת על העבודה שנגמרה. אחר כך אפשר להישאר בתוכנית החינמית אם צריך שירות רק פעם בחודש, או להפעיל Premium ו-Pro בהגדרות.",
+    en: "Three orders are free. Each next one unlocks after the review on the finished job. After that, stay on the free plan if you need a service only once a month, or turn on the 9 USD plan in Settings. It includes the AI assistant.",
+    th: "สามคำสั่งแรกฟรี คำสั่งถัดไปเปิดหลังรีวิวเมื่องานเสร็จ หลังจากนั้น อยู่แผนฟรีได้ถ้าใช้บริการเดือนละครั้ง หรือเปิดแผน 9 ดอลลาร์ในตั้งค่า รวมผู้ช่วย AI",
+    ru: "Три заказа бесплатные. Каждый следующий открывается после отзыва о законченной работе. Дальше оставайтесь на бесплатном плане, если услуга нужна раз в месяц, или включите план за 9 USD в настройках. В него входит ИИ-помощник.",
+    he: "שלוש הזמנות הן בחינם. כל אחת הבאה נפתחת אחרי הביקורת על העבודה שנגמרה. אחר כך אפשר להישאר בתוכנית החינמית אם צריך שירות רק פעם בחודש, או להפעיל את המסלול של 9 דולר בהגדרות. הוא כולל את עוזר הבינה המלאכותית.",
   },
   welcomeStaffTitle: {
     en: "Maintenance staff",
@@ -530,18 +609,86 @@ const COPY = {
     he: "שתפו את הקוד. מי שנרשם איתו נרשם כמוזמן שלכם.",
   },
   copyInvite: { en: "Copy invite link", th: "คัดลอกลิงก์เชิญ", ru: "Скопировать ссылку", he: "העתקת קישור הזמנה" },
+  copyInvitePro: {
+    en: "Invite a professional",
+    th: "เชิญช่าง",
+    ru: "Пригласить мастера",
+    he: "הזמינו בעל מקצוע",
+  },
+  copyInviteSeeker: {
+    en: "Invite someone looking for help",
+    th: "เชิญคนที่ต้องการช่าง",
+    ru: "Пригласить того, кому нужна помощь",
+    he: "הזמינו מי שמחפש עזרה",
+  },
+  inbox: { en: "Inbox", th: "กล่องงาน", ru: "Входящие", he: "דואר נכנס" },
+  workerHome: {
+    en: "Your work",
+    th: "งานของคุณ",
+    ru: "Ваша работа",
+    he: "העבודה שלכם",
+  },
+  listingStatus: {
+    en: "Listing status",
+    th: "สถานะประกาศ",
+    ru: "Статус объявления",
+    he: "סטטוס המודעה",
+  },
+  nextJob: {
+    en: "Next job",
+    th: "งานถัดไป",
+    ru: "Следующая работа",
+    he: "העבודה הבאה",
+  },
+  noInbox: {
+    en: "No requests for you yet.",
+    th: "ยังไม่มีคำขอถึงคุณ",
+    ru: "Пока нет заявок для вас.",
+    he: "עדיין אין בקשות אליכם.",
+  },
+  replyNow: {
+    en: "Reply",
+    th: "ตอบ",
+    ru: "Ответить",
+    he: "השיבו",
+  },
+  profileChecklist: {
+    en: "Add a photo, professions, and areas in Settings so people can find you.",
+    th: "เพิ่มรูป อาชีพ และพื้นที่ในการตั้งค่า เพื่อให้คนหาคุณเจอ",
+    ru: "Добавьте фото, профессии и районы в настройках, чтобы вас находили.",
+    he: "הוסיפו תמונה, מקצועות ואזורים בהגדרות כדי שימצאו אתכם.",
+  },
+  shareInvite: {
+    en: "Share Pulse Flow Services",
+    th: "แชร์ Pulse Flow Services",
+    ru: "Поделиться Pulse Flow Services",
+    he: "שתפו את Pulse Flow Services",
+  },
+  openRequests: {
+    en: "Your open requests",
+    th: "คำขอที่ยังไม่จบ",
+    ru: "Ваши открытые заявки",
+    he: "הבקשות הפתוחות שלכם",
+  },
+  newRequestCta: {
+    en: "New request",
+    th: "คำขอใหม่",
+    ru: "Новая заявка",
+    he: "בקשה חדשה",
+  },
   openSettings: { en: "Open Settings", th: "เปิดตั้งค่า", ru: "Открыть настройки", he: "פתיחת ההגדרות" },
+  planTitle: { en: "Plan", th: "แผน", ru: "План", he: "מסלול" },
   premiumBody: {
-    en: "9 USD a month. After the 3 free orders, this is how you place more than one order a month.",
-    th: "9 ดอลลาร์ต่อเดือน หลัง 3 คำสั่งฟรี ใช้แผนนี้เมื่อต้องการสั่งมากกว่าหนึ่งครั้งในเดือน",
-    ru: "9 USD в месяц. После 3 бесплатных заказов так можно делать больше одного заказа в месяц.",
-    he: "9 דולר לחודש. אחרי 3 ההזמנות החינמיות, כך מזמינים יותר מהזמנה אחת בחודש.",
+    en: "9 USD a month. This includes more than one order a month and the AI assistant.",
+    th: "9 ดอลลาร์ต่อเดือน รวมการสั่งมากกว่าหนึ่งครั้งต่อเดือน และผู้ช่วย AI",
+    ru: "9 USD в месяц. Больше одного заказа в месяц и ИИ-помощник.",
+    he: "9 דולר לחודש. זה כולל יותר מהזמנה אחת בחודש ואת עוזר הבינה המלאכותית.",
   },
   proBody: {
-    en: "5 USD a month on top of Premium. This turns on the assistant. Turning Pro on also turns Premium on.",
-    th: "5 ดอลลาร์ต่อเดือน เพิ่มจาก Premium เปิดผู้ช่วย การเปิด Pro จะเปิด Premium ด้วย",
-    ru: "5 USD в месяц сверх Premium. Включает помощника. Включение Pro также включает Premium.",
-    he: "5 דולר לחודש מעל Premium. זה מפעיל את העוזר. הפעלת Pro מפעילה גם את Premium.",
+    en: "9 USD a month. This includes more than one order a month and the AI assistant.",
+    th: "9 ดอลลาร์ต่อเดือน รวมการสั่งมากกว่าหนึ่งครั้งต่อเดือน และผู้ช่วย AI",
+    ru: "9 USD в месяц. Больше одного заказа в месяц и ИИ-помощник.",
+    he: "9 דולר לחודש. זה כולל יותר מהזמנה אחת בחודש ואת עוזר הבינה המלאכותית.",
   },
   turnOn: { en: "Turn on", th: "เปิด", ru: "Включить", he: "הפעלה" },
   turnOff: { en: "Turn off", th: "ปิด", ru: "Выключить", he: "כיבוי" },
@@ -564,6 +711,64 @@ const COPY = {
     ru: "Войдите, чтобы увидеть этого специалиста",
     he: "התחברו כדי לראות את בעל המקצוע",
   },
+  findAPro: { en: "Find a pro", th: "หาช่าง", ru: "Найти мастера", he: "מצאו בעל מקצוע" },
+  composerAircon: {
+    en: "Aircon is leaking in the bedroom",
+    th: "แอร์รั่วในห้องนอน",
+    ru: "Кондиционер течёт в спальне",
+    he: "המזגן דולף בחדר השינה",
+  },
+  composerPool: {
+    en: "Pool pump is making noise",
+    th: "ปั๊มสระมีเสียงดัง",
+    ru: "Насос бассейна шумит",
+    he: "משאבת הבריכה מרעישה",
+  },
+  describeJob: {
+    en: "Describe the job",
+    th: "บอกรายละเอียดงาน",
+    ru: "Опишите работу",
+    he: "תארו את העבודה",
+  },
+  seeAll: { en: "See all", th: "ดูทั้งหมด", ru: "Все", he: "הכל" },
+  close: { en: "Close", th: "ปิด", ru: "Закрыть", he: "סגירה" },
+  availableToday: {
+    en: "Available today near you",
+    th: "ว่างวันนี้ใกล้คุณ",
+    ru: "Свободны сегодня рядом",
+    he: "פנויים היום לידכם",
+  },
+  speaksYourLanguage: {
+    en: "Speaks your language",
+    th: "พูดภาษาของคุณ",
+    ru: "Говорит на вашем языке",
+    he: "מדברים בשפה שלכם",
+  },
+  regularCleaning: {
+    en: "Regular cleaning",
+    th: "ทำความสะอาดตามรอบ",
+    ru: "Регулярная уборка",
+    he: "ניקיון שוטף",
+  },
+  noProsNear: {
+    en: "No one is listed as available here yet.",
+    th: "ยังไม่มีคนที่รับงานในพื้นที่นี้",
+    ru: "Пока никто не отмечен как свободный рядом.",
+    he: "עדיין אין מי שפנוי כאן.",
+  },
+  noProsLanguage: {
+    en: "No one listed speaks this language yet.",
+    th: "ยังไม่มีคนที่พูดภาษานี้",
+    ru: "Пока никто из списка не говорит на этом языке.",
+    he: "עדיין אין ברשימה מי שמדבר בשפה הזו.",
+  },
+  verifiedShort: { en: "Verified", th: "ยืนยันแล้ว", ru: "Проверен", he: "מאומת" },
+  signInToContact: {
+    en: "Sign in to contact this professional",
+    th: "เข้าสู่ระบบเพื่อติดต่อผู้ให้บริการนี้",
+    ru: "Войдите, чтобы написать этому специалисту",
+    he: "התחברו כדי ליצור קשר עם בעל המקצוע",
+  },
 } as const;
 
 export type ProsKey = keyof typeof COPY;
@@ -580,13 +785,17 @@ export function preferredTimeKey(value: string | null | undefined): ProsKey | nu
   return null;
 }
 
+type ProsCopyRow = { en: string } & Partial<Record<string, string>>;
+
 export function prosT(
   locale: string,
   key: ProsKey,
   params?: Record<string, string | number>,
 ) {
-  const row = COPY[key];
-  let text: string = row[prosLang(locale)] || row.en;
+  const lang = prosLang(locale);
+  const row = COPY[key] as ProsCopyRow;
+  const fromExtra = PROS_EXTRA_LOCALES[lang]?.[key];
+  let text: string = fromExtra || row[lang] || row.en;
   if (params) {
     for (const [name, value] of Object.entries(params)) {
       text = text.replaceAll(`{${name}}`, String(value));

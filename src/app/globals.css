@@ -79,11 +79,13 @@
 
 :root {
   /* Typography — Horizon scale (max weight 700) */
+  --type-hero: clamp(1.85rem, 1.45rem + 1.6vw, 2.35rem);
   --type-title: clamp(1.5rem, 1.2rem + 1vw, 1.875rem);
   --type-subtitle: clamp(1.125rem, 1.05rem + 0.35vw, 1.3rem);
   --type-body: 1rem; /* 16px */
   --type-meta: 0.8125rem; /* 13px */
   --type-sign: 0.75rem;
+  --leading-hero: 1.12;
   --leading-title: 1.2;
   --leading-body: 1.55;
   --leading-meta: 1.35;
@@ -183,6 +185,15 @@ body {
 }
 
 /* Type levels */
+.type-hero {
+  font-family: var(--font-display);
+  font-size: var(--type-hero);
+  line-height: var(--leading-hero);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-ink);
+}
+
 .type-title {
   font-family: var(--font-display);
   font-size: var(--type-title);
@@ -243,11 +254,61 @@ label {
 }
 
 /* RTL: Sora has no Hebrew/Arabic — titles fall back to Heebo */
+[dir="rtl"] .type-hero,
 [dir="rtl"] .type-title,
 [dir="rtl"] .font-display,
 [dir="rtl"] .pf-screen-header h1 {
   font-family: var(--font-sans);
   letter-spacing: 0;
+}
+
+@keyframes horizon-breath {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateY(-4px);
+  }
+}
+
+.services-horizon {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--radius-card) + 0.25rem);
+  background:
+    radial-gradient(120% 80% at 10% 0%, color-mix(in srgb, var(--color-sky-soft) 55%, transparent), transparent 55%),
+    radial-gradient(90% 70% at 95% 15%, color-mix(in srgb, var(--color-sun) 22%, transparent), transparent 50%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-sky-soft) 28%, var(--color-canvas)),
+      var(--color-canvas)
+    );
+}
+
+.services-horizon::before {
+  content: "";
+  position: absolute;
+  inset-inline: -10%;
+  top: 35%;
+  height: 42%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-sky) 14%, transparent);
+  filter: blur(18px);
+  animation: horizon-breath 12s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .services-horizon::before {
+    animation: none;
+  }
+  .animate-rise,
+  .animate-rise-delay {
+    animation: none;
+  }
 }
 
 /* 12-column content grid */

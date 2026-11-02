@@ -159,6 +159,26 @@ export function serviceInviteCode() {
   return code;
 }
 
+/** Share link for marketplace growth (always services host). */
+export function serviceInviteUrl(origin: string, opts?: { as?: "pro" | "seeker" }) {
+  const code = serviceInviteCode();
+  if (!code) return "";
+  const url = new URL("/register", origin.endsWith("/") ? origin : `${origin}/`);
+  url.searchParams.set("from", code);
+  if (opts?.as) url.searchParams.set("as", opts.as);
+  return url.toString();
+}
+
+export function readMyListingId(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(SERVICE_PROFILE_KEY);
+}
+
+/** True when this browser has a Services professional listing. */
+export function isServicesWorker(): boolean {
+  return Boolean(readMyListingId());
+}
+
 export function ensureMyServiceListing(actor: { id: string; name: string }) {
   const state = readProsState() ?? createSeedState();
   const stored = localStorage.getItem(SERVICE_PROFILE_KEY);

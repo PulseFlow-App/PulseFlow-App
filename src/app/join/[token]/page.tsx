@@ -39,6 +39,7 @@ export default function JoinPage({
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [listOnServices, setListOnServices] = useState(false);
   const [mergePending, setMergePending] = useState<{
     orgName: string;
     email: string;
@@ -105,7 +106,14 @@ export default function JoinPage({
       const res = await fetch("/api/auth/accept-invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, joinWithSession: true }),
+        body: JSON.stringify({
+          token,
+          joinWithSession: true,
+          listOnServices:
+            ctx?.invite?.role === "staff" || ctx?.invite?.role === "cleaner"
+              ? listOnServices
+              : false,
+        }),
       });
       const payload = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(payload.error ?? t("common.error"));
@@ -146,6 +154,10 @@ export default function JoinPage({
           email,
           phone,
           password,
+          listOnServices:
+            ctx?.invite?.role === "staff" || ctx?.invite?.role === "cleaner"
+              ? listOnServices
+              : false,
           referredBy:
             typeof window !== "undefined"
               ? localStorage.getItem(REFERRAL_STORAGE_KEY)
@@ -333,6 +345,30 @@ export default function JoinPage({
             {error ? (
               <p className="text-sm font-semibold text-danger">{error}</p>
             ) : null}
+            {(invite.role === "staff" || invite.role === "cleaner") ? (
+              <label className="flex items-start gap-3 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  className="mt-1 size-4 accent-[var(--color-primary)]"
+                  checked={listOnServices}
+                  onChange={(e) => setListOnServices(e.target.checked)}
+                />
+                <span>
+                  <span className="font-semibold">{t("join.listOnServices")}</span>
+                  <span className="mt-1 block text-xs leading-relaxed text-muted">
+                    {t("join.listOnServicesHint")}{" "}
+                    <a
+                      href="https://www.pulseflow.site/services"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-primary"
+                    >
+                      {t("join.whatIsServices")}
+                    </a>
+                  </span>
+                </span>
+              </label>
+            ) : null}
             <Button
               className="w-full"
               size="lg"
@@ -406,6 +442,33 @@ export default function JoinPage({
               autoComplete="new-password"
             />
           </div>
+
+          {(invite.role === "staff" || invite.role === "cleaner") ? (
+            <div className="space-y-2 rounded-2xl bg-canvas-deep p-3">
+              <label className="flex items-start gap-3 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  className="mt-1 size-4 accent-[var(--color-primary)]"
+                  checked={listOnServices}
+                  onChange={(e) => setListOnServices(e.target.checked)}
+                />
+                <span>
+                  <span className="font-semibold">{t("join.listOnServices")}</span>
+                  <span className="mt-1 block text-xs leading-relaxed text-muted">
+                    {t("join.listOnServicesHint")}{" "}
+                    <a
+                      href="https://www.pulseflow.site/services"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-primary"
+                    >
+                      {t("join.whatIsServices")}
+                    </a>
+                  </span>
+                </span>
+              </label>
+            </div>
+          ) : null}
 
           {error ? (
             <p className="text-sm font-semibold text-danger">{error}</p>

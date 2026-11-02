@@ -3,7 +3,7 @@ import type { ProsLang } from "@/lib/pros/types";
 
 export const LEGAL_UPDATED = "1 November 2026";
 
-type Copy = Record<ProsLang, string>;
+type Copy = { en: string } & Partial<Record<ProsLang, string>>;
 
 export type LegalAudience = "staff" | "customer";
 
@@ -16,6 +16,14 @@ export type LegalSection = {
 };
 
 const n = (en: string, th: string, ru: string, he: string): Copy => ({ en, th, ru, he });
+
+/** Attach fr/de/es/it/tr/ar/my (and any future) strings onto a legal Copy row. */
+export function withLegalLocales(
+  base: Copy,
+  extra: Partial<Record<ProsLang, string>>,
+): Copy {
+  return { ...base, ...extra };
+}
 
 export const LEGAL_SECTIONS: LegalSection[] = [
   {
@@ -48,10 +56,10 @@ export const LEGAL_SECTIONS: LegalSection[] = [
     doc: "terms",
     heading: n("Orders", "คำสั่ง", "Заказы", "הזמנות"),
     body: n(
-      "The trial is 3 free orders. Each next order opens after a review of the finished job. After those 3, everyone gets 1 free order a month. Premium is 9 USD a month. Pro is 14 USD a month and includes the AI agent. Payment is not collected yet. Turning a plan on does not charge you.",
-      "ทดลองใช้ได้ 3 คำสั่งฟรี คำสั่งถัดไปเปิดหลังรีวิวงานที่เสร็จ หลังจากนั้นทุกคนได้ 1 คำสั่งฟรีต่อเดือน Premium 9 ดอลลาร์ต่อเดือน Pro 14 ดอลลาร์ต่อเดือน รวมผู้ช่วย AI ยังไม่เก็บเงิน การเปิดแผนไม่เรียกเก็บเงิน",
-      "Пробный период — 3 бесплатных заказа. Следующий открывается после отзыва о законченной работе. Затем у всех 1 бесплатный заказ в месяц. Premium — 9 USD в месяц. Pro — 14 USD в месяц и включает ИИ-агента. Оплату пока не берём. Включение плана ничего не списывает.",
-      "הניסיון הוא 3 הזמנות חינם. ההזמנה הבאה נפתחת אחרי ביקורת על העבודה שנגמרה. אחר כך לכל אחד הזמנה חינם אחת בחודש. Premium הוא 9 דולר לחודש. Pro הוא 14 דולר לחודש וכולל את סוכן ה-AI. התשלום עדיין לא נגבה. הפעלת תוכנית לא מחייבת.",
+      "The trial is 3 free orders. Each next order opens after a review of the finished job. After those 3, everyone gets 1 free order a month. The plan is 9 USD a month and includes the AI assistant. Payment is not collected yet. Turning a plan on does not charge you.",
+      "ทดลองใช้ได้ 3 คำสั่งฟรี คำสั่งถัดไปเปิดหลังรีวิวงานที่เสร็จ หลังจากนั้นทุกคนได้ 1 คำสั่งฟรีต่อเดือน แผน 9 ดอลลาร์ต่อเดือน รวมผู้ช่วย AI ยังไม่เก็บเงิน การเปิดแผนไม่เรียกเก็บเงิน",
+      "Пробный период: 3 бесплатных заказа. Следующий открывается после отзыва о законченной работе. Затем у всех 1 бесплатный заказ в месяц. План: 9 USD в месяц, включая ИИ-помощника. Оплату пока не берём. Включение плана ничего не списывает.",
+      "הניסיון הוא 3 הזמנות חינם. ההזמנה הבאה נפתחת אחרי ביקורת על העבודה שנגמרה. אחר כך לכל אחד הזמנה חינם אחת בחודש. המסלול הוא 9 דולר לחודש וכולל את עוזר הבינה המלאכותית. התשלום עדיין לא נגבה. הפעלת תוכנית לא מחייבת.",
     ),
   },
   {
@@ -60,10 +68,10 @@ export const LEGAL_SECTIONS: LegalSection[] = [
     doc: "terms",
     heading: n("Payment", "การชำระเงิน", "Оплата", "תשלום"),
     body: n(
-      "Pulse Flow Services does not take payment and does not hold money. You pay the professional directly. We do not guarantee the work will be accepted or how it turns out.",
-      "Pulse Flow Services ไม่รับชำระเงินและไม่ถือเงิน คุณจ่ายให้ช่างโดยตรง เราไม่รับประกันว่างานจะได้รับการตอบรับหรือผลงานจะเป็นอย่างไร",
-      "Pulse Flow Services не принимает оплату и не хранит деньги. Вы платите специалисту напрямую. Мы не гарантируем, что работу примут, и не гарантируем результат.",
-      "Pulse Flow Services לא גובה תשלום ולא מחזיק כסף. אתם משלמים לבעל המקצוע ישירות. אנחנו לא ערבים לכך שהעבודה תתקבל או לתוצאה.",
+      "You pay the professional directly. Pulse Flow does not guarantee the work, and professionals choose which requests to accept.",
+      "คุณจ่ายให้ผู้ประกอบอาชีพโดยตรง Pulse Flow ไม่รับประกันงาน และช่างเป็นผู้เลือกรับคำขอ",
+      "Вы платите специалисту напрямую. Pulse Flow не гарантирует работу, а специалисты сами решают, какие заявки принять.",
+      "אתם משלמים לבעל המקצוע ישירות. Pulse Flow אינו ערב לעבודה, ובעלי המקצוע בוחרים אילו בקשות לקבל.",
     ),
   },
   {
@@ -192,10 +200,10 @@ export const LEGAL_SECTIONS: LegalSection[] = [
     doc: "terms",
     heading: n("Orders", "คำสั่ง", "Заказы", "הזמנות"),
     body: n(
-      "A new account may send three orders. The next order becomes available only after a review of the finished job. After those three, one further order is available in each calendar month. Premium is 9 US dollars a month and removes that monthly limit. Pro is 14 US dollars a month and includes the AI assistant. Payment is not collected at this time. Choosing a plan does not create a charge.",
-      "บัญชีใหม่อาจส่งคำสั่งได้สามครั้ง คำสั่งถัดไปจะเปิดเมื่อมีการรีวิวงานที่เสร็จแล้วเท่านั้น หลังจากสามครั้งนั้น จะมีคำสั่งเพิ่มได้อีกหนึ่งครั้งในแต่ละเดือนปฏิทิน Premium คือ 9 ดอลลาร์สหรัฐต่อเดือน และยกเลิกขีดจำกัดรายเดือนนั้น Pro คือ 14 ดอลลาร์สหรัฐต่อเดือน และรวมผู้ช่วย AI ขณะนี้ยังไม่มีการเรียกเก็บเงิน การเลือกแผนไม่ทำให้เกิดการเรียกเก็บ",
-      "Новый аккаунт может отправить три заказа. Следующий заказ открывается только после отзыва о выполненной работе. После этих трёх в каждом календарном месяце доступен ещё один заказ. Premium — 9 долларов США в месяц и снимает этот месячный предел. Pro — 14 долларов США в месяц и включает ИИ-помощника. Оплата сейчас не взимается. Выбор плана не создаёт списания.",
-      "חשבון חדש יכול לשלוח שלוש הזמנות. ההזמנה הבאה נפתחת רק אחרי ביקורת על העבודה שהסתיימה. אחרי שלוש אלה, הזמנה נוספת אחת זמינה בכל חודש קלנדרי. Premium הוא 9 דולר ארה״ב לחודש ומסיר את המגבלה החודשית. Pro הוא 14 דולר ארה״ב לחודש וכולל את עוזר הבינה המלאכותית. בשלב זה לא נגבה תשלום. בחירת מסלול אינה יוצרת חיוב.",
+      "A new account may send three orders. The next order becomes available only after a review of the finished job. After those three, one further order is available in each calendar month. The plan is 9 US dollars a month. It removes that monthly limit and includes the AI assistant. Payment is not collected at this time. Choosing a plan does not create a charge.",
+      "บัญชีใหม่อาจส่งคำสั่งได้สามครั้ง คำสั่งถัดไปจะเปิดเมื่อมีการรีวิวงานที่เสร็จแล้วเท่านั้น หลังจากสามครั้งนั้น จะมีคำสั่งเพิ่มได้อีกหนึ่งครั้งในแต่ละเดือนปฏิทิน แผนคือ 9 ดอลลาร์สหรัฐต่อเดือน ยกเลิกขีดจำกัดรายเดือน และรวมผู้ช่วย AI ขณะนี้ยังไม่มีการเรียกเก็บเงิน การเลือกแผนไม่ทำให้เกิดการเรียกเก็บ",
+      "Новый аккаунт может отправить три заказа. Следующий заказ открывается только после отзыва о выполненной работе. После этих трёх в каждом календарном месяце доступен ещё один заказ. План: 9 долларов США в месяц. Он снимает этот месячный предел и включает ИИ-помощника. Оплата сейчас не взимается. Выбор плана не создаёт списания.",
+      "חשבון חדש יכול לשלוח שלוש הזמנות. ההזמנה הבאה נפתחת רק אחרי ביקורת על העבודה שהסתיימה. אחרי שלוש אלה, הזמנה נוספת אחת זמינה בכל חודש קלנדרי. המסלול הוא 9 דולר ארה״ב לחודש. הוא מסיר את המגבלה החודשית וכולל את עוזר הבינה המלאכותית. בשלב זה לא נגבה תשלום. בחירת מסלול אינה יוצרת חיוב.",
     ),
   },
   {
@@ -204,10 +212,10 @@ export const LEGAL_SECTIONS: LegalSection[] = [
     doc: "terms",
     heading: n("Payment for the work", "การชำระค่างาน", "Оплата работы", "תשלום עבור העבודה"),
     body: n(
-      "Pulse Flow Services does not take, hold, or transfer the price of the work. You agree the price with the professional and pay that person directly. Pulse Flow Services does not guarantee that a professional will accept a request, or the quality, timing, or result of the work.",
-      "Pulse Flow Services ไม่รับ ไม่ถือ และไม่โอนค่างาน คุณตกลงราคากับผู้ประกอบอาชีพและชำระให้บุคคลนั้นโดยตรง Pulse Flow Services ไม่รับประกันว่าผู้ประกอบอาชีพจะรับคำขอ หรือคุณภาพ เวลา หรือผลของงาน",
-      "Pulse Flow Services не принимает, не удерживает и не переводит стоимость работы. Цену вы согласовываете со специалистом и платите ему напрямую. Pulse Flow Services не гарантирует, что специалист примет заявку, а также качество, срок или результат работы.",
-      "Pulse Flow Services אינו גובה, אינו מחזיק ואינו מעביר את מחיר העבודה. אתם מסכמים את המחיר עם בעל המקצוע ומשלמים לאותו אדם ישירות. Pulse Flow Services אינו ערב לכך שבעל מקצוע יקבל בקשה, וגם לא לאיכות, למועד או לתוצאת העבודה.",
+      "You pay the professional directly. Pulse Flow does not guarantee the work, and professionals choose which requests to accept.",
+      "คุณจ่ายให้ผู้ประกอบอาชีพโดยตรง Pulse Flow ไม่รับประกันงาน และช่างเป็นผู้เลือกรับคำขอ",
+      "Вы платите специалисту напрямую. Pulse Flow не гарантирует работу, а специалисты сами решают, какие заявки принять.",
+      "אתם משלמים לבעל המקצוע ישירות. Pulse Flow אינו ערב לעבודה, ובעלי המקצוע בוחרים אילו בקשות לקבל.",
     ),
   },
   {
@@ -296,37 +304,92 @@ export const LEGAL_SECTIONS: LegalSection[] = [
   },
 ];
 
-export function legalSections(doc: "terms" | "privacy", locale: string, audience: LegalAudience) {
+function pickCopy(row: Copy, locale: string, sectionKey?: string, field?: "heading" | "body") {
   const lang = prosLang(locale);
+  if (row[lang]) return row[lang] as string;
+  if (sectionKey && field) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { LEGAL_EXTRA_LOCALES } = require("@/lib/pros/legal-extra") as {
+        LEGAL_EXTRA_LOCALES: Record<string, Record<string, string>>;
+      };
+      const extra = LEGAL_EXTRA_LOCALES[lang]?.[`${sectionKey}.${field}`];
+      if (extra) return extra;
+    } catch {
+      /* optional pack */
+    }
+  }
+  return row.en;
+}
+
+export function legalSections(doc: "terms" | "privacy", locale: string, audience: LegalAudience) {
   return LEGAL_SECTIONS.filter((section) => section.doc === doc && section.audience === audience).map((section) => ({
     id: section.id,
-    heading: section.heading[lang],
-    body: section.body[lang],
+    heading: pickCopy(section.heading, locale, section.id, "heading"),
+    body: pickCopy(section.body, locale, section.id, "body"),
   }));
 }
 
+const STAFF_GROUP: Copy = {
+  en: "For professionals",
+  th: "สำหรับช่าง",
+  ru: "Для специалистов",
+  he: "לאנשי מקצוע",
+  fr: "Pour les professionnels",
+  de: "Für Fachleute",
+  es: "Para profesionales",
+  it: "Per i professionisti",
+  tr: "Uzmanlar için",
+  ar: "للمختصين",
+  my: "ပညာရှင်များအတွက်",
+};
+
+const CUSTOMER_GROUP: Copy = {
+  en: "For people looking for a service",
+  th: "สำหรับผู้ที่มองหาบริการ",
+  ru: "Для тех, кто ищет услугу",
+  he: "למי שמחפש שירות",
+  fr: "Pour les personnes qui cherchent un service",
+  de: "Für Menschen, die einen Service suchen",
+  es: "Para quienes buscan un servicio",
+  it: "Per chi cerca un servizio",
+  tr: "Hizmet arayanlar için",
+  ar: "لمن يبحث عن خدمة",
+  my: "ဝန်ဆောင်မှုရှာသူများအတွက်",
+};
+
+const TERMS_TITLE: Copy = {
+  en: "Terms",
+  th: "ข้อกำหนด",
+  ru: "Условия",
+  he: "תנאים",
+  fr: "Conditions",
+  de: "Bedingungen",
+  es: "Términos",
+  it: "Termini",
+  tr: "Şartlar",
+  ar: "الشروط",
+  my: "စည်းကမ်းများ",
+};
+
+const PRIVACY_TITLE: Copy = {
+  en: "Privacy",
+  th: "ความเป็นส่วนตัว",
+  ru: "Конфиденциальность",
+  he: "פרטיות",
+  fr: "Confidentialité",
+  de: "Datenschutz",
+  es: "Privacidad",
+  it: "Privacy",
+  tr: "Gizlilik",
+  ar: "الخصوصية",
+  my: "ကိုယ်ရေးကိုယ်တာ",
+};
+
 export function legalGroupTitle(audience: LegalAudience, locale: string) {
-  const lang = prosLang(locale);
-  if (audience === "staff") {
-    return {
-      en: "For maintenance staff",
-      th: "สำหรับช่างซ่อมบำรุง",
-      ru: "Для сотрудников по обслуживанию",
-      he: "לצוות תחזוקה",
-    }[lang];
-  }
-  return {
-    en: "For people looking for a service",
-    th: "สำหรับผู้ที่มองหาบริการ",
-    ru: "Для тех, кто ищет услугу",
-    he: "למי שמחפש שירות",
-  }[lang];
+  return pickCopy(audience === "staff" ? STAFF_GROUP : CUSTOMER_GROUP, locale);
 }
 
 export function legalTitle(doc: "terms" | "privacy", locale: string) {
-  const lang = prosLang(locale);
-  if (doc === "terms") {
-    return { en: "Terms", th: "ข้อกำหนด", ru: "Условия", he: "תנאים" }[lang];
-  }
-  return { en: "Privacy", th: "ความเป็นส่วนตัว", ru: "Конфиденциальность", he: "פרטיות" }[lang];
+  return pickCopy(doc === "terms" ? TERMS_TITLE : PRIVACY_TITLE, locale);
 }

@@ -108,13 +108,15 @@ const appMetadata: Metadata = {
   },
 };
 
-const servicesDescription = "Local services, made accessible.";
+const servicesDescription =
+  "Find local plumbers, electricians, cleaners and more. Describe the problem, compare, and book. In English, Thai, Russian and Hebrew.";
+const servicesShareTitle = "Find local professionals · Pulse Flow Services";
 
 const servicesMetadata: Metadata = {
   ...appMetadata,
   metadataBase: new URL(SERVICES_URL),
   title: {
-    default: "Pulse Flow Services",
+    default: servicesShareTitle,
     template: "%s · Pulse Flow Services",
   },
   applicationName: "Pulse Flow Services",
@@ -136,14 +138,14 @@ const servicesMetadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Pulse Flow Services",
-    title: "Pulse Flow Services",
+    title: servicesShareTitle,
     description: servicesDescription,
     url: SERVICES_URL,
     images: [SERVICES_OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pulse Flow Services",
+    title: servicesShareTitle,
     description: servicesDescription,
     images: [SERVICES_OG_IMAGE.url],
   },

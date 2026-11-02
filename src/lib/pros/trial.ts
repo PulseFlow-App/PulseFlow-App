@@ -5,8 +5,8 @@ export const FREE_ORDERS_PER_MONTH = 1;
 /** The first orders. The next one opens only after the review on the finished job. */
 export const TRIAL_ORDERS = 3;
 export const SERVICES_PLAN_USD = 9;
-/** Assistant that suggests a specialist. Added on top of the full plan. */
-export const SERVICES_AGENT_USD = 5;
+/** The assistant is included in the 9 USD plan. */
+export const SERVICES_AGENT_USD = 0;
 export const SERVICES_PAYMENTS_ENABLED = false;
 
 export const SERVICES_CUSTOMER_KEY = "pulseflow.services.customer";
@@ -33,7 +33,7 @@ export type ServicesCustomer = {
   emailOptIn?: boolean;
 };
 
-/** Premium is the 9 USD plan. Pro is the assistant, 5 USD on top of Premium. */
+/** The 9 USD plan includes extra orders and the AI assistant. */
 export type ServicePlan = {
   premium: boolean;
   pro: boolean;
@@ -90,13 +90,13 @@ export function hasAgentPlan(customer: ServicesCustomer | null, now = new Date()
   return Number.isFinite(until) && until > now.getTime();
 }
 
-/** Pro, or a recorded assistant plan, unlocks the assistant. Guests still preview it before an account. */
+/** The 9 USD plan, or a recorded assistant plan, unlocks the assistant. */
 export function canUseAssistant(
   customer: ServicesCustomer | null,
-  plan: Pick<ServicePlan, "pro"> | null = null,
+  plan: Pick<ServicePlan, "pro" | "premium"> | null = null,
   now = new Date(),
 ) {
-  if (plan?.pro) return true;
+  if (plan?.pro || plan?.premium) return true;
   return hasAgentPlan(customer, now);
 }
 

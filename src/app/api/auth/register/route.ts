@@ -42,7 +42,12 @@ export async function POST(request: Request) {
   const phone = body.phone?.trim() || null;
   const kind = body.kind;
   const role = body.role;
-  const maintenance = body.track === "maintenance";
+  const onSiteStaff =
+    body.position === "staff" ||
+    body.track === "maintenance" ||
+    role === "staff" ||
+    role === "cleaner";
+  const listOnServices = Boolean(body.listOnServices || body.service?.listNow);
   const payer = body.payer === "manager" ? "manager" : "owner";
 
   if (!body.termsAcceptedAt) {
@@ -60,17 +65,26 @@ export async function POST(request: Request) {
   if (kind !== "personal" && kind !== "company") {
     return NextResponse.json({ error: "Invalid organization kind." }, { status: 400 });
   }
-  // Public register: personal solo, or company as owner (pays) / manager (invites owner).
-  // Other staff join via invite (/join/[token]).
+  // Public register: personal solo, company as owner/manager, or on-site staff (personal workspace).
+  // Company field staff also join via invite (/join/[token]).
   if (kind === "company" && !orgName) {
     return NextResponse.json(
       { error: "Company name is required." },
       { status: 400 },
     );
   }
-  if (kind === "personal" && role && role !== "owner" && !maintenance) {
+  if (kind === "personal" && role && role !== "owner" && !onSiteStaff) {
     return NextResponse.json(
       { error: "Personal workspaces always start as owner of your own list." },
+      { status: 400 },
+    );
+  }
+  if (kind === "company" && onSiteStaff) {
+    return NextResponse.json(
+      {
+        error:
+          "On-site staff join a company with an invite link, or register a personal workspace.",
+      },
       { status: 400 },
     );
   }
@@ -89,8 +103,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const resolvedRole = maintenance
-    ? ("staff" as const)
+  const resolvedRole = onSiteStaff
+    ? role === "cleaner"
+      ? ("cleaner" as const)
+      : ("staff" as const)
     : kind === "company" && role === "manager"
       ? ("manager" as const)
       : ("owner" as const);
@@ -193,8 +209,10 @@ export async function POST(request: Request) {
     full_name: fullName,
     phone,
     email,
-    job_title: maintenance
-      ? "Maintenance"
+    job_title: onSiteStaff
+      ? resolvedRole === "cleaner"
+        ? "On-site staff"
+        : "Staff"
       : kind === "personal"
         ? "Personal"
         : resolvedRole === "manager"
@@ -202,7 +220,8 @@ export async function POST(request: Request) {
           : "Owner",
     share_slug,
   };
-  if (maintenance) {
+  if (onSiteStaff || listOnServices) {
+    // Listing stays private until they open it on Services; listNow only forces visible.
     profileRow.job_search_visible = Boolean(service?.listNow);
     profileRow.job_search_skills = service?.skills?.length
       ? service.skills
@@ -214,7 +233,7 @@ export async function POST(request: Request) {
   }
 
   let profileErr = (await admin.from("profiles").insert(profileRow)).error;
-  if (profileErr && maintenance && /job_search_/.test(profileErr.message)) {
+  if (profileErr && (onSiteStaff || listOnServices) && /job_search_/.test(profileErr.message)) {
     for (const key of Object.keys(profileRow)) {
       if (key.startsWith("job_search_")) delete profileRow[key];
     }

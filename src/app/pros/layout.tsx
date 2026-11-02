@@ -14,7 +14,8 @@ const websiteJsonLd = {
   "@type": "WebSite",
   name: "Pulse Flow Services",
   url: SERVICES_URL,
-  description: "Local services, made accessible.",
+  description:
+    "Find local plumbers, electricians, cleaners and more. Describe the problem, compare, and book. In English, Thai, Russian and Hebrew.",
   potentialAction: {
     "@type": "SearchAction",
     target: `${SERVICES_URL}/find?q={search_term_string}`,

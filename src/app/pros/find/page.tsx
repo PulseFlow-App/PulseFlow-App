@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ProCard } from "@/components/pros/parts";
 import { Input, Label, Select } from "@/components/ui/input";
+import { LOCALE_META } from "@/lib/i18n";
 import { PROS_LANGS, localizedName } from "@/lib/pros/catalog";
 import { allCategories, filterPros, sortOrganic } from "@/lib/pros/matching";
 import { usePros } from "@/lib/pros/store";
@@ -90,7 +91,7 @@ function FindInner() {
               <option value="">{t("any")}</option>
               {PROS_LANGS.map((lang) => (
                 <option key={lang} value={lang}>
-                  {lang}
+                  {LOCALE_META[lang].native}
                 </option>
               ))}
             </Select>

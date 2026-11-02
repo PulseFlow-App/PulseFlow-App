@@ -6,10 +6,14 @@ import { readPhoto } from "@/components/pros/parts";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { useAppearance } from "@/lib/appearance/provider";
+import { LOCALE_META } from "@/lib/i18n";
 import { AREAS, CATEGORIES, PROS_LANGS, localizedName } from "@/lib/pros/catalog";
 import {
   ensureMyServiceListing,
+  isServicesWorker,
+  readMyListingId,
   serviceInviteCode,
+  serviceInviteUrl,
   updateServiceListing,
 } from "@/lib/pros/join";
 import { servicesPath } from "@/lib/pros/paths";
@@ -197,7 +201,7 @@ function ListingForm() {
             <Chip
               key={lang}
               active={languages.includes(lang)}
-              label={lang}
+              label={LOCALE_META[lang].native}
               onClick={() => toggle(languages, lang, setLanguages)}
             />
           ))}
@@ -222,7 +226,9 @@ export default function ServicesSettingsPage() {
   const { appearance, setAppearance } = useAppearance();
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
   const [invite, setInvite] = useState("");
+  const [inviteLink, setInviteLink] = useState("");
   const [copied, setCopied] = useState(false);
+  const [worker, setWorker] = useState(false);
 
   useEffect(() => {
     if (!actorReady || actor) return;
@@ -232,24 +238,39 @@ export default function ServicesSettingsPage() {
   useEffect(() => {
     if (!actor) return;
     setInvite(serviceInviteCode());
+    setInviteLink(serviceInviteUrl(window.location.origin));
+    setWorker(isServicesWorker() || Boolean(readMyListingId()));
   }, [actor]);
 
   if (!actor) return null;
-
-  const inviteLink =
-    invite && typeof window !== "undefined"
-      ? `${window.location.origin}/register?from=${invite}`
-      : "";
 
   return (
     <div className="space-y-3">
       <h1 className="font-display text-2xl font-semibold text-ink">{t("settings")}</h1>
 
-      <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
-        <h2 className="font-display text-lg font-semibold text-ink">{t("yourListing")}</h2>
-        <p className="text-sm leading-relaxed text-muted">{t("listingHint")}</p>
-        <ListingForm />
-      </section>
+      {worker ? (
+        <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+          <h2 className="font-display text-lg font-semibold text-ink">{t("yourListing")}</h2>
+          <p className="text-sm leading-relaxed text-muted">{t("listingHint")}</p>
+          <ListingForm />
+        </section>
+      ) : (
+        <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+          <h2 className="font-display text-lg font-semibold text-ink">{t("yourListing")}</h2>
+          <p className="text-sm leading-relaxed text-muted">{t("listingHint")}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="min-h-12 w-full"
+            onClick={() => {
+              ensureMyServiceListing(actor);
+              setWorker(true);
+            }}
+          >
+            {t("welcomeStaffRegister")}
+          </Button>
+        </section>
+      )}
 
       <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
         <h2 className="font-display text-lg font-semibold text-ink">{t("theme")}</h2>
@@ -263,54 +284,52 @@ export default function ServicesSettingsPage() {
         <h2 className="font-display text-lg font-semibold text-ink">{t("inviteCode")}</h2>
         <p className="text-sm leading-relaxed text-muted">{t("inviteHint")}</p>
         <p className="font-display text-lg font-semibold tracking-wide text-ink">{invite}</p>
-        <Button
-          type="button"
-          variant="secondary"
-          className="min-h-12 w-full"
-          onClick={() => {
-            const link = `${window.location.origin}/register?from=${invite}`;
-            void navigator.clipboard.writeText(link).then(() => {
-              setCopied(true);
-            });
-          }}
-        >
-          {copied ? t("copied") : t("copyInvite")}
-        </Button>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Button
+            type="button"
+            variant="secondary"
+            className="min-h-12 w-full"
+            onClick={() => {
+              const link = serviceInviteUrl(window.location.origin, { as: "pro" });
+              setInviteLink(link);
+              void navigator.clipboard.writeText(link).then(() => setCopied(true));
+            }}
+          >
+            {copied ? t("copied") : t("copyInvitePro")}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="min-h-12 w-full"
+            onClick={() => {
+              const link = serviceInviteUrl(window.location.origin, { as: "seeker" });
+              setInviteLink(link);
+              void navigator.clipboard.writeText(link).then(() => setCopied(true));
+            }}
+          >
+            {copied ? t("copied") : t("copyInviteSeeker")}
+          </Button>
+        </div>
         {inviteLink ? <p className="break-all text-xs text-muted">{inviteLink}</p> : null}
       </section>
 
       <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-display text-lg font-semibold text-ink">Premium</h2>
-          {plan.premium ? <span className="text-sm font-semibold text-ink">{t("planOn")}</span> : null}
+          <h2 className="font-display text-lg font-semibold text-ink">{t("planTitle")}</h2>
+          {plan.premium || plan.pro ? <span className="text-sm font-semibold text-ink">{t("planOn")}</span> : null}
         </div>
         <p className="text-sm leading-relaxed text-muted">{t("premiumBody")}</p>
         {actor ? (
           <Button
             type="button"
-            variant={plan.premium ? "ghost" : "primary"}
+            variant={plan.premium || plan.pro ? "ghost" : "primary"}
             className="min-h-12 w-full"
-            onClick={() => setPlan({ premium: !plan.premium, pro: plan.premium ? false : plan.pro })}
+            onClick={() => {
+              const on = !(plan.premium || plan.pro);
+              setPlan({ premium: on, pro: on });
+            }}
           >
-            {plan.premium ? t("turnOff") : t("turnOn")}
-          </Button>
-        ) : null}
-      </section>
-
-      <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="font-display text-lg font-semibold text-ink">Pro</h2>
-          {plan.pro ? <span className="text-sm font-semibold text-ink">{t("planOn")}</span> : null}
-        </div>
-        <p className="text-sm leading-relaxed text-muted">{t("proBody")}</p>
-        {actor ? (
-          <Button
-            type="button"
-            variant={plan.pro ? "ghost" : "primary"}
-            className="min-h-12 w-full"
-            onClick={() => setPlan({ premium: plan.pro ? plan.premium : true, pro: !plan.pro })}
-          >
-            {plan.pro ? t("turnOff") : t("turnOn")}
+            {plan.premium || plan.pro ? t("turnOff") : t("turnOn")}
           </Button>
         ) : null}
       </section>

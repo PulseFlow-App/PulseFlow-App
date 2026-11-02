@@ -56,11 +56,20 @@ const TRADE_ICONS = {
   more: SolarWidget,
 } as const;
 
-export function CategoryIcon({ name, className }: { name: string; className?: string }) {
+export function CategoryIcon({
+  name,
+  className,
+  tone = "sky",
+}: {
+  name: string;
+  className?: string;
+  /** Home tiles use brand orange. Other screens keep the sky tone. */
+  tone?: "sky" | "action";
+}) {
   const Icon = TRADE_ICONS[name as keyof typeof TRADE_ICONS] ?? SolarStars;
   return (
     <Icon
-      soft={pulseIconTone.sky}
+      soft={tone === "action" ? pulseIconTone.action : pulseIconTone.sky}
       ink={pulseIconTone.ink}
       softOpacity={0.9}
       className={cn("pf-icon-well shrink-0", className)}

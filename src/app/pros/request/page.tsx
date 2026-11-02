@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { readPhoto } from "@/components/pros/parts";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
+import { LOCALE_META } from "@/lib/i18n";
 import { PROS_LANGS, localizedName } from "@/lib/pros/catalog";
 import { allCategories } from "@/lib/pros/matching";
 import { servicesPath } from "@/lib/pros/paths";
@@ -295,7 +296,7 @@ function RequestInner() {
           <Select value={language} onChange={(e) => setLanguage(e.target.value)}>
             {PROS_LANGS.map((lang) => (
               <option key={lang} value={lang}>
-                {lang}
+                {LOCALE_META[lang].native}
               </option>
             ))}
           </Select>

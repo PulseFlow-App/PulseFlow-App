@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Pulse Flow Services",
   "short_name": "Services",
-  "description": "Local services, made accessible.",
+  "description": "Find local plumbers, electricians, cleaners and more. Describe the problem, compare, and book. In English, Thai, Russian and Hebrew.",
   "lang": "en",
   "dir": "auto",
   "start_url": "/",

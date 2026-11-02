@@ -50,6 +50,8 @@ type Body = {
   password?: string;
   referredBy?: string | null;
   joinWithSession?: boolean;
+  /** Staff/cleaner may opt into Pulse Flow Services listing (starts private). */
+  listOnServices?: boolean;
 };
 
 type Admin = ReturnType<typeof createAdminClient>;
@@ -424,6 +426,21 @@ export async function POST(request: Request) {
       share_slug: existingProfile.share_slug as string | null,
       role: attached.nextRole,
     });
+    if (
+      body.listOnServices &&
+      (invite.role === "staff" || invite.role === "cleaner")
+    ) {
+      await admin
+        .from("profiles")
+        .update({
+          job_search_visible: false,
+          job_search_skills: existingProfile.job_search_skills?.length
+            ? existingProfile.job_search_skills
+            : ["maintenance"],
+          job_search_updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+    }
     await markInviteUsed(admin, invite, {
       fullName: existingProfile.full_name,
       email: (existingProfile.email as string) ?? user.email ?? "",
@@ -619,7 +636,10 @@ export async function POST(request: Request) {
     return Boolean(data);
   });
 
-  const { error: profileErr } = await admin.from("profiles").insert({
+  const wantsServices =
+    Boolean(body.listOnServices) &&
+    (invite.role === "staff" || invite.role === "cleaner");
+  const profileInsert: Record<string, unknown> = {
     id: userId,
     org_id: invite.org_id,
     personal_org_id: personalOrg.id,
@@ -629,7 +649,20 @@ export async function POST(request: Request) {
     email,
     job_title: invite.job_title,
     share_slug,
-  });
+  };
+  if (wantsServices) {
+    profileInsert.job_search_visible = false;
+    profileInsert.job_search_skills = ["maintenance"];
+    profileInsert.job_search_updated_at = new Date().toISOString();
+  }
+
+  let profileErr = (await admin.from("profiles").insert(profileInsert)).error;
+  if (profileErr && wantsServices && /job_search_/.test(profileErr.message)) {
+    for (const key of Object.keys(profileInsert)) {
+      if (key.startsWith("job_search_")) delete profileInsert[key];
+    }
+    profileErr = (await admin.from("profiles").insert(profileInsert)).error;
+  }
 
   if (profileErr) {
     await admin.from("organizations").delete().eq("id", personalOrg.id);
