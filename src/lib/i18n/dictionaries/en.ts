@@ -573,7 +573,7 @@ const en = {
   "contacts.order": "Order",
   "contacts.orderTitle": "Order {name}",
   "contacts.orderHint":
-    "Same as creating a task, already assigned to this contact. They must tap Read and agreed.",
+    "They get this job and tap Read and agreed. They do not have to join your company first.",
   "contacts.review": "Review",
   "contacts.reviewTitle": "Review {name}",
   "contacts.reviewHint":
@@ -1106,7 +1106,7 @@ const en = {
 
   "contacts.subtitlePersonal": "Save numbers in one place - call from here",
   "contacts.subtitleCompany":
-    "Add your staff or search people near you and invite to join your company",
+    "Search people near you and order them. Invite someone only when you want them on the team.",
   "contacts.whatsapp": "WhatsApp",
   "contacts.line": "LINE",
   "contacts.telegram": "Telegram",
@@ -1694,7 +1694,7 @@ const en = {
 
   "talent.title": "Pulse Flow Services",
   "talent.subtitle":
-    "People who listed on Pulse Flow Services. Invite them to your company when you want them on the team. This is the same directory as the public services site.",
+    "People listed on Pulse Flow Services. Order anyone here. Invite them only if you want them on your company team.",
   "talent.searchPlaceholder": "Search by name, skill, or bio…",
   "talent.filterLocation": "City or area",
   "talent.filterCountry": "Country",
@@ -1731,11 +1731,13 @@ const en = {
   "talent.forbidden": "Pulse Flow Services is available to property owners and company managers here.",
   "talent.viewProfile": "View profile",
   "talent.inviteCompany": "Invite to company",
+  "talent.addToContacts": "Add to contacts",
+  "talent.onTeam": "On your team",
   "talent.inviteBusy": "Sending invite…",
   "talent.inviteSent": "Invite sent. They’ll get a notification and join link.",
   "talent.inviteCopied": "Invite link copied. Send it if they miss the notification.",
-  "talent.alreadyOnTeam": "Already on your team. Added to Contacts so you can book them.",
-  "talent.alreadyOnContacts": "Already on your Contacts. Open Contacts to book.",
+  "talent.alreadyOnTeam": "Already on your team. Added to Contacts.",
+  "talent.alreadyOnContacts": "Already in Contacts.",
   "talent.inviteError": "Could not invite this person.",
   "talent.noReviews": "No reviews yet",
   "talent.reviewCount": "{count} review|{count} reviews",

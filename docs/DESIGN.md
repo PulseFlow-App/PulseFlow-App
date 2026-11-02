@@ -1,301 +1,201 @@
-# Pulse Flow Design Bible — Horizon
+# Pulse Flow design
 
-> **Source of truth for every design decision** on the marketing site and the Pulse Flow app.
-> Agents: read this file first before changing UI, copy, colour, type, motion, or components.
-> Visual companion: [`docs/design-brief.html`](docs/design-brief.html)
+Read this file before any visual, UX, colour, type, motion, or component change. The tokens live in `packages/pulse-tokens/`. Do not invent a second palette.
 
-**Language name:** Horizon  
-**Product:** Pulse Flow — the pulse of your rental operations  
-**Feeling:** energetic + serious · light · airy · inspiring · professional · competitive  
-**Primary audience:** Israeli property owners and operators (remote control of villas / short-term rentals), with managers, field staff, and guests as secondary roles.
+This replaces the Horizon bible (Sora, Heebo, sky washes, cream-adjacent canvas). Live screens still paint with the old variables until the adoption pass in the plan below. New work uses these tokens.
 
----
+Mood: bright, confident, orange and navy, bento layouts, big friendly type. Do not copy another product's layout.
 
-## 0. Agent rules (non-negotiable)
+## Surfaces
 
-1. **Read this file first** for any visual or UX change (site or app).
-2. **Reuse tokens and components.** Do not invent new hex colours, radii, shadows, or button styles.
-3. **No raw colours in UI code.** Use CSS variables / theme tokens only.
-4. **Less is more.** If a section can lose an element without losing meaning, remove it.
-5. **One job per section.** One headline, one short lead, one primary action when possible.
-6. **Hero budget:** brand + one H1 + one supporting line + one CTA group + one dominant property visual. No stat strips, badge piles, or promo chips in the first viewport.
-7. **Mobile-first.** Design phone first; desktop is an expansion, not the default.
-8. **RTL-ready.** Hebrew and Arabic must work; never assume LTR-only layout.
-9. **Property-connected visuals only.** Real villas, pools, decks, keys, work on site — not abstract purple blobs or stock “team smiling at laptop.”
-10. **When unsure:** open `docs/design-brief.html`, match what you see there, then implement with tokens below.
-
----
-
-## 1. Whiteboard — what users should feel
-
-| Feel | Means in UI |
-| --- | --- |
-| Energetic | Orange CTAs, amber highlights, purposeful micro-motion |
-| Serious | Deep ink `#023047`, clear hierarchy, no emoji decoration |
-| Light / airy | Cool white surfaces, sky washes, generous whitespace |
-| Inspiring | Horizon hero, property photography, “I want to open the app” |
-| Professional | Tight type scale, consistent components, competitive calm |
-| In control | Status clarity, money attached to property, no chat chaos |
-
-**Promise in one line:**  
-*Out of the group chat — into a clear day over your properties.*
-
----
-
-## 2. Principles (ruthless elimination)
-
-1. **Clarity beats cleverness.** Israeli operators skim; lead with outcome, not features.
-2. **Eliminate before decorate.** Whitespace is a feature.
-3. **Role = screen.** Don’t invent permission UI; each role has its own surface.
-4. **Chat stays; ops leave the chat.** Design never pretends to replace WhatsApp — it picks up where chat fails.
-5. **Motion serves presence.** 2–3 intentional motions per major surface; no ambient noise.
-6. **Trust is visual.** Show property photo + status + money trail. Don’t hide operations behind illustrations alone.
-7. **Selective trends only.** Adopt mobile-first, airy heroes, meaningful micro-interactions. Skip VR/AR, brutalism, maximalist noise, purple SaaS clichés.
-
-Inspired by: [Web design trends 2026](https://designmodo.com/web-design-trends/), [Design language](https://www.uxdesigninstitute.com/blog/create-a-design-language/), vibe-code consistency (tokens → components → no drift).
-
----
-
-## 3. Mental image
-
-Horizon is a **clear coastal morning over a villa portfolio**: sky blues, deep sea ink, sun-orange action. The page feels like opening shutters — light floods in, the day is organised, you want to operate.
-
-Orange (`#f26a36`, logo mark) is the **action sun** — CTAs, focus, “do this now.”  
-Navy (`#023047`) is **authority** — text, structure, seriousness.  
-Sky (`#8ecae6` / `#219ebc`) is **air and calm** — atmosphere, secondary UI, trust.  
-Amber (`#ffb703`) is **warm signal** — highlights, Pro, attention without alarm.
-
----
-
-## 4. Colour tokens
-
-### Core palette (locked)
-
-| Token | Hex | Role |
+| Surface | Host | What it is |
 | --- | --- | --- |
-| `--sky-soft` | `#8ecae6` | Atmosphere, soft fills, charts (cool) |
-| `--sky` | `#219ebc` | Links, info, secondary actions, focus rings (cool) |
-| `--ink` | `#023047` | Primary text, headers, nav weight |
-| `--sun` | `#ffb703` | Amber accent, Pro, highlights |
-| `--action` | `#f26a36` | **Main** CTA, primary buttons, brand energy |
+| Property ops | app.pulseflow.site | PWA for owners, managers, and staff |
+| Services | services.pulseflow.site | Local marketplace, also shipping to the App Store |
+| Marketing | pulseflow.site | Public site for property ops |
+| Services marketing | pulseflow.site/services | Public site for the marketplace |
 
-### Surfaces & neutrals
+The brief wrote `service.pulseflow.site`. The host in production is `services.pulseflow.site`. Use that host.
 
-| Token | Hex / value | Role |
+One account works on both app and services subdomains. Language and theme are the same settings on both.
+
+## Colour
+
+Orange is sampled from `public/brand/pulse-mark.svg`, the start stop of the logo gradient: `#F26A36`. The PNG is a blend, so a pixel sample is not the brand orange. The gradient end `#D94E1B` is the pressed orange only. The suggested start `#F26A2E` was not used.
+
+| Token | Hex | Use |
 | --- | --- | --- |
-| `--surface` | `#ffffff` | Cards, sheets |
-| `--canvas` | `#f5fafc` | Page background (cool white, sky-tinted — **not** warm cream) |
-| `--canvas-deep` | `#e8f4f8` | Alternate bands, soft panels |
-| `--muted` | `#5a6d78` | Secondary text (on canvas) |
-| `--border` | `rgba(2, 48, 71, 0.12)` | Hairlines |
-| `--success` | `#2a9d8f` | Confirmed / paid (keep distinct from sky) |
-| `--danger` | `#e63946` | Urgent / delete (sparingly) |
+| orange-500 | `#F26A36` | One solid orange tile, or one primary button, per screen |
+| orange-700 | `#D94E1B` | Pressed orange |
+| navy-900 | `#0B1F5C` | Ink: headings, key numbers, nav |
+| navy-600 | `#3D4F8A` | Secondary text, and the Order button fill |
+| slate-400 | `#8A94AD` | Large type and non-text marks only |
+| slate-ink | `#62709B` | Tertiary text |
+| peach-100 | `#FFE6D6` | Light-mode highlights and status washes. Not a dark-mode selected surface |
+| yellow-300 | `#FFD95E` | Small highlights and status washes |
+| page | `#F5F7FC` | Cool white page |
+| card | `#FFFFFF` | Cards |
+| line | `#E3E8F3` | Borders |
+| panel | `#0E1530` | At most one dark panel per light screen |
+| success | `#1FA971` | Fill and icons, not small text |
+| success-ink | `#157A52` | Success text |
+| warning | `#F5A524` | Fill and icons, not small text |
+| warning-ink | `#946000` | Warning text |
+| danger | `#E5484D` | Fill and icons, not small text |
+| danger-ink | `#C4232A` | Danger text |
 
-### Mapping from old Pulse tokens (migration)
+CSS custom properties use the `--pf-` prefix (`--pf-orange-500`). That keeps this file from overwriting the old `--ink` and `--surface` names while both exist.
 
-| Old | New |
-| --- | --- |
-| `--primary` / coral `#f07a3a` | `--action` `#f26a36` |
-| `--sand` warm cream | `--canvas` `#f5fafc` |
-| `--ink` warm brown | `--ink` `#023047` |
-| `--secondary` teal | Prefer `--sky` / `--success` by meaning |
+### Contrast
 
-### Usage rules
+Checked as WCAG AA. Small text needs 4.5:1. Large text needs 3:1.
 
-- **Primary button:** `--action` fill, white label, soft orange shadow.
-- **Secondary button:** transparent or white, `--ink` text, `--border` stroke; hover sky-soft wash.
-- **Text on orange / amber:** white or `#023047` only if contrast ≥ 4.5:1; prefer white on `--action`.
-- **Never** use purple/indigo gradients, terracotta-on-cream, or broadsheet dense columns.
-- **Never** put raw hex in components — only `var(--token)`.
-
----
-
-## 5. Typography
-
-Four tiers, every page. Nothing outside these.
-
-| Tier | Role | Font · weight | Size token | Used for |
-| --- | --- | --- | --- | --- |
-| 1 | Headline | **Sora** 700, −0.02em | `--type-hero` (h1) · `--type-title` (h2) | H1, H2, brand wordmark, CTAs (600) |
-| 2 | Subheading | **Heebo** 700, −0.01em | `--type-subtitle` (h3) · `1.0625rem` (h4, FAQ) | H3, H4, card / plan / flip titles, `<summary>` |
-| 3 | Body | **Heebo** 500 | `--type-body` | Paragraphs, lists, hero lead (`.pf-sub` slightly larger) |
-| 4 | Sign & note | **Heebo** 600 uppercase 0.1em · **Heebo** 500 | `--type-sign` · `--type-meta` | Eyebrows / kickers (sky) · captions, chips, footnotes (muted) |
-
-**IBM Plex Mono** is reserved for code and tool names (`pulse_*`, config snippets). Never for labels or notes.
-
-Weights above 700 are not loaded — never write `font-weight: 800/900` (the browser would fake-bold).  
-RTL (`he`, `ar`): Sora has no Hebrew / Arabic glyphs, so tier 1 switches to Heebo 700 automatically; the scale is unchanged.
-
-### Scale (mobile → desktop clamp)
-
-| Token | Size |
-| --- | --- |
-| `--type-hero` | `clamp(2.25rem, 1.6rem + 2.5vw, 3.5rem)` |
-| `--type-title` | `clamp(1.5rem, 1.2rem + 1vw, 2rem)` |
-| `--type-subtitle` | `clamp(1.125rem, 1.05rem + 0.35vw, 1.3rem)` |
-| `--type-body` | `1rem` (16px base) |
-| `--type-meta` | `0.8125rem` |
-| `--type-sign` | `0.75rem` (uppercase, tracked) |
-
-**Weights:** Headline 700 · Subheading 700 · Body 500 · Signs 600 · Notes 500. Max loaded weight is 700.  
-**Line height:** Hero ~1.1 · Title ~1.2 · Body ~1.55.  
-**Avoid:** Inter, Roboto, Arial, system-ui as brand faces.
-
-Hebrew copy: slightly denser line-height (`1.6`); keep the same scale.
-
----
-
-## 6. Primary visuals
-
-### Must
-
-- Real **property photography** (villa, pool, deck, door, site work).
-- Hero = **full-bleed or dominant edge-to-edge** property plane (marketing), or a living “horizon” atmosphere (soft sky gradient + slow breath) with property focal point.
-- App screenshots: show **villa photo on cards** (jobs, properties) — never house-icon placeholders when a photo exists.
-
-### Breathing / motion background
-
-- Soft sky gradient (`--sky-soft` → `--canvas`) with slow opacity or translate on a horizon band (8–16s loop).
-- Prefer CSS/`prefers-reduced-motion` respectful animation; pause when reduced motion is requested.
-
-### Forbidden as main idea
-
-- Abstract purple mesh, neon glow stacks, emoji rows, floating badge stickers on hero media.
-- Inset rounded media cards as the *only* hero (unless the design system explicitly requires phone mockups for feature sections).
-
----
-
-## 7. Design language — Horizon
-
-### Voice (copy)
-
-| Trait | Do | Don’t |
+| Pair | Ratio | Small text |
 | --- | --- | --- |
-| Direct | “Know what is happening without asking.” | “Unlock synergistic workflows.” |
-| Serious energy | Short verbs: Start free, Open demo, Confirm | Soft fluff: “maybe,” “journey,” “magic” |
-| Israeli-first | Respect Hebrew RTL; clear money & control language | US-startup slang as default |
-| Trust | Show deposit, bill, confirmation states | Hide costs in metaphors |
+| navy-900 on page, card, peach-100, yellow-300 | 11.2 to 15.4 | Pass |
+| navy-900 on orange-500 | 5.05 | Pass |
+| white on orange-500 | 3.05 | Fail for small text. Still the button label. See Buttons |
+| orange-500 on white or page | 3.05 and 2.84 | Fail. Orange is not a text colour |
+| navy-600 on page or card | 7.3 to 7.8 | Pass |
+| slate-ink on page or card | 4.55 to 4.87 | Pass |
+| slate-400 on page or white | 2.83 to 3.03 | Fail. Large type only |
+| success, warning, danger fills as small text on white | 2.04 to 3.91 | Fail. Use the ink colours |
+| page text on dark page `#0B1024` | 17.6 | Pass |
+| secondary text `#C9D0E3` on dark card | 10.6 | Pass |
+| slate-400 on dark card | 5.38 | Pass, so it is the dark-mode tertiary |
 
-**Audience motives (Israeli owners/operators):**
+Button labels are white. Navy text on orange passes contrast and was tried. It was rejected: the label is hard to read, and it does not match Order and Review. White on orange is 3.05:1, under the 4.5:1 small-text line. Keep the label white anyway. Do not put orange type on a light page.
 
-1. **Remote control** — see the day without calling the manager.  
-2. **Money trail** — every shekel/baht tied to a property.  
-3. **Staff reliability** — job accepted, not “maybe in WhatsApp.”  
-4. **Language** — write once, team reads in their language.  
-5. **Serious product** — looks like a tool you’d pay for, not a toy.
+No cream backgrounds. No terracotta. No gradient washes as decoration. One subtle gradient is allowed inside the hero only, from orange-500 toward orange-700, matching the logo.
 
-### Patterns
+### Dark mode
 
-| Pattern | Spec |
-| --- | --- |
-| Radius card | `1rem` (`--radius-card`) |
-| Radius control | `0.75rem` |
-| Radius CTA | `999px` pill for primary CTAs only |
-| Shadow soft | `0 1px 2px rgba(2,48,71,.04), 0 8px 24px rgba(2,48,71,.06)` |
-| Shadow CTA | `0 8px 20px rgba(251,133,0,.28)` |
-| Section gap | `clamp(3rem, 6vw, 5.5rem)` |
-| Content max | `72rem` wrap; prose `40rem` |
+The app switch is `data-appearance="frost"` or `data-appearance="dark"`. Frost is the light theme. Dark is the dark theme. Either value wins over the operating system, so a light app stays light when the system is dark, and the reverse. `data-theme="light"` or `data-theme="dark"` does the same when it is set. If neither frost nor an explicit light theme is set, follow the system.
 
-### Components (reuse; don’t fork)
+Dark page is `#0B1024`. Cards are `#161E3C`. The `#0E1530` panel stays available, and a light screen still gets only one of them. Orange and the semantic fills do not change. Button labels stay white in both themes.
 
-- **Button primary** — `--action`, pill, white text  
-- **Button secondary** — outline ink  
-- **Phone frame** — white bezel, soft shadow, real screenshot  
-- **Audience card** — no heavy chrome; icon + title + one line + text CTA  
-- **Status chip** — confirmed = success soft; awaiting = amber soft; urgent = danger soft  
-- **Agent block** — sky-tinted panel, mono tools list, after “who it’s for”
+Selected and highlighted rows are peach-100 with navy-900 text in light mode. In dark mode that peach wash is unreadable under light text. Use a 24 percent mix of orange-500 on the dark card, light ink (`#F5F7FC`), and a border that mixes orange-500 with the dark line. Do not use peach-100 as a selected surface in dark mode.
 
-### Motion language
+## Type
 
-| Motion | When |
-| --- | --- |
-| Horizon breath | Hero atmosphere only |
-| Fade-up enter | Sections on scroll (once) |
-| Button press | Scale 0.98 / 120ms |
-| Agent demo replay | Scripted chat only |
+Onest for Latin and Cyrillic. Google Fonts serves weights 400, 500, 700, and 800, with Cyrillic in `U+0400–045F` and `U+0460–052F`. Onest has no Thai. Noto Sans Thai is the fallback for `U+0E00–0E7F`. Noto Sans also covers Hebrew, Arabic, and Myanmar, which the product already ships.
 
-No autoplaying video sound. Loom embeds stay user-initiated.
+Native chrome (tab bar, nav titles) uses the system font. Everything else uses Onest.
 
----
+| Role | Size | Weight | Tracking |
+| --- | --- | --- | --- |
+| Meta | 12 | 500 | 0 |
+| Label | 14 | 500 | 0 |
+| Body | 16 | 400 | 0 |
+| Body strong | 18 | 500 | 0 |
+| Title | 22 | 700 | -0.02em |
+| Title large | 28 | 700 | -0.02em |
+| Display | 36 | 800 | -0.03em |
+| Display large | 48 | 800 | -0.03em |
+| Hero | 64 | 800 | -0.03em |
 
-## 8. Layout & page architecture (site)
+Headlines are sentence case. Line length stays under 70 characters. Russian and Thai strings run longer than English. Buttons and tiles wrap or grow. They do not truncate a verb.
 
-**Homepage order (fixed intent):**  
-Problems → Features → Language → **Who it’s for (roles)** → **Connect your agent** → Plans → Referral → FAQ → Demo.
+### Specimens
 
-**Owners:** Videos (title only, no fluff lead) → Hero headline/CTA → Flagship features with phone shots → Agent note → Feature accordion → Demo.
+1. Display, 48, weight 800, navy-900, tracking -0.03em. "Find a pro near you."
+2. Title plus body. Title 28, weight 700. Body 16, weight 400, max-width 70ch, navy-600. "You pay the professional directly. Pulse Flow does not guarantee the work, and professionals choose which requests to accept."
+3. Expansion. The same control at 16 / 500, min-height 44px, pill radius, white text on orange. English "Find a pro". Russian "Найти мастера". Thai "หาช่างใกล้คุณ". The Thai line must stay inside the control without clipping.
 
-**Brand test:** Remove the nav — the first viewport must still say Pulse Flow, not a generic ops SaaS.
+## Shape and depth
 
----
+| Level | Radius | Used on |
+| --- | --- | --- |
+| Hero | 28px | Hero panels |
+| Card | 20px | Tiles and sheets |
+| Control | 14px | Inputs |
+| Pill | 999px | Buttons, tags, and filters |
 
-## 9. App design notes (use this bible in the product)
+Do not use one radius on every object.
 
-Same tokens, type, and voice. Additional:
+Two shadows, navy-tinted, under 10 percent opacity:
 
-- Bottom nav / side nav weight uses `--ink`; active = `--action` or white disc on dark bar.  
-- Property cards **always** prefer photo cover when available.  
-- Lists: one primary action per row; secondary actions collapse.  
-- Agent / Pro surfaces use `--sun` sparingly as “Pro” marker, `--sky` for connection/trust.  
-- Demo banner: soft `--sky-soft` background, `--ink` text — never alarm red.
+- `--pf-shadow-1`: `0 1px 2px rgba(11, 31, 92, 0.06)`
+- `--pf-shadow-2`: `0 8px 24px rgba(11, 31, 92, 0.08)`
 
----
+Prefer a 1px line and the page-to-card contrast. Most tiles have no shadow.
 
-## 10. Anti-patterns (AI drift guards)
+## Layout
 
-Reject or rewrite if you see:
+Bento grids. Tile sizes and contents differ on purpose: a photo tile, a number tile, a list tile, an action tile. Never a row of identical cards.
 
-- New hex values outside this file  
-- Warm cream `#F4F1EA` / terracotta / purple-indigo themes  
-- Inter / Roboto / Arial as brand fonts  
-- Cards in the hero for decoration  
-- Stat strips / pill clusters in first viewport  
-- Duplicate button variants (“Primary Soft Alt 2”)  
-- English-only assumptions that break `he` / `ar`  
-- House silhouette placeholders instead of villa photos on jobs/properties  
+Mobile first at 390px. Respect iOS safe areas. Tap targets are at least 44px.
 
----
+## Imagery and icons
 
-## 11. Early verbal kit (copy anchors)
+Real photographs of Koh Phangan: properties, tradespeople at work, local places. If a photo is missing, use a named slot, not a fake image.
 
-Use these as north stars; translate via `i18n`, don’t invent new English brands casually.
+Slots: `koh-phangan-villa-pool`, `koh-phangan-tradesperson`, `koh-phangan-place`.
 
-- **H1 (home):** Get your work out of the group chats  
-- **Sub:** Properties, jobs, tasks, vendors, bills and guests in one workspace.  
-- **H1 (owners):** Know what is happening without asking questions  
-- **Horizon line (optional brand):** Clear day. Clear operations.  
-- **CTA:** Start free · See the demo · Open app  
-- **Agent:** Connect your agent  
+No stock office people. No 3D blobs. No abstract gradients.
 
----
+One icon set: Phosphor duotone, one stroke weight. Navy-900 for the main tone, orange-500 for the second tone. Do not mix in a second set.
 
-## 12. Sources & references
+## Motion
 
-- Feeling / process: user Horizon brief (whiteboard → principles → palette → visuals → language → master brief)  
-- Trends (selective): https://designmodo.com/web-design-trends/  
-- Design language method: https://www.uxdesigninstitute.com/blog/create-a-design-language/  
-- AI consistency: tokens → components → no raw styles (vibe-coded UI discipline)  
-- Living presentation: `docs/design-brief.html`
+One orchestrated moment per page, on the hero. Everything else answers a touch: press state, sheet transition, shared element transition, haptics in the apps. No fade-and-slide on every section. No hover lift on every card. Honor `prefers-reduced-motion`.
 
----
+## Copy
 
-## 13. Optional appearances (non-default)
+Say what a thing does, in plain words, from the user's point of view. Buttons name the result: "Find a pro", "Send request". Sentence case. No em dashes. No filler slogans. No lorem ipsum.
 
-Horizon light is the **product default**. Settings → Appearance may offer opt-in extras that only override CSS variables via `html[data-appearance]`:
+## Banned
 
-| Value | Role |
-| --- | --- |
-| *(unset)* / `horizon` | Default cool canvas — production look (welcome-style atmosphere wash) |
-| `frost` | White liquid-glass cards + stronger sky/orange wash (welcome light toggle) |
-| `dark` | Night liquid glass with soft sky/orange glows |
+- Tracked-out all-caps eyebrows above headings
+- One word in a headline in a different colour or italic
+- Numbered markers unless the steps are a real sequence
+- An arrow glyph on every link
+- Identical rounded cards with identical shadows
+- Meta strings joined by middle dots
+- Stat rows of big number, small label, and a gradient accent
 
-Rules: never change `:root` Horizon colour tokens for these; never make dark/frost the product default for new installs; demos and locales share the same opt-in (`localStorage` key `pulse-appearance`). Welcome header toggles frost ↔ dark; Settings lists all three. Marketing Liquid Glass sandboxes live under `pulseflow-site/docs/experiments/` (`noindex`), not the live landing.
+## Components
 
----
+Not built yet. Spec only. Build these after review, from the tokens, with no one-off colours.
 
-## 14. Change control
+### Button
 
-1. Propose token/component changes in this file first.  
-2. Update `docs/design-brief.html` so humans can see it.  
-3. Then implement in site CSS / app theme.  
-4. Rebuild locales if marketing HTML/copy changes (`python3 scripts/build-locale-sites.py`).
+Two fills, both with a white label, pill radius, min-height 44, weight 500.
+
+Primary matches Review, Sign in, and Add new: orange-500 fill, white label. One orange button per screen. Pressed state is orange-700 and the label stays white.
+
+Order matches the contact Order control: navy-600 fill, white label. It can sit beside the one orange button. It is not a second orange.
+
+Secondary: card fill, line border, navy-900 label, no shadow. Disabled: slate-ink label, no orange.
+
+### Tag
+
+Pill radius. Peach-100 or yellow-300 fill, navy-900 label, 12 or 14 type. Not a second button. Filters use the same pill.
+
+### Tile
+
+Radius 20. Page holds a bento, so neighbouring tiles differ in size and in content. Kinds: photo (`koh-phangan-*` slot), number (navy-900 figure, 14 label), list (rows separated by line), action (the single orange tile). Border is `line`. Shadow is optional and only shadow-1. No hover lift.
+
+### Sheet
+
+Card colour, radius 28 on the top corners, shadow-2. Drag handle is a 36 by 4 line. Safe area padding at the bottom. Reduced motion skips the slide and shows the sheet in place.
+
+### Tab bar
+
+System font. Four targets max, 44px tall, plus the home-indicator inset. Active item is navy-900. Inactive is slate-ink in light mode and slate-400 in dark mode. No orange fill behind every tab. Orange marks only the single active icon tone.
+
+### Header
+
+One header for pulseflow.site and pulseflow.site/services. Segmented switch: "Property ops" and "Services". Language switcher is visible: English, Russian, Thai at minimum. Wordmark in navy-900. The apps use their own compact header, system font for the title, same language switcher.
+
+### Form field
+
+Label 14, navy-900. Input radius 14, min-height 44, card fill, line border. Focus ring is a 2px navy-600 outline, not a glow. Error text uses danger-ink. Helper text uses slate-ink.
+
+### Status chip
+
+Pill. Text uses success-ink, warning-ink, or danger-ink. Fill is a light wash of peach-100 or yellow-300, or a 12 percent mix of the semantic colour on the card. Do not set the bright semantic hex as small text on white.
+
+## Not in this pass
+
+Components, the shared marketing header, font loading, and restyling the four surfaces are waiting on review. The tokens file is loaded so the values exist. Existing classes still use the previous theme.

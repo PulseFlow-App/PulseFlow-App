@@ -1,0 +1,53 @@
+/**
+ * Tailwind v4 theme for the Pulse tokens.
+ * Import after tailwindcss. Utilities are pf-orange-500, pf-page, and so on.
+ * Live screens keep their current classes until the adoption pass.
+ */
+
+@theme inline {
+  --color-pf-orange-500: var(--pf-orange-500);
+  --color-pf-orange-700: var(--pf-orange-700);
+  --color-pf-navy-900: var(--pf-navy-900);
+  --color-pf-navy-600: var(--pf-navy-600);
+  --color-pf-slate-400: var(--pf-slate-400);
+  --color-pf-slate-ink: var(--pf-slate-ink);
+  --color-pf-peach-100: var(--pf-peach-100);
+  --color-pf-yellow-300: var(--pf-yellow-300);
+  --color-pf-page: var(--pf-page);
+  --color-pf-card: var(--pf-card);
+  --color-pf-line: var(--pf-line);
+  --color-pf-panel: var(--pf-panel);
+  --color-pf-success: var(--pf-success);
+  --color-pf-success-ink: var(--pf-success-ink);
+  --color-pf-warning: var(--pf-warning);
+  --color-pf-warning-ink: var(--pf-warning-ink);
+  --color-pf-danger: var(--pf-danger);
+  --color-pf-danger-ink: var(--pf-danger-ink);
+  --color-pf-ink: var(--pf-ink);
+  --color-pf-text: var(--pf-text);
+  --color-pf-text-secondary: var(--pf-text-secondary);
+  --color-pf-text-tertiary: var(--pf-text-tertiary);
+  --color-pf-on-orange: var(--pf-on-orange);
+  --color-pf-on-panel: var(--pf-on-panel);
+
+  --radius-pf-hero: var(--pf-radius-hero);
+  --radius-pf-card: var(--pf-radius-card);
+  --radius-pf-control: var(--pf-radius-control);
+  --radius-pf-pill: var(--pf-radius-pill);
+
+  --shadow-pf-1: var(--pf-shadow-1);
+  --shadow-pf-2: var(--pf-shadow-2);
+
+  --font-pf-sans: var(--pf-font-sans);
+  --font-pf-chrome: var(--pf-font-chrome);
+
+  --text-pf-12: var(--pf-type-12);
+  --text-pf-14: var(--pf-type-14);
+  --text-pf-16: var(--pf-type-16);
+  --text-pf-18: var(--pf-type-18);
+  --text-pf-22: var(--pf-type-22);
+  --text-pf-28: var(--pf-type-28);
+  --text-pf-36: var(--pf-type-36);
+  --text-pf-48: var(--pf-type-48);
+  --text-pf-64: var(--pf-type-64);
+}

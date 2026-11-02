@@ -29,7 +29,12 @@ function Editor() {
     if (!ready || !actorReady || draft) return;
     if (contactId && !data.ready) return;
     const line = contact?.messengers.find((m) => m.kind === "line")?.handle ?? null;
-    const whatsapp = contact?.messengers.some((m) => m.kind === "whatsapp") ? contact.phone : null;
+    const whatsappMessenger = contact?.messengers.find(
+      (m) => m.kind === "whatsapp",
+    );
+    const whatsapp = whatsappMessenger
+      ? whatsappMessenger.handle?.trim() || contact?.phone || null
+      : null;
     setConsent(Boolean(existing?.consentAt));
     setDraft(
       existing ?? {

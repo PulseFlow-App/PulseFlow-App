@@ -1099,14 +1099,16 @@ function useDemoData(): AppData {
     createContact: async (input) => {
       assertDemoWritable();
       if (!profile) return;
+      const id = uid("contact");
       updateDemoStore((s) => ({
         ...s,
         contacts: [
-          { id: uid("contact"), org_id: profile.org_id, ...input },
+          { id, org_id: profile.org_id, ...input },
           ...s.contacts,
         ],
       }));
       emitEducationEvent("contact.created");
+      return id;
     },
     updateContact: async (id, patch) => {
       assertDemoWritable();

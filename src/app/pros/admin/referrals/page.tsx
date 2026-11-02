@@ -46,31 +46,31 @@ export default function ReferralAdminPage() {
 
   if (!adminReady) return null;
   if (!isAdmin) {
-    return <p className="text-sm text-muted">This panel is locked.</p>;
+    return <p className="text-pf-14 text-pf-text-secondary">This panel is locked.</p>;
   }
 
   return (
       <div className="space-y-6">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold text-ink">Who invited whom</h1>
-          <Link href={servicesPath(pathname, "/admin")} className="text-sm font-semibold text-primary">Back</Link>
+          <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">Who invited whom</h1>
+          <Link href={servicesPath(pathname, "/admin")} className="text-pf-14 font-medium text-pf-text-secondary">Back</Link>
         </div>
-        <p className="text-sm text-muted">
-          Marketing shares the general invite from Settings. The code after <span className="font-semibold text-ink">?from=</span> is that person’s share code. Company staff QR codes stay on the separate join link and are not listed as new companies here.
+        <p className="text-pf-14 text-pf-text-secondary">
+          Marketing shares the general invite from Settings. The code after <span className="font-medium text-pf-ink">?from=</span> is that person’s share code. Company staff QR codes stay on the separate join link and are not listed as new companies here.
         </p>
-        {liveNote ? <p className="text-sm text-muted">{liveNote}</p> : null}
+        {liveNote ? <p className="text-pf-14 text-pf-text-secondary">{liveNote}</p> : null}
 
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-ink">On this device</h2>
+          <h2 className="text-pf-14 font-medium text-pf-ink">On this device</h2>
           {localRows.length === 0 ? (
-            <p className="text-sm text-muted">No registrations saved in this browser yet.</p>
+            <p className="text-pf-14 text-pf-text-secondary">No registrations saved in this browser yet.</p>
           ) : (
             <ul className="space-y-2">
               {localRows.map((row) => (
-                <li key={row.id} className="rounded-2xl bg-card p-3 text-sm">
-                  <p className="font-semibold text-ink">{row.name}</p>
-                  <p className="text-muted">{row.email} · {row.track}{row.plan === "company" ? ` · ${row.role}, ${row.payer} pays` : ""}</p>
-                  <p className="text-muted">
+                <li key={row.id} className="rounded-[20px] bg-pf-card p-3 text-sm">
+                  <p className="font-medium text-pf-ink">{row.name}</p>
+                  <p className="text-pf-slate-ink">{row.email} · {row.track}{row.plan === "company" ? ` · ${row.role}, ${row.payer} pays` : ""}</p>
+                  <p className="text-pf-slate-ink">
                     {row.referrer ? `Invited with code ${row.referrer}` : "No invite code"}
                     {" · "}
                     {new Date(row.at).toLocaleString()}
@@ -83,16 +83,16 @@ export default function ReferralAdminPage() {
 
         {liveRows.length ? (
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold text-ink">Live ledger</h2>
+            <h2 className="text-pf-14 font-medium text-pf-ink">Live ledger</h2>
             <ul className="space-y-2">
               {liveRows.map((row) => (
-                <li key={row.id} className="rounded-2xl bg-card p-3 text-sm">
-                  <p className="font-semibold text-ink">{row.referrer} invited {row.referred}</p>
-                  <p className="text-muted">
+                <li key={row.id} className="rounded-[20px] bg-pf-card p-3 text-sm">
+                  <p className="font-medium text-pf-ink">{row.referrer} invited {row.referred}</p>
+                  <p className="text-pf-slate-ink">
                     {row.referrerEmail ?? row.referrerCode} → {row.referredEmail}
                     {row.referredRole ? ` · ${row.referredRole}` : ""} · {row.source}
                   </p>
-                  <p className="text-muted">{new Date(row.at).toLocaleString()}</p>
+                  <p className="text-pf-slate-ink">{new Date(row.at).toLocaleString()}</p>
                 </li>
               ))}
             </ul>

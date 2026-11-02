@@ -14,7 +14,7 @@ import {
 import { canBrowseTalent } from "@/lib/roles";
 import type { UserRole } from "@/lib/design-tokens";
 import type { Endorsement, Organization, Profile } from "@/lib/types";
-import { getDemoStore } from "@/lib/demo/store";
+import { getDemoProfile, getDemoStore } from "@/lib/demo/store";
 
 function collectPlaceFacets(
   profiles: Array<{
@@ -103,9 +103,7 @@ export async function GET(request: Request) {
   if (isDemoMode()) {
     const store = getDemoStore();
     let profiles = store.profiles.filter(
-      (p) =>
-        p.job_search_visible &&
-        (p.role === "cleaner" || p.role === "staff" || p.role === "manager"),
+      (p) => p.job_search_visible && p.role !== "guest",
     );
     if (skill) {
       profiles = profiles.filter((p) =>
@@ -152,13 +150,30 @@ export async function GET(request: Request) {
     });
     const facets = collectPlaceFacets(
       store.profiles.filter(
-        (p) =>
-          p.job_search_visible &&
-          (p.role === "cleaner" || p.role === "staff" || p.role === "manager"),
+        (p) => p.job_search_visible && p.role !== "guest",
       ),
     );
+    const actor = getDemoProfile();
+    const orgId = actor?.org_id;
+    const onTeam = new Set(
+      (store.memberships ?? [])
+        .filter((m) => m.org_id === orgId && m.role !== "guest")
+        .map((m) => m.profile_id),
+    );
+    for (const p of store.profiles) {
+      if (orgId && p.org_id === orgId && p.role !== "guest") onTeam.add(p.id);
+    }
+    const inContacts = new Set(
+      (store.contacts ?? [])
+        .filter((c) => c.org_id === orgId && c.linked_profile_id)
+        .map((c) => c.linked_profile_id as string),
+    );
     return NextResponse.json({
-      results,
+      results: results.map((person) => ({
+        ...person,
+        on_team: onTeam.has(person.id),
+        in_contacts: inContacts.has(person.id),
+      })),
       countries: facets.countries,
       locations: facets.locations,
     });
@@ -196,10 +211,10 @@ export async function GET(request: Request) {
   let query = admin
     .from("profiles")
     .select(
-      "id, full_name, job_title, role, share_slug, job_search_skills, job_search_bio, job_search_location, job_search_country, job_search_lat, job_search_lng",
+      "id, org_id, full_name, job_title, role, share_slug, job_search_skills, job_search_bio, job_search_location, job_search_country, job_search_lat, job_search_lng",
     )
     .eq("job_search_visible", true)
-    .in("role", ["cleaner", "staff", "manager"])
+    .neq("role", "guest")
     .order("full_name")
     .limit(Math.min(limit * 3, 120));
 
@@ -258,6 +273,33 @@ export async function GET(request: Request) {
     .filter((r): r is TalentSearchResult => Boolean(r))
     .slice(0, limit);
 
+  const onTeam = new Set<string>();
+  const inContacts = new Set<string>();
+  if (ids.length) {
+    const [{ data: memberRows }, { data: contactRows }] = await Promise.all([
+      admin
+        .from("org_memberships")
+        .select("profile_id")
+        .eq("org_id", viewer.org_id)
+        .in("profile_id", ids),
+      admin
+        .from("contacts")
+        .select("linked_profile_id")
+        .eq("org_id", viewer.org_id)
+        .in("linked_profile_id", ids),
+    ]);
+    for (const row of (memberRows as { profile_id: string }[] | null) ?? []) {
+      onTeam.add(row.profile_id);
+    }
+    for (const person of filtered) {
+      if (person.org_id === viewer.org_id) onTeam.add(person.id);
+    }
+    for (const row of (contactRows as { linked_profile_id: string | null }[] | null) ??
+      []) {
+      if (row.linked_profile_id) inContacts.add(row.linked_profile_id);
+    }
+  }
+
   results.sort((a, b) => {
     if (a.distance_km != null && b.distance_km != null) {
       return a.distance_km - b.distance_km;
@@ -272,7 +314,7 @@ export async function GET(request: Request) {
     .from("profiles")
     .select("job_search_country, job_search_location")
     .eq("job_search_visible", true)
-    .in("role", ["cleaner", "staff", "manager"]);
+    .neq("role", "guest");
 
   const facets = collectPlaceFacets(
     (facetRows as Array<{
@@ -282,7 +324,11 @@ export async function GET(request: Request) {
   );
 
   return NextResponse.json({
-    results,
+    results: results.map((person) => ({
+      ...person,
+      on_team: onTeam.has(person.id),
+      in_contacts: inContacts.has(person.id),
+    })),
     countries: facets.countries,
     locations: facets.locations,
   });

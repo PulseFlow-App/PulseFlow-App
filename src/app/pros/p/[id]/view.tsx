@@ -18,20 +18,23 @@ export function ProfileView({ id }: { id: string }) {
   const pro = state.profiles.find((row) => row.id === id);
   const [reason, setReason] = useState("");
   const [sent, setSent] = useState(false);
-  if (!pro || pro.status === "suspended") return <p className="text-sm text-muted">{t("noPros")}</p>;
+  if (!pro || pro.status === "suspended") return <p className="text-pf-16 text-pf-text-secondary">{t("noPros")}</p>;
   const team = Boolean(actor?.orgId && pro.orgId === actor.orgId);
   if (pro.visibility === "private" && !team) {
-    return <p className="text-sm text-muted">{t("privateProfile")}</p>;
+    return <p className="text-pf-16 text-pf-text-secondary">{t("privateProfile")}</p>;
   }
-  const trade = pro.categoryIds.map((cat) => categoryName(state, cat, locale)).filter(Boolean).join(" · ");
+  const trades = pro.categoryIds.map((cat) => categoryName(state, cat, locale)).filter(Boolean);
   const rating = reviewAverage(state.reviews, pro.id);
   if (!actor) {
     return (
       <div className="space-y-4">
-        <div className="select-none blur-[2px]" aria-hidden>
-          <h1 className="font-display text-2xl font-semibold text-ink">{pro.name}</h1>
-          <p className="text-sm text-muted">{trade}</p>
-          <p className="mt-1 text-sm text-ink/80">{rating == null ? t("noReviews") : rating.toFixed(1)}</p>
+        <div className="select-none blur-[6px]" aria-hidden>
+          <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{pro.name}</h1>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {trades.map((label) => (
+              <span key={label} className="rounded-full bg-pf-peach-100 px-2 py-0.5 text-pf-12 font-medium text-pf-ink">{label}</span>
+            ))}
+          </div>
         </div>
         {actorReady ? <ServicesAccountGate next={pathname} /> : null}
       </div>
@@ -40,7 +43,6 @@ export function ProfileView({ id }: { id: string }) {
   const saved = Boolean(actor && (state.favourites[actor.id] ?? []).includes(pro.id));
   const jobs = jobsFor(state.jobs, pro.id);
   const reviews = state.reviews.filter((row) => row.profileId === pro.id);
-  const trades = [...new Set(jobs.map((job) => categoryName(state, job.categoryId, locale)).filter(Boolean))];
   const checks = [
     pro.checks.email ? t("emailVerified") : null,
     pro.checks.phone ? t("phoneVerified") : null,
@@ -52,13 +54,15 @@ export function ProfileView({ id }: { id: string }) {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-display text-2xl font-semibold text-ink">{pro.name}</h1>
-        <p className="text-sm text-muted">
-          {pro.categoryIds.map((cat) => categoryName(state, cat, locale)).filter(Boolean).join(" · ")}
-        </p>
-        <p className="mt-1 text-sm text-ink/80">
-          {pro.areaIds.map((area) => areaName(state, area, locale)).filter(Boolean).join(" · ")}
-        </p>
+        <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{pro.name}</h1>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {trades.map((label) => (
+            <span key={label} className="rounded-full bg-pf-peach-100 px-2 py-0.5 text-pf-12 font-medium text-pf-ink">{label}</span>
+          ))}
+          {pro.areaIds.map((area) => areaName(state, area, locale)).filter(Boolean).map((label) => (
+            <span key={label} className="rounded-full bg-pf-yellow-300 px-2 py-0.5 text-pf-12 font-medium text-pf-ink">{label}</span>
+          ))}
+        </div>
       </div>
       <OriginalText
         text={pro.description}
@@ -66,13 +70,14 @@ export function ProfileView({ id }: { id: string }) {
         translations={pro.translations}
         onSave={(lang, text) => rememberTranslation("profile", pro.id, lang, text)}
       />
-      <p className="text-sm text-ink">
+      <p className="text-pf-16 text-pf-ink">
         {rating == null ? t("noReviews") : rating.toFixed(1)}
-        {jobs.length > 0 ? ` · ${jobs.length === 1 ? t("verifiedJob") : t("verifiedJobs", { count: jobs.length })}` : ""}
       </p>
-      {trades.length > 0 ? <p className="text-sm text-muted">{trades.join(" · ")}</p> : null}
+      {jobs.length > 0 ? (
+        <p className="text-pf-14 text-pf-text-secondary">{jobs.length === 1 ? t("verifiedJob") : t("verifiedJobs", { count: jobs.length })}</p>
+      ) : null}
       {checks.length > 0 ? (
-        <ul className="space-y-1 text-sm text-ink">
+        <ul className="space-y-1 text-pf-16 text-pf-ink">
           {checks.map((label) => (
             <li key={label}>{label}</li>
           ))}
@@ -82,26 +87,26 @@ export function ProfileView({ id }: { id: string }) {
         <div className="grid grid-cols-3 gap-2">
           {pro.photos.map((src) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={src.slice(0, 32)} src={src} alt="" className="h-24 w-full rounded-xl object-cover" />
+            <img key={src.slice(0, 32)} src={src} alt="" className="h-24 w-full rounded-[14px] object-cover" />
           ))}
         </div>
       ) : null}
       {actor ? (
-        <button type="button" className="min-h-12 text-sm font-semibold text-primary" onClick={() => toggleFavourite(pro.id)}>
+        <button type="button" className="min-h-12 text-pf-14 font-medium text-pf-text-secondary" onClick={() => toggleFavourite(pro.id)}>
           {saved ? t("savedFavourite") : t("saveFavourite")}
         </button>
       ) : null}
-      <p className="text-sm text-muted">{t("contactHidden")}</p>
+      <p className="text-pf-14 text-pf-text-secondary">{t("contactHidden")}</p>
       <Link
         href={servicesPath(pathname, `/request?profile=${pro.id}&category=${pro.categoryIds[0] ?? ""}`)}
-        className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700"
       >
         {t("sendRequest")}
       </Link>
-      {reviews.length === 0 ? <p className="text-sm text-muted">{t("noReviews")}</p> : null}
+      {reviews.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noReviews")}</p> : null}
       {reviews.map((review) => (
-        <article key={review.id} className="rounded-2xl border border-[var(--color-border)] bg-card p-3">
-          <p className="text-sm font-semibold text-ink">{review.stars}</p>
+        <article key={review.id} className="rounded-[20px] border border-pf-line bg-pf-card p-3">
+          <p className="text-pf-14 font-medium text-pf-ink">{review.stars}</p>
           <OriginalText
             text={review.comment}
             locale={review.originalLocale}

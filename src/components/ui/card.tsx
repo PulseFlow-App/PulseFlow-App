@@ -9,8 +9,8 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-card text-ink",
-        elevated ? "lift-shadow" : "soft-shadow",
+        "rounded-pf-card border border-pf-line bg-pf-card text-pf-ink",
+        elevated ? "shadow-pf-1" : "",
         className,
       )}
       {...props}

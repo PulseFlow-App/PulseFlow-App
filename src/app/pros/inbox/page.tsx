@@ -41,20 +41,20 @@ export default function WorkerInboxPage() {
 
   return (
     <div className="space-y-3">
-      <h1 className="font-display text-2xl font-semibold text-ink">{t("inbox")}</h1>
+      <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("inbox")}</h1>
       {!listingId ? (
-        <p className="text-sm text-muted">{t("noInbox")}</p>
+        <p className="text-pf-14 text-pf-text-secondary">{t("noInbox")}</p>
       ) : null}
-      {listingId && rows.length === 0 ? <p className="text-sm text-muted">{t("noInbox")}</p> : null}
+      {listingId && rows.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noInbox")}</p> : null}
       {rows.map(({ offer, request }) => (
         <article
           key={offer.id}
-          className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-3"
+          className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-3"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="font-semibold text-ink">{request?.title}</p>
-              <p className="text-sm text-muted">
+              <p className="font-medium text-pf-ink">{request?.title}</p>
+              <p className="text-pf-14 text-pf-text-secondary">
                 {request ? t(statusKey(request.status)) : null}
                 {offer.status !== "pending" ? ` · ${offer.status}` : null}
               </p>
@@ -62,22 +62,22 @@ export default function WorkerInboxPage() {
             {offer.status === "pending" ? (
               <Link
                 href={to(`/reply/${offer.token}`)}
-                className="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white"
+                className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-pf-navy-600 px-3 text-pf-14 font-medium text-white"
               >
                 {t("replyNow")}
               </Link>
             ) : (
               <Link
                 href={to(`/requests/${request?.id}`)}
-                className="shrink-0 text-xs font-semibold text-primary"
+                className="shrink-0 text-pf-12 font-medium text-pf-text-secondary"
               >
                 {t("requests")}
               </Link>
             )}
           </div>
-          {offer.message ? <p className="text-sm text-ink/80">{offer.message}</p> : null}
+          {offer.message ? <p className="text-pf-16 text-pf-text-secondary">{offer.message}</p> : null}
           {offer.amount != null ? (
-            <p className="text-sm font-semibold text-ink">
+            <p className="text-pf-14 font-medium text-pf-ink">
               {offer.amount} {offer.currency ?? ""}
             </p>
           ) : null}

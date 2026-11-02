@@ -11,7 +11,7 @@ import { PulseIcon } from "@/components/icons/pulse-icon";
 import { AppMenuButton } from "./app-menu";
 
 const headerIconBtn =
-  "relative flex size-8 shrink-0 items-center justify-center text-ink/85 transition hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
+  "relative flex size-11 shrink-0 items-center justify-center text-pf-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600";
 
 /**
  * Top-right icons (visual right → left): burger, theme, settings, chat, notifications.
@@ -33,7 +33,7 @@ export function AppHeader({
     canUseTeamChat(data.orgKind, data.profile?.role);
 
   return (
-    <header className="sticky top-0 z-40 -mx-[var(--shell-pad)] mb-2 flex w-[calc(100%+2*var(--shell-pad))] max-w-none items-center justify-between gap-2 border-b border-[var(--color-border)] bg-sand/95 px-[var(--shell-pad)] pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 backdrop-blur-md md:static md:mx-0 md:mb-0 md:w-full md:justify-end md:border-0 md:bg-transparent md:px-0 md:py-4 md:pt-4 md:backdrop-blur-none">
+    <header className="font-pf-chrome sticky top-0 z-40 -mx-[var(--shell-pad)] mb-2 flex w-[calc(100%+2*var(--shell-pad))] max-w-none items-center justify-between gap-2 border-b border-pf-line bg-pf-page/80 px-[var(--shell-pad)] pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 backdrop-blur-xl md:static md:mx-0 md:mb-0 md:w-full md:justify-end md:border-0 md:bg-transparent md:px-0 md:py-4 md:pt-4 md:backdrop-blur-none">
       <Link
         href="/home"
         className="flex min-w-0 flex-1 items-center md:hidden"
@@ -42,7 +42,7 @@ export function AppHeader({
         <PulseWordmark
           name={brandName}
           markClassName="size-8 rounded-[0.65rem]"
-          textClassName="text-[1.05rem]"
+          textClassName="font-pf-sans text-pf-16 font-bold text-pf-ink"
         />
       </Link>
       <div className="flex shrink-0 items-center gap-0.5">
@@ -53,7 +53,7 @@ export function AppHeader({
         >
           <PulseIcon name="bell" className="size-4" />
           {unreadNotifications > 0 ? (
-            <span className="absolute right-0.5 top-0.5 flex h-3 min-w-3 items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-bold text-white">
+            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-pf-pill bg-pf-orange-500 px-1 text-[10px] font-medium text-white">
               {unreadNotifications > 9 ? "9+" : unreadNotifications}
             </span>
           ) : null}

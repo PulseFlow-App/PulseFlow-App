@@ -185,6 +185,30 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (prosHost && pathname === "/login") {
+    const url = request.nextUrl.clone();
+    if (user) {
+      url.pathname = "/";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+    const next = request.nextUrl.searchParams.get("next");
+    url.pathname = "/start";
+    url.search = "";
+    url.searchParams.set("mode", "sign-in");
+    if (next && next.startsWith("/") && !next.startsWith("//")) {
+      url.searchParams.set("next", next);
+    }
+    return NextResponse.redirect(url);
+  }
+
+  if (prosHost && (pathname === "/home" || (user && pathname === "/register"))) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
   if (prosHost && isMarketplacePath(pathname)) {
     return rewriteMarketplace(request, supabaseResponse);
   }

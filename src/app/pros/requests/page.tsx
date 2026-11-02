@@ -15,18 +15,18 @@ export default function RequestsPage() {
 
   return (
     <div className="space-y-3">
-      <h1 className="font-display text-2xl font-semibold text-ink">{t("requests")}</h1>
+      <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("requests")}</h1>
       {actorReady && !actor ? (
         <>
-          <p className="text-sm text-muted">{t("ordersEmpty")}</p>
+          <p className="text-pf-14 text-pf-text-secondary">{t("ordersEmpty")}</p>
           <ServicesAccountGate next={pathname} />
         </>
       ) : null}
-      {actor && mine.length === 0 ? <p className="text-sm text-muted">{t("emptyRequests")}</p> : null}
+      {actor && mine.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("emptyRequests")}</p> : null}
       {mine.map((row) => (
-        <Link key={row.id} href={hrefFor(row.id)} className="block rounded-2xl border border-[var(--color-border)] bg-card p-3">
-          <p className="font-semibold text-ink">{row.title}</p>
-          <p className="text-sm text-muted">{t(statusKey(row.status))}</p>
+        <Link key={row.id} href={hrefFor(row.id)} className="block rounded-[20px] border border-pf-line bg-pf-card p-3">
+          <p className="font-medium text-pf-ink">{row.title}</p>
+          <p className="text-pf-14 text-pf-text-secondary">{t(statusKey(row.status))}</p>
         </Link>
       ))}
     </div>

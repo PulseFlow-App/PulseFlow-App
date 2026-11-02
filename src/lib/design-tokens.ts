@@ -7,33 +7,33 @@
  */
 export const colors = {
   /** Page canvas — cool white, not warm cream */
-  background: "#F5FAFC",
-  canvas: "#F5FAFC",
-  canvasDeep: "#E8F4F8",
+  background: "#F5F7FC",
+  canvas: "#F5F7FC",
+  canvasDeep: "#E3E8F3",
   card: "#FFFFFF",
   /** Logo / CTA orange */
   primary: "#F26A36",
   primaryDark: "#D94E1B",
-  primarySoft: "#FFE0D4",
+  primarySoft: "#FFE6D6",
   action: "#F26A36",
   /** Confirmed / paid */
-  secondary: "#2A9D8F",
-  secondaryDark: "#1F7A6F",
-  secondarySoft: "#D4F0EC",
-  success: "#2A9D8F",
-  /** Links, info, focus */
-  sky: "#219EBC",
-  skySoft: "#8ECAE6",
-  /** Amber highlight / Pro */
-  sun: "#FFB703",
-  warning: "#FFB703",
-  warningDark: "#B37F00",
-  danger: "#E63946",
-  dangerDark: "#B02A35",
+  secondary: "#1FA971",
+  secondaryDark: "#157A52",
+  secondarySoft: "#FFE6D6",
+  success: "#1FA971",
+  /** Links and secondary text */
+  sky: "#3D4F8A",
+  skySoft: "#FFE6D6",
+  /** Amber highlight */
+  sun: "#FFD95E",
+  warning: "#F5A524",
+  warningDark: "#946000",
+  danger: "#E5484D",
+  dangerDark: "#C4232A",
   /** Authority text */
-  ink: "#023047",
-  muted: "#5A6D78",
-  nav: "#023047",
+  ink: "#0B1F5C",
+  muted: "#3D4F8A",
+  nav: "#0B1F5C",
   white: "#FFFFFF",
   /** @deprecated Horizon has no purple — alias to sky soft for old call sites */
   lavender: "#8ECAE6",
@@ -79,26 +79,26 @@ export const statusColors: Record<
 > = {
   occupied: {
     bg: colors.primary,
-    fg: colors.primaryDark,
-    soft: colors.primarySoft,
+    fg: "#0B1F5C",
+    soft: "#FFE6D6",
     label: "Occupied",
   },
   available: {
     bg: colors.secondary,
-    fg: colors.secondaryDark,
-    soft: colors.secondarySoft,
+    fg: "#157A52",
+    soft: "#E5F6EE",
     label: "Available",
   },
   turnover: {
     bg: colors.sun,
-    fg: colors.warningDark,
-    soft: "#FFF3CC",
+    fg: "#946000",
+    soft: "#FFD95E",
     label: "Turnover",
   },
   maintenance: {
     bg: colors.danger,
-    fg: colors.dangerDark,
-    soft: "#FDE4E1",
+    fg: "#C4232A",
+    soft: "#FFE6D6",
     label: "Maintenance",
   },
 };

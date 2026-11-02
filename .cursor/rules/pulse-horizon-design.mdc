@@ -1,23 +1,23 @@
 ---
-description: Horizon design system for the Pulse Flow app
+description: Pulse Flow design system
 globs: src/**/*.{tsx,ts,css}
 alwaysApply: true
 ---
 
-# Horizon design system (mandatory)
+# Pulse Flow design (mandatory)
 
-Before any visual, UX, colour, typography, motion, or component change in the **app**:
+Before any visual, UX, colour, typography, motion, or component change:
 
-1. Read and follow [`docs/DESIGN.md`](docs/DESIGN.md) (Pulse Flow Design Bible — Horizon).
-2. Reuse tokens in `src/app/globals.css` and `src/lib/design-tokens.ts` — do not invent new hex colours, radii, shadows, or fonts.
+1. Read and follow [`docs/DESIGN.md`](docs/DESIGN.md).
+2. Use tokens in `packages/pulse-tokens/` (`--pf-*` and the Tailwind `pf-` theme). Do not invent colours, radii, shadows, or fonts.
 
 ## Hard constraints
 
-- Palette only: `#8ecae6` `#219ebc` `#023047` `#ffb703` `#f26a36` (+ neutrals in DESIGN.md).
-- Primary CTA = `#f26a36`. Ink = `#023047`. Canvas = cool white `#f5fafc` (**not** warm cream).
-- Fonts: **Sora** (display / titles) + **Heebo** (body / Hebrew). Script fallbacks: Noto for Thai / Arabic / Myanmar / Cyrillic.
-- Max font-weight **700** (no 800/900 — not loaded).
-- No purple / lavender, no terracotta-on-cream, no Inter / Roboto / Arial as brand faces.
-- Prefer CSS variables / Tailwind theme tokens (`bg-primary`, `text-ink`, `bg-sand` → canvas alias). No raw hex in components.
+- Orange is `#F26A36` from the logo SVG. One orange tile or one orange button per screen. Orange button labels are white. The Order button is navy `#3D4F8A` with a white label. Do not put navy text on orange.
+- Ink is navy `#0B1F5C`. Page is cool white `#F5F7FC`. No cream, no terracotta, no decorative gradients.
+- Type is Onest, with Noto Sans Thai for Thai. Headlines 700 or 800. Native tab bars and nav titles use the system font.
+- Radii stay in their roles: 28 hero, 20 card, 14 inputs, pill for buttons and tags.
+- In dark mode, a selected row is an orange tint on the dark card with light text. Do not use peach `#FFE6D6` under light text.
+- The property-ops app already uses these tokens. Follow this file for later visual changes.
 
 If a request conflicts with DESIGN.md, follow DESIGN.md and note the conflict briefly.

@@ -1254,13 +1254,13 @@ export function demoCreateServiceOrder(
   if (!contact) throw new Error("Contact not found.");
   if (!contact.linked_profile_id) {
     throw new Error(
-      "This contact is not on PulseFlow. Link a team member or call them.",
+      "This contact has no Pulse Flow profile, so the job cannot reach them in the app.",
     );
   }
   const staffProfile = store.profiles.find(
     (p) => p.id === contact.linked_profile_id,
   );
-  if (!staffProfile || !isTaskAssignableRole(staffProfile.role)) {
+  if (staffProfile?.role === "guest") {
     throw new Error("Guests cannot be assigned jobs.");
   }
   const villa = input.villa_id
@@ -1386,6 +1386,7 @@ export function demoCreateServiceOrder(
       order.villa_id &&
       contact.linked_profile_id &&
       staffProfile &&
+      staffProfile.org_id === actor.org_id &&
       isStaffApp(staffProfile.role)
     ) {
       nextAssignments = ensureVillaAssignment(

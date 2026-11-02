@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -24,6 +25,7 @@ function StartForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [accepted, setAccepted] = useState(false);
@@ -38,6 +40,10 @@ function StartForm() {
     setError(null);
     if (!email.trim() || password.length < 6 || (mode === "create" && !name.trim())) {
       setError("Name, email, and a password (6+ characters) are required.");
+      return;
+    }
+    if (mode === "create" && password !== confirm) {
+      setError("Passwords do not match.");
       return;
     }
     if (mode === "create" && !accepted) {
@@ -80,14 +86,22 @@ function StartForm() {
           go();
           return;
         }
-        throw new Error(message);
+        if (!/already been registered|already registered|already exists/i.test(message)) {
+          throw new Error(message);
+        }
       }
       const { createClient } = await import("@/lib/supabase/client");
       const { error: signInError } = await createClient().auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       });
-      if (signInError) throw signInError;
+      if (signInError) {
+        throw new Error(
+          /already been registered|already registered|already exists/i.test(payload.error ?? "")
+            ? t("existingAccountPassword")
+            : signInError.message,
+        );
+      }
       go();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not continue.");
@@ -98,11 +112,14 @@ function StartForm() {
 
   return (
     <div className="mx-auto max-w-lg space-y-3">
-      <p className="text-sm leading-relaxed text-muted">{t("trialBody")}</p>
-      <div className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+      <Link href="/" className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-ink">
+        {t("home")}
+      </Link>
+      <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("trialBody")}</p>
+      <div className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
         {mode === "create" ? (
           <div>
-            <Label>Full name</Label>
+            <Label>{t("yourName")}</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
           </div>
         ) : null}
@@ -115,9 +132,15 @@ function StartForm() {
           <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "create" ? "new-password" : "current-password"} />
         </div>
         {mode === "create" ? (
+          <div>
+            <Label>{t("passwordAgain")}</Label>
+            <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+          </div>
+        ) : null}
+        {mode === "create" ? (
           <LegalAccept audience="customer" accepted={accepted} onAccepted={setAccepted} emails={emails} onEmails={setEmails} />
         ) : null}
-        {error ? <p className="text-sm font-semibold text-danger">{error}</p> : null}
+        {error ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
         <div className="flex flex-col gap-1">
           <Button
             type="button"
@@ -138,7 +161,7 @@ function StartForm() {
           </Button>
           <button
             type="button"
-            className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink disabled:opacity-50"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink disabled:opacity-50"
             disabled={saving && mode === "sign-in"}
             onClick={() => {
               if (mode !== "sign-in") {

@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import Script from "next/script";
 import {
   Heebo,
+  Onest,
   Sora,
   Noto_Sans,
   Noto_Sans_Arabic,
@@ -19,7 +20,15 @@ import { isMarketplaceHost } from "@/lib/pros/paths";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-/** Horizon body / Hebrew + Latin (DESIGN.md) — max weight 700 */
+/** Today and later Pulse screens. Thai stays on Noto Sans Thai. */
+const onest = Onest({
+  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
+  weight: ["400", "500", "700", "800"],
+  variable: "--font-onest",
+  display: "swap",
+});
+
+/** Horizon body / Hebrew + Latin — still paints screens that have not moved yet */
 const heebo = Heebo({
   subsets: ["latin", "latin-ext", "hebrew"],
   weight: ["400", "500", "600", "700"],
@@ -119,13 +128,13 @@ const servicesMetadata: Metadata = {
     default: servicesShareTitle,
     template: "%s · Pulse Flow Services",
   },
-  applicationName: "Pulse Flow Services",
+  applicationName: "Services by Pulse Flow",
   description: servicesDescription,
   manifest: "/services.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Pulse Flow Services",
+    title: "Services by Pulse Flow",
   },
   icons: {
     icon: [
@@ -184,13 +193,12 @@ export default async function RootLayout({
       lang="en"
       data-site={site}
       suppressHydrationWarning
-      className={`${heebo.variable} ${sora.variable} ${noto.variable} ${thai.variable} ${myanmar.variable} ${arabic.variable} h-full`}
+      className={`${onest.variable} ${heebo.variable} ${sora.variable} ${noto.variable} ${thai.variable} ${myanmar.variable} ${arabic.variable} h-full`}
     >
       <body
-        className={`${heebo.className} min-h-full antialiased`}
+        className="min-h-full antialiased"
         style={{
-          fontFamily:
-            "var(--font-pulse), var(--font-noto), var(--font-thai), var(--font-myanmar), var(--font-arabic), system-ui, sans-serif",
+          fontFamily: "var(--pf-font-sans)",
         }}
       >
         <Script

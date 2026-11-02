@@ -42,8 +42,8 @@ function AdminLock() {
           .finally(() => setSaving(false));
       }}
     >
-      <h1 className="font-display text-2xl font-semibold text-ink">Admin</h1>
-      <p className="text-sm text-muted">Enter the string and the word admin.</p>
+      <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">Admin</h1>
+      <p className="text-pf-14 text-pf-text-secondary">Enter the string and the word admin.</p>
       <div>
         <Label htmlFor="admin-string">String</Label>
         <Input
@@ -64,7 +64,7 @@ function AdminLock() {
           onChange={(e) => setWord(e.target.value)}
         />
       </div>
-      {error ? <p className="text-sm font-semibold text-danger">{error}</p> : null}
+      {error ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
       <Button type="submit" className="min-h-12 w-full" busy={saving}>
         Unlock
       </Button>
@@ -96,22 +96,22 @@ export default function ProsAdminPage() {
   return (
       <div className="space-y-6">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold text-ink">{t("admin")}</h1>
-          <Link href={servicesPath(pathname, "/admin/referrals")} className="text-sm font-semibold text-primary">
+          <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("admin")}</h1>
+          <Link href={servicesPath(pathname, "/admin/referrals")} className="text-pf-14 font-medium text-pf-text-secondary">
             Who invited whom
           </Link>
         </div>
         <dl className="grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-2xl bg-card p-3"><dt className="text-muted">{t("professionals")}</dt><dd className="text-xl font-semibold">{active.length}</dd></div>
-          <div className="rounded-2xl bg-card p-3"><dt className="text-muted">{t("requests")}</dt><dd className="text-xl font-semibold">{state.requests.length}</dd></div>
-          <div className="rounded-2xl bg-card p-3"><dt className="text-muted">{t("offers")}</dt><dd className="text-xl font-semibold">{state.offers.filter((o) => o.amount != null || o.message).length}</dd></div>
-          <div className="rounded-2xl bg-card p-3"><dt className="text-muted">{t("completed")}</dt><dd className="text-xl font-semibold">{completed}</dd></div>
+          <div className="rounded-[20px] bg-pf-card p-3"><dt className="text-pf-slate-ink">{t("professionals")}</dt><dd className="text-xl font-semibold">{active.length}</dd></div>
+          <div className="rounded-[20px] bg-pf-card p-3"><dt className="text-pf-slate-ink">{t("requests")}</dt><dd className="text-xl font-semibold">{state.requests.length}</dd></div>
+          <div className="rounded-[20px] bg-pf-card p-3"><dt className="text-pf-slate-ink">{t("offers")}</dt><dd className="text-xl font-semibold">{state.offers.filter((o) => o.amount != null || o.message).length}</dd></div>
+          <div className="rounded-[20px] bg-pf-card p-3"><dt className="text-pf-slate-ink">{t("completed")}</dt><dd className="text-xl font-semibold">{completed}</dd></div>
         </dl>
-        <p className="text-sm text-ink">
+        <p className="text-pf-16 text-pf-ink">
           {t("responseTime")}: {average == null ? t("noneYet") : t("minutes", { count: average })}
         </p>
         <section>
-          <h2 className="text-sm font-semibold">{t("byTrade")}</h2>
+          <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("byTrade")}</h2>
           <ul className="text-sm">
             {[...byTrade.entries()].map(([id, count]) => (
               <li key={id}>{categoryName(state, id, locale)} · {count}</li>
@@ -119,7 +119,7 @@ export default function ProsAdminPage() {
           </ul>
         </section>
         <section>
-          <h2 className="text-sm font-semibold">{t("byArea")}</h2>
+          <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("byArea")}</h2>
           <ul className="text-sm">
             {[...byArea.entries()].map(([id, count]) => (
               <li key={id}>{areaName(state, id, locale)} · {count}</li>
@@ -127,10 +127,10 @@ export default function ProsAdminPage() {
           </ul>
         </section>
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold">{t("professionals")}</h2>
+          <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("professionals")}</h2>
           {state.profiles.map((pro) => (
-            <div key={pro.id} className="space-y-2 rounded-2xl border border-[var(--color-border)] p-3">
-              <Link href={servicesPath(pathname, `/p/${pro.id}`)} className="font-semibold text-ink">{pro.name}</Link>
+            <div key={pro.id} className="space-y-2 rounded-[20px] border border-pf-line p-3">
+              <Link href={servicesPath(pathname, `/p/${pro.id}`)} className="font-medium text-pf-ink">{pro.name}</Link>
               <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="ghost" reflectGlobalBusy={false} onClick={() => setProfileStatus(pro.id, pro.status === "suspended" ? "active" : "suspended")}>
                   {pro.status === "suspended" ? t("restore") : t("suspend")}
@@ -151,8 +151,8 @@ export default function ProsAdminPage() {
           ))}
         </section>
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold">{t("reports")}</h2>
-          {state.reports.length === 0 ? <p className="text-sm text-muted">{t("noReports")}</p> : null}
+          <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("reports")}</h2>
+          {state.reports.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noReports")}</p> : null}
           {state.reports.map((row) => (
             <p key={row.id} className="text-sm">{row.reason}</p>
           ))}

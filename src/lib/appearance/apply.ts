@@ -8,8 +8,8 @@ import {
 
 /** Theme-color / PWA chrome per appearance (keeps status bar in sync). */
 export const APPEARANCE_THEME_COLOR: Record<AppearanceOption, string> = {
-  frost: "#eef6fa",
-  dark: "#15202a",
+  frost: "#f5f7fc",
+  dark: "#0b1024",
 };
 
 export function readStoredAppearance(): AppearanceOption {

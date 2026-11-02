@@ -41,8 +41,8 @@ function Chip({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full px-3 py-1 text-xs font-semibold",
-        active ? "bg-primary text-white" : "bg-canvas-deep text-ink",
+        "min-h-11 rounded-full px-3 text-pf-14 font-medium",
+        active ? "bg-pf-peach-100 text-pf-ink" : "border border-pf-line bg-pf-card text-pf-ink",
       )}
     >
       {label}
@@ -115,7 +115,7 @@ function ListingForm() {
       }}
     >
       <div className="flex items-center gap-3">
-        <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-canvas-deep text-lg font-semibold text-ink">
+        <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pf-peach-100 text-pf-18 font-medium text-pf-ink">
           {photoUrl ? (
             <img src={photoUrl} alt="" className="size-full object-cover" />
           ) : (
@@ -143,7 +143,7 @@ function ListingForm() {
           />
         </div>
       </div>
-      {photoError ? <p className="text-sm text-danger">{photoError}</p> : null}
+      {photoError ? <p className="text-pf-14 font-medium text-pf-danger-ink">{photoError}</p> : null}
       <div>
         <Label htmlFor="listing-name">{t("name")}</Label>
         <Input id="listing-name" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -169,7 +169,7 @@ function ListingForm() {
         <Input id="listing-line" value={lineId} onChange={(e) => setLineId(e.target.value)} />
       </div>
       <div>
-        <p className="mb-1 text-sm font-medium text-ink">{t("trades")}</p>
+        <p className="mb-1 text-pf-14 font-medium text-pf-ink">{t("trades")}</p>
         <div className="flex flex-wrap gap-1.5">
           {CATEGORIES.filter((row) => row.slug !== "other").map((row) => (
             <Chip
@@ -182,7 +182,7 @@ function ListingForm() {
         </div>
       </div>
       <div>
-        <p className="mb-1 text-sm font-medium text-ink">{t("areas")}</p>
+        <p className="mb-1 text-pf-14 font-medium text-pf-ink">{t("areas")}</p>
         <div className="flex flex-wrap gap-1.5">
           {places.map((row) => (
             <Chip
@@ -195,7 +195,7 @@ function ListingForm() {
         </div>
       </div>
       <div>
-        <p className="mb-1 text-sm font-medium text-ink">{t("languages")}</p>
+        <p className="mb-1 text-pf-14 font-medium text-pf-ink">{t("languages")}</p>
         <div className="flex flex-wrap gap-1.5">
           {PROS_LANGS.map((lang) => (
             <Chip
@@ -211,7 +211,7 @@ function ListingForm() {
         <Chip active={open} label={t("listingOpen")} onClick={() => setOpen(true)} />
         <Chip active={!open} label={t("listingHidden")} onClick={() => setOpen(false)} />
       </div>
-      {note ? <p className="text-sm font-semibold text-ink">{note}</p> : null}
+      {note ? <p className="text-pf-14 font-medium text-pf-ink">{note}</p> : null}
       <Button type="submit" className="min-h-12 w-full">
         {t("saveListing")}
       </Button>
@@ -246,18 +246,18 @@ export default function ServicesSettingsPage() {
 
   return (
     <div className="space-y-3">
-      <h1 className="font-display text-2xl font-semibold text-ink">{t("settings")}</h1>
+      <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("settings")}</h1>
 
       {worker ? (
-        <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
-          <h2 className="font-display text-lg font-semibold text-ink">{t("yourListing")}</h2>
-          <p className="text-sm leading-relaxed text-muted">{t("listingHint")}</p>
+        <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
+          <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("yourListing")}</h2>
+          <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("listingHint")}</p>
           <ListingForm />
         </section>
       ) : (
-        <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
-          <h2 className="font-display text-lg font-semibold text-ink">{t("yourListing")}</h2>
-          <p className="text-sm leading-relaxed text-muted">{t("listingHint")}</p>
+        <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
+          <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("yourListing")}</h2>
+          <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("listingHint")}</p>
           <Button
             type="button"
             variant="secondary"
@@ -272,18 +272,18 @@ export default function ServicesSettingsPage() {
         </section>
       )}
 
-      <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
-        <h2 className="font-display text-lg font-semibold text-ink">{t("theme")}</h2>
+      <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
+        <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("theme")}</h2>
         <div className="flex flex-wrap gap-1.5">
           <Chip active={appearance !== "dark"} label={t("themeFrost")} onClick={() => setAppearance("frost")} />
           <Chip active={appearance === "dark"} label={t("themeDark")} onClick={() => setAppearance("dark")} />
         </div>
       </section>
 
-      <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
-        <h2 className="font-display text-lg font-semibold text-ink">{t("inviteCode")}</h2>
-        <p className="text-sm leading-relaxed text-muted">{t("inviteHint")}</p>
-        <p className="font-display text-lg font-semibold tracking-wide text-ink">{invite}</p>
+      <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
+        <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("inviteCode")}</h2>
+        <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("inviteHint")}</p>
+        <p className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{invite}</p>
         <div className="grid gap-2 sm:grid-cols-2">
           <Button
             type="button"
@@ -310,15 +310,15 @@ export default function ServicesSettingsPage() {
             {copied ? t("copied") : t("copyInviteSeeker")}
           </Button>
         </div>
-        {inviteLink ? <p className="break-all text-xs text-muted">{inviteLink}</p> : null}
+        {inviteLink ? <p className="break-all text-pf-12 text-pf-slate-ink">{inviteLink}</p> : null}
       </section>
 
-      <section className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
+      <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-display text-lg font-semibold text-ink">{t("planTitle")}</h2>
-          {plan.premium || plan.pro ? <span className="text-sm font-semibold text-ink">{t("planOn")}</span> : null}
+          <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("planTitle")}</h2>
+          {plan.premium || plan.pro ? <span className="text-pf-14 font-medium text-pf-ink">{t("planOn")}</span> : null}
         </div>
-        <p className="text-sm leading-relaxed text-muted">{t("premiumBody")}</p>
+        <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("premiumBody")}</p>
         {actor ? (
           <Button
             type="button"
@@ -334,7 +334,7 @@ export default function ServicesSettingsPage() {
         ) : null}
       </section>
 
-      <p className="text-xs leading-relaxed text-muted">{t("paymentNotCharged")}</p>
+      <p className="text-pf-12 leading-relaxed text-pf-slate-ink">{t("paymentNotCharged")}</p>
     </div>
   );
 }

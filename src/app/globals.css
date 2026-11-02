@@ -1,67 +1,59 @@
 /* Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved. */
 @import "tailwindcss";
+@import "../../packages/pulse-tokens/tokens.css";
+@import "../../packages/pulse-tokens/theme.css";
 
-/* ─── Horizon design system (DESIGN.md) ─── */
+/* App colours follow the Pulse tokens. Old class names stay so every screen updates. */
 @theme inline {
-  /* Surfaces — cool canvas (sand alias kept for existing bg-sand classes) */
-  --color-sand: #f5fafc;
-  --color-sand-deep: #e8f4f8;
-  --color-canvas: #f5fafc;
-  --color-canvas-deep: #e8f4f8;
-  --color-card: #ffffff;
-  --color-surface: #ffffff;
+  --color-sand: var(--pf-page);
+  --color-sand-deep: var(--pf-page);
+  --color-canvas: var(--pf-page);
+  --color-canvas-deep: var(--pf-line);
+  --color-card: var(--pf-card);
+  --color-surface: var(--pf-card);
 
-  /* Action / brand */
-  --color-primary: #f26a36;
-  --color-primary-dark: #d94e1b;
-  --color-primary-soft: #ffe0d4;
-  --color-action: #f26a36;
+  --color-primary: var(--pf-orange-500);
+  --color-primary-dark: var(--pf-orange-700);
+  --color-primary-soft: var(--pf-peach-100);
+  --color-action: var(--pf-orange-500);
 
-  /* Success / confirmed */
-  --color-secondary: #2a9d8f;
-  --color-secondary-dark: #1f7a6f;
-  --color-secondary-soft: #d4f0ec;
-  --color-success: #2a9d8f;
+  --color-secondary: var(--pf-success);
+  --color-secondary-dark: var(--pf-success-ink);
+  --color-secondary-soft: var(--pf-peach-100);
+  --color-success: var(--pf-success);
 
-  /* Sky */
-  --color-sky: #219ebc;
-  --color-sky-soft: #8ecae6;
+  --color-sky: var(--pf-navy-600);
+  --color-sky-soft: var(--pf-peach-100);
 
-  /* Amber */
-  --color-sun: #ffb703;
-  --color-warning: #ffb703;
-  --color-warning-dark: #b37f00;
+  --color-sun: var(--pf-yellow-300);
+  --color-warning: var(--pf-warning);
+  --color-warning-dark: var(--pf-warning-ink);
 
-  /* Danger */
-  --color-danger: #e63946;
-  --color-danger-dark: #b02a35;
+  --color-danger: var(--pf-danger);
+  --color-danger-dark: var(--pf-danger-ink);
 
-  /* Ink / muted — no warm brown */
-  --color-ink: #023047;
-  --color-muted: #5a6d78;
-  --color-border: rgba(2, 48, 71, 0.12);
-  --color-nav: #023047;
-  --color-background: var(--color-canvas);
-  --color-foreground: var(--color-ink);
+  --color-ink: var(--pf-ink);
+  --color-muted: var(--pf-text-secondary);
+  --color-border: var(--pf-line);
+  --color-nav: var(--pf-ink);
+  --color-background: var(--pf-page);
+  --color-foreground: var(--pf-ink);
 
-  /* Deprecated purple aliases → sky (Horizon has no lavender) */
-  --color-lavender: #8ecae6;
-  --color-lavender-soft: #e8f4f8;
+  --color-lavender: var(--pf-peach-100);
+  --color-lavender-soft: var(--pf-page);
 
-  /* Dual-tone Pulse icons — soft wash + ink detail (DESIGN.md) */
-  --icon-ink: #023047;
-  --icon-soft-action: #f26a36;
-  --icon-soft-sky: #8ecae6;
-  --icon-soft-sun: #8ecae6;
-  --icon-soft-success: #8ecae6;
-  --icon-soft-danger: #e63946;
-  --icon-soft-white: #ffffff;
-  --icon-nav-ink: #ffffff;
-  --icon-nav-soft: #8ecae6;
+  --icon-ink: var(--pf-ink);
+  --icon-soft-action: var(--pf-orange-500);
+  --icon-soft-sky: var(--pf-peach-100);
+  --icon-soft-sun: var(--pf-yellow-300);
+  --icon-soft-success: var(--pf-peach-100);
+  --icon-soft-danger: var(--pf-danger);
+  --icon-soft-white: var(--pf-card);
+  --icon-nav-ink: var(--pf-ink);
+  --icon-nav-soft: var(--pf-peach-100);
 
-  /* Fonts: Heebo body, Sora display */
-  --font-sans: var(--font-pulse), "Heebo", ui-sans-serif, sans-serif;
-  --font-display: var(--font-display-face), "Sora", var(--font-pulse), sans-serif;
+  --font-sans: var(--pf-font-sans);
+  --font-display: var(--pf-font-sans);
 
   /* Spacing scale: 8px base */
   --spacing-1: 0.5rem;
@@ -72,8 +64,8 @@
   --spacing-6: 3rem;
 
   /* Radii */
-  --radius-card: 1rem;
-  --radius-control: 0.75rem;
+  --radius-card: 20px;
+  --radius-control: 14px;
   --radius-pill: 999px;
 }
 
@@ -90,13 +82,10 @@
   --leading-body: 1.55;
   --leading-meta: 1.35;
 
-  /* Elevation — cool ink shadow */
-  --shadow-soft: 0 1px 2px rgba(2, 48, 71, 0.04),
-    0 8px 24px rgba(2, 48, 71, 0.06);
-  --shadow-lift: 0 2px 4px rgba(2, 48, 71, 0.05),
-    0 16px 40px rgba(2, 48, 71, 0.08);
-  --shadow-cta: 0 8px 20px rgba(242, 106, 54, 0.28);
-  --shadow-nav: 0 12px 32px rgba(2, 48, 71, 0.28);
+  --shadow-soft: var(--pf-shadow-1);
+  --shadow-lift: var(--pf-shadow-2);
+  --shadow-cta: none;
+  --shadow-nav: var(--pf-shadow-1);
 
   /* Layout */
   --shell-pad: 0.5rem;
@@ -152,13 +141,9 @@ body {
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* Welcome / liquid-glass atmosphere (Horizon light default) */
-  background:
-    radial-gradient(980px 560px at 6% -8%, rgba(242, 106, 54, 0.14), transparent 55%),
-    radial-gradient(820px 480px at 92% 0%, rgba(142, 202, 230, 0.32), transparent 55%),
-    linear-gradient(180deg, #fff8f5 0%, var(--color-canvas) 42%, #e4f1f6 100%);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
+  background: var(--pf-page);
+  color: var(--pf-ink);
+  font-family: var(--pf-font-sans);
   font-size: var(--type-body);
   line-height: var(--leading-body);
   font-weight: 500;
@@ -221,10 +206,10 @@ body {
 .type-sign {
   font-size: var(--type-sign);
   line-height: var(--leading-meta);
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-ink) 72%, transparent);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--pf-text-secondary);
 }
 
 /* Home / card section headings */
@@ -277,28 +262,18 @@ label {
 .services-horizon {
   position: relative;
   overflow: hidden;
-  border-radius: calc(var(--radius-card) + 0.25rem);
-  background:
-    radial-gradient(120% 80% at 10% 0%, color-mix(in srgb, var(--color-sky-soft) 55%, transparent), transparent 55%),
-    radial-gradient(90% 70% at 95% 15%, color-mix(in srgb, var(--color-sun) 22%, transparent), transparent 50%),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-sky-soft) 28%, var(--color-canvas)),
-      var(--color-canvas)
-    );
+  border-radius: var(--pf-radius-card);
+  background: var(--pf-card);
+  border: 1px solid var(--pf-line);
 }
 
 .services-horizon::before {
-  content: "";
-  position: absolute;
-  inset-inline: -10%;
-  top: 35%;
-  height: 42%;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--color-sky) 14%, transparent);
-  filter: blur(18px);
-  animation: horizon-breath 12s ease-in-out infinite;
-  pointer-events: none;
+  content: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -420,15 +395,17 @@ html[data-appearance="dark"] .pf-panel-soft-strong {
 
 /* Choice chips (appearance, language, filters): selected = primary soft */
 .pf-choice {
-  border: 1px solid var(--color-border);
-  background-color: var(--color-card);
-  color: var(--color-ink);
+  border: 1px solid var(--pf-line);
+  background-color: var(--pf-card);
+  color: var(--pf-ink);
+  border-radius: 14px;
+  min-height: 44px;
 }
 .pf-choice-selected {
-  border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
-  background-color: var(--color-primary-soft);
-  color: var(--color-ink);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent);
+  border-color: transparent;
+  background-color: var(--pf-peach-100);
+  color: var(--pf-ink);
+  box-shadow: none;
 }
 
 /* Screen rhythm */
@@ -482,73 +459,65 @@ html[data-appearance="dark"] .pf-panel-soft-strong {
 
 /* ─── Optional appearances (DESIGN.md §13) — Horizon stays product default ─── */
 html[data-appearance="frost"] {
-  --color-sand: #eef6fa;
-  --color-sand-deep: #e0eef4;
-  --color-canvas: #eef6fa;
-  --color-canvas-deep: #e0eef4;
-  --color-card: rgba(255, 255, 255, 0.82);
-  --color-surface: rgba(255, 255, 255, 0.82);
-  --color-border: rgba(2, 48, 71, 0.12);
-  --shadow-soft: 0 4px 12px rgba(2, 48, 71, 0.05),
-    0 14px 36px rgba(2, 48, 71, 0.08);
-  --shadow-lift: 0 8px 28px rgba(2, 48, 71, 0.1);
-  --shadow-nav: 0 12px 32px rgba(2, 48, 71, 0.22);
-  /* Same calm sky wash as welcome — no amber/brown soft fills */
-  --icon-ink: #023047;
-  --icon-soft-action: #f26a36;
-  --icon-soft-sky: #8ecae6;
-  --icon-soft-sun: #8ecae6;
-  --icon-soft-success: #8ecae6;
-  --icon-soft-danger: #e63946;
-  --icon-nav-ink: #ffffff;
-  --icon-nav-soft: #8ecae6;
+  --color-sand: var(--pf-page);
+  --color-sand-deep: var(--pf-page);
+  --color-canvas: var(--pf-page);
+  --color-canvas-deep: var(--pf-line);
+  --color-card: var(--pf-card);
+  --color-surface: var(--pf-card);
+  --color-border: var(--pf-line);
+  --color-ink: var(--pf-ink);
+  --color-muted: var(--pf-text-secondary);
+  --shadow-soft: var(--pf-shadow-1);
+  --shadow-lift: var(--pf-shadow-2);
+  --shadow-nav: var(--pf-shadow-1);
+  --icon-ink: var(--pf-ink);
+  --icon-soft-action: var(--pf-orange-500);
+  --icon-soft-sky: var(--pf-peach-100);
+  --icon-soft-sun: var(--pf-yellow-300);
+  --icon-soft-success: var(--pf-peach-100);
+  --icon-soft-danger: var(--pf-danger);
+  --icon-nav-ink: var(--pf-ink);
+  --icon-nav-soft: var(--pf-peach-100);
 }
 
 html[data-appearance="frost"] body {
-  background:
-    radial-gradient(980px 560px at 6% -8%, rgba(242, 106, 54, 0.18), transparent 55%),
-    radial-gradient(820px 480px at 92% 0%, rgba(142, 202, 230, 0.38), transparent 55%),
-    linear-gradient(180deg, #fff8f5 0%, var(--color-canvas) 42%, #e4f1f6 100%);
+  background: var(--pf-page);
+  color: var(--pf-ink);
 }
 
 html[data-appearance="dark"] {
-  --color-sand: #15202a;
-  --color-sand-deep: #1c2936;
-  --color-canvas: #15202a;
-  --color-canvas-deep: #1a3140;
-  --color-card: rgba(30, 42, 54, 0.88);
-  --color-surface: rgba(30, 42, 54, 0.88);
-  /* Near-white ink (less cyan) so text stays clear on soft panels */
-  --color-ink: #f3f6f8;
-  --color-muted: #b4c0c8;
-  --color-border: rgba(243, 246, 248, 0.14);
-  /* Bottom nav bar stays dark glass (not light ink) */
-  --color-nav: #121c26;
-  --color-foreground: #f3f6f8;
-  --color-background: #15202a;
-  --color-primary-soft: rgba(242, 106, 54, 0.22);
-  --color-secondary-soft: rgba(42, 157, 143, 0.22);
-  --shadow-soft: 0 8px 28px rgba(0, 0, 0, 0.35);
-  --shadow-lift: 0 12px 36px rgba(0, 0, 0, 0.42);
-  --shadow-nav: 0 12px 32px rgba(0, 0, 0, 0.45);
-  /* Same palette as welcome dark cards — cool gray-sky, orange only for action */
-  --icon-ink: #e8f4f8;
-  --icon-soft-action: rgba(242, 106, 54, 0.55);
-  --icon-soft-sky: rgba(142, 202, 230, 0.4);
-  --icon-soft-sun: rgba(142, 202, 230, 0.4);
-  --icon-soft-success: rgba(142, 202, 230, 0.4);
-  --icon-soft-danger: rgba(230, 57, 70, 0.5);
-  --icon-soft-white: rgba(232, 244, 248, 0.9);
-  --icon-nav-ink: #e8f4f8;
-  --icon-nav-soft: rgba(142, 202, 230, 0.45);
+  --color-sand: var(--pf-page);
+  --color-sand-deep: var(--pf-page);
+  --color-canvas: var(--pf-page);
+  --color-canvas-deep: var(--pf-line);
+  --color-card: var(--pf-card);
+  --color-surface: var(--pf-card);
+  --color-ink: var(--pf-ink);
+  --color-muted: var(--pf-text-secondary);
+  --color-border: var(--pf-line);
+  --color-nav: var(--pf-panel);
+  --color-foreground: var(--pf-ink);
+  --color-background: var(--pf-page);
+  --color-primary-soft: var(--pf-peach-100);
+  --color-secondary-soft: var(--pf-peach-100);
+  --shadow-soft: var(--pf-shadow-1);
+  --shadow-lift: var(--pf-shadow-2);
+  --shadow-nav: var(--pf-shadow-1);
+  --icon-ink: var(--pf-ink);
+  --icon-soft-action: var(--pf-orange-500);
+  --icon-soft-sky: var(--pf-peach-100);
+  --icon-soft-sun: var(--pf-yellow-300);
+  --icon-soft-success: var(--pf-peach-100);
+  --icon-soft-danger: var(--pf-danger);
+  --icon-soft-white: var(--pf-card);
+  --icon-nav-ink: var(--pf-ink);
+  --icon-nav-soft: var(--pf-peach-100);
 }
 
 html[data-appearance="dark"] body {
-  background:
-    radial-gradient(900px 520px at 8% -10%, rgba(242, 106, 54, 0.22), transparent 55%),
-    radial-gradient(760px 440px at 96% 0%, rgba(33, 158, 188, 0.24), transparent 55%),
-    linear-gradient(180deg, #101820 0%, var(--color-canvas) 45%, #0c141c 100%);
-  color: var(--color-ink);
+  background: var(--pf-page);
+  color: var(--pf-ink);
 }
 
 /*
@@ -557,25 +526,19 @@ html[data-appearance="dark"] body {
 */
 html[data-appearance="frost"] .bg-sand,
 html[data-appearance="frost"] .bg-canvas {
-  background-color: transparent;
+  background-color: var(--pf-page);
 }
 html[data-appearance="frost"] .bg-sand-deep,
 html[data-appearance="frost"] .bg-canvas-deep {
-  background-color: rgba(224, 238, 244, 0.72);
-  backdrop-filter: blur(12px) saturate(1.08);
-  -webkit-backdrop-filter: blur(12px) saturate(1.08);
+  background-color: var(--pf-page);
 }
 html[data-appearance="frost"] .bg-card,
 html[data-appearance="frost"] .bg-surface,
 html[data-appearance="frost"] .bg-card\/80 {
-  background-color: var(--color-card);
-  backdrop-filter: blur(16px) saturate(1.1);
-  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  background-color: var(--pf-card);
 }
 html[data-appearance="frost"] .bg-sand\/95 {
-  background-color: rgba(238, 246, 250, 0.82);
-  backdrop-filter: blur(14px) saturate(1.08);
-  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  background-color: var(--pf-page);
 }
 html[data-appearance="frost"] .soft-shadow {
   box-shadow: var(--shadow-soft);
@@ -589,24 +552,20 @@ html[data-appearance="frost"] .border-\[var\(--color-border\)\] {
 
 html[data-appearance="dark"] .bg-sand,
 html[data-appearance="dark"] .bg-canvas {
-  background-color: transparent;
+  background-color: var(--pf-page);
 }
 html[data-appearance="dark"] .bg-sand-deep,
 html[data-appearance="dark"] .bg-canvas-deep {
-  background-color: var(--color-canvas-deep);
+  background-color: var(--pf-page);
 }
 html[data-appearance="dark"] .bg-card,
 html[data-appearance="dark"] .bg-surface,
 html[data-appearance="dark"] .bg-card\/80 {
-  background-color: var(--color-card);
-  backdrop-filter: blur(16px) saturate(1.05);
-  -webkit-backdrop-filter: blur(16px) saturate(1.05);
+  background-color: var(--pf-card);
 }
 html[data-appearance="dark"] .bg-sand\/95,
 html[data-appearance="dark"] .bg-canvas\/95 {
-  background-color: rgba(21, 32, 42, 0.92);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background-color: var(--pf-page);
 }
 html[data-appearance="dark"] input,
 html[data-appearance="dark"] select,
@@ -621,23 +580,19 @@ html[data-appearance="dark"] .bg-secondary-soft {
 }
 html[data-appearance="dark"] .bg-white,
 html[data-appearance="dark"] .bg-white\/95 {
-  background-color: rgba(232, 244, 248, 0.92);
-  color: #023047;
+  background-color: var(--pf-card);
+  color: var(--pf-ink);
 }
 html[data-appearance="dark"] .bg-nav {
   background-color: var(--color-nav);
   backdrop-filter: blur(16px) saturate(1.05);
   -webkit-backdrop-filter: blur(16px) saturate(1.05);
 }
-.pf-nav-active {
-  background-color: rgba(255, 255, 255, 0.95);
-  color: #023047;
-  --icon-ink: #023047;
-}
+.pf-nav-active,
 html[data-appearance="dark"] .pf-nav-active {
-  background-color: rgba(232, 244, 248, 0.92);
-  color: #023047;
-  --icon-ink: #023047;
+  background-color: var(--pf-peach-100);
+  color: var(--pf-navy-900);
+  --icon-ink: var(--pf-navy-900);
 }
 html[data-appearance="dark"] .text-ink {
   color: var(--color-ink);
@@ -683,7 +638,7 @@ html[data-appearance="dark"] .type-meta {
   color: color-mix(in srgb, var(--color-ink) 72%, transparent);
 }
 html[data-appearance="dark"] .text-sky {
-  color: #7ec8de;
+  color: var(--pf-text-secondary);
 }
 html[data-appearance="dark"] .border-\[var\(--color-border\)\] {
   border-color: var(--color-border);
@@ -696,4 +651,64 @@ html[data-appearance="dark"] .lift-shadow {
 }
 html[data-appearance="dark"] .pf-icon-well {
   color: var(--color-ink);
+}
+
+/* Orange, warning, and danger fills are not small text colours. */
+.text-primary {
+  color: var(--pf-ink);
+}
+.text-danger {
+  color: var(--pf-danger-ink);
+}
+.text-warning,
+.text-warning-dark {
+  color: var(--pf-warning-ink);
+}
+.text-success,
+.text-secondary-dark {
+  color: var(--pf-success-ink);
+}
+.uppercase.tracking-wide,
+.uppercase.tracking-wider,
+.uppercase.tracking-widest {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Orange buttons keep a white label, same as Review next to Order. */
+.from-primary.to-primary-dark {
+  background-image: none;
+  background-color: var(--pf-orange-500);
+  color: #fff;
+}
+
+/* Peach highlight is a light wash. In dark mode that wash stays light
+   while text turns light, so the selected row cannot be read. */
+html[data-appearance="dark"] .pf-choice-selected,
+html[data-appearance="dark"] .bg-primary-soft,
+html[data-appearance="dark"] .bg-pf-peach-100 {
+  background-color: color-mix(in srgb, var(--pf-orange-500) 24%, var(--pf-card));
+  color: var(--pf-ink);
+  border-color: color-mix(in srgb, var(--pf-orange-500) 50%, var(--pf-line));
+}
+html[data-appearance="dark"] .pf-choice-selected .text-ink,
+html[data-appearance="dark"] .bg-primary-soft .text-ink,
+html[data-appearance="dark"] .bg-pf-peach-100.text-pf-ink {
+  color: var(--pf-ink);
+}
+html[data-appearance="dark"] .pf-choice-selected .text-ink\/70,
+html[data-appearance="dark"] .bg-primary-soft .text-ink\/70 {
+  color: var(--pf-text-secondary);
+}
+
+/* Warning yellow is too light for white text. */
+.bg-warning.text-white,
+.bg-warning .text-white {
+  color: var(--pf-warning-ink);
+}
+
+/* Done and paid marks stay readable as ink, not white on a bright fill. */
+.bg-secondary.text-white {
+  background-color: color-mix(in srgb, var(--pf-success) 16%, var(--pf-card));
+  color: var(--pf-success-ink);
 }

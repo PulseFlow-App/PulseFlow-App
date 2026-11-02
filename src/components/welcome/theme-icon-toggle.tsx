@@ -16,10 +16,9 @@ export function ThemeIconToggle({ className }: { className?: string }) {
       type="button"
       onClick={() => setAppearance(isDark ? "frost" : "dark")}
       className={cn(
-        "inline-flex size-8 items-center justify-center rounded-full",
-        "border border-[var(--color-border)] bg-card text-ink",
-        "hover:bg-canvas-deep",
-        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+        "inline-flex size-11 items-center justify-center rounded-pf-pill",
+        "border border-pf-line bg-pf-card text-pf-ink",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600",
         className,
       )}
       aria-label={isDark ? t("welcome.themeFrost") : t("welcome.themeDark")}

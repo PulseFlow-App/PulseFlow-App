@@ -56,6 +56,19 @@ const LANGUAGES = [
 
 const MARKETING_SERVICES = "https://www.pulseflow.site/services";
 
+function existingAccount(message: string) {
+  return /already been registered|already registered|already exists/i.test(message);
+}
+
+async function signInWithPassword(email: string, password: string) {
+  const { createClient } = await import("@/lib/supabase/client");
+  const { error } = await createClient().auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  });
+  return error;
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const { t, locale } = useI18n();
@@ -205,38 +218,42 @@ export default function RegisterPage() {
             router.replace("/");
             return;
           }
-          throw new Error(message);
+          if (!existingAccount(message)) throw new Error(message);
         }
-        const { createClient } = await import("@/lib/supabase/client");
-        const { error: signInError } = await createClient().auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
-          password,
-        });
-        if (signInError) throw signInError;
+        const signInError = await signInWithPassword(email, password);
+        if (signInError) {
+          throw new Error(
+            existingAccount(payload.error ?? "")
+              ? prosT(locale, "existingAccountPassword")
+              : signInError.message,
+          );
+        }
         router.replace("/");
         router.refresh();
         return;
       }
 
-      const createdListing = joinProfessional({
-        name: fullName,
-        email,
-        phone,
-        whatsapp,
-        lineId,
-        description: "",
-        availability,
-        categoryIds,
-        areaIds,
-        languages,
-        listNow: false,
-        referrer: referralCode,
-        emailOptIn: emails,
-        termsAcceptedAt,
-      }).id;
-      setListingId(createdListing);
-
-      if (isDemoMode()) return;
+      if (isDemoMode()) {
+        setListingId(
+          joinProfessional({
+            name: fullName,
+            email,
+            phone,
+            whatsapp,
+            lineId,
+            description: "",
+            availability,
+            categoryIds,
+            areaIds,
+            languages,
+            listNow: false,
+            referrer: referralCode,
+            emailOptIn: emails,
+            termsAcceptedAt,
+          }).id,
+        );
+        return;
+      }
 
       const { withActionBusy } = await import("@/lib/ui/action-busy");
       await withActionBusy(async () => {
@@ -266,13 +283,33 @@ export default function RegisterPage() {
           }),
         });
         const payload = (await res.json()) as { error?: string };
-        if (!res.ok) throw new Error(payload.error ?? "Could not register.");
-        const { createClient } = await import("@/lib/supabase/client");
-        const { error: signInError } = await createClient().auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
-          password,
-        });
-        if (signInError) throw signInError;
+        if (!res.ok && !existingAccount(payload.error ?? "")) {
+          throw new Error(payload.error ?? "Could not register.");
+        }
+        const signInError = await signInWithPassword(email, password);
+        if (signInError) {
+          throw new Error(
+            existingAccount(payload.error ?? "")
+              ? prosT(locale, "existingAccountPassword")
+              : signInError.message,
+          );
+        }
+      });
+      joinProfessional({
+        name: fullName,
+        email,
+        phone,
+        whatsapp,
+        lineId,
+        description: "",
+        availability,
+        categoryIds,
+        areaIds,
+        languages,
+        listNow: false,
+        referrer: referralCode,
+        emailOptIn: emails,
+        termsAcceptedAt,
       });
       router.replace("/settings");
       router.refresh();
@@ -416,9 +453,18 @@ export default function RegisterPage() {
       }}
     >
       <div className="mx-auto w-full max-w-lg animate-rise">
-        <div className="mb-4 flex items-center justify-end gap-1.5">
-          <LanguageSwitcher variant="inline" />
-          <ThemeIconToggle />
+        <div className="mb-4 flex items-center justify-between gap-1.5">
+          {ready && onServices ? (
+            <Link href="/" className="text-sm font-semibold text-ink">
+              {prosT(locale, "home")}
+            </Link>
+          ) : (
+            <span />
+          )}
+          <div className="flex items-center gap-1.5">
+            <LanguageSwitcher variant="inline" />
+            <ThemeIconToggle />
+          </div>
         </div>
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex justify-center">
@@ -526,6 +572,9 @@ export default function RegisterPage() {
           <Card className="mt-4 space-y-2 p-4">
             {listingId ? (
               <div className="space-y-3">
+                <Link href="/" className="inline-flex min-h-11 items-center text-sm font-semibold text-ink">
+                  {prosT(locale, "home")}
+                </Link>
                 <p className="text-sm font-semibold text-ink">{t("register.savedListing")}</p>
                 <p className="text-sm text-muted">{t("register.listingStaysHidden")}</p>
                 <div className="flex gap-2">
@@ -543,7 +592,7 @@ export default function RegisterPage() {
                   {track === "maintenance" ? t("register.proTitle") : t("register.seeking")}
                 </p>
                 <div>
-                  <Label>Full name</Label>
+                  <Label>{prosT(locale, "yourName")}</Label>
                   <Input value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" />
                 </div>
                 <div>
@@ -633,7 +682,7 @@ export default function RegisterPage() {
                   <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
                 </div>
                 <div>
-                  <Label>Confirm password</Label>
+                  <Label>{prosT(locale, "passwordAgain")}</Label>
                   <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
                 </div>
                 {error ? <p className="text-sm font-semibold text-danger">{error}</p> : null}
@@ -824,8 +873,13 @@ export default function RegisterPage() {
           </p>
         ) : null}
         <p className="mt-2 text-center text-sm text-muted">
-          Already have an account?{" "}
-          <Link href="/login" className="font-semibold text-primary">Sign in</Link>
+          {onServices ? prosT(locale, "alreadyHave") : "Already have an account?"}{" "}
+          <Link
+            href={onServices ? "/start?mode=sign-in&next=/" : "/login"}
+            className="font-semibold text-primary"
+          >
+            {onServices ? prosT(locale, "signIn") : "Sign in"}
+          </Link>
         </p>
       </div>
     </div>

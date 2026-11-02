@@ -20,10 +20,10 @@ export function AreaView({ slug }: { slug: string }) {
   );
   return (
     <div className="space-y-4">
-      <h1 className="font-display text-2xl font-semibold text-ink">
+      <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">
         {area ? localizedName(area.names, locale) : t("place")}
       </h1>
-      {pros.length === 0 ? <p className="text-sm text-muted">{t("noPros")}</p> : null}
+      {pros.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noPros")}</p> : null}
       {pros.map((pro) => (
         <ProCard key={pro.id} pro={pro} />
       ))}

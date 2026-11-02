@@ -61,7 +61,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   ]);
 
   return (
-    <div className="app-shell mx-auto flex h-dvh w-full max-w-[90rem] overflow-hidden bg-transparent">
+    <div className="app-shell font-pf-sans mx-auto flex h-dvh w-full max-w-[90rem] overflow-hidden bg-pf-page text-pf-ink">
       <SideNav />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <div
@@ -81,15 +81,15 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
             />
             <OfflineBanner show={offline} />
             {demo ? (
-              <div className="mb-2 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-secondary-soft px-3 py-2 text-xs text-secondary-dark md:mb-4 md:px-4 md:py-3 md:text-sm">
-                <p className="font-semibold">{t("demo.readOnlyBanner")}</p>
+              <div className="mb-3 rounded-pf-card border border-pf-line bg-pf-card px-3 py-3 text-pf-14 text-pf-text-secondary">
+                <p className="font-medium text-pf-ink">{t("demo.readOnlyBanner")}</p>
                 <a
                   href="https://pulseflow.site"
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-0.5 inline-flex text-[11px] font-bold underline md:mt-1 md:text-xs"
+                  className="mt-1 inline-flex min-h-11 items-center font-medium text-pf-ink underline"
                 >
-                  Sign up
+                  {t("auth.register")}
                 </a>
               </div>
             ) : null}

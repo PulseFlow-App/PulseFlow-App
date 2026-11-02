@@ -6,10 +6,10 @@ export function EmptyState({
   description?: string;
 }) {
   return (
-    <div className="rounded-[1.5rem] bg-card px-5 py-12 text-center soft-shadow">
-      <p className="font-display text-lg font-bold text-ink">{title}</p>
+    <div className="rounded-pf-card border border-pf-line bg-pf-card px-5 py-10 text-center">
+      <p className="text-pf-18 font-medium text-pf-ink">{title}</p>
       {description ? (
-        <p className="mt-1 text-sm text-muted">{description}</p>
+        <p className="mt-2 text-pf-16 text-pf-text-secondary">{description}</p>
       ) : null}
     </div>
   );
@@ -17,7 +17,7 @@ export function EmptyState({
 
 export function LoadingState({ label = "Loading…" }: { label?: string }) {
   return (
-    <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted">
+    <div className="flex min-h-[40vh] items-center justify-center text-pf-16 text-pf-text-secondary">
       <div className="flex items-center gap-2">
         <span className="size-2.5 animate-pulse rounded-full bg-primary" />
         {label}
@@ -29,7 +29,7 @@ export function LoadingState({ label = "Loading…" }: { label?: string }) {
 export function OfflineBanner({ show }: { show: boolean }) {
   if (!show) return null;
   return (
-    <div className="sticky top-0 z-40 rounded-b-2xl bg-warning px-4 py-2 text-center text-xs font-semibold text-white">
+    <div className="sticky top-0 z-40 bg-pf-yellow-300 px-4 py-3 text-center text-pf-14 font-medium text-pf-warning-ink">
       You&apos;re offline - changes will sync when you&apos;re back online.
     </div>
   );

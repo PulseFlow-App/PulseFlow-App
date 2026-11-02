@@ -93,6 +93,13 @@ export default function TalentPage() {
               ? t("talent.alreadyOnTeam")
               : t("talent.alreadyOnContacts"),
           );
+          setResults((prev) =>
+            prev.map((row) =>
+              row.id === person.id
+                ? { ...row, on_team: true, in_contacts: true }
+                : row,
+            ),
+          );
           await data.refresh();
           return;
         }
@@ -492,9 +499,10 @@ export default function TalentPage() {
                     <div className="flex flex-wrap gap-2">
                       {data.orgKind === "company" ? (
                         <Link
-                          href={`/contacts?orderProfile=${encodeURIComponent(person.id)}`}
+                          href={`/contacts?orderProfile=${encodeURIComponent(person.id)}&orderName=${encodeURIComponent(person.full_name)}`}
+                          className="inline-flex min-h-11 items-center justify-center rounded-pf-pill bg-pf-orange-500 px-3 text-pf-14 font-medium text-white active:bg-pf-orange-700"
                         >
-                          <Button size="sm">{t("contacts.order")}</Button>
+                          {t("contacts.order")}
                         </Link>
                       ) : null}
                       <Link href={`/u/${person.share_slug}`}>
@@ -502,7 +510,13 @@ export default function TalentPage() {
                           {t("talent.viewProfile")}
                         </Button>
                       </Link>
-                      {data.orgKind === "company" ? (
+                      {data.orgKind === "company" &&
+                      person.on_team &&
+                      person.in_contacts ? (
+                        <span className="inline-flex min-h-11 items-center text-pf-14 text-pf-text-secondary">
+                          {t("talent.onTeam")}
+                        </span>
+                      ) : data.orgKind === "company" ? (
                         <Button
                           size="sm"
                           variant="secondary"
@@ -511,7 +525,9 @@ export default function TalentPage() {
                         >
                           {inviteBusyId === person.id
                             ? t("talent.inviteBusy")
-                            : t("talent.inviteCompany")}
+                            : person.on_team
+                              ? t("talent.addToContacts")
+                              : t("talent.inviteCompany")}
                         </Button>
                       ) : null}
                     </div>
@@ -540,20 +556,37 @@ export default function TalentPage() {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    {data.orgKind === "company" ? (
+                      <Link
+                        href={`/contacts?orderProfile=${encodeURIComponent(person.id)}&orderName=${encodeURIComponent(person.full_name)}`}
+                        className="inline-flex min-h-11 items-center justify-center rounded-pf-pill bg-pf-orange-500 px-3 text-pf-14 font-medium text-white active:bg-pf-orange-700"
+                      >
+                        {t("contacts.order")}
+                      </Link>
+                    ) : null}
                     <Link href={`/u/${person.share_slug}`}>
                       <Button size="sm" variant="secondary">
                         {t("talent.viewProfile")}
                       </Button>
                     </Link>
-                    {data.orgKind === "company" ? (
+                    {data.orgKind === "company" &&
+                    person.on_team &&
+                    person.in_contacts ? (
+                      <span className="inline-flex min-h-11 items-center text-pf-14 text-pf-text-secondary">
+                        {t("talent.onTeam")}
+                      </span>
+                    ) : data.orgKind === "company" ? (
                       <Button
                         size="sm"
+                        variant="secondary"
                         busy={inviteBusyId === person.id}
                         onClick={() => void inviteToCompany(person)}
                       >
                         {inviteBusyId === person.id
                           ? t("talent.inviteBusy")
-                          : t("talent.inviteCompany")}
+                          : person.on_team
+                            ? t("talent.addToContacts")
+                            : t("talent.inviteCompany")}
                       </Button>
                     ) : null}
                   </div>

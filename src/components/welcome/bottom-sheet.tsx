@@ -88,15 +88,12 @@ export function BottomSheet({
   return createPortal(
     <div
       className={cn(
-        "fixed inset-0 z-[90] flex justify-center",
-        compact
-          ? "items-center p-3 sm:p-4"
-          : "items-end sm:items-center sm:p-4",
+        "fixed inset-0 z-[90] flex items-center justify-center p-4",
       )}
     >
       <button
         type="button"
-        className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-pf-navy-900/40"
         aria-label={t("common.close")}
         onClick={onClose}
       />
@@ -106,48 +103,33 @@ export function BottomSheet({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative z-10 flex w-full flex-col bg-card",
-          "shadow-[0_-8px_40px_rgba(2,48,71,0.18)] animate-rise",
+          "relative z-10 flex w-full max-w-sm flex-col rounded-[28px] bg-pf-card shadow-pf-2 motion-safe:animate-rise",
           compact
-            ? "max-h-[min(92dvh,34rem)] max-w-sm rounded-2xl pb-3 pt-2"
-            : "max-h-[min(88dvh,40rem)] max-w-lg rounded-t-[1.25rem] pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:rounded-[1.25rem]",
+            ? "max-h-[min(70dvh,32rem)] pb-3 pt-3"
+            : "max-h-[min(70dvh,32rem)] pb-[max(1rem,env(safe-area-inset-bottom))] pt-3",
         )}
       >
-        {!compact ? (
-          <div className="mx-auto mb-2 h-1 w-10 shrink-0 rounded-full bg-[var(--color-border)] sm:hidden" />
-        ) : null}
-        <div
-          className={cn(
-            "flex items-center justify-between gap-2",
-            compact ? "px-3 pb-1" : "px-5 pb-2",
-          )}
-        >
+        <div className="mx-auto mb-2 h-1 w-9 shrink-0 rounded-full bg-pf-line" />
+        <div className="flex items-center justify-between gap-2 px-4 pb-2">
           <h2
             id={titleId}
-            className={cn(
-              "font-display font-bold leading-snug text-ink",
-              compact ? "text-sm" : "text-lg",
-            )}
+            className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink"
           >
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className={cn(
-              "inline-flex shrink-0 items-center justify-center rounded-full text-ink hover:bg-canvas-deep",
-              "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-              compact ? "size-7" : "size-11",
-            )}
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-pf-text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
             aria-label={t("welcome.sheetClose")}
           >
-            <X className={compact ? "size-3.5" : "size-5"} aria-hidden />
+            <X className="size-5" aria-hidden />
           </button>
         </div>
         <div
           className={cn(
             "min-h-0 flex-1 overflow-y-auto overscroll-contain",
-            compact ? "px-3 pb-1" : "px-5 pb-4",
+            "px-4 pb-4",
           )}
         >
           {children}

@@ -112,18 +112,18 @@ export function ServicesAccountGate({ next }: { next: string }) {
   const pathname = usePathname();
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
   return (
-    <div className="space-y-2 rounded-2xl border border-[var(--color-border)] bg-card p-4">
-      <p className="text-sm leading-relaxed text-muted">{t("trialBody")}</p>
-      <div className="flex flex-col gap-1">
+    <div className="space-y-3 rounded-[20px] border border-pf-line bg-pf-card p-4">
+      <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("trialBody")}</p>
+      <div className="flex flex-col gap-2">
         <Link
           href={`${start}?next=${encodeURIComponent(next)}`}
-          className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700"
         >
           {t("signUp")}
         </Link>
         <Link
           href={`${start}?mode=sign-in&next=${encodeURIComponent(next)}`}
-          className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink"
         >
           {t("signIn")}
         </Link>
@@ -152,45 +152,32 @@ export function ProCard({
   const start = onAppPath ? "/pros/start" : "/start";
   const guest = !reveal && !actor;
   const href = guest ? `${start}?next=${encodeURIComponent(profilePath)}` : profilePath;
-  const veil = guest ? "select-none blur-[2px]" : undefined;
-  if (compact) {
-    return (
-      <Link
-        href={href}
-        aria-label={guest ? t("signInToSee") : undefined}
-        className="inline-flex h-11 max-w-[16rem] items-center gap-1.5 rounded-xl border border-[var(--color-border)] bg-card px-2"
-      >
-        <span className={cn("flex min-w-0 items-center gap-1.5", veil)} aria-hidden={guest || undefined}>
-          <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-canvas-deep font-display text-sm leading-none text-ink">
-            {pro.photoUrl ? (
-              <img src={pro.photoUrl} alt="" className="size-full object-cover" />
-            ) : (
-              pro.name.slice(0, 1)
-            )}
-          </span>
-          <span className="min-w-0 truncate text-xs font-semibold text-ink">{pro.name}</span>
-          <span className="min-w-0 truncate text-xs text-muted">{trade || t("position")}</span>
-          {rating != null ? (
-            <span className="shrink-0 text-[10px] text-ink/70">{rating.toFixed(1)}</span>
-          ) : null}
-        </span>
-      </Link>
-    );
-  }
+  const veil = guest ? "select-none blur-[6px]" : undefined;
   return (
     <Link
       href={href}
       aria-label={guest ? t("signInToSee") : undefined}
-      className="flex min-h-16 items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-card p-3 soft-shadow"
+      className={cn(
+        "flex min-h-16 items-center gap-3 rounded-[20px] border border-pf-line bg-pf-card p-3",
+        compact && "max-w-full",
+      )}
     >
       <span className={cn("flex min-w-0 flex-1 items-center gap-3", veil)} aria-hidden={guest || undefined}>
-        <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-canvas-deep font-display text-lg text-ink">
-          {pro.name.slice(0, 1)}
+        <span
+          role={pro.photoUrl ? undefined : "img"}
+          aria-label={pro.photoUrl ? undefined : "koh-phangan-tradesperson"}
+          className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pf-peach-100 text-pf-18 font-medium text-pf-ink"
+        >
+          {pro.photoUrl ? (
+            <img src={pro.photoUrl} alt="" className="size-full object-cover" />
+          ) : (
+            pro.name.slice(0, 1)
+          )}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-semibold text-ink">{pro.name}</span>
-          <span className="block truncate text-sm text-muted">{trade || t("position")}</span>
-          <span className="mt-1 block text-xs text-ink/70">
+          <span className="block truncate text-pf-16 font-medium text-pf-ink">{pro.name}</span>
+          <span className="block truncate text-pf-14 text-pf-text-secondary">{trade || t("position")}</span>
+          <span className="mt-1 block text-pf-12 text-pf-slate-ink">
             {rating == null ? t("noReviews") : rating.toFixed(1)}
           </span>
         </span>
@@ -216,13 +203,13 @@ export function OriginalText({
   const showTranslate = originalLocale !== locale && text.trim().length > 0;
   return (
     <div className="space-y-1">
-      <p className="whitespace-pre-wrap text-sm text-ink">{translated || text}</p>
+      <p className="whitespace-pre-wrap text-pf-16 text-pf-ink">{translated || text}</p>
       {showTranslate ? (
         <div className="flex flex-wrap gap-3 text-xs">
-          {translated ? <span className="text-muted">{t("originalKept")}</span> : null}
+          {translated ? <span className="text-pf-slate-ink">{t("originalKept")}</span> : null}
           <button
             type="button"
-            className="font-semibold text-sky"
+            className="font-medium text-pf-text-secondary"
             onClick={() => {
               if (translated) return;
               void fetchTranslation(text, locale).then((next) => {

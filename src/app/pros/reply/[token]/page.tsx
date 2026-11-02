@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
@@ -25,7 +26,16 @@ export default function ReplyPage() {
   const [error, setError] = useState<string | null>(null);
 
   if (!ready) return null;
-  if (!offer || !request) return <p className="text-sm text-muted">{t("unknownLink")}</p>;
+  if (!offer || !request) {
+    return (
+      <div className="space-y-3">
+        <Link href="/" className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-ink">
+          {t("home")}
+        </Link>
+        <p className="text-pf-14 text-pf-text-secondary">{t("unknownLink")}</p>
+      </div>
+    );
+  }
 
   const send = (action: "quote" | "decline" | "time") => {
     const result = reply({
@@ -45,24 +55,27 @@ export default function ReplyPage() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted">{t("replyHint")}</p>
-      <h1 className="font-display text-2xl font-semibold text-ink">{request.title}</h1>
-      <p className="whitespace-pre-wrap text-sm text-ink">{request.description}</p>
-      <p className="text-sm text-muted">
+      <Link href="/" className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-ink">
+        {t("home")}
+      </Link>
+      <p className="text-pf-14 text-pf-text-secondary">{t("replyHint")}</p>
+      <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{request.title}</h1>
+      <p className="whitespace-pre-wrap text-pf-16 text-pf-ink">{request.description}</p>
+      <p className="text-pf-14 text-pf-text-secondary">
         {categoryName(state, request.categoryId, locale)}
         {request.areaId ? ` · ${areaName(state, request.areaId, locale)}` : ""}
       </p>
       {preferredDateKey(request.preferredDate) ? (
-        <p className="text-sm text-ink">{t(preferredDateKey(request.preferredDate)!)}</p>
+        <p className="text-pf-16 text-pf-ink">{t(preferredDateKey(request.preferredDate)!)}</p>
       ) : request.preferredDate && /^\d{4}-\d{2}-\d{2}/.test(request.preferredDate) ? (
-        <p className="text-sm text-ink">{formatLongDateLocalized(parseISO(request.preferredDate.slice(0, 10)), locale)}</p>
+        <p className="text-pf-16 text-pf-ink">{formatLongDateLocalized(parseISO(request.preferredDate.slice(0, 10)), locale)}</p>
       ) : null}
       {request.preferredTime ? (
-        <p className="text-sm text-ink">
+        <p className="text-pf-16 text-pf-ink">
           {preferredTimeKey(request.preferredTime) ? t(preferredTimeKey(request.preferredTime)!) : request.preferredTime}
         </p>
       ) : null}
-      {done ? <p className="text-sm font-semibold text-ink">{done}</p> : null}
+      {done ? <p className="text-pf-14 font-medium text-pf-ink">{done}</p> : null}
       {offer.status !== "pending" || done ? null : (
         <div className="space-y-2">
           <div>
@@ -81,7 +94,7 @@ export default function ReplyPage() {
             <Label>{t("proposedTime")}</Label>
             <Input value={when} onChange={(e) => setWhen(e.target.value)} />
           </div>
-          {error ? <p className="text-sm text-danger">{error}</p> : null}
+          {error ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
           <Button type="button" className="min-h-12 w-full" reflectGlobalBusy={false} onClick={() => send("quote")}>
             {t("sendQuote")}
           </Button>

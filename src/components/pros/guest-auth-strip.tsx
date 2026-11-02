@@ -28,27 +28,26 @@ export function GuestAuthStrip({ className, nextPath }: Props) {
   return (
     <section
       className={cn(
-        "space-y-3 rounded-2xl border border-[var(--color-border)] bg-card/90 p-4 soft-shadow backdrop-blur-sm",
+        "space-y-3 rounded-[20px] border border-pf-line bg-pf-card p-4",
         className,
       )}
     >
       <div>
-        <p className="type-sign text-[var(--color-sky)]">{t("guestAuthEyebrow")}</p>
-        <h2 className="mt-1 font-display text-[length:var(--type-subtitle)] font-bold leading-snug tracking-[-0.02em] text-ink">
+        <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">
           {t("guestAuthTitle")}
         </h2>
-        <p className="mt-1 text-sm leading-snug text-muted">{t("guestAuthBody")}</p>
+        <p className="mt-1 max-w-[70ch] text-pf-16 leading-snug text-pf-text-secondary">{t("guestAuthBody")}</p>
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2">
         <Link
           href={start}
-          className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-cta)] transition hover:brightness-[1.03] active:scale-[0.98]"
+          className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700"
         >
           {t("signUp")}
         </Link>
         <Link
           href={signIn}
-          className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink transition hover:bg-canvas-deep active:scale-[0.98]"
+          className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink"
         >
           {t("signIn")}
         </Link>

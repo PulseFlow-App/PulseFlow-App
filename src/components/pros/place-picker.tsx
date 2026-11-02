@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
+import { selectionTick } from "@/components/pros/haptics";
+import { PfIcon } from "@/components/pros/pf-icons";
 import { BottomSheet } from "@/components/welcome/bottom-sheet";
 import { usePros } from "@/lib/pros/store";
 import { allAreas, areaName, type AreaRef } from "@/lib/pros/matching";
@@ -26,21 +28,21 @@ function PlaceOption({
       aria-selected={selected}
       onClick={onPick}
       className={cn(
-        "flex w-full items-center gap-2 rounded-lg py-1.5 text-start transition",
-        nested ? "px-2.5 ps-6" : "px-2.5",
-        selected ? "pf-choice-selected" : "pf-choice hover:border-sky/35",
-        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+        "flex min-h-11 w-full items-center gap-2 text-start",
+        nested ? "px-3 ps-6" : "px-3",
+        selected ? "pf-choice-selected" : "pf-choice",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600",
       )}
     >
-      <span className="min-w-0 flex-1 truncate font-display text-sm font-semibold leading-snug text-ink">
+      <span className="min-w-0 flex-1 truncate text-pf-16 font-medium leading-snug text-pf-ink">
         {label}
       </span>
-      {selected ? <Check className="size-3.5 shrink-0 text-primary" aria-hidden /> : null}
+      {selected ? <Check className="size-4 shrink-0 text-pf-orange-500" aria-hidden /> : null}
     </button>
   );
 }
 
-export function PlacePicker() {
+export function PlacePicker({ variant = "bar" }: { variant?: "bar" | "pill" }) {
   const { state, t, setPlace } = usePros();
   const { locale } = useI18n();
   const [open, setOpen] = useState(false);
@@ -49,6 +51,7 @@ export function PlacePicker() {
   const current = state.placeId ? areaName(state, state.placeId, locale) : t("any");
 
   const choose = (id: string | null) => {
+    selectionTick();
     setPlace(id);
     setOpen(false);
   };
@@ -61,16 +64,17 @@ export function PlacePicker() {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "relative inline-flex h-10 min-w-0 flex-1 items-center gap-1 rounded-full border border-[var(--color-border)] bg-card pe-2 ps-2.5 text-xs font-semibold text-ink sm:h-8 sm:w-auto sm:flex-none",
-          "hover:bg-canvas-deep",
-          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+          variant === "pill"
+            ? "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-pf-card px-3 text-pf-14 font-medium text-pf-ink shadow-pf-1 ring-1 ring-pf-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
+            : "relative inline-flex h-11 min-w-0 flex-1 items-center gap-1 rounded-full border border-pf-line bg-pf-card pe-2 ps-3 text-pf-14 font-medium text-pf-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600",
         )}
         aria-label={t("place")}
         aria-haspopup="dialog"
         aria-expanded={open}
       >
+        {variant === "pill" ? <PfIcon name="pin" className="size-4" /> : null}
         <span className="min-w-0 truncate text-start">{current}</span>
-        <ChevronDown className="size-3.5 shrink-0 text-muted" aria-hidden />
+        {variant === "pill" ? null : <ChevronDown className="size-4 shrink-0 text-pf-slate-ink" aria-hidden />}
       </button>
       <BottomSheet open={open} title={t("place")} onClose={() => setOpen(false)}>
         <ul className="space-y-1" role="listbox" aria-label={t("place")}>

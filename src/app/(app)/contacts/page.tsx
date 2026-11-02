@@ -97,6 +97,7 @@ function ContactsPageInner() {
   const [deleting, setDeleting] = useState<Contact | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [ordering, setOrdering] = useState<Contact | null>(null);
+  const ignoreOrderProfile = useRef<string | null>(null);
   const [orderPrefill, setOrderPrefill] = useState<{
     villaId?: string;
     date?: string;
@@ -109,6 +110,7 @@ function ContactsPageInner() {
     if (!data.ready || !canBook || ordering) return;
     const orderProfile = searchParams.get("orderProfile")?.trim();
     if (orderProfile) {
+      if (ignoreOrderProfile.current === orderProfile) return;
       const match = data.contacts.find(
         (c) => c.linked_profile_id === orderProfile,
       );
@@ -116,7 +118,30 @@ function ContactsPageInner() {
         setOrdering(match);
         return;
       }
+      if (!data.profile) return;
+      const person =
+        data.allProfiles.find((p) => p.id === orderProfile) ??
+        data.profiles.find((p) => p.id === orderProfile);
+      const name =
+        person?.full_name?.trim() ||
+        searchParams.get("orderName")?.trim() ||
+        "";
+      if (!name) return;
+      setOrdering({
+        id: `pending:${orderProfile}`,
+        org_id: data.profile.org_id,
+        name,
+        role: person?.role === "cleaner" ? "cleaning" : "other",
+        phone: person?.phone ?? null,
+        messenger: "none",
+        messenger_handle: null,
+        messengers: [],
+        notes: null,
+        linked_profile_id: orderProfile,
+      });
+      return;
     }
+    ignoreOrderProfile.current = null;
     const villaId = searchParams.get("bookVilla")?.trim();
     if (!villaId) return;
     const date = searchParams.get("date")?.trim() || undefined;
@@ -130,7 +155,16 @@ function ContactsPageInner() {
     if (!preferred) return;
     setOrderPrefill({ villaId, date, service });
     setOrdering(preferred);
-  }, [data.ready, data.contacts, canBook, ordering, searchParams]);
+  }, [
+    data.ready,
+    data.contacts,
+    data.allProfiles,
+    data.profiles,
+    data.profile,
+    canBook,
+    ordering,
+    searchParams,
+  ]);
 
   const reviewedThisWeek = useMemo(() => {
     if (!data.profile) return new Set<string>();
@@ -160,13 +194,21 @@ function ContactsPageInner() {
     return roles.map((role) => ({ role, contacts: map.get(role)! }));
   }, [data.contacts]);
 
-  const linkableProfiles = useMemo(
-    () =>
-      data.profiles.filter(
-        (p) => p.role === "cleaner" || p.role === "staff" || p.role === "manager",
-      ),
-    [data.profiles],
-  );
+  const joinedTeam = useMemo(() => {
+    if (!data.profile) return [];
+    const orgId = data.profile.org_id;
+    return data.profiles
+      .filter(
+        (p) =>
+          p.id !== data.profile!.id &&
+          (p.org_id === orgId ||
+            data.memberships.some(
+              (m) => m.org_id === orgId && m.profile_id === p.id,
+            )) &&
+          (p.role === "manager" || p.role === "staff" || p.role === "cleaner"),
+      )
+      .map((p) => ({ id: p.id, full_name: p.full_name }));
+  }, [data.profile, data.profiles, data.memberships]);
 
   if (!data.ready) return <LoadingState />;
 
@@ -240,16 +282,37 @@ function ContactsPageInner() {
           prefill={orderPrefill}
           villas={data.villas}
           onCancel={() => {
+            ignoreOrderProfile.current =
+              searchParams.get("orderProfile")?.trim() || null;
             setOrdering(null);
             setOrderPrefill(null);
+            router.replace("/contacts");
           }}
           onSave={async (values) => {
+            let contactId = ordering.id;
+            if (contactId.startsWith("pending:")) {
+              const createdId = await data.createContact({
+                name: ordering.name,
+                role: ordering.role,
+                phone: ordering.phone,
+                messenger: ordering.messenger,
+                messenger_handle: ordering.messenger_handle,
+                messengers: ordering.messengers,
+                notes: ordering.notes,
+                linked_profile_id: ordering.linked_profile_id,
+              });
+              if (!createdId) throw new Error(t("common.error"));
+              contactId = createdId;
+            }
             await data.createServiceOrder({
-              contact_id: ordering.id,
+              contact_id: contactId,
               ...values,
             });
+            ignoreOrderProfile.current =
+              searchParams.get("orderProfile")?.trim() || null;
             setOrdering(null);
             setOrderPrefill(null);
+            router.replace("/contacts");
           }}
         />
       ) : null}
@@ -273,7 +336,7 @@ function ContactsPageInner() {
       {(creating || editing) && canEdit ? (
         <ContactForm
           initial={editing}
-          linkableProfiles={isPersonal ? [] : linkableProfiles}
+          joinedTeam={isPersonal ? [] : joinedTeam}
           allowAppLink={!isPersonal}
           onCancel={() => {
             setCreating(false);
@@ -409,11 +472,15 @@ function ContactsPageInner() {
                     ) : null}
                     {!isPersonal
                       ? contactMessengers(contact).map((m) => {
-                          if (m.kind === "whatsapp" && contact.phone) {
+                          const whatsappNumber =
+                            m.kind === "whatsapp"
+                              ? m.handle?.trim() || contact.phone
+                              : null;
+                          if (m.kind === "whatsapp" && whatsappNumber) {
                             return (
                               <a
                                 key={m.kind}
-                                href={phoneToWaMe(contact.phone)}
+                                href={phoneToWaMe(whatsappNumber)}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-canvas-deep px-3 py-2 text-sm font-semibold text-ink"
@@ -787,17 +854,35 @@ function messengerLabel(kind: ContactMessengerKind) {
 
 function ContactForm({
   initial,
-  linkableProfiles,
+  joinedTeam,
   allowAppLink = true,
   onCancel,
   onSave,
 }: {
   initial: Contact | null;
-  linkableProfiles: { id: string; full_name: string }[];
+  joinedTeam: { id: string; full_name: string }[];
   allowAppLink?: boolean;
   onCancel: () => void;
   onSave: (values: Omit<Contact, "id" | "org_id">) => Promise<void>;
 }) {
+  const teamOptions = useMemo(() => {
+    const list = [...joinedTeam];
+    if (
+      initial?.linked_profile_id &&
+      !list.some((p) => p.id === initial.linked_profile_id)
+    ) {
+      list.unshift({
+        id: initial.linked_profile_id,
+        full_name: initial.name,
+      });
+    }
+    return list;
+  }, [joinedTeam, initial]);
+  const [teamId, setTeamId] = useState(() => {
+    if (initial?.linked_profile_id) return initial.linked_profile_id;
+    if (initial) return "__other";
+    return "";
+  });
   const [name, setName] = useState(initial?.name ?? "");
   const [role, setRole] = useState(initial?.role ?? "cleaning");
   const [phone, setPhone] = useState(initial?.phone ?? "");
@@ -806,6 +891,7 @@ function ContactForm({
   );
   const [draftKind, setDraftKind] = useState<ContactMessengerKind | "">("");
   const [draftHandle, setDraftHandle] = useState("");
+  const [waSameAsPhone, setWaSameAsPhone] = useState(true);
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [linkedId, setLinkedId] = useState(initial?.linked_profile_id ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -817,7 +903,19 @@ function ContactForm({
 
   function addMessenger() {
     if (!draftKind) return;
-    if (messengerNeedsHandle(draftKind) && !draftHandle.trim()) {
+    if (draftKind === "whatsapp") {
+      if (waSameAsPhone) {
+        if (!phone.trim()) {
+          setError(
+            "Add a phone number above, or untick and enter the WhatsApp number.",
+          );
+          return;
+        }
+      } else if (!draftHandle.trim()) {
+        setError("Enter the WhatsApp number.");
+        return;
+      }
+    } else if (messengerNeedsHandle(draftKind) && !draftHandle.trim()) {
       setError(
         draftKind === "telegram"
           ? "Telegram needs a username."
@@ -830,47 +928,75 @@ function ContactForm({
       ...prev,
       {
         kind: draftKind,
-        handle: messengerNeedsHandle(draftKind)
-          ? draftHandle.trim() || null
-          : null,
+        handle:
+          draftKind === "whatsapp"
+            ? waSameAsPhone
+              ? null
+              : draftHandle.trim()
+            : messengerNeedsHandle(draftKind)
+              ? draftHandle.trim() || null
+              : null,
       },
     ]);
     setDraftKind("");
     setDraftHandle("");
+    setWaSameAsPhone(true);
   }
 
   return (
     <Card className="space-y-3 p-4">
       {allowAppLink ? (
         <div>
-          <Label>PulseFlow user (for in-app booking)</Label>
+          <Label>Name</Label>
           <Select
-            value={linkedId}
+            value={teamId}
             onChange={(e) => {
               const nextId = e.target.value;
+              setTeamId(nextId);
+              setError(null);
+              if (!nextId || nextId === "__other") {
+                setLinkedId("");
+                if (nextId === "__other") return;
+                setName("");
+                return;
+              }
               setLinkedId(nextId);
-              if (!nextId) return;
-              const picked = linkableProfiles.find((p) => p.id === nextId);
+              const picked = teamOptions.find((p) => p.id === nextId);
               if (picked) setName(picked.full_name);
             }}
           >
-            <option value="">Not on app - phone only</option>
-            {linkableProfiles.map((p) => (
+            <option value="">Choose someone who joined</option>
+            {teamOptions.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.full_name}
               </option>
             ))}
+            <option value="__other">Someone else</option>
           </Select>
+          {teamId === "__other" ? (
+            <Input
+              className="mt-2"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={() => setName((v) => capitalizeLabel(v))}
+              placeholder="Name"
+            />
+          ) : (
+            <p className="mt-1 text-xs text-muted">
+              People who accepted a team invite.
+            </p>
+          )}
         </div>
-      ) : null}
-      <div>
-        <Label>Name</Label>
-        <Input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={() => setName((v) => capitalizeLabel(v))}
-        />
-      </div>
+      ) : (
+        <div>
+          <Label>Name</Label>
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => setName((v) => capitalizeLabel(v))}
+          />
+        </div>
+      )}
       <div>
         <Label>Role</Label>
         <Select value={role} onChange={(e) => setRole(e.target.value)}>
@@ -898,7 +1024,12 @@ function ContactForm({
                 >
                   <span className="font-semibold text-ink">
                     {messengerLabel(m.kind)}
-                    {m.handle ? (
+                    {m.kind === "whatsapp" ? (
+                      <span className="font-normal text-muted">
+                        {" "}
+                        · {m.handle?.trim() || "same as phone"}
+                      </span>
+                    ) : m.handle ? (
                       <span className="font-normal text-muted">
                         {" "}
                         · @{m.handle.replace(/^@/, "")}
@@ -931,6 +1062,7 @@ function ContactForm({
                   const next = e.target.value as ContactMessengerKind | "";
                   setDraftKind(next);
                   setDraftHandle("");
+                  setWaSameAsPhone(true);
                   setError(null);
                 }}
               >
@@ -962,9 +1094,31 @@ function ContactForm({
                 </div>
               ) : null}
               {draftKind === "whatsapp" ? (
-                <p className="text-xs text-muted">
-                  WhatsApp uses the phone number above.
-                </p>
+                <div className="space-y-2">
+                  <label className="flex min-h-11 items-center gap-2 text-sm text-ink">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-[var(--pf-orange-500)]"
+                      checked={waSameAsPhone}
+                      onChange={(e) => {
+                        setWaSameAsPhone(e.target.checked);
+                        setError(null);
+                      }}
+                    />
+                    Same as the phone number above
+                  </label>
+                  {waSameAsPhone ? null : (
+                    <div>
+                      <Label>WhatsApp number</Label>
+                      <Input
+                        value={draftHandle}
+                        placeholder="+66…"
+                        inputMode="tel"
+                        onChange={(e) => setDraftHandle(e.target.value)}
+                      />
+                    </div>
+                  )}
+                </div>
               ) : null}
               {draftKind ? (
                 <Button
@@ -997,16 +1151,22 @@ function ContactForm({
           className="flex-1"
           busy={saving}
           onClick={() => {
+            if (allowAppLink && teamId !== "__other" && !linkedId) {
+              setError("Choose someone who joined.");
+              return;
+            }
             if (!name.trim()) {
               setError("Name is required.");
               return;
             }
             if (
               allowAppLink &&
-              messengers.some((m) => m.kind === "whatsapp") &&
-              !phone.trim()
+              messengers.some(
+                (m) =>
+                  m.kind === "whatsapp" && !m.handle?.trim() && !phone.trim(),
+              )
             ) {
-              setError("Add a phone number for WhatsApp.");
+              setError("Add a phone number, or a separate WhatsApp number.");
               return;
             }
             setSaving(true);

@@ -82,4 +82,8 @@ export type TalentSearchResult = {
   review_count: number;
   /** Present when searching near a point */
   distance_km: number | null;
+  /** Already a member of the viewer's company. */
+  on_team?: boolean;
+  /** Already a Contacts row for the viewer's company. */
+  in_contacts?: boolean;
 };

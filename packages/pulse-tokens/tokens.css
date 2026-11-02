@@ -1,0 +1,106 @@
+/**
+ * Pulse Flow tokens. Canonical file for all four surfaces.
+ * Design names and contrast notes live in docs/DESIGN.md.
+ * Prefixed --pf- so this file can load beside the previous theme
+ * without restyling screens that still use the old variables.
+ */
+
+:root {
+  /* Sampled from public/brand/pulse-mark.svg, gradient start stop.
+     The PNG is a blend, so it has no single orange pixel. */
+  --pf-orange-500: #f26a36;
+  --pf-orange-700: #d94e1b;
+
+  --pf-navy-900: #0b1f5c;
+  --pf-navy-600: #3d4f8a;
+  --pf-slate-400: #8a94ad;
+  /* Tertiary text. slate-400 fails AA for small text on the page. */
+  --pf-slate-ink: #62709b;
+
+  --pf-peach-100: #ffe6d6;
+  --pf-yellow-300: #ffd95e;
+
+  --pf-page: #f5f7fc;
+  --pf-card: #ffffff;
+  --pf-line: #e3e8f3;
+  --pf-panel: #0e1530;
+
+  --pf-success: #1fa971;
+  --pf-success-ink: #157a52;
+  --pf-warning: #f5a524;
+  --pf-warning-ink: #946000;
+  --pf-danger: #e5484d;
+  --pf-danger-ink: #c4232a;
+
+  --pf-ink: var(--pf-navy-900);
+  --pf-text: var(--pf-navy-900);
+  --pf-text-secondary: var(--pf-navy-600);
+  --pf-text-tertiary: var(--pf-slate-ink);
+  --pf-on-orange: var(--pf-navy-900);
+  --pf-on-panel: #f5f7fc;
+
+  --pf-radius-hero: 28px;
+  --pf-radius-card: 20px;
+  --pf-radius-control: 14px;
+  --pf-radius-pill: 999px;
+
+  --pf-shadow-1: 0 1px 2px rgba(11, 31, 92, 0.06);
+  --pf-shadow-2: 0 8px 24px rgba(11, 31, 92, 0.08);
+
+  --pf-space-tap: 44px;
+  --pf-measure: 70ch;
+
+  --pf-font-sans: var(--font-onest, "Onest"), "Noto Sans Thai", "Noto Sans", "Noto Sans Hebrew", "Noto Sans Arabic", "Noto Sans Myanmar", sans-serif;
+  --pf-font-chrome: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  --pf-type-12: 12px;
+  --pf-type-14: 14px;
+  --pf-type-16: 16px;
+  --pf-type-18: 18px;
+  --pf-type-22: 22px;
+  --pf-type-28: 28px;
+  --pf-type-36: 36px;
+  --pf-type-48: 48px;
+  --pf-type-64: 64px;
+}
+
+/* Dark follows the system only when the app has not chosen a theme.
+   The switch stores data-appearance (frost or dark). data-theme is the
+   same override for surfaces that set it directly. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-appearance="frost"]):not([data-theme="light"]) {
+    --pf-page: #0b1024;
+    --pf-card: #161e3c;
+    --pf-line: #2a3358;
+    --pf-ink: #f5f7fc;
+    --pf-text: #f5f7fc;
+    --pf-text-secondary: #c9d0e3;
+    --pf-text-tertiary: var(--pf-slate-400);
+    --pf-on-panel: #f5f7fc;
+  }
+}
+
+:root[data-appearance="dark"],
+:root[data-theme="dark"] {
+  --pf-page: #0b1024;
+  --pf-card: #161e3c;
+  --pf-line: #2a3358;
+  --pf-ink: #f5f7fc;
+  --pf-text: #f5f7fc;
+  --pf-text-secondary: #c9d0e3;
+  --pf-text-tertiary: var(--pf-slate-400);
+  --pf-on-panel: #f5f7fc;
+}
+
+/* Explicit light wins over a dark system setting. */
+:root[data-appearance="frost"],
+:root[data-theme="light"] {
+  --pf-page: #f5f7fc;
+  --pf-card: #ffffff;
+  --pf-line: #e3e8f3;
+  --pf-ink: var(--pf-navy-900);
+  --pf-text: var(--pf-navy-900);
+  --pf-text-secondary: var(--pf-navy-600);
+  --pf-text-tertiary: var(--pf-slate-ink);
+  --pf-on-panel: #f5f7fc;
+}

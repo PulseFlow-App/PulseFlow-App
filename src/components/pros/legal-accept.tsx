@@ -57,30 +57,30 @@ export function LegalAccept({
 
   return (
     <div className="space-y-2">
-      <p className="text-sm leading-relaxed text-muted">
+      <p className="text-pf-16 leading-relaxed text-pf-text-secondary">
         {t("legalNote")}{" "}
-        <Link href={`${origin}/terms`} className="font-semibold text-primary">
+        <Link href={`${origin}/terms`} className="font-medium text-pf-text-secondary">
           {t("termsLink")}
         </Link>
-        {" · "}
-        <Link href={`${origin}/privacy`} className="font-semibold text-primary">
+        {" "}
+        <Link href={`${origin}/privacy`} className="font-medium text-pf-text-secondary">
           {t("privacyLink")}
         </Link>
       </p>
       <div
         ref={box}
         onScroll={mark}
-        className="max-h-40 overflow-y-auto rounded-xl border border-[var(--color-border)] bg-canvas-deep p-3 text-sm leading-relaxed text-ink"
+        className="max-h-40 overflow-y-auto rounded-[14px] border border-pf-line bg-pf-page p-3 text-pf-16 leading-relaxed text-pf-ink"
       >
         {LEGAL_SECTIONS.filter((section) => section.audience === audience).map((section) => (
           <section key={section.id} className="mb-3">
-            <h3 className="text-sm font-semibold text-ink">{section.heading[lang]}</h3>
-            <p className="mt-1 text-muted">{section.body[lang]}</p>
+            <h3 className="text-pf-14 font-medium text-pf-ink">{section.heading[lang]}</h3>
+            <p className="mt-1 text-pf-slate-ink">{section.body[lang]}</p>
           </section>
         ))}
-        <p className="text-xs font-semibold text-ink">{t("legalEnd")}</p>
+        <p className="text-pf-12 font-medium text-pf-ink">{t("legalEnd")}</p>
       </div>
-      <label className="flex items-start gap-2 text-sm text-ink">
+      <label className="flex items-start gap-2 text-pf-16 text-pf-ink">
         <input
           type="checkbox"
           className="mt-1"
@@ -90,7 +90,7 @@ export function LegalAccept({
         />
         <span>{t("acceptLegal")}</span>
       </label>
-      <label className="flex items-start gap-2 text-sm text-ink">
+      <label className="flex items-start gap-2 text-pf-16 text-pf-ink">
         <input
           type="checkbox"
           className="mt-1"
@@ -99,7 +99,7 @@ export function LegalAccept({
         />
         <span>
           {t("emailOptIn")}
-          <span className="mt-0.5 block text-xs leading-snug text-muted">{t("emailOptInHint")}</span>
+          <span className="mt-0.5 block text-pf-12 leading-snug text-pf-slate-ink">{t("emailOptInHint")}</span>
         </span>
       </label>
     </div>

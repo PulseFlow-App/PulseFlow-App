@@ -35,6 +35,20 @@ const COPY = {
     ru: "Создать профиль",
     he: "צרו פרופיל",
   },
+  alreadyHave: {
+    en: "Already have an account?",
+    th: "มีบัญชีอยู่แล้ว?",
+    ru: "Уже есть аккаунт?",
+    he: "כבר יש חשבון?",
+  },
+  yourName: { en: "Name", th: "ชื่อ", ru: "Имя", he: "שם" },
+  passwordAgain: { en: "Type it again", th: "พิมพ์อีกครั้ง", ru: "Введите ещё раз", he: "הקלידו שוב" },
+  existingAccountPassword: {
+    en: "This email already has an account. That password did not match.",
+    th: "อีเมลนี้มีบัญชีแล้ว รหัสผ่านไม่ตรง",
+    ru: "На эту почту уже есть аккаунт. Пароль не подошёл.",
+    he: "לאימייל הזה כבר יש חשבון. הסיסמה לא התאימה.",
+  },
   guestAuthEyebrow: {
     en: "Save your shortlist",
     th: "บันทึกรายการโปรด",
@@ -79,6 +93,7 @@ const COPY = {
   },
   home: { en: "Home", th: "หน้าแรก", ru: "Главная", he: "בית" },
   find: { en: "Find", th: "ค้นหา", ru: "Поиск", he: "חיפוש" },
+  messages: { en: "Messages", th: "ข้อความ", ru: "Сообщения", he: "הודעות" },
   requests: { en: "My requests", th: "คำขอของฉัน", ru: "Мои заявки", he: "הבקשות שלי" },
   searchPlaceholder: {
     en: "What needs fixing?",
@@ -711,7 +726,14 @@ const COPY = {
     ru: "Войдите, чтобы увидеть этого специалиста",
     he: "התחברו כדי לראות את בעל המקצוע",
   },
-  findAPro: { en: "Find a pro", th: "หาช่าง", ru: "Найти мастера", he: "מצאו בעל מקצוע" },
+  findAPro: { en: "Find a pro", th: "หาช่างใกล้คุณ", ru: "Найти мастера", he: "מצאו בעל מקצוע" },
+  homeTitle: {
+    en: "Find a pro near you.",
+    th: "หาช่างใกล้คุณ",
+    ru: "Найдите мастера рядом.",
+    he: "מצאו בעל מקצוע קרוב.",
+  },
+  refreshing: { en: "Refreshing", th: "กำลังรีเฟรช", ru: "Обновление", he: "מרענן" },
   composerAircon: {
     en: "Aircon is leaking in the bedroom",
     th: "แอร์รั่วในห้องนอน",

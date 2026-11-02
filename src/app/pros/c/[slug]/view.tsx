@@ -22,7 +22,7 @@ export function CategoryView({ slug }: { slug: string }) {
     }),
     state.reviews,
   );
-  if (!cat) return <p className="text-sm text-muted">{t("noPros")}</p>;
+  if (!cat) return <p className="text-pf-14 text-pf-text-secondary">{t("noPros")}</p>;
 
   const publicPath = pathname.startsWith("/pros")
     ? pathname.slice("/pros".length) || "/"
@@ -30,22 +30,19 @@ export function CategoryView({ slug }: { slug: string }) {
 
   return (
     <div className="space-y-4">
-      <header className="services-horizon animate-rise px-4 py-4 soft-shadow">
-        <div className="relative z-[1]">
-          <p className="type-sign text-[var(--color-sky)]">{t("browseExpand")}</p>
-          <h1 className="type-hero mt-1.5 text-balance">
-            {localizedName(cat.names, locale)}
-          </h1>
-          <p className="mt-2 max-w-[36ch] text-sm leading-snug text-muted">
-            {localizedName(cat.descriptions, locale)}
-          </p>
-        </div>
+      <header>
+        <h1 className="text-balance text-pf-28 font-bold tracking-[-0.02em] text-pf-ink" style={{ viewTransitionName: `pf-cat-${cat.slug}` }}>
+          {localizedName(cat.names, locale)}
+        </h1>
+        <p className="mt-2 max-w-[70ch] text-pf-16 leading-snug text-pf-text-secondary">
+          {localizedName(cat.descriptions, locale)}
+        </p>
       </header>
 
-      {pros.length === 0 ? <p className="text-sm text-muted">{t("noPros")}</p> : null}
-      <div className="flex flex-wrap gap-1.5">
+      {pros.length === 0 ? <p className="text-pf-16 text-pf-text-secondary">{t("noPros")}</p> : null}
+      <div className="space-y-3">
         {pros.map((pro) => (
-          <ProCard key={pro.id} pro={pro} compact />
+          <ProCard key={pro.id} pro={pro} />
         ))}
       </div>
 

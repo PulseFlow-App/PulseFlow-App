@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
+import { isSupabaseConfigured } from "@/lib/env";
 import { canInviteStaff, invitableStaffRoles } from "@/lib/roles";
 import { ensureStaffContact } from "@/lib/contacts/ensure-staff-contact";
 import {
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   });
   if (!rl.ok) return rateLimitResponse(rl.resetAt);
 
-  if (isDemoMode() || !isSupabaseConfigured()) {
+  if (!isSupabaseConfigured()) {
     return NextResponse.json(
       { error: "Pulse Flow Services invites require a signed-in company account." },
       { status: 400 },
@@ -109,12 +109,6 @@ export async function POST(request: Request) {
   if (!talent) {
     return NextResponse.json({ error: "Person not found." }, { status: 404 });
   }
-  if (talent.role === "owner" || talent.role === "guest") {
-    return NextResponse.json(
-      { error: "That profile cannot be invited as staff." },
-      { status: 400 },
-    );
-  }
 
   const { data: membership } = await admin
     .from("org_memberships")
@@ -126,17 +120,34 @@ export async function POST(request: Request) {
     Boolean(membership) || talent.org_id === org.id;
 
   if (alreadyMember) {
-    const contact = await ensureStaffContact(admin, {
-      orgId: org.id,
-      profile: talent,
-    });
-    return NextResponse.json({
-      ok: true,
-      alreadyMember: true,
-      contactId: contact.id,
-      contactCreated: contact.created,
-      inviteUrl: null,
-    });
+    try {
+      const contact = await ensureStaffContact(admin, {
+        orgId: org.id,
+        profile: talent,
+      });
+      return NextResponse.json({
+        ok: true,
+        alreadyMember: true,
+        contactId: contact.id,
+        contactCreated: contact.created,
+        inviteUrl: null,
+      });
+    } catch (e) {
+      return NextResponse.json(
+        {
+          error:
+            e instanceof Error ? e.message : "Could not add this contact.",
+        },
+        { status: 500 },
+      );
+    }
+  }
+
+  if (talent.role === "guest") {
+    return NextResponse.json(
+      { error: "Guests cannot be invited onto the team." },
+      { status: 400 },
+    );
   }
 
   const token = crypto.randomUUID().replace(/-/g, "");

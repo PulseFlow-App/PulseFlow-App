@@ -233,15 +233,10 @@ function PublicProfilePageInner({
                 })}
               </p>
               <Link
-                href={`/contacts?orderProfile=${encodeURIComponent(data.profile.id)}`}
-                className="mt-4 inline-flex"
+                href={`/contacts?orderProfile=${encodeURIComponent(data.profile.id)}&orderName=${encodeURIComponent(data.profile.full_name)}`}
+                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-pf-pill bg-white px-4 text-pf-14 font-medium text-pf-ink"
               >
-                <Button
-                  size="sm"
-                  className="bg-white text-primary hover:bg-white/90"
-                >
-                  {t("contacts.order")}
-                </Button>
+                {t("contacts.order")}
               </Link>
             </div>
 

@@ -172,25 +172,25 @@ function RequestInner() {
           router.push(servicesPath(pathname, `/requests/${result.id}`));
         }}
       >
-        <h1 className="font-display text-2xl font-semibold text-ink">{t("sendRequest")}</h1>
-        {actorReady && !actor ? <p className="text-sm text-muted">{t("requestNeedsAccount")}</p> : null}
-        {gate?.ok && gate.via === "monthly" ? <p className="text-sm text-muted">{t("monthlyNote")}</p> : null}
-        {gate?.ok && gate.via === "trial" ? <p className="text-sm text-muted">{t("trialNote")}</p> : null}
+        <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("sendRequest")}</h1>
+        {actorReady && !actor ? <p className="text-pf-14 text-pf-text-secondary">{t("requestNeedsAccount")}</p> : null}
+        {gate?.ok && gate.via === "monthly" ? <p className="text-pf-14 text-pf-text-secondary">{t("monthlyNote")}</p> : null}
+        {gate?.ok && gate.via === "trial" ? <p className="text-pf-14 text-pf-text-secondary">{t("trialNote")}</p> : null}
         {gate?.ok && gate.via === "plan" && !SERVICES_PAYMENTS_ENABLED ? (
-          <p className="text-sm text-muted">{t("billingLater")}</p>
+          <p className="text-pf-14 text-pf-text-secondary">{t("billingLater")}</p>
         ) : null}
         {gate && !gate.ok ? (
-          <p className="text-sm text-danger">
+          <p className="text-pf-14 font-medium text-pf-danger-ink">
             {gate.error === "plan" ? t("planRequired") : gate.error === "review" ? t("reviewRequired") : t("finishOrderFirst")}
           </p>
         ) : null}
         {gate && !gate.ok && gate.error === "plan" ? (
-          <Link href={servicesPath(pathname, "/settings")} className="text-sm font-semibold text-primary">
+          <Link href={servicesPath(pathname, "/settings")} className="text-pf-14 font-medium text-pf-text-secondary">
             {t("openSettings")}
           </Link>
         ) : null}
-        {params.get("taskId") ? <p className="text-sm text-muted">{t("fromTask")}</p> : null}
-        {invited ? <p className="text-sm text-ink">{t("directTo", { name: invited.name })}</p> : null}
+        {params.get("taskId") ? <p className="text-pf-14 text-pf-text-secondary">{t("fromTask")}</p> : null}
+        {invited ? <p className="text-pf-16 text-pf-ink">{t("directTo", { name: invited.name })}</p> : null}
         <div>
           <Label>{t("category")}</Label>
           <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
@@ -211,18 +211,18 @@ function RequestInner() {
         </div>
         <div>
           <Label htmlFor="request-photos">{t("photos")}</Label>
-          <p className="mb-1 text-xs text-muted">{t("photosMax")}</p>
+          <p className="mb-1 text-pf-12 text-pf-slate-ink">{t("photosMax")}</p>
           <label
             htmlFor="request-photos"
-            className="flex cursor-pointer items-center gap-2 rounded-xl border border-[var(--color-border)] bg-canvas-deep px-2 py-1"
+            className="flex cursor-pointer items-center gap-2 rounded-[14px] border border-pf-line bg-pf-page px-2 py-1"
           >
-            <span className="shrink-0 rounded-full bg-primary px-3 py-1 text-sm font-semibold text-white">
+            <span className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-pf-peach-100 px-3 text-pf-14 font-medium text-pf-ink">
               {t("addPhoto")}
             </span>
-            <span className="text-muted" aria-hidden>
+            <span className="text-pf-slate-ink" aria-hidden>
               —
             </span>
-            <span className="min-w-0 truncate text-sm text-muted">
+            <span className="min-w-0 truncate text-pf-14 text-pf-text-secondary">
               {photos.length === 0 ? t("noPhoto") : t("photosChosen", { count: photos.length })}
             </span>
           </label>
@@ -250,10 +250,10 @@ function RequestInner() {
             <div className="mt-2 flex gap-2">
               {photos.map((url, index) => (
                 <div key={url.slice(-24)} className="relative">
-                  <img src={url} alt="" className="size-14 rounded-xl object-cover" />
+                  <img src={url} alt="" className="size-14 rounded-[14px] object-cover" />
                   <button
                     type="button"
-                    className="absolute -end-1 -top-1 flex size-5 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white"
+                    className="absolute -end-1 -top-1 flex size-5 items-center justify-center rounded-full bg-pf-ink text-pf-12 font-medium text-pf-card"
                     aria-label={t("removePhoto")}
                     onClick={() => setPhotos((prev) => prev.filter((_, item) => item !== index))}
                   >
@@ -301,19 +301,19 @@ function RequestInner() {
             ))}
           </Select>
         </div>
-        {error ? <p className="text-sm text-danger">{error}</p> : null}
+        {error ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
         {actorReady && !actor ? (
           <div className="space-y-2">
-            <p className="text-sm leading-relaxed text-muted">{t("trialBody")}</p>
+            <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("trialBody")}</p>
             <Link
               href={`${pathname.startsWith("/pros") ? "/pros/start" : "/start"}?next=${encodeURIComponent(servicesPath(pathname, "/request"))}`}
-              className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700"
             >
               {t("signUp")}
             </Link>
             <Link
               href={`${pathname.startsWith("/pros") ? "/pros/start" : "/start"}?mode=sign-in&next=${encodeURIComponent(servicesPath(pathname, "/request"))}`}
-              className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink"
             >
               {t("signIn")}
             </Link>

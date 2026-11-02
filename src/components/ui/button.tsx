@@ -34,22 +34,18 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-[var(--radius-pill)] font-semibold transition active:scale-[0.98] disabled:opacity-50",
-        size === "xs" && "h-8 gap-1 px-2.5 text-xs",
-        size === "sm" && "h-9 px-3 py-1.5 text-sm",
-        size === "md" && "h-10 px-4 py-2 text-sm",
-        size === "lg" && "h-11 px-5 py-2.5 text-sm",
+        "inline-flex items-center justify-center gap-2 rounded-pf-pill font-medium motion-reduce:transform-none active:scale-[0.98] disabled:opacity-50",
+        size === "xs" && "h-8 gap-1 px-2.5 text-pf-12",
+        size === "sm" && "min-h-11 px-3 text-pf-14",
+        size === "md" && "min-h-11 px-4 text-pf-16",
+        size === "lg" && "min-h-11 px-5 text-pf-16",
         variant === "primary" &&
-          "bg-primary text-white shadow-[0_8px_20px_rgba(242,106,54,0.28)] hover:bg-primary-dark",
-        variant === "primary" &&
-          size === "xs" &&
-          "shadow-[0_4px_12px_rgba(242,106,54,0.22)]",
-        /* Horizon secondary action = sky (not success teal) */
+          "bg-pf-orange-500 text-white active:bg-pf-orange-700",
         variant === "secondary" &&
-          "bg-sky text-white shadow-[0_8px_18px_rgba(33,158,188,0.28)] hover:brightness-95",
+          "border border-pf-line bg-pf-card text-pf-ink",
         variant === "ghost" &&
-          "border border-[var(--color-border)] bg-card text-ink hover:bg-[color-mix(in_srgb,var(--color-sky)_10%,transparent)]",
-        variant === "danger" && "bg-danger text-white",
+          "border border-pf-line bg-pf-card text-pf-ink",
+        variant === "danger" && "bg-pf-danger text-pf-navy-900",
         showBusy && "pointer-events-none",
         className,
       )}

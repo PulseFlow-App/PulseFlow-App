@@ -143,11 +143,11 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
   return (
     <section className="space-y-2">
       {embedded ? null : (
-        <label htmlFor="need-brief" className="text-sm font-semibold text-ink">
+        <label htmlFor="need-brief" className="text-pf-14 font-medium text-pf-ink">
           {t("searchPlaceholder")}
         </label>
       )}
-      <p id="need-hint" className="text-sm text-muted">
+      <p id="need-hint" className="text-pf-14 text-pf-text-secondary">
         {t("searchHint")}
       </p>
       <div
@@ -185,11 +185,11 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
           {listening ? t("voiceStop") : t("voiceDescribe")}
         </Button>
         {locked ? null : (
-          <p className="text-xs text-muted" aria-live="polite">
+          <p className="text-pf-12 text-pf-slate-ink" aria-live="polite">
             {listening ? t("voiceListening") : supported ? "" : t("voiceUnsupported")}
           </p>
         )}
-        {error && !locked ? <p className="text-sm text-danger">{error}</p> : null}
+        {error && !locked ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
         <Button
           type="button"
           className="min-h-12 w-full"
@@ -212,20 +212,20 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
               >
                 {t("payPro")}
               </Button>
-              {payOffered ? <p className="text-xs leading-relaxed text-muted">{t("payLater")}</p> : null}
+              {payOffered ? <p className="text-pf-12 leading-relaxed text-pf-slate-ink">{t("payLater")}</p> : null}
             </>
           ) : (
             <>
-              <p className="text-xs leading-relaxed text-muted">{t("agentPriceNote")}</p>
+              <p className="text-pf-12 leading-relaxed text-pf-slate-ink">{t("agentPriceNote")}</p>
               <Link
                 href={`${start}?next=${encodeURIComponent(pathname)}`}
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700"
               >
                 {t("signUp")}
               </Link>
               <Link
                 href={`${start}?mode=sign-in&next=${encodeURIComponent(pathname)}`}
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink"
               >
                 {t("signIn")}
               </Link>
@@ -233,18 +233,18 @@ export function NeedBrief({ embedded = false }: { embedded?: boolean }) {
           )}
         </div>
       ) : null}
-      {asked && !locked && !match ? <p className="text-sm text-muted">{t("noTrade")}</p> : null}
-      {asked && !locked && match && !match.profile ? <p className="text-sm text-muted">{t("noPros")}</p> : null}
+      {asked && !locked && !match ? <p className="text-pf-14 text-pf-text-secondary">{t("noTrade")}</p> : null}
+      {asked && !locked && match && !match.profile ? <p className="text-pf-14 text-pf-text-secondary">{t("noPros")}</p> : null}
       {asked && !locked && match?.profile ? (
         <div className="space-y-3">
-          <p className="text-sm text-ink">{t("agentIntro")}</p>
+          <p className="text-pf-16 text-pf-ink">{t("agentIntro")}</p>
           <ProCard pro={match.profile} reveal />
           {confirmed ? (
             <>
-              <p className="text-sm text-muted">{t("youSend")}</p>
+              <p className="text-pf-14 text-pf-text-secondary">{t("youSend")}</p>
               <Link
                 href={requestHref(true)}
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700"
               >
                 {t("sendRequest")}
               </Link>

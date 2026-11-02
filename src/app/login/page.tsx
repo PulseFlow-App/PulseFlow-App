@@ -8,9 +8,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Fingerprint } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
 import { useI18n } from "@/lib/i18n/provider";
@@ -39,6 +36,12 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 const DEMO_PASSWORD = "TestPass123!";
+
+const fieldClass =
+  "mt-1 w-full min-h-11 rounded-pf-control border border-pf-line bg-pf-page px-3 text-pf-16 text-pf-ink outline-none focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-pf-navy-600";
+
+const secondaryButtonClass =
+  "inline-flex min-h-11 items-center justify-center rounded-pf-control border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink disabled:opacity-60";
 
 const DEMO_ACCOUNTS: {
   role: "owner" | "manager" | "employee" | "guest";
@@ -232,15 +235,15 @@ export default function LoginPage() {
 
   return (
     <div
-      className="h-dvh overflow-x-hidden overflow-y-auto overscroll-contain bg-sand py-10"
+      className="font-pf-sans h-dvh overflow-x-hidden overflow-y-auto overscroll-contain bg-pf-page py-8 text-pf-ink"
       style={{
         paddingInline:
-          "max(0.5rem, env(safe-area-inset-left)) max(0.5rem, env(safe-area-inset-right))",
+          "max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right))",
       }}
     >
       <div className="mx-auto flex min-h-full w-full max-w-md items-center">
-        <div className="w-full animate-rise">
-          <div className="mb-4 flex items-center justify-end gap-1.5">
+        <div className="w-full">
+          <div className="mb-4 flex items-center justify-end gap-2">
             <LanguageSwitcher variant="inline" />
             <ThemeIconToggle />
           </div>
@@ -248,16 +251,18 @@ export default function LoginPage() {
             <div className="mx-auto mb-4 flex justify-center">
               <PulseMark className="size-16" />
             </div>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-ink">
+            <h1 className="text-pf-36 font-extrabold tracking-[-0.03em] text-pf-ink">
               {brandName}
             </h1>
-            <p className="mt-2 text-sm text-muted">{t("brand.tagline")}</p>
+            <p className="mx-auto mt-2 max-w-[70ch] text-pf-16 text-pf-text-secondary">
+              {t("brand.tagline")}
+            </p>
           </div>
 
-          <Card className="p-5">
+          <div className="rounded-pf-card border border-pf-line bg-pf-card p-5">
             {isDemoPrefill ? (
               <div className="mb-5 space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                <p className="text-pf-14 font-medium text-pf-text-secondary">
                   {t("auth.demoAccounts")}
                 </p>
                 <div className="grid gap-2">
@@ -269,18 +274,20 @@ export default function LoginPage() {
                       onClick={() => selectDemoRole(account.role)}
                       className={
                         account.role === demoRole
-                          ? "rounded-2xl bg-primary-soft px-3 py-3 text-left ring-2 ring-primary/30"
-                          : "rounded-2xl bg-canvas-deep px-3 py-3 text-left transition hover:bg-primary-soft"
+                          ? "min-h-11 rounded-pf-control bg-pf-peach-100 px-3 py-3 text-left"
+                          : "min-h-11 rounded-pf-control border border-pf-line bg-pf-page px-3 py-3 text-left"
                       }
                     >
-                      <p className="text-sm font-bold text-ink">
+                      <p className="text-pf-16 font-medium text-pf-ink">
                         {t(account.labelKey)}
                       </p>
-                      <p className="text-xs text-muted">{account.email}</p>
+                      <p className="text-pf-14 text-pf-text-secondary">
+                        {account.email}
+                      </p>
                     </button>
                   ))}
                 </div>
-                <p className="text-center text-[11px] text-muted">
+                <p className="text-center text-pf-14 text-pf-text-secondary">
                   {t("auth.demoHint")}
                 </p>
               </div>
@@ -288,11 +295,9 @@ export default function LoginPage() {
 
             {passkeyReady ? (
               <div className="mb-4 space-y-3">
-                <Button
+                <button
                   type="button"
-                  variant="secondary"
-                  className="w-full"
-                  size="lg"
+                  className={`${secondaryButtonClass} w-full gap-2`}
                   disabled={isSubmitting || passkeyLoading}
                   onClick={() => void signInWithPasskeyClick()}
                 >
@@ -300,61 +305,65 @@ export default function LoginPage() {
                   {passkeyLoading
                     ? t("auth.signingInWithPasskey")
                     : t("auth.signInWithPasskey")}
-                </Button>
-                <p className="text-center text-xs font-semibold uppercase tracking-wide text-muted">
+                </button>
+                <p className="text-center text-pf-14 text-pf-text-secondary">
                   {t("auth.passkeyDivider")}
                 </p>
               </div>
             ) : null}
 
-            <form onSubmit={onSubmit} className="space-y-2">
+            <form onSubmit={onSubmit} className="space-y-3">
               <div>
-                <Label htmlFor="email">{t("auth.email")}</Label>
-                <Input
+                <label htmlFor="email" className="text-pf-14 font-medium text-pf-ink">
+                  {t("auth.email")}
+                </label>
+                <input
                   id="email"
                   type="email"
                   autoComplete="email"
+                  className={fieldClass}
                   {...register("email")}
                 />
               </div>
               <div>
-                <Label htmlFor="password">{t("auth.password")}</Label>
-                <Input
+                <label htmlFor="password" className="text-pf-14 font-medium text-pf-ink">
+                  {t("auth.password")}
+                </label>
+                <input
                   id="password"
                   type="password"
                   autoComplete="current-password"
+                  className={fieldClass}
                   {...register("password")}
                 />
               </div>
               {error ? (
-                <p className="text-sm font-semibold text-danger">{error}</p>
+                <p className="text-pf-14 text-pf-danger-ink" role="alert">
+                  {error}
+                </p>
               ) : null}
-              <Button
+              <button
                 type="submit"
-                className="w-full"
-                size="lg"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-pf-pill bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700 disabled:opacity-60"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? t("auth.signingIn") : t("auth.login")}
-              </Button>
+              </button>
             </form>
 
-            <p className="mt-4 text-center text-sm text-muted">
+            <p className="mt-4 text-center text-pf-16 text-pf-text-secondary">
               {t("auth.noAccount")}{" "}
-              <Link href="/register" className="font-semibold text-primary">
+              <Link href="/register" className="font-medium text-pf-ink">
                 {t("auth.register")}
               </Link>
             </p>
 
-            <div
-              id="invite-join"
-              className="mt-5 border-t border-black/5 pt-4"
-            >
-              <p className="text-sm font-semibold text-ink">
+            <div id="invite-join" className="mt-5 border-t border-pf-line pt-4">
+              <p className="text-pf-16 font-medium text-pf-ink">
                 {t("auth.invitedToTeam")}
               </p>
-              <div className="mt-2 flex gap-2">
-                <Input
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                <input
                   value={inviteLink}
                   onChange={(e) => {
                     setInviteLink(e.target.value);
@@ -362,10 +371,11 @@ export default function LoginPage() {
                   }}
                   placeholder={t("auth.invitePlaceholder")}
                   autoComplete="off"
+                  className={`${fieldClass} mt-0 min-w-0 flex-1`}
                 />
-                <Button
+                <button
                   type="button"
-                  variant="secondary"
+                  className={`${secondaryButtonClass} sm:shrink-0`}
                   onClick={() => {
                     const token = extractInviteToken(inviteLink);
                     if (!token) {
@@ -376,15 +386,15 @@ export default function LoginPage() {
                   }}
                 >
                   {t("auth.inviteOpen")}
-                </Button>
+                </button>
               </div>
               {inviteError ? (
-                <p className="mt-2 text-xs font-semibold text-danger">
+                <p className="mt-2 text-pf-14 text-pf-danger-ink" role="alert">
                   {inviteError}
                 </p>
               ) : null}
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </div>

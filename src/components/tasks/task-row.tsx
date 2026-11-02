@@ -53,12 +53,12 @@ export function TaskRow({
       <div className="flex items-start gap-1.5">
         <div className="min-w-0 flex-1 space-y-0.5">
           {urgent ? (
-            <span className="inline-block text-[10px] font-bold uppercase leading-none tracking-wide text-danger">
+            <span className="inline-flex items-center rounded-pf-pill bg-pf-peach-100 px-2 py-1 text-pf-12 font-medium text-pf-danger-ink">
               {t("tasks.urgent")}
             </span>
           ) : null}
           {collapseStatus && task.status === "pending_verify" && !expanded ? (
-            <span className="inline-block text-[10px] font-bold uppercase leading-none tracking-wide text-warning-dark">
+            <span className="inline-flex items-center rounded-pf-pill bg-pf-yellow-300 px-2 py-1 text-pf-12 font-medium text-pf-warning-ink">
               {t("tasks.verifyPending")}
             </span>
           ) : null}
@@ -106,14 +106,14 @@ export function TaskRow({
     <div className="ml-6 space-y-2.5 rounded-xl border border-black/5 bg-canvas-deep px-2.5 py-2.5">
       <div className="grid gap-2 text-sm">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+          <p className="text-pf-12 font-medium text-pf-text-secondary">
             {t("tasks.villa")}
           </p>
           <p className="text-ink">{villaLabel}</p>
         </div>
         {schedule ? (
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+            <p className="text-pf-12 font-medium text-pf-text-secondary">
               {t("tasks.day")}
             </p>
             <p className="text-ink">{schedule}</p>
@@ -121,7 +121,7 @@ export function TaskRow({
         ) : null}
         {showAssignee && task.assignee ? (
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+            <p className="text-pf-12 font-medium text-pf-text-secondary">
               {t("tasks.assignee")}
             </p>
             <p className="text-ink">{task.assignee.full_name}</p>
@@ -129,7 +129,7 @@ export function TaskRow({
         ) : null}
       </div>
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+        <p className="text-pf-12 font-medium text-pf-text-secondary">
           {t("common.notes")}
         </p>
         {hasNotes ? (
@@ -163,7 +163,7 @@ export function TaskRow({
       ) : null}
       {hasPhoto ? (
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
+          <p className="text-pf-12 font-medium text-pf-text-secondary">
             {t("tasks.examplePhoto")}
           </p>
           {/* eslint-disable-next-line @next/next/no-img-element */}

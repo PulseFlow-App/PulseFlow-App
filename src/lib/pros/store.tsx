@@ -163,16 +163,21 @@ export function ProsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!ready) return;
     let cancel = false;
-    void fetch("/api/public/services")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((payload: { profiles?: ProProfile[] } | null) => {
-        if (cancel || !payload?.profiles?.length) return;
-        remoteProfiles.current = payload.profiles;
-        setState((prev) => withRemote(prev));
-      })
-      .catch(() => undefined);
+    const pull = () => {
+      void fetch("/api/public/services")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((payload: { profiles?: ProProfile[] } | null) => {
+          if (cancel || !payload?.profiles?.length) return;
+          remoteProfiles.current = payload.profiles;
+          setState((prev) => withRemote(prev));
+        })
+        .catch(() => undefined);
+    };
+    pull();
+    window.addEventListener("pros-refresh", pull);
     return () => {
       cancel = true;
+      window.removeEventListener("pros-refresh", pull);
     };
   }, [ready, withRemote]);
 
@@ -206,15 +211,15 @@ export function ProsProvider({ children }: { children: ReactNode }) {
     }
     window.addEventListener(SERVICES_CUSTOMER_EVENT, onCustomer);
     const supabase = createClient();
-    void supabase.auth.getUser().then(async ({ data }) => {
-      if (!data.user) {
+    const loadAuthUser = async (userId: string | null, email: string | null) => {
+      if (!userId) {
         apply(localCustomer());
         return;
       }
       const { data: profile } = await supabase
         .from("profiles")
         .select("id, full_name, role, org_id")
-        .eq("id", data.user.id)
+        .eq("id", userId)
         .maybeSingle();
       apply(
         profile
@@ -224,10 +229,20 @@ export function ProsProvider({ children }: { children: ReactNode }) {
               role: profile.role,
               orgId: profile.org_id,
             }
-          : { id: data.user.id, name: data.user.email ?? "User", role: "owner", orgId: null },
+          : { id: userId, name: email ?? "User", role: "owner", orgId: null },
       );
+    };
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const userId = session?.user.id ?? null;
+      const email = session?.user.email ?? null;
+      window.setTimeout(() => {
+        void loadAuthUser(userId, email);
+      }, 0);
     });
-    return () => window.removeEventListener(SERVICES_CUSTOMER_EVENT, onCustomer);
+    return () => {
+      window.removeEventListener(SERVICES_CUSTOMER_EVENT, onCustomer);
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const persist = useCallback((updater: (prev: ProsState) => ProsState) => {

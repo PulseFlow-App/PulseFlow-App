@@ -1289,7 +1289,7 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!contact) throw new Error("Contact not found.");
       if (!contact.linked_profile_id) {
         throw new Error(
-          "This contact is not on PulseFlow. Invite them to your company first, or link their team profile.",
+          "This contact has no Pulse Flow profile, so the job cannot reach them in the app.",
         );
       }
       let staffProfile =
@@ -1306,10 +1306,8 @@ export function useSupabaseData(enabled: boolean): AppData {
           ? normalizeProfile(remoteStaff as Profile)
           : null;
       }
-      if (!staffProfile || !isTaskAssignableRole(staffProfile.role)) {
-        throw new Error(
-          "This contact cannot be booked. Invite them as staff or manager first.",
-        );
+      if (staffProfile?.role === "guest") {
+        throw new Error("Guests cannot be assigned jobs.");
       }
       const villa = input.villa_id
         ? villas.find((v) => v.id === input.villa_id)
@@ -1472,7 +1470,15 @@ export function useSupabaseData(enabled: boolean): AppData {
       ]);
 
       // Staff booked on a company villa get property access automatically.
-      if (villa?.id && contact.linked_profile_id) {
+      const alreadyOnCompany =
+        staffProfile != null &&
+        (staffProfile.org_id === profile.org_id ||
+          memberships.some(
+            (m) =>
+              m.org_id === profile.org_id &&
+              m.profile_id === contact.linked_profile_id,
+          ));
+      if (villa?.id && contact.linked_profile_id && alreadyOnCompany) {
         if (staffProfile && isStaffApp(staffProfile.role)) {
           const already = villaAssignments.some(
             (a) =>
@@ -2517,12 +2523,15 @@ export function useSupabaseData(enabled: boolean): AppData {
       if (!profile) return;
       requireCurrentOrgWrite();
       const supabase = createClient();
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from("contacts")
-        .insert({ org_id: profile.org_id, ...input });
+        .insert({ org_id: profile.org_id, ...input })
+        .select("id")
+        .single();
       if (error) throw error;
       await refresh();
       emitEducationEvent("contact.created");
+      return inserted.id as string;
     },
     updateContact: async (id, patch) => {
       requireCurrentOrgWrite();

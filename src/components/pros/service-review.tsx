@@ -86,12 +86,12 @@ export function ServiceReviewForm({ requestId }: { requestId: string }) {
       }}
     >
       <div>
-        <h2 className="font-display text-lg font-semibold text-ink">{t("review")}</h2>
-        <p className="mt-1 text-sm text-muted">{t("reviewUnlocks")}</p>
+        <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("review")}</h2>
+        <p className="mt-1 text-pf-14 text-pf-text-secondary">{t("reviewUnlocks")}</p>
       </div>
       {QUESTIONS.map((question) => (
         <fieldset key={question.key} className="space-y-2">
-          <legend className="text-sm font-semibold text-ink">{question.label}</legend>
+          <legend className="text-pf-14 font-medium text-pf-ink">{question.label}</legend>
           <div className="flex flex-wrap gap-2">
             {question.options.map((option) => {
               const active = answers[question.key] === option.value;
@@ -102,8 +102,8 @@ export function ServiceReviewForm({ requestId }: { requestId: string }) {
                   onClick={() => setAnswers((prev) => ({ ...prev, [question.key]: option.value }))}
                   className={
                     active
-                      ? "min-h-12 rounded-full bg-primary px-3 text-sm font-semibold text-white"
-                      : "min-h-12 rounded-full bg-canvas-deep px-3 text-sm font-semibold text-ink"
+                      ? "min-h-11 rounded-full bg-pf-peach-100 px-3 text-pf-14 font-medium text-pf-ink"
+                      : "min-h-11 rounded-full border border-pf-line bg-pf-card px-3 text-pf-14 font-medium text-pf-ink"
                   }
                 >
                   {option.label}
@@ -113,7 +113,7 @@ export function ServiceReviewForm({ requestId }: { requestId: string }) {
           </div>
         </fieldset>
       ))}
-      {error ? <p className="text-sm font-semibold text-danger">{error}</p> : null}
+      {error ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
       <Button type="submit" className="min-h-12 w-full" disabled={!ready}>
         {t("review")}
       </Button>

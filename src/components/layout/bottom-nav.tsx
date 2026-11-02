@@ -12,6 +12,7 @@ import { isGuestApp, isStaffApp } from "@/lib/roles";
 import type { UserRole } from "@/lib/design-tokens";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n";
+import { PulseMark } from "@/components/brand/pulse-mark";
 import { PulseWordmark } from "@/components/brand/pulse-wordmark";
 import { useBrandName } from "@/lib/i18n/use-brand-name";
 import {
@@ -158,54 +159,87 @@ export function SideNav() {
   const { t } = useI18n();
   const brandName = useBrandName();
   const tabs = useAppTabs();
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem("pulse-nav-collapsed") === "1");
+    } catch {
+      /* private mode */
+    }
+  }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("pulse-nav-collapsed", next ? "1" : "0");
+      } catch {
+        /* private mode */
+      }
+      return next;
+    });
+  }
+
+  const itemClass = (active: boolean) =>
+    cn(
+      "flex min-h-11 items-center gap-3 rounded-pf-control px-3 text-pf-14 font-medium",
+      active
+        ? "bg-pf-peach-100 text-pf-ink"
+        : "text-pf-text-secondary hover:bg-pf-page hover:text-pf-ink",
+    );
 
   return (
-    <aside className="hidden h-full w-[15.5rem] shrink-0 flex-col border-r border-[var(--color-border)] bg-card/80 px-3 py-4 backdrop-blur-md md:flex lg:w-[16.5rem]">
-      <Link href="/home" className="mb-6 px-2" aria-label={brandName}>
-        <PulseWordmark
-          name={brandName}
-          markClassName="size-9"
-          textClassName="text-[1.05rem]"
-        />
+    <aside
+      className={cn(
+        "font-pf-chrome hidden h-full shrink-0 flex-col border-r border-pf-line bg-pf-page px-2 py-4 md:flex",
+        collapsed ? "w-[4.5rem]" : "w-60",
+      )}
+    >
+      <Link
+        href="/home"
+        className={cn("mb-4 flex items-center px-2", collapsed && "justify-center px-0")}
+        aria-label={brandName}
+      >
+        {collapsed ? (
+          <PulseMark className="size-9" />
+        ) : (
+          <PulseWordmark
+            name={brandName}
+            markClassName="size-9"
+            textClassName="font-pf-sans text-pf-16 font-bold text-pf-ink"
+          />
+        )}
       </Link>
       <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
         {tabs.map(({ href, labelKey, icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
+          const label = t(labelKey);
           return (
             <Link
               key={href}
               href={href}
               data-tour={tourIdForHref(href)}
-              data-tour-label={t(labelKey)}
-              className={cn(
-                "flex items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-sm font-semibold transition",
-                active
-                  ? "bg-primary-soft text-primary-dark"
-                  : "text-muted hover:bg-sand-deep hover:text-ink",
-              )}
+              data-tour-label={label}
+              aria-label={label}
+              title={label}
+              className={itemClass(active)}
             >
               <NavGlyph name={icon} active={active} onDark={false} />
-              <span className="truncate">{t(labelKey)}</span>
+              {collapsed ? null : <span>{label}</span>}
             </Link>
           );
         })}
       </nav>
-      <Link
-        href="/settings"
-        className={cn(
-          "mt-3 flex items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-sm font-semibold transition",
-          pathname.startsWith("/settings")
-            ? "bg-primary-soft text-primary-dark"
-            : "text-muted hover:bg-sand-deep hover:text-ink",
-        )}
+      <button
+        type="button"
+        onClick={toggleCollapsed}
+        aria-pressed={collapsed}
+        aria-label={t("nav.menu")}
+        className="mt-2 inline-flex min-h-11 items-center justify-center rounded-pf-control px-3 text-pf-14 font-medium text-pf-text-secondary"
       >
-        <NavGlyph
-          name="settings"
-          active={pathname.startsWith("/settings")}
-          onDark={false}
-        />
-        <span>{t("nav.settings")}</span>
-      </Link>
+        {collapsed ? "›" : "‹"}
+      </button>
     </aside>
   );
 }
@@ -224,7 +258,7 @@ export function BottomNav() {
       data-tour="bottom-nav"
       data-tour-label={t("nav.home")}
     >
-      <ul className="pointer-events-auto mx-auto flex h-12 w-full max-w-lg items-stretch justify-between gap-0 overflow-hidden rounded-2xl bg-nav px-0.5 shadow-[var(--shadow-nav)]">
+      <ul className="font-pf-chrome pointer-events-auto mx-auto flex h-14 w-full max-w-lg items-stretch justify-between gap-0 overflow-hidden rounded-pf-card border border-pf-line bg-pf-card/75 px-1 shadow-pf-1 backdrop-blur-xl">
         {tabs.map(({ href, labelKey, icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           const label = t(labelKey);
@@ -239,9 +273,9 @@ export function BottomNav() {
                 data-tour={tourId}
                 data-tour-label={label}
                 className={cn(
-                  "flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 transition",
+                  "flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-pf-control px-0.5",
                   !tabsReady && "pointer-events-none opacity-40",
-                  active ? "bg-white/95 text-ink" : "text-white/75",
+                  active ? "bg-pf-peach-100 text-pf-ink" : "text-pf-text-tertiary",
                 )}
                 tabIndex={tabsReady ? undefined : -1}
               >

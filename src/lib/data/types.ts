@@ -216,7 +216,7 @@ export type AppData = {
   /** Owner/manager: send a verification back to open. */
   rejectTaskVerify: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
-  createContact: (input: Omit<Contact, "id" | "org_id">) => Promise<void>;
+  createContact: (input: Omit<Contact, "id" | "org_id">) => Promise<string | undefined>;
   updateContact: (
     id: string,
     patch: Partial<Omit<Contact, "id" | "org_id">>,

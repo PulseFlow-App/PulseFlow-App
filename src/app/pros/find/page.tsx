@@ -45,8 +45,8 @@ function FindInner() {
 
   return (
       <div className="space-y-3">
-        <h1 className="font-display text-2xl font-semibold text-ink">{t("findProfessional")}</h1>
-        {taskId ? <p className="text-sm text-muted">{t("fromTask")}</p> : null}
+        <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("findProfessional")}</h1>
+        {taskId ? <p className="text-pf-14 text-pf-text-secondary">{t("fromTask")}</p> : null}
         <div className="space-y-1.5">
           <div>
             <Label htmlFor="find-name" className="mb-0.5">{t("findName")}</Label>
@@ -57,7 +57,7 @@ function FindInner() {
               placeholder={t("findName")}
               aria-describedby="find-name-note"
             />
-            <p id="find-name-note" className="mt-0.5 text-xs leading-snug text-muted">
+            <p id="find-name-note" className="mt-0.5 text-pf-12 leading-snug text-pf-slate-ink">
               {t("findNameNote")}
             </p>
           </div>
@@ -76,7 +76,7 @@ function FindInner() {
                 </option>
               ))}
             </Select>
-            <p id="find-profession-note" className="mt-0.5 text-xs leading-snug text-muted">
+            <p id="find-profession-note" className="mt-0.5 text-pf-12 leading-snug text-pf-slate-ink">
               {t("findProfessionNote")}
             </p>
           </div>
@@ -95,7 +95,7 @@ function FindInner() {
                 </option>
               ))}
             </Select>
-            <p id="find-language-note" className="mt-0.5 text-xs leading-snug text-muted">
+            <p id="find-language-note" className="mt-0.5 text-pf-12 leading-snug text-pf-slate-ink">
               {t("findLanguageNote")}
             </p>
           </div>
@@ -108,25 +108,25 @@ function FindInner() {
             {t("filterAvailability")}
           </label>
         </div>
-        {pros.length === 0 ? <p className="text-sm text-muted">{t("noPros")}</p> : null}
-        <div className="flex flex-wrap gap-1.5">
+        {pros.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noPros")}</p> : null}
+        <div className="space-y-3">
           {pros.map((pro) => (
-            <ProCard key={pro.id} pro={pro} compact />
+            <ProCard key={pro.id} pro={pro} />
           ))}
         </div>
         {actorReady && !actor ? (
           <div className="space-y-2">
-            <p className="text-sm leading-relaxed text-muted">{t("trialBody")}</p>
+            <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("trialBody")}</p>
             <div className="flex flex-col gap-1">
               <Link
                 href={`${start}?next=${back}`}
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] bg-primary px-4 text-sm font-semibold text-white"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700"
               >
                 {t("signUp")}
               </Link>
               <Link
                 href={`${start}?mode=sign-in&next=${back}`}
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-canvas px-4 text-sm font-semibold text-ink"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink"
               >
                 {t("signIn")}
               </Link>
