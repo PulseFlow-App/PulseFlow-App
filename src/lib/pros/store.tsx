@@ -11,10 +11,9 @@ import {
   type ReactNode,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { getDemoProfile, updateDemoStore } from "@/lib/demo/store";
+import { getDemoProfile } from "@/lib/demo/store";
 import { hasDemoUserCookie, isDemoMode } from "@/lib/env";
 import { useI18n } from "@/lib/i18n/provider";
-import { makeNotification } from "@/lib/notifications";
 import { createSeedState, SEED_PROFILES } from "@/lib/pros/catalog";
 import { PROS_EVENT, PROS_STORAGE_KEY, writeProsState } from "@/lib/pros/jobs";
 import { prosT, type ProsKey } from "@/lib/pros/i18n";
@@ -143,9 +142,10 @@ export function ProsProvider({ children }: { children: ReactNode }) {
   const remoteProfiles = useRef<ProProfile[]>([]);
 
   const withRemote = useCallback((base: ProsState) => {
-    const ids = new Set(base.profiles.map((row) => row.id));
+    const local = base.profiles.filter((row) => row.consentNote !== "Listed on Pulseflow Services.");
+    const ids = new Set(local.map((row) => row.id));
     const extra = remoteProfiles.current.filter((row) => !ids.has(row.id));
-    return extra.length ? { ...base, profiles: [...extra, ...base.profiles] } : base;
+    return { ...base, profiles: [...extra, ...local] };
   }, []);
 
   useEffect(() => {
@@ -167,8 +167,8 @@ export function ProsProvider({ children }: { children: ReactNode }) {
       void fetch("/api/public/services")
         .then((res) => (res.ok ? res.json() : null))
         .then((payload: { profiles?: ProProfile[] } | null) => {
-          if (cancel || !payload?.profiles?.length) return;
-          remoteProfiles.current = payload.profiles;
+          if (cancel || !payload) return;
+          remoteProfiles.current = payload.profiles ?? [];
           setState((prev) => withRemote(prev));
         })
         .catch(() => undefined);
@@ -182,7 +182,14 @@ export function ProsProvider({ children }: { children: ReactNode }) {
   }, [ready, withRemote]);
 
   useEffect(() => {
-    if (ready) writeProsState(state, false);
+    if (!ready) return;
+    writeProsState(
+      {
+        ...state,
+        profiles: state.profiles.filter((row) => row.consentNote !== "Listed on Pulseflow Services."),
+      },
+      false,
+    );
   }, [ready, state]);
 
   useEffect(() => {
@@ -193,7 +200,7 @@ export function ProsProvider({ children }: { children: ReactNode }) {
     const localCustomer = () => {
       const customer = readServicesCustomer();
       return customer
-        ? { id: customer.id, name: customer.name, role: "guest", orgId: null }
+        ? { id: customer.id, name: customer.name, role: "guest", orgId: null, intent: null }
         : null;
     };
     const onCustomer = () => {
@@ -204,7 +211,7 @@ export function ProsProvider({ children }: { children: ReactNode }) {
       const profile = getDemoProfile();
       apply(
         profile
-          ? { id: profile.id, name: profile.full_name, role: profile.role, orgId: profile.org_id }
+          ? { id: profile.id, name: profile.full_name, role: profile.role, orgId: profile.org_id, intent: null }
           : null,
       );
       return;
@@ -218,7 +225,7 @@ export function ProsProvider({ children }: { children: ReactNode }) {
       }
       const { data: profile } = await supabase
         .from("profiles")
-        .select("id, full_name, role, org_id")
+        .select("id, full_name, role, org_id, services_intent")
         .eq("id", userId)
         .maybeSingle();
       apply(
@@ -228,8 +235,12 @@ export function ProsProvider({ children }: { children: ReactNode }) {
               name: profile.full_name,
               role: profile.role,
               orgId: profile.org_id,
+              intent:
+                profile.services_intent === "hire" || profile.services_intent === "work"
+                  ? profile.services_intent
+                  : null,
             }
-          : { id: userId, name: email ?? "User", role: "owner", orgId: null },
+          : { id: userId, name: email ?? "User", role: "owner", orgId: null, intent: null },
       );
     };
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -399,26 +410,6 @@ export function ProsProvider({ children }: { children: ReactNode }) {
               targets,
             }),
           });
-        }
-        if ((isDemoMode() || hasDemoUserCookie()) && linked.length && request.orgId) {
-          updateDemoStore((store) => ({
-            ...store,
-            notifications: [
-              ...linked.map((pro) =>
-                makeNotification({
-                  org_id: request.orgId!,
-                  kind: "appointment",
-                  title: "New quote request",
-                  body: request.title,
-                  href: `/pros/reply/${offers.find((o) => o.profileId === pro.id)?.token ?? ""}`,
-                  entity_id: request.id,
-                  audience_profile_ids: [pro.linkedProfileId!],
-                  dedupe_key: `pros-request:${request.id}:${pro.id}`,
-                }),
-              ),
-              ...store.notifications,
-            ],
-          }));
         }
         return { ok: true, id: request.id, matches: offers };
       },

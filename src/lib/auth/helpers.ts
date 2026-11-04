@@ -50,6 +50,7 @@ export type RegisterWorkspaceInput = {
   payer?: "owner" | "manager";
   service?: {
     skills?: string[];
+    tags?: string[];
     bio?: string;
     location?: string;
     country?: string;
@@ -57,6 +58,8 @@ export type RegisterWorkspaceInput = {
   };
   /** ISO time. Registration is refused without it. */
   termsAcceptedAt?: string | null;
+  /** hire: looking for staff. work: maintenance. */
+  servicesIntent?: "hire" | "work" | null;
   /** Optional email. Unset means no. */
   emailOptIn?: boolean;
   /** App on-site staff: company invite URL or /join token. Required for that path. */

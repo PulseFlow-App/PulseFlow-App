@@ -201,6 +201,7 @@ function normalizeProfile(row: Profile): Profile {
     job_search_skills: Array.isArray(row.job_search_skills)
       ? row.job_search_skills
       : [],
+    job_search_tags: Array.isArray(row.job_search_tags) ? row.job_search_tags : [],
     job_search_bio: row.job_search_bio ?? null,
     job_search_location: row.job_search_location ?? null,
     job_search_country: row.job_search_country ?? null,

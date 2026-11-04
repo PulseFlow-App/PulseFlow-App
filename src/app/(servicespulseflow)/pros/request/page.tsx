@@ -14,8 +14,7 @@ import { usePros } from "@/lib/pros/store";
 import { useI18n } from "@/lib/i18n/provider";
 import type { ProsUrgency } from "@/lib/pros/types";
 import { orderAllowance, SERVICES_PAYMENTS_ENABLED } from "@/lib/pros/trial";
-
-type DateChoice = "today" | "tomorrow" | "this_week" | "flexible";
+import { todayIsoDate } from "@/lib/villas/status-from-dates";
 
 const DRAFT_KEY = "pulseflow.services.requestDraft";
 const TIME_OPTIONS = ["morning", "afternoon", "evening", "any"] as const;
@@ -26,7 +25,9 @@ type RequestDraft = {
   description: string;
   photos: string[];
   urgency: ProsUrgency;
-  dateChoice: DateChoice;
+  /** ISO date. Older drafts stored today/tomorrow/this_week/flexible in dateChoice. */
+  preferredDate?: string;
+  dateChoice?: string;
   preferredTime: string;
   language: string;
   profileId: string | null;
@@ -60,7 +61,7 @@ function RequestInner() {
   const [title, setTitle] = useState(params.get("title") ?? "");
   const [description, setDescription] = useState(params.get("brief") ?? "");
   const [urgency, setUrgency] = useState<ProsUrgency>("flexible");
-  const [dateChoice, setDateChoice] = useState<DateChoice>("today");
+  const [preferredDate, setPreferredDate] = useState(todayIsoDate);
   const [preferredTime, setPreferredTime] = useState<(typeof TIME_OPTIONS)[number]>("morning");
   const [language, setLanguage] = useState<string>(locale);
   const [photos, setPhotos] = useState<string[]>([]);
@@ -77,11 +78,8 @@ function RequestInner() {
     setTitle(draft.title);
     setDescription(draft.description);
     setUrgency(draft.urgency);
-    setDateChoice(
-      draft.dateChoice === "tomorrow" || draft.dateChoice === "this_week" || draft.dateChoice === "flexible"
-        ? draft.dateChoice
-        : "today",
-    );
+    const stored = draft.preferredDate ?? draft.dateChoice ?? "";
+    setPreferredDate(/^\d{4}-\d{2}-\d{2}/.test(stored) ? stored.slice(0, 10) : todayIsoDate());
     setPreferredTime(
       TIME_OPTIONS.includes(draft.preferredTime as (typeof TIME_OPTIONS)[number])
         ? (draft.preferredTime as (typeof TIME_OPTIONS)[number])
@@ -125,7 +123,9 @@ function RequestInner() {
       photos: draft.photos ?? [],
       areaId: state.placeId,
       urgency: draft.urgency,
-      preferredDate: draft.dateChoice ?? "today",
+      preferredDate: /^\d{4}-\d{2}-\d{2}/.test(draft.preferredDate ?? "")
+        ? draft.preferredDate!.slice(0, 10)
+        : todayIsoDate(),
       preferredTime: draft.preferredTime,
       language: draft.language,
       taskId: draft.taskId,
@@ -156,7 +156,7 @@ function RequestInner() {
             photos,
             areaId: state.placeId,
             urgency,
-            preferredDate: dateChoice,
+            preferredDate,
             preferredTime,
             language,
             taskId: params.get("taskId"),
@@ -267,19 +267,21 @@ function RequestInner() {
         <div>
           <Label>{t("urgency")}</Label>
           <Select value={urgency} onChange={(e) => setUrgency(e.target.value as ProsUrgency)}>
-            <option value="today">{t("today")}</option>
-            <option value="this_week">{t("thisWeek")}</option>
-            <option value="flexible">{t("flexible")}</option>
+            <option value="today">{t("urgent")}</option>
+            <option value="this_week">{t("soon")}</option>
+            <option value="flexible">{t("notUrgent")}</option>
           </Select>
         </div>
         <div>
-          <Label>{t("preferredDate")}</Label>
-          <Select value={dateChoice} onChange={(e) => setDateChoice(e.target.value as DateChoice)}>
-            <option value="today">{t("today")}</option>
-            <option value="tomorrow">{t("tomorrow")}</option>
-            <option value="this_week">{t("thisWeek")}</option>
-            <option value="flexible">{t("flexible")}</option>
-          </Select>
+          <Label htmlFor="request-date">{t("preferredDate")}</Label>
+          <Input
+            id="request-date"
+            type="date"
+            value={preferredDate}
+            min={todayIsoDate()}
+            required
+            onChange={(e) => setPreferredDate(e.target.value)}
+          />
         </div>
         <div>
           <Label>{t("preferredTime")}</Label>

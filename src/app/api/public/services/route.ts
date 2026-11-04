@@ -39,7 +39,7 @@ export async function GET() {
   const { data, error } = await admin
     .from("profiles")
     .select(
-      "id, full_name, job_search_bio, job_search_skills, job_search_location, job_search_country, job_search_updated_at",
+      "id, full_name, job_search_bio, job_search_skills, job_search_tags, job_search_location, job_search_country, job_search_updated_at",
     )
     .eq("job_search_visible", true)
     .order("job_search_updated_at", { ascending: false })
@@ -86,6 +86,7 @@ export async function GET() {
       claimedAt: row.job_search_updated_at,
       listingTier: "free",
       checks: { email: null, phone: null, identity: null, business: null, qualification: null },
+      tags: Array.isArray(row.job_search_tags) ? row.job_search_tags.map(String) : [],
       createdAt: row.job_search_updated_at ?? new Date().toISOString(),
     };
   });

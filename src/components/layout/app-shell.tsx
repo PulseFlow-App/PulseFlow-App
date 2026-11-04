@@ -13,6 +13,8 @@ import { useIsDemoMode } from "@/lib/demo/use-is-demo-mode";
 import { useI18n } from "@/lib/i18n/provider";
 import { EducationProvider } from "@/lib/education/provider";
 import { EducationTour } from "@/components/education/education-tour";
+import { LinkOffer } from "@/components/account/link-offer";
+import { AddToHomeScreenModal } from "@/components/pwa/add-to-home-screen-modal";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -94,12 +96,14 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
               </div>
             ) : null}
             <TrialBanner />
+            <LinkOffer app="pulse" />
             <main className="w-full max-w-full pb-4">{children}</main>
           </div>
         </div>
         <BottomNav />
         <ReviewOfferBanner />
         <EducationTour />
+        <AddToHomeScreenModal />
       </div>
     </div>
   );

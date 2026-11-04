@@ -24,6 +24,7 @@ import {
 import { capitalizeLabel } from "@/lib/format-label";
 import type { MessageKey } from "@/lib/i18n";
 import { ReportsEntryLink } from "@/components/reports/reports-entry-link";
+import { PersonalGigs } from "@/components/tasks/personal-gigs";
 
 type Filter = "all" | "mine" | "urgent";
 
@@ -173,6 +174,8 @@ export default function TasksPage() {
           <ReportsEntryLink />
         </div>
       </div>
+
+      <PersonalGigs />
 
       <div className="flex gap-2">
         {(["all", "mine", "urgent"] as Filter[]).map((f) => (

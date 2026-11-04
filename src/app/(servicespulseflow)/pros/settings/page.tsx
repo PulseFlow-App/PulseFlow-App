@@ -4,9 +4,16 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAppearance } from "@/lib/appearance/provider";
+import { demoLogout } from "@/lib/demo/store";
+import { isDemoMode } from "@/lib/env";
+import { DirectoryListingCard } from "@/components/pros/directory-listing";
+import { LinkOffer } from "@/components/account/link-offer";
+import { isHireAccount, isWorkAccount } from "@/lib/pros/intent";
 import { serviceInviteCode, serviceInviteUrl } from "@/lib/pros/join";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
+import { SERVICES_CUSTOMER_EVENT, SERVICES_CUSTOMER_KEY } from "@/lib/pros/trial";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 function Chip({
@@ -53,11 +60,15 @@ export default function ServicesSettingsPage() {
     setInviteLink(serviceInviteUrl(window.location.origin));
   }, [actor]);
 
-  if (!actor) return null;
+  if (!actorReady || !actor || actor.role === "guest") return null;
+  const work = isWorkAccount(actor);
+  const hire = isHireAccount(actor);
 
   return (
     <div className="space-y-3">
       <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("settings")}</h1>
+
+      {work ? <DirectoryListingCard /> : null}
 
       <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
         <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("theme")}</h2>
@@ -66,6 +77,9 @@ export default function ServicesSettingsPage() {
           <Chip active={appearance === "dark"} label={t("themeDark")} onClick={() => setAppearance("dark")} />
         </div>
       </section>
+
+      {work ? null : <DirectoryListingCard />}
+      <LinkOffer app="services" variant="settings" />
 
       <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
         <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("inviteCode")}</h2>
@@ -100,13 +114,13 @@ export default function ServicesSettingsPage() {
         {inviteLink ? <p className="break-all text-pf-12 text-pf-slate-ink">{inviteLink}</p> : null}
       </section>
 
-      <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("planTitle")}</h2>
-          {plan.premium || plan.pro ? <span className="text-pf-14 font-medium text-pf-ink">{t("planOn")}</span> : null}
-        </div>
-        <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("premiumBody")}</p>
-        {actor ? (
+      {hire ? (
+        <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("planTitle")}</h2>
+            {plan.premium || plan.pro ? <span className="text-pf-14 font-medium text-pf-ink">{t("planOn")}</span> : null}
+          </div>
+          <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("premiumBody")}</p>
           <Button
             type="button"
             variant={plan.premium || plan.pro ? "ghost" : "primary"}
@@ -118,10 +132,30 @@ export default function ServicesSettingsPage() {
           >
             {plan.premium || plan.pro ? t("turnOff") : t("turnOn")}
           </Button>
-        ) : null}
-      </section>
+        </section>
+      ) : null}
 
-      <p className="text-pf-12 leading-relaxed text-pf-slate-ink">{t("paymentNotCharged")}</p>
+      {hire ? <p className="text-pf-12 leading-relaxed text-pf-slate-ink">{t("paymentNotCharged")}</p> : null}
+
+      <button
+        type="button"
+        className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-pf-danger-ink px-4 text-pf-16 font-medium text-pf-danger-ink"
+        onClick={() => {
+          void (async () => {
+            if (isDemoMode()) {
+              demoLogout();
+            } else {
+              await createClient().auth.signOut();
+            }
+            localStorage.removeItem(SERVICES_CUSTOMER_KEY);
+            window.dispatchEvent(new Event(SERVICES_CUSTOMER_EVENT));
+            router.replace("/");
+            router.refresh();
+          })();
+        }}
+      >
+        {t("signOut")}
+      </button>
     </div>
   );
 }

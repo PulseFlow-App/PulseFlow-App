@@ -12,6 +12,7 @@ import { AgreeButton } from "@/components/jobs/agree-button";
 import { JobProgressTimeline } from "@/components/jobs/job-progress-timeline";
 import { VillaPhotoThumb } from "@/components/villas/villa-photo";
 import { writeStoredReviewOffer } from "@/components/tasks/review-offer-banner";
+import { PersonalGigs } from "@/components/tasks/personal-gigs";
 import { useData } from "@/lib/data/use-app-data";
 import {
   canCancelServiceOrder,
@@ -354,6 +355,8 @@ function JobsPageInner() {
           ) : null}
         </div>
       </div>
+
+      <PersonalGigs />
 
       <section className="space-y-2">
         <h2 className="text-sm font-semibold text-muted">

@@ -118,7 +118,9 @@ const KIND_ORDER: Record<TodayKind, number> = {
   delivery: 4,
 };
 
+/** Today is the property day. A job with no house is not part of it. */
 function inProperty(villaId: string | null, propertyId: string | null) {
+  if (!villaId) return false;
   if (!propertyId) return true;
   return villaId === propertyId;
 }

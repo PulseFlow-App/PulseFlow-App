@@ -5,6 +5,7 @@ import { isDemoMode } from "@/lib/env";
 import {
   distanceKm,
   normalizeTalentSkills,
+  normalizeWorkTags,
   type TalentSearchResult,
 } from "@/lib/talent";
 import {
@@ -71,6 +72,7 @@ function toResult(
     role: p.role,
     share_slug: p.share_slug,
     job_search_skills: normalizeTalentSkills(p.job_search_skills),
+    job_search_tags: normalizeWorkTags(p.job_search_tags),
     job_search_bio: p.job_search_bio,
     job_search_location: p.job_search_location ?? null,
     job_search_country: p.job_search_country ?? null,
@@ -129,6 +131,7 @@ export async function GET(request: Request) {
           p.job_search_location ?? "",
           p.job_search_country ?? "",
           ...(p.job_search_skills ?? []),
+          ...(p.job_search_tags ?? []),
         ]
           .join(" ")
           .toLowerCase();
@@ -211,7 +214,7 @@ export async function GET(request: Request) {
   let query = admin
     .from("profiles")
     .select(
-      "id, org_id, full_name, job_title, role, share_slug, job_search_skills, job_search_bio, job_search_location, job_search_country, job_search_lat, job_search_lng",
+      "id, org_id, full_name, job_title, role, share_slug, job_search_skills, job_search_tags, job_search_bio, job_search_location, job_search_country, job_search_lat, job_search_lng",
     )
     .eq("job_search_visible", true)
     .neq("role", "guest")
@@ -252,6 +255,7 @@ export async function GET(request: Request) {
       p.job_search_location ?? "",
       p.job_search_country ?? "",
       ...(p.job_search_skills ?? []),
+      ...(p.job_search_tags ?? []),
     ]
       .join(" ")
       .toLowerCase();

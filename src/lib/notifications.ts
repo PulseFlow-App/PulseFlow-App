@@ -20,12 +20,34 @@ import { weekKey } from "@/lib/endorsements";
  * - Support chat pings (`message` with href `/messages`, no team channel)
  * Ops kinds (tasks, jobs, team chat, bills, …) never appear for guests.
  * Owners/managers keep seeing guest-related alerts aimed at them as before.
+ * Marketplace orders are not property alerts; they stay in Pulseflow Services.
  */
+export function isServicesMarketplaceNotice(n: {
+  dedupe_key?: string | null;
+  href?: string | null;
+}): boolean {
+  const key = n.dedupe_key ?? "";
+  if (
+    key.startsWith("service-request") ||
+    key.startsWith("service-reply") ||
+    key.startsWith("pros-request:")
+  ) {
+    return true;
+  }
+  const href = n.href ?? "";
+  return (
+    href.startsWith("https://services.pulseflow.site") ||
+    href.startsWith("http://services.localhost") ||
+    href.startsWith("/pros/reply/")
+  );
+}
+
 export function notificationVisibleTo(
-  n: Pick<AppNotification, "kind" | "audience_profile_ids" | "href">,
+  n: Pick<AppNotification, "kind" | "audience_profile_ids" | "href" | "dedupe_key">,
   profileId: string,
   role?: UserRole | null,
 ): boolean {
+  if (isServicesMarketplaceNotice(n)) return false;
   const inAudience = (ids: string[] | null | undefined) =>
     Boolean(ids?.includes(profileId));
 

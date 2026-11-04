@@ -10,6 +10,7 @@ import {
 import { attachInviteToExistingProfile } from "@/lib/auth/attach-org";
 import { creditReferral } from "@/lib/billing/referrals";
 import { ensureStaffContact } from "@/lib/contacts/ensure-staff-contact";
+import { normalizeWorkTags } from "@/lib/talent";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 import {
   clientIp,
@@ -298,12 +299,18 @@ export async function POST(request: Request) {
           : "Owner",
     share_slug,
   };
+  if (body.servicesIntent === "hire" || body.servicesIntent === "work") {
+    profileRow.services_intent = body.servicesIntent;
+  } else if (onSiteStaff) {
+    profileRow.services_intent = "work";
+  }
   if (onSiteStaff || listOnServices) {
     // Listing stays private until they open it on Services; listNow only forces visible.
     profileRow.job_search_visible = Boolean(service?.listNow);
     profileRow.job_search_skills = service?.skills?.length
       ? service.skills
       : ["maintenance"];
+    profileRow.job_search_tags = normalizeWorkTags(service?.tags);
     profileRow.job_search_bio = service?.bio?.trim() || null;
     profileRow.job_search_location = service?.location?.trim() || null;
     profileRow.job_search_country = service?.country?.trim() || null;
@@ -311,6 +318,10 @@ export async function POST(request: Request) {
   }
 
   let profileErr = (await admin.from("profiles").insert(profileRow)).error;
+  if (profileErr && /services_intent/.test(profileErr.message)) {
+    delete profileRow.services_intent;
+    profileErr = (await admin.from("profiles").insert(profileRow)).error;
+  }
   if (profileErr && (onSiteStaff || listOnServices) && /job_search_/.test(profileErr.message)) {
     for (const key of Object.keys(profileRow)) {
       if (key.startsWith("job_search_")) delete profileRow[key];

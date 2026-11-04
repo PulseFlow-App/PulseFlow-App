@@ -8,7 +8,6 @@ import { selectionTick } from "@/components/pros/haptics";
 import { PfIcon, type PfIconName } from "@/components/pros/pf-icons";
 import { readPhoto } from "@/components/pros/parts";
 import { PlacePicker } from "@/components/pros/place-picker";
-import { AddToHomeScreenModal } from "@/components/pwa/add-to-home-screen-modal";
 import { LOCALE_META, type Locale } from "@/lib/i18n";
 import { localizedName } from "@/lib/pros/catalog";
 import { suggestFromBrief } from "@/lib/pros/brief";
@@ -99,7 +98,6 @@ export function HomeScreen() {
 
   return (
     <div className="bg-pf-page font-[family-name:var(--font-pf-sans)] text-pf-ink">
-      <AddToHomeScreenModal />
       <HomeBar />
       <div className="space-y-6 px-4 pb-4">
         <HomeComposer />

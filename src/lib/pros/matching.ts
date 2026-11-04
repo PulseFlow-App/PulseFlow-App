@@ -99,7 +99,7 @@ export function filterPros(
       if (!earned) return false;
     }
     if (input.available && !pro.available) return false;
-    if (q && !`${pro.name} ${pro.description}`.toLowerCase().includes(q)) return false;
+    if (q && !`${pro.name} ${pro.description} ${(pro.tags ?? []).join(" ")}`.toLowerCase().includes(q)) return false;
     return true;
   });
 }

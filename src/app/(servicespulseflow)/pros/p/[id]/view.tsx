@@ -63,6 +63,9 @@ export function ProfileView({ id }: { id: string }) {
           {pro.areaIds.map((area) => areaName(state, area, locale)).filter(Boolean).map((label) => (
             <span key={label} className="rounded-full bg-pf-yellow-300 px-2 py-0.5 text-pf-12 font-medium text-pf-ink">{label}</span>
           ))}
+          {(pro.tags ?? []).map((tag) => (
+            <span key={tag} className="rounded-full border border-pf-line px-2 py-0.5 text-pf-12 font-medium text-pf-ink">{tag}</span>
+          ))}
         </div>
       </div>
       {pro.description.trim() ? (

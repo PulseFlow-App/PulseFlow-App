@@ -21,6 +21,11 @@ export function canListInTalentSearch(role: UserRole) {
   return role === "cleaner" || role === "staff" || role === "manager";
 }
 
+/** Services settings can list an owner as well as field staff. Guests stay off the directory. */
+export function canListOnServices(role: UserRole) {
+  return canListInTalentSearch(role) || role === "owner";
+}
+
 export function normalizeTalentSkills(raw: string[] | null | undefined): TalentSkill[] {
   if (!raw?.length) return [];
   const allowed = new Set<string>(TALENT_SKILLS);
@@ -35,6 +40,62 @@ export function normalizeLocationLabel(raw: string | null | undefined) {
 export function normalizeCountryLabel(raw: string | null | undefined) {
   const value = raw?.trim() ?? "";
   return value ? value.slice(0, 80) : null;
+}
+
+const WORK_TAG_SUGGESTIONS: Record<string, string[]> = {
+  cleaner: ["Karcher", "Hoover", "Windows", "Laundry", "Turnover"],
+  cleaning: ["Karcher", "Hoover", "Windows", "Laundry", "Turnover"],
+  "deep-cleaning": ["Deep clean", "Karcher", "Hoover", "Move-out"],
+  electrician: ["Wiring", "Lights", "Fans", "Breakers"],
+  electrical: ["Wiring", "Lights", "Fans", "Breakers"],
+  ac: ["Unit cleaning", "Gas refill", "Installation"],
+  hvac: ["Unit cleaning", "Gas refill", "Installation"],
+  plumber: ["Leaks", "Pumps", "Water heaters"],
+  plumbing: ["Leaks", "Pumps", "Water heaters"],
+  gardener: ["Lawn", "Trees", "Watering"],
+  gardening: ["Lawn", "Trees", "Watering"],
+  pool: ["Chemicals", "Pumps", "Tiles"],
+  maintenance: ["Small repairs", "Mounting", "Furniture", "House build"],
+  handyman: ["Small repairs", "Mounting", "Furniture", "House build"],
+  carpentry: ["Furniture", "House build", "Doors", "Decks"],
+  construction: ["House build", "Renovation", "Tiling"],
+  painting: ["Interior", "Exterior"],
+  appliance: ["Fridges", "Washers", "Ovens"],
+  pest: ["Ants", "Termites", "Rodents"],
+  water: ["Pumps", "Tanks", "Filters"],
+  locksmith: ["Locks", "Keys"],
+  moving: ["Furniture", "Local delivery"],
+  babysitter: ["Evenings", "Infants", "School age"],
+  babysitting: ["Evenings", "Infants", "School age"],
+  "pet-sitter": ["Dogs", "Cats", "Feeding"],
+  "pet-sitting": ["Dogs", "Cats", "Feeding"],
+};
+
+/** Short labels for tools and kinds of work, kept as the person typed them. */
+export function normalizeWorkTags(raw: string[] | null | undefined): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const item of raw ?? []) {
+    const value = item.replace(/\s+/g, " ").trim().slice(0, 32);
+    if (value.length < 2) continue;
+    const key = value.toLocaleLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(value);
+    if (out.length >= 12) break;
+  }
+  return out;
+}
+
+/** Suggestions for the trades they already picked. Keys are skill ids or category slugs. */
+export function suggestedWorkTags(keys: string[]): string[] {
+  const out: string[] = [];
+  for (const key of keys) {
+    for (const tag of WORK_TAG_SUGGESTIONS[key] ?? []) {
+      if (!out.some((row) => row.toLocaleLowerCase() === tag.toLocaleLowerCase())) out.push(tag);
+    }
+  }
+  return out.slice(0, 12);
 }
 
 export function formatTalentPlace(input: {
@@ -73,6 +134,7 @@ export type TalentSearchResult = {
   role: UserRole;
   share_slug: string;
   job_search_skills: TalentSkill[];
+  job_search_tags: string[];
   job_search_bio: string | null;
   job_search_location: string | null;
   job_search_country: string | null;

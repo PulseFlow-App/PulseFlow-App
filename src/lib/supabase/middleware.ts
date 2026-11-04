@@ -57,6 +57,8 @@ const MARKET_PREFIXES = [
   "/a",
   "/reply",
   "/claim",
+  "/inbox",
+  "/company",
   "/admin",
   "/start",
   "/settings",

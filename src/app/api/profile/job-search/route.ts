@@ -8,12 +8,14 @@ import {
   normalizeCountryLabel,
   normalizeLocationLabel,
   normalizeTalentSkills,
+  normalizeWorkTags,
 } from "@/lib/talent";
 import type { UserRole } from "@/lib/design-tokens";
 
 const bodySchema = z.object({
   visible: z.boolean(),
   skills: z.array(z.string()).max(12).optional(),
+  tags: z.array(z.string()).max(12).optional(),
   bio: z.string().max(500).nullable().optional(),
   location: z.string().max(120).nullable().optional(),
   country: z.string().max(80).nullable().optional(),
@@ -63,7 +65,8 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const skills = normalizeTalentSkills(body.skills ?? []);
+  const skills = body.skills == null ? null : normalizeTalentSkills(body.skills);
+  const tags = body.tags == null ? null : normalizeWorkTags(body.tags);
   const bio = body.bio?.trim() || null;
   const location = normalizeLocationLabel(body.location);
   const country = normalizeCountryLabel(body.country);
@@ -77,12 +80,6 @@ export async function PATCH(request: Request) {
   const lat = hasPin ? body.lat! : null;
   const lng = hasPin ? body.lng! : null;
 
-  if (body.visible && skills.length === 0) {
-    return NextResponse.json(
-      { error: "Pick at least one skill before going visible." },
-      { status: 400 },
-    );
-  }
   if (body.visible && !location && !country) {
     return NextResponse.json(
       { error: "Add a city or country so owners can find you by location." },
@@ -94,7 +91,8 @@ export async function PATCH(request: Request) {
     .from("profiles")
     .update({
       job_search_visible: body.visible,
-      job_search_skills: skills,
+      ...(skills ? { job_search_skills: skills } : {}),
+      ...(tags ? { job_search_tags: tags } : {}),
       job_search_bio: bio,
       job_search_location: location,
       job_search_country: country,
@@ -104,7 +102,7 @@ export async function PATCH(request: Request) {
     })
     .eq("id", user.id)
     .select(
-      "job_search_visible, job_search_skills, job_search_bio, job_search_location, job_search_country, job_search_lat, job_search_lng, job_search_updated_at",
+      "job_search_visible, job_search_skills, job_search_tags, job_search_bio, job_search_location, job_search_country, job_search_lat, job_search_lng, job_search_updated_at",
     )
     .single();
 

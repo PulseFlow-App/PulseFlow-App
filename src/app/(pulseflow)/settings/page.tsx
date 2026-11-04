@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { NotebookPen } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { PasskeySettingsCard } from "@/components/auth/passkey-settings-card";
 import { JobSearchSettingsCard } from "@/components/settings/job-search-settings-card";
 import { McpSettingsCard } from "@/components/settings/mcp-settings-card";
 import { GuestySettingsCard } from "@/components/settings/guesty-settings-card";
+import { LinkOffer } from "@/components/account/link-offer";
 import { DeleteAccountCard } from "@/components/settings/delete-account-card";
 import { BlockedUsersCard } from "@/components/settings/blocked-users-card";
 import { PushSettingsCard } from "@/components/settings/push-settings-card";
@@ -25,11 +27,15 @@ import { AppearanceSettingsCard } from "@/components/settings/appearance-setting
 import { WorkspaceSwitcherCard } from "@/components/settings/workspace-switcher-card";
 import type { MessageKey } from "@/lib/i18n";
 import { resolvePlanTier } from "@/lib/billing/plans";
+import { demoLogout } from "@/lib/demo/store";
+import { isDemoMode } from "@/lib/env";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
   const data = useData();
   const { t } = useI18n();
+  const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [nameEditing, setNameEditing] = useState(false);
   const [nameBusy, setNameBusy] = useState(false);
@@ -85,6 +91,7 @@ export default function SettingsPage() {
   return (
     <Screen>
       <ScreenHeader title={t("settings.title")} description={t("brand.tagline")} />
+      <LinkOffer app="pulse" variant="settings" />
 
       <Card id="language" className="scroll-mt-4 space-y-3 p-3 sm:p-4">
         <div data-tour="settings-language" data-tour-label={t("settings.language")}>
@@ -304,6 +311,20 @@ export default function SettingsPage() {
 
       <BlockedUsersCard />
       <DeleteAccountCard />
+      <button
+        type="button"
+        onClick={() => {
+          void (async () => {
+            if (isDemoMode()) demoLogout();
+            else await createClient().auth.signOut();
+            router.replace("/login");
+            router.refresh();
+          })();
+        }}
+        className="flex min-h-11 w-full items-center justify-center rounded-[var(--radius-pill)] border border-danger px-4 text-sm font-bold text-danger"
+      >
+        {t("settings.signOut")}
+      </button>
     </Screen>
   );
 }

@@ -1,21 +1,31 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ProCard } from "@/components/pros/parts";
 import { Input, Label, Select } from "@/components/ui/input";
 import { LOCALE_META } from "@/lib/i18n";
 import { PROS_LANGS, localizedName } from "@/lib/pros/catalog";
 import { allCategories, filterPros, sortOrganic } from "@/lib/pros/matching";
+import { servicesPath } from "@/lib/pros/paths";
+import { isHireAccount } from "@/lib/pros/intent";
 import { usePros } from "@/lib/pros/store";
 import { useI18n } from "@/lib/i18n/provider";
 
 function FindInner() {
   const params = useSearchParams();
   const pathname = usePathname();
+  const router = useRouter();
   const { state, actor, actorReady, t } = usePros();
   const { locale } = useI18n();
+  const hire = isHireAccount(actor);
+
+  useEffect(() => {
+    if (!actorReady || hire) return;
+    router.replace(servicesPath(pathname, "/"));
+  }, [actorReady, hire, pathname, router]);
+
   const [categoryId, setCategoryId] = useState(params.get("category") ?? "");
   const [language, setLanguage] = useState("");
   const [verified, setVerified] = useState(false);
@@ -42,6 +52,8 @@ function FindInner() {
   );
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
   const back = encodeURIComponent(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`);
+
+  if (!actorReady || !hire) return null;
 
   return (
       <div className="space-y-3">

@@ -220,14 +220,14 @@ export function TodayScreen({ data }: { data: AppData }) {
         </p>
       ) : null}
 
-      <div className="mt-5 grid items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,0.9fr)]">
-        <section className="order-2 lg:order-1">
+      <div className="mt-5 grid items-start gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,0.9fr)] lg:gap-4">
+        <section className="order-2 self-start lg:order-1">
           {model.rows.length === 0 ? (
-            <p className="text-pf-text-secondary max-w-[70ch] text-pf-16">
+            <p className="rounded-pf-card border border-pf-line bg-pf-card px-4 py-4 text-pf-16 text-pf-text-secondary">
               {copy.timelineEmpty}
             </p>
           ) : (
-            <ol className="rounded-pf-card border border-pf-line bg-pf-card px-3">
+            <ol className="rounded-pf-card border border-pf-line bg-pf-card px-4">
               {model.rows.map((row) => (
                 <TimelineRow
                   key={row.id}
@@ -241,7 +241,7 @@ export function TodayScreen({ data }: { data: AppData }) {
           )}
         </section>
 
-        <aside className="order-1 grid grid-cols-2 gap-3 lg:order-2">
+        <aside className="order-1 grid grid-cols-2 gap-3 self-start lg:order-2">
           {model.urgent ? (
             <UrgentTile
               urgent={model.urgent}
@@ -302,7 +302,7 @@ export function TodayScreen({ data }: { data: AppData }) {
             )}
           </section>
           {!staff ? (
-            <section className="rounded-pf-card border border-pf-line bg-pf-card p-3">
+            <section className="flex flex-col rounded-pf-card border border-pf-line bg-pf-card p-3">
               <h2 className="text-pf-16 font-medium text-pf-ink">{copy.onDuty}</h2>
               {model.onDuty.length === 0 ? (
                 <p className="text-pf-text-secondary mt-2 text-pf-14">
@@ -312,7 +312,7 @@ export function TodayScreen({ data }: { data: AppData }) {
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {model.onDuty.map((person) => (
                     <li key={person.id} className="flex items-center gap-2">
-                      <span className="inline-flex size-10 items-center justify-center rounded-full bg-pf-peach-100 text-pf-12 font-medium text-pf-ink">
+                      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-pf-navy-600 text-pf-12 font-medium text-white">
                         {initials(person.name)}
                       </span>
                       <span className="text-pf-14 text-pf-ink">{person.name}</span>
@@ -342,7 +342,7 @@ export function TodayScreen({ data }: { data: AppData }) {
               )}
               <Link
                 href="/bills"
-                className="mt-3 inline-flex min-h-11 items-center justify-center rounded-pf-control border border-pf-line px-3 text-center text-pf-14 font-medium text-pf-ink"
+                className="mt-auto inline-flex min-h-11 w-full items-center justify-center rounded-pf-pill border border-pf-line px-3 text-center text-pf-14 font-medium text-balance text-pf-ink"
               >
                 {model.supplies.length === 0 ? copy.addSupply : copy.openBills}
               </Link>
@@ -415,32 +415,30 @@ function TimelineRow({
   const KindIcon = KIND_ICON[row.kind];
   const statusLabel = copy[row.status];
   return (
-    <li className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 border-b border-pf-line py-3 last:border-b-0">
-      <p className="text-pf-text-secondary whitespace-nowrap pt-1 text-pf-14 font-medium">
-        {row.minutes == null
-          ? row.overdue
-            ? copy.overdue
-            : copy.anyTime
-          : formatClock(row.minutes)}
-      </p>
-      <div className="min-w-0">
-        <div className="flex flex-wrap gap-1.5">
-          <Chip>
-            <KindIcon className="size-3.5" aria-hidden />
-            {copy[row.kind]}
-          </Chip>
-          <Chip tone={statusTone(row.status)}>
-            <StatusIcon status={row.status} />
-            {statusLabel}
-          </Chip>
-        </div>
-        <p className="mt-1 text-pf-16 font-medium text-pf-ink">{row.property}</p>
-        {row.title !== "Arrival" && row.title !== "Departure" ? (
-          <p className="text-pf-text-secondary text-pf-14">{row.title}</p>
+    <li className="border-b border-pf-line py-3 last:border-b-0">
+      <div className="flex flex-wrap items-center gap-1.5">
+        {row.minutes != null ? (
+          <span className="text-pf-14 font-medium tabular-nums text-pf-text-secondary">
+            {formatClock(row.minutes)}
+          </span>
         ) : null}
-        <div className="mt-2">
-          <RowAction row={row} copy={copy} busy={busy} onAgree={onAgree} />
+        <Chip>
+          <KindIcon className="size-3.5" aria-hidden />
+          {copy[row.kind]}
+        </Chip>
+        <Chip tone={statusTone(row.status)}>
+          <StatusIcon status={row.status} />
+          {statusLabel}
+        </Chip>
+      </div>
+      <div className="mt-2 flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-pf-16 font-medium text-pf-ink">{row.property}</p>
+          {row.title !== "Arrival" && row.title !== "Departure" ? (
+            <p className="text-pf-14 text-pf-text-secondary">{row.title}</p>
+          ) : null}
         </div>
+        <RowAction row={row} copy={copy} busy={busy} onAgree={onAgree} />
       </div>
     </li>
   );
@@ -464,7 +462,7 @@ function RowAction({
         type="button"
         disabled={busy}
         onClick={() => onAgree(row.orderId!)}
-        className="inline-flex min-h-11 items-center rounded-pf-control border border-pf-line bg-pf-card px-3 text-pf-14 font-medium text-pf-ink disabled:opacity-60"
+        className="inline-flex min-h-11 items-center whitespace-nowrap rounded-pf-pill border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink disabled:opacity-60"
       >
         {label}
       </button>
@@ -473,7 +471,7 @@ function RowAction({
   return (
     <Link
       href={row.href}
-      className="inline-flex min-h-11 items-center rounded-pf-control border border-pf-line bg-pf-card px-3 text-center text-pf-14 font-medium text-pf-ink"
+      className="inline-flex min-h-11 items-center whitespace-nowrap rounded-pf-pill border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink"
     >
       {label}
     </Link>

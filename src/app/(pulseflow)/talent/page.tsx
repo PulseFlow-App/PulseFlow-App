@@ -470,6 +470,18 @@ export default function TalentPage() {
                           ))}
                         </div>
                       ) : null}
+                      {person.job_search_tags?.length ? (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {person.job_search_tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-full border border-pf-line px-2.5 py-1 text-[11px] font-semibold text-ink"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
                       {person.job_search_bio ? (
                         <p className="mt-2 text-sm text-ink">
                           {person.job_search_bio}

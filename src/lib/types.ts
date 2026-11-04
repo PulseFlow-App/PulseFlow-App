@@ -54,6 +54,7 @@ export type Profile = {
   /** Opt-in listing on Pulseflow Services */
   job_search_visible: boolean;
   job_search_skills: string[];
+  job_search_tags?: string[];
   job_search_bio: string | null;
   /** City / area on Pulseflow Services, e.g. "Koh Samui" */
   job_search_location: string | null;

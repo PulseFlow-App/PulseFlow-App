@@ -176,7 +176,9 @@ export function ProCard({
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-pf-16 font-medium text-pf-ink">{pro.name}</span>
-          <span className="block truncate text-pf-14 text-pf-text-secondary">{trade || t("position")}</span>
+          <span className="block truncate text-pf-14 text-pf-text-secondary">
+            {[trade || t("position"), ...(pro.tags ?? []).slice(0, 3)].filter(Boolean).join(" · ")}
+          </span>
           <span className="mt-1 block text-pf-12 text-pf-slate-ink">
             {rating == null ? t("noReviews") : rating.toFixed(1)}
           </span>

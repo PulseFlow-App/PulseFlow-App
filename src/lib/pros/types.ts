@@ -45,6 +45,8 @@ export type ProProfile = {
   listingTier: "free";
   checks: Record<ProCheck, string | null>;
   createdAt: string;
+  /** Tools and kinds of work, such as Karcher or furniture. */
+  tags?: string[];
 };
 
 export type ProRequest = {
@@ -162,4 +164,6 @@ export type ProsActor = {
   name: string;
   role: string;
   orgId: string | null;
+  /** hire looks for staff. work is maintenance. Staff and cleaners are always work. */
+  intent: "hire" | "work" | null;
 };

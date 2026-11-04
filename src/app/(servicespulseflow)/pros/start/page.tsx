@@ -3,7 +3,6 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AddToHomeScreenModal } from "@/components/pwa/add-to-home-screen-modal";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { usePros } from "@/lib/pros/store";
@@ -75,6 +74,7 @@ function StartForm() {
           kind: "personal",
           track: "management",
           role: "owner",
+          servicesIntent: "hire",
           termsAcceptedAt,
           emailOptIn: emails,
         }),
@@ -113,7 +113,6 @@ function StartForm() {
 
   return (
     <div className="mx-auto max-w-lg space-y-3">
-      <AddToHomeScreenModal />
       <Link href="/" className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-ink">
         {t("home")}
       </Link>
