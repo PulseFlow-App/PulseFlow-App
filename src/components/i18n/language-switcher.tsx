@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Check, ChevronDown, Languages } from "lucide-react";
 import { selectionTick } from "@/components/pros/haptics";
 import { BottomSheet } from "@/components/welcome/bottom-sheet";
-import { LOCALES, LOCALE_META } from "@/lib/i18n";
+import { LOCALES, LOCALE_META, type Locale } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/provider";
+import { isMarketplaceHost, isServicesLocale, servicesPath } from "@/lib/pros/paths";
 import { cn } from "@/lib/utils";
 
 function LocalePickerSheet({
@@ -16,6 +18,23 @@ function LocalePickerSheet({
   onClose: () => void;
 }) {
   const { locale, setLocale, t } = useI18n();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  function choose(code: Locale) {
+    selectionTick();
+    setLocale(code);
+    if (typeof window !== "undefined" && isMarketplaceHost(window.location.host)) {
+      const visible = pathname.startsWith("/pros")
+        ? pathname.slice("/pros".length) || "/"
+        : pathname;
+      const first = visible.split("/").filter(Boolean)[0] ?? "";
+      if (visible === "/" || isServicesLocale(first)) {
+        router.push(servicesPath(pathname, `/${code}`));
+      }
+    }
+    onClose();
+  }
 
   return (
     <BottomSheet
@@ -34,11 +53,7 @@ function LocalePickerSheet({
                 type="button"
                 role="option"
                 aria-selected={selected}
-                onClick={() => {
-                  selectionTick();
-                  setLocale(code);
-                  onClose();
-                }}
+                onClick={() => choose(code)}
                 className={cn(
                   "flex min-h-11 w-full items-center gap-2 px-3 text-start",
                   selected ? "pf-choice-selected" : "pf-choice",

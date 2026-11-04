@@ -402,10 +402,13 @@ export async function POST(request: Request) {
   }
 
   try {
+    const servicesReferral =
+      (body.servicesIntent === "hire" || body.servicesIntent === "work") &&
+      !body.inviteToken;
     await creditReferral(admin, {
       referrerCode: body.referredBy,
       referredProfileId: userId,
-      source: "register",
+      source: servicesReferral ? "services" : "register",
     });
   } catch (e) {
     console.warn("referral credit failed", e);

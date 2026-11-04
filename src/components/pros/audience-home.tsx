@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import type { ServiceDelivery } from "@/lib/pros/delivery";
 import { appOriginForHost, servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
@@ -32,6 +33,75 @@ function dayLabel(iso: string, locale: string) {
 function money(amount: number | null, currency: string | null) {
   if (amount == null) return "";
   return currency ? `${amount} ${currency}` : String(amount);
+}
+
+function hasServicesAccount(actor: { id: string; role: string } | null) {
+  return Boolean(actor && actor.role !== "guest" && !actor.id.startsWith("local"));
+}
+
+/** Public home. One side looks for staff. The other side becomes staff. */
+export function ServicesWelcome() {
+  const { actor, t } = usePros();
+  const pathname = usePathname();
+  const [busy, setBusy] = useState<"hire" | "work" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const account = hasServicesAccount(actor);
+
+  const registerHref = servicesPath(pathname, "/register?track=maintenance");
+  const exploreHref = servicesPath(pathname, "/explore");
+
+  async function choose(intent: "hire" | "work") {
+    setError(null);
+    setBusy(intent);
+    try {
+      const res = await fetch("/api/services/intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ intent }),
+      });
+      if (!res.ok) throw new Error();
+      window.location.assign(servicesPath(pathname, "/"));
+    } catch {
+      setError(t("welcomeSaveFail"));
+      setBusy(null);
+    }
+  }
+
+  const findClass = "mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white";
+  const becomeClass = "mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#F5F7FC] px-4 text-pf-16 font-medium text-pf-navy-900";
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <h1 className="text-pf-36 font-extrabold tracking-[-0.03em] text-pf-ink">{t("welcomeTitle")}</h1>
+        <p className="max-w-[70ch] text-pf-16 text-pf-text-secondary">{t("welcomeSplit")}</p>
+      </div>
+
+      <section className="rounded-[28px] border border-pf-line bg-pf-card p-5">
+        <h2 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("findStaffTitle")}</h2>
+        <p className="mt-2 max-w-[70ch] text-pf-16 text-pf-text-secondary">{t("findStaffBody")}</p>
+        <Link href={exploreHref} className={findClass}>
+          {t("findStaffCta")}
+        </Link>
+      </section>
+
+      <section className="rounded-[28px] bg-pf-navy-900 p-5 text-pf-on-panel">
+        <h2 className="text-pf-28 font-bold tracking-[-0.02em]">{t("becomeStaffTitle")}</h2>
+        <p className="mt-2 max-w-[70ch] text-pf-16 text-pf-on-panel/80">{t("becomeStaffBody")}</p>
+        {account ? (
+          <button type="button" className={becomeClass} disabled={busy != null} onClick={() => void choose("work")}>
+            {t("becomeStaffCta")}
+          </button>
+        ) : (
+          <Link href={registerHref} className={becomeClass}>
+            {t("becomeStaffCta")}
+          </Link>
+        )}
+      </section>
+
+      {error ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
+    </div>
+  );
 }
 
 /** Home for maintenance accounts. A work dashboard, with no search. */

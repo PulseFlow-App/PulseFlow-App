@@ -116,7 +116,6 @@ function StartForm() {
       <Link href="/" className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-ink">
         {t("home")}
       </Link>
-      <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("trialBody")}</p>
       <div className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
         {mode === "create" ? (
           <div>

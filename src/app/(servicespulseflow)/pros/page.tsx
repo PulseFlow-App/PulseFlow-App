@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { HomeScreen } from "@/components/pros/home-screen";
-import { WorkHome } from "@/components/pros/audience-home";
-import { isWorkAccount } from "@/lib/pros/intent";
+import { ServicesWelcome, WorkHome } from "@/components/pros/audience-home";
+import { isHireAccount, isWorkAccount } from "@/lib/pros/intent";
 import { releaseAccidentalListing } from "@/lib/pros/join";
 import { usePros } from "@/lib/pros/store";
 
@@ -12,7 +12,8 @@ export default function ProsHomePage() {
   useEffect(() => {
     releaseAccidentalListing();
   }, []);
-  if (!actorReady) return null;
+  if (!actorReady) return <ServicesWelcome />;
   if (isWorkAccount(actor)) return <WorkHome />;
-  return <HomeScreen />;
+  if (isHireAccount(actor)) return <HomeScreen />;
+  return <ServicesWelcome />;
 }

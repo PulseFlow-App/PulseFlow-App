@@ -54,12 +54,34 @@ function readStoredLocale(): Locale {
   return "en";
 }
 
-export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+function pathLocale(): Locale | null {
+  if (typeof window === "undefined") return null;
+  const seg = window.location.pathname.split("/").filter(Boolean)[0] ?? "";
+  return isLocale(seg) ? seg : null;
+}
+
+export function LocaleProvider({
+  children,
+  initialLocale = "en",
+}: {
+  children: React.ReactNode;
+  initialLocale?: Locale;
+}) {
+  const [locale, setLocaleState] = useState<Locale>(isLocale(initialLocale) ? initialLocale : "en");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setLocaleState(readStoredLocale());
+    const fromPath = pathLocale();
+    if (fromPath) {
+      try {
+        localStorage.setItem(LOCALE_STORAGE_KEY, fromPath);
+      } catch {
+        /* ignore quota / private mode */
+      }
+      setLocaleState(fromPath);
+    } else {
+      setLocaleState(readStoredLocale());
+    }
     setReady(true);
   }, []);
 

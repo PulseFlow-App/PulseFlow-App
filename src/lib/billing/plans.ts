@@ -19,6 +19,15 @@ export const PRICING = {
   proMonthlyUsd: 24,
 } as const;
 
+/** Company workspaces we designate as founding. The Company monthly fee is waived. */
+export const FOUNDING_COMPANY_LIMIT = 10;
+
+/**
+ * Later AI on app.pulseflow.site is a paid extra.
+ * The founding companies do not receive it with the free Company offer.
+ */
+export const FOUNDING_INCLUDES_APP_AI = false;
+
 /** Purchasable / display tiers. Manager reporting is included with Full, not a separate tier. */
 export type PlanTier = "free" | "full" | "trial" | "expired";
 

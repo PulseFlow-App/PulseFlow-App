@@ -16,7 +16,8 @@ import {
 import { brand, colors } from "@/lib/design-tokens";
 import { APPEARANCE_BOOT_SCRIPT } from "@/lib/appearance/apply";
 import { APP_URL, OG_IMAGE, SERVICES_OG_IMAGE, SERVICES_URL } from "@/lib/seo";
-import { isMarketplaceHost } from "@/lib/pros/paths";
+import { isMarketplaceHost, isServicesLocale } from "@/lib/pros/paths";
+import { LOCALE_META } from "@/lib/i18n/types";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -118,7 +119,7 @@ const appMetadata: Metadata = {
 };
 
 const servicesDescription =
-  "Find local plumbers, electricians, cleaners and more. Describe the problem, compare, and book. In English, Thai, Russian and Hebrew.";
+  "Find local plumbers, electricians, cleaners and more. Describe the problem, compare, and book.";
 const servicesShareTitle = "Find local professionals · Pulseflow Services";
 
 const servicesMetadata: Metadata = {
@@ -187,10 +188,14 @@ export default async function RootLayout({
   const host =
     headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "";
   const site = isMarketplaceHost(host) ? "services" : "app";
+  const requested = headerList.get("x-services-lang");
+  const initialLocale = isServicesLocale(requested) ? requested : "en";
+  const dir = LOCALE_META[initialLocale].dir;
 
   return (
     <html
-      lang="en"
+      lang={initialLocale}
+      dir={dir}
       data-site={site}
       suppressHydrationWarning
       className={`${onest.variable} ${heebo.variable} ${sora.variable} ${noto.variable} ${thai.variable} ${myanmar.variable} ${arabic.variable} h-full`}
@@ -206,7 +211,7 @@ export default async function RootLayout({
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }}
         />
-        <Providers>{children}</Providers>
+        <Providers initialLocale={initialLocale}>{children}</Providers>
       </body>
     </html>
   );

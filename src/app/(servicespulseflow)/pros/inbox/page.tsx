@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/input";
 import type { ServiceDelivery } from "@/lib/pros/delivery";
 import { statusKey } from "@/lib/pros/i18n";
 import { readMyListingId } from "@/lib/pros/join";
+import { needsWorkPermit } from "@/lib/pros/permit";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 
@@ -19,6 +20,9 @@ export default function WorkerInboxPage() {
   const [incoming, setIncoming] = useState<ServiceDelivery[]>([]);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [sent, setSent] = useState<Record<string, boolean>>({});
+  const [nationality, setNationality] = useState<string | null>(null);
+  const [nationalityReady, setNationalityReady] = useState(false);
+  const [permitFor, setPermitFor] = useState<string | null>(null);
   const to = (path: string) => servicesPath(pathname, path);
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
 
@@ -29,6 +33,16 @@ export default function WorkerInboxPage() {
       return;
     }
     setListingId(readMyListingId());
+    void fetch("/api/services/profile", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload: { profile?: { nationality?: string | null } | null } | null) => {
+        setNationality(payload?.profile?.nationality ?? null);
+        setNationalityReady(true);
+      })
+      .catch(() => {
+        setNationality(null);
+        setNationalityReady(true);
+      });
     void fetch("/api/services/requests")
       .then((res) => (res.ok ? res.json() : { requests: [] }))
       .then((payload: { requests?: ServiceDelivery[] }) => {
@@ -52,6 +66,18 @@ export default function WorkerInboxPage() {
 
   if (!actor) return null;
 
+  const sendReply = (id: string) => {
+    const message = (drafts[id] ?? "").trim();
+    if (!message) return;
+    void fetch("/api/services/requests", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, message }),
+    }).then((res) => {
+      if (res.ok) setSent((current) => ({ ...current, [id]: true }));
+    });
+  };
+
   return (
     <div className="space-y-3">
       <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("messages")}</h1>
@@ -70,13 +96,11 @@ export default function WorkerInboxPage() {
                 event.preventDefault();
                 const message = (drafts[row.id] ?? "").trim();
                 if (!message) return;
-                void fetch("/api/services/requests", {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ id: row.id, message }),
-                }).then((res) => {
-                  if (res.ok) setSent((current) => ({ ...current, [row.id]: true }));
-                });
+                if (nationalityReady && needsWorkPermit(nationality)) {
+                  setPermitFor(row.id);
+                  return;
+                }
+                sendReply(row.id);
               }}
             >
               <Textarea
@@ -96,6 +120,35 @@ export default function WorkerInboxPage() {
         <p className="text-pf-14 text-pf-text-secondary">{t("noInbox")}</p>
       ) : null}
       {listingId && rows.length === 0 && incoming.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noInbox")}</p> : null}
+      {permitFor ? (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-pf-ink/40 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center">
+          <div role="dialog" aria-modal="true" aria-labelledby="permit-title" className="w-full max-w-md rounded-[28px] bg-pf-card p-5">
+            <h2 id="permit-title" className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">
+              {t("permitTitle")}
+            </h2>
+            <p className="mt-2 text-pf-16 leading-relaxed text-pf-text-secondary">{t("permitBody")}</p>
+            <Button
+              type="button"
+              className="mt-4 min-h-12 w-full"
+              reflectGlobalBusy={false}
+              onClick={() => {
+                const id = permitFor;
+                setPermitFor(null);
+                sendReply(id);
+              }}
+            >
+              {t("permitContinue")}
+            </Button>
+            <button
+              type="button"
+              className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink"
+              onClick={() => setPermitFor(null)}
+            >
+              {t("permitNotNow")}
+            </button>
+          </div>
+        </div>
+      ) : null}
       {rows.map(({ offer, request }) => (
         <article
           key={offer.id}

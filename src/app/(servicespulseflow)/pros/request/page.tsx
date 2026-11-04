@@ -103,6 +103,8 @@ function RequestInner() {
               ? t("finishOrderFirst")
               : code === "plan"
                 ? t("planRequired")
+                : code === "nextMonth"
+                  ? t("nextMonthOrder")
                 : code === "missing"
                   ? t("notAvailable")
                   : code === "auth"
@@ -181,10 +183,16 @@ function RequestInner() {
         ) : null}
         {gate && !gate.ok ? (
           <p className="text-pf-14 font-medium text-pf-danger-ink">
-            {gate.error === "plan" ? t("planRequired") : gate.error === "review" ? t("reviewRequired") : t("finishOrderFirst")}
+            {gate.error === "plan"
+              ? t("planRequired")
+              : gate.error === "nextMonth"
+                ? t("nextMonthOrder")
+                : gate.error === "review"
+                  ? t("reviewRequired")
+                  : t("finishOrderFirst")}
           </p>
         ) : null}
-        {gate && !gate.ok && gate.error === "plan" ? (
+        {gate && !gate.ok && (gate.error === "plan" || gate.error === "nextMonth") ? (
           <Link href={servicesPath(pathname, "/settings")} className="text-pf-14 font-medium text-pf-text-secondary">
             {t("openSettings")}
           </Link>

@@ -9,7 +9,7 @@ import { isDemoMode } from "@/lib/env";
 import { DirectoryListingCard } from "@/components/pros/directory-listing";
 import { LinkOffer } from "@/components/account/link-offer";
 import { isHireAccount, isWorkAccount } from "@/lib/pros/intent";
-import { serviceInviteCode, serviceInviteUrl } from "@/lib/pros/join";
+import { serviceInviteUrl } from "@/lib/pros/join";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 import { SERVICES_CUSTOMER_EVENT, SERVICES_CUSTOMER_KEY } from "@/lib/pros/trial";
@@ -48,6 +48,9 @@ export default function ServicesSettingsPage() {
   const [invite, setInvite] = useState("");
   const [inviteLink, setInviteLink] = useState("");
   const [copied, setCopied] = useState(false);
+  const [joined, setJoined] = useState(0);
+  const [goal, setGoal] = useState(5);
+  const [discount, setDiscount] = useState(false);
 
   useEffect(() => {
     if (!actorReady || actor) return;
@@ -55,9 +58,21 @@ export default function ServicesSettingsPage() {
   }, [actor, actorReady, pathname, router, start]);
 
   useEffect(() => {
-    if (!actor) return;
-    setInvite(serviceInviteCode());
-    setInviteLink(serviceInviteUrl(window.location.origin));
+    if (!actor || actor.role === "guest") return;
+    let cancelled = false;
+    void fetch("/api/services/referral", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: { code?: string; count?: number; goal?: number; discount?: boolean } | null) => {
+        if (cancelled || !body?.code) return;
+        setInvite(body.code);
+        setJoined(body.count ?? 0);
+        setGoal(body.goal ?? 5);
+        setDiscount(Boolean(body.discount));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
   }, [actor]);
 
   if (!actorReady || !actor || actor.role === "guest") return null;
@@ -84,16 +99,28 @@ export default function ServicesSettingsPage() {
       <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
         <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("inviteCode")}</h2>
         <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("inviteHint")}</p>
-        <p className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{invite}</p>
+        <p className="text-pf-16 leading-relaxed text-pf-ink">
+          {discount
+            ? t("referralUnlocked")
+            : t("referralProgress", { count: joined, goal })}
+        </p>
+        {!discount && goal > joined ? (
+          <p className="text-pf-16 leading-relaxed text-pf-text-secondary">
+            {t("referralRemaining", { remaining: goal - joined })}
+          </p>
+        ) : null}
+        {invite ? <p className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{invite}</p> : null}
         <div className="grid gap-2 sm:grid-cols-2">
           <Button
             type="button"
             variant="secondary"
             className="min-h-12 w-full"
+            disabled={!invite}
             onClick={() => {
-              const link = serviceInviteUrl(window.location.origin, { as: "pro" });
+              const link = serviceInviteUrl(window.location.origin, invite, { as: "pro" });
+              if (!link) return;
               setInviteLink(link);
-              void navigator.clipboard.writeText(link).then(() => setCopied(true));
+              void navigator.clipboard.writeText(link).then(() => setCopied(true)).catch(() => undefined);
             }}
           >
             {copied ? t("copied") : t("copyInvitePro")}
@@ -102,10 +129,12 @@ export default function ServicesSettingsPage() {
             type="button"
             variant="secondary"
             className="min-h-12 w-full"
+            disabled={!invite}
             onClick={() => {
-              const link = serviceInviteUrl(window.location.origin, { as: "seeker" });
+              const link = serviceInviteUrl(window.location.origin, invite, { as: "seeker" });
+              if (!link) return;
               setInviteLink(link);
-              void navigator.clipboard.writeText(link).then(() => setCopied(true));
+              void navigator.clipboard.writeText(link).then(() => setCopied(true)).catch(() => undefined);
             }}
           >
             {copied ? t("copied") : t("copyInviteSeeker")}
@@ -120,7 +149,9 @@ export default function ServicesSettingsPage() {
             <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("planTitle")}</h2>
             {plan.premium || plan.pro ? <span className="text-pf-14 font-medium text-pf-ink">{t("planOn")}</span> : null}
           </div>
-          <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("premiumBody")}</p>
+          <p className="text-pf-16 leading-relaxed text-pf-text-secondary">
+            {discount ? t("planHalfBody") : t("premiumBody")}
+          </p>
           <Button
             type="button"
             variant={plan.premium || plan.pro ? "ghost" : "primary"}

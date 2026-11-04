@@ -1,7 +1,13 @@
+import { LOCALES, type Locale } from "@/lib/i18n/types";
+
 /** Public site. Pages are served from services.pulseflow.site. */
 export const MARKETPLACE_ORIGIN = "https://services.pulseflow.site";
 /** Property ops app. Pages are served from app.pulseflow.site. */
 export const APP_ORIGIN = "https://app.pulseflow.site";
+
+export function isServicesLocale(value: string | null | undefined): value is Locale {
+  return Boolean(value && (LOCALES as readonly string[]).includes(value));
+}
 
 export function isMarketplaceHost(host: string) {
   const name = host.split(":")[0]?.toLowerCase() ?? "";

@@ -4,7 +4,6 @@ import type { ProProfile } from "@/lib/pros/types";
 
 export const SIGNUP_LOG_KEY = "pulseflow.signups.v1";
 export const SERVICE_PROFILE_KEY = "pulseflow.services.profile";
-export const SERVICE_INVITE_KEY = "pulseflow.services.invite";
 
 const SKILL_BY_SLUG: Record<string, string> = {
   hvac: "ac",
@@ -150,21 +149,17 @@ export function joinProfessional(input: {
   return { id };
 }
 
-export function serviceInviteCode() {
-  if (typeof window === "undefined") return "";
-  const stored = localStorage.getItem(SERVICE_INVITE_KEY)?.trim();
-  if (stored) return stored;
-  const code = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
-  localStorage.setItem(SERVICE_INVITE_KEY, code);
-  return code;
-}
-
-/** Share link for marketplace growth (always services host). */
-export function serviceInviteUrl(origin: string, opts?: { as?: "pro" | "seeker" }) {
-  const code = serviceInviteCode();
-  if (!code) return "";
+/** Share link for marketplace growth. `code` is the account share slug so the join is credited. */
+export function serviceInviteUrl(
+  origin: string,
+  code: string,
+  opts?: { as?: "pro" | "seeker" },
+) {
+  const trimmed = code.trim();
+  if (!trimmed) return "";
   const url = new URL("/register", origin.endsWith("/") ? origin : `${origin}/`);
-  url.searchParams.set("from", code);
+  url.searchParams.set("from", trimmed);
+  url.searchParams.set("track", opts?.as === "pro" ? "maintenance" : "customer");
   if (opts?.as) url.searchParams.set("as", opts.as);
   return url.toString();
 }

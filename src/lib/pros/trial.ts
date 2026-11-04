@@ -4,8 +4,8 @@ import type { ProRequest, ProReview } from "@/lib/pros/types";
 export const FREE_ORDERS_PER_MONTH = 1;
 /** The first orders. The next one opens only after the review on the finished job. */
 export const TRIAL_ORDERS = 3;
-export const SERVICES_PLAN_USD = 9;
-/** The assistant is included in the 9 USD plan. */
+export const SERVICES_PLAN_USD = 5;
+/** The assistant is included in the 5 USD plan. */
 export const SERVICES_AGENT_USD = 0;
 export const SERVICES_PAYMENTS_ENABLED = false;
 
@@ -33,10 +33,15 @@ export type ServicesCustomer = {
   emailOptIn?: boolean;
 };
 
-/** The 9 USD plan includes extra orders and the AI assistant. */
+/** Days before the scheduled payment when the account is told a payment is coming. */
+export const PAYMENT_NOTICE_DAYS = 2;
+
+/** The 5 USD plan includes extra orders and the AI assistant. */
 export type ServicePlan = {
   premium: boolean;
   pro: boolean;
+  billingRegisteredAt?: string | null;
+  nextPaymentAt?: string | null;
 };
 
 export type OrderVia = "monthly" | "trial" | "plan";
@@ -74,14 +79,84 @@ function monthKey(at: Date) {
   return `${at.getFullYear()}-${at.getMonth()}`;
 }
 
-/** The first 3 orders are the free starter. After that, count orders already placed this month. */
+/** The first 3 orders are the free starter. After that, count only orders placed once the trial is over. */
 export function orderSlots(requests: ProRequest[], actorId: string, now = new Date()) {
   const mine = myOrders(requests, actorId);
   const key = monthKey(now);
+  const afterTrial = mine.slice(TRIAL_ORDERS);
   return {
     starter: Math.min(mine.length, TRIAL_ORDERS),
-    monthlyThisMonth: mine.filter((row) => monthKey(new Date(row.createdAt)) === key).length,
+    monthlyThisMonth: afterTrial.filter((row) => monthKey(new Date(row.createdAt)) === key).length,
   };
+}
+
+function reviewedOrders(requests: ProRequest[], reviews: ProReview[], actorId: string) {
+  const reviewedIds = new Set(reviews.map((review) => review.requestId));
+  return myOrders(requests, actorId).filter(
+    (row) => row.status === "completed" && reviewedIds.has(row.id),
+  );
+}
+
+/** The first day of the month after the third reviewed trial order. */
+export function monthlyFreeOpensAt(
+  requests: ProRequest[],
+  reviews: ProReview[],
+  actorId: string,
+): Date | null {
+  const reviewed = reviewedOrders(requests, reviews, actorId);
+  const third = reviewed[TRIAL_ORDERS - 1];
+  if (!third) return null;
+  const review = reviews.find((row) => row.requestId === third.id);
+  const at = new Date(review?.createdAt ?? third.createdAt);
+  if (!Number.isFinite(at.getTime())) return null;
+  return new Date(at.getFullYear(), at.getMonth() + 1, 1);
+}
+
+/**
+ * Offer billing after the 3 reviewed trial orders.
+ * Offer it again after each later free order is reviewed.
+ */
+export function billingMilestone(
+  requests: ProRequest[],
+  reviews: ProReview[],
+  actorId: string,
+): "trial" | `monthly:${string}` | null {
+  const reviewed = reviewedOrders(requests, reviews, actorId);
+  if (reviewed.length < TRIAL_ORDERS) return null;
+  const later = reviewed.slice(TRIAL_ORDERS);
+  const last = later[later.length - 1];
+  if (last) return `monthly:${last.id}`;
+  return "trial";
+}
+
+export function addMonths(date: Date, months: number) {
+  const next = new Date(date.getTime());
+  const day = next.getDate();
+  next.setDate(1);
+  next.setMonth(next.getMonth() + months);
+  const last = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+  next.setDate(Math.min(day, last));
+  return next;
+}
+
+/** Move a past payment date forward by whole months until it is still ahead. */
+export function rollPaymentDate(iso: string, now = new Date()) {
+  const due = new Date(iso);
+  if (!Number.isFinite(due.getTime())) return iso;
+  let cursor = due;
+  while (cursor.getTime() <= now.getTime()) cursor = addMonths(cursor, 1);
+  return cursor.toISOString();
+}
+
+/** The scheduled payment, when today is inside the two days before it. */
+export function paymentNoticeDue(nextPaymentAt: string | null | undefined, now = new Date()): Date | null {
+  if (!nextPaymentAt) return null;
+  const due = new Date(rollPaymentDate(nextPaymentAt, now));
+  if (!Number.isFinite(due.getTime())) return null;
+  const start = new Date(due.getTime());
+  start.setDate(start.getDate() - PAYMENT_NOTICE_DAYS);
+  if (now.getTime() >= start.getTime() && now.getTime() < due.getTime()) return due;
+  return null;
 }
 
 export function hasAgentPlan(customer: ServicesCustomer | null, now = new Date()) {
@@ -90,7 +165,7 @@ export function hasAgentPlan(customer: ServicesCustomer | null, now = new Date()
   return Number.isFinite(until) && until > now.getTime();
 }
 
-/** The 9 USD plan, or a recorded assistant plan, unlocks the assistant. */
+/** The 5 USD plan, or a recorded assistant plan, unlocks the assistant. */
 export function canUseAssistant(
   customer: ServicesCustomer | null,
   plan: Pick<ServicePlan, "pro" | "premium"> | null = null,
@@ -102,8 +177,8 @@ export function canUseAssistant(
 
 /**
  * The first 3 orders are free. Each next one waits until the previous job is finished and reviewed.
- * After those 3, the free plan is one order in a calendar month.
- * Premium allows more than one order in that month. It does not skip the review.
+ * After those 3 are reviewed, the next free order opens the following month, then one each calendar month.
+ * Premium allows an order before that, and more than one in a month. It does not skip the review.
  */
 export function orderAllowance(
   requests: ProRequest[],
@@ -111,7 +186,7 @@ export function orderAllowance(
   actorId: string,
   now = new Date(),
   premium = false,
-): { ok: true; via: OrderVia } | { ok: false; error: "review" | "finish" | "plan" } {
+): { ok: true; via: OrderVia } | { ok: false; error: "review" | "finish" | "plan" | "nextMonth" } {
   const mine = myOrders(requests, actorId);
   const blocked = orderBlock(requests, reviews, actorId);
   if (mine.length < TRIAL_ORDERS) {
@@ -119,6 +194,11 @@ export function orderAllowance(
     return { ok: true, via: "trial" };
   }
   if (blocked) return { ok: false, error: blocked };
+  const opens = monthlyFreeOpensAt(requests, reviews, actorId);
+  if (opens && now < opens) {
+    if (premium) return { ok: true, via: "plan" };
+    return { ok: false, error: "nextMonth" };
+  }
   const slots = orderSlots(requests, actorId, now);
   if (slots.monthlyThisMonth < FREE_ORDERS_PER_MONTH) {
     return { ok: true, via: "monthly" };
@@ -163,8 +243,13 @@ export function readServicePlan(actorId: string | null | undefined): ServicePlan
   try {
     const raw = localStorage.getItem(SERVICES_PLAN_KEY);
     if (!raw) return { premium: false, pro: false };
-    const map = JSON.parse(raw) as Record<string, { premium?: boolean; pro?: boolean }>;
-    return normalizePlan(map[actorId]);
+    const map = JSON.parse(raw) as Record<string, ServicePlan>;
+    const row = map[actorId];
+    return {
+      ...normalizePlan(row),
+      billingRegisteredAt: row?.billingRegisteredAt ?? null,
+      nextPaymentAt: row?.nextPaymentAt ?? null,
+    };
   } catch {
     return { premium: false, pro: false };
   }
@@ -179,10 +264,25 @@ export function saveServicePlan(actorId: string, input: { premium?: boolean; pro
   } catch {
     map = {};
   }
-  map[actorId] = next;
+  const current = map[actorId];
+  const saved: ServicePlan = { ...next };
+  if (next.premium) {
+    if (current?.premium && current.nextPaymentAt) {
+      saved.billingRegisteredAt = current.billingRegisteredAt ?? new Date().toISOString();
+      saved.nextPaymentAt = rollPaymentDate(current.nextPaymentAt);
+    } else {
+      const registered = new Date();
+      saved.billingRegisteredAt = registered.toISOString();
+      saved.nextPaymentAt = addMonths(registered, 1).toISOString();
+    }
+  } else {
+    saved.billingRegisteredAt = null;
+    saved.nextPaymentAt = null;
+  }
+  map[actorId] = saved;
   localStorage.setItem(SERVICES_PLAN_KEY, JSON.stringify(map));
   window.dispatchEvent(new Event(SERVICES_PLAN_EVENT));
-  return next;
+  return saved;
 }
 
 export function saveServicesCustomer(input: {

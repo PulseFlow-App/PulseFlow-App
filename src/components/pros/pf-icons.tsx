@@ -50,7 +50,7 @@ const PATHS: Record<PfIconName, [string, string]> = {
   pin: ["M16 28s8-8 8-14a8 8 0 1 0-16 0c0 6 8 14 8 14z", "M16 12a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"],
   camera: ["M8 11h3l2-3h6l2 3h3v12H8V11z", "M16 15a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"],
   mic: ["M16 6a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V9a3 3 0 0 1 3-3z", "M10 15a6 6 0 0 0 12 0M16 21v4"],
-  person: ["M16 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z", "M8 26c1.5-4 4-6 8-6s6.5 2 8 6"],
+  person: ["M16 7.5a3.25 3.25 0 1 1 0 6.5 3.25 3.25 0 0 1 0-6.5z", "M10.5 23.5c1.2-3.4 3.1-5 5.5-5s4.3 1.6 5.5 5"],
   check: ["M8 17l5 5 11-12", "M8 17l5 5"],
   trees: ["M16 26V16", "M16 18c-5 0-7-5-7-7 5 0 7 3 7 7 0-4 2-7 7-7 0 2-2 7-7 7"],
   paintbrush: ["M8 24l9-9", "M16 16l3-7 4 4-7 3"],
@@ -78,11 +78,15 @@ export function PfIcon({
   const mainFill =
     tone === "onNavy" ? "#F5F7FC" : tone === "muted" ? "currentColor" : "var(--pf-ink)";
   const accentFill =
-    tone === "muted" ? "currentColor" : tone === "active" || tone === "onNavy" || tone === "default"
-      ? "var(--pf-orange-500)"
-      : "currentColor";
+    name === "person" && tone === "onNavy"
+      ? mainFill
+      : tone === "muted"
+        ? "currentColor"
+        : tone === "active" || tone === "onNavy" || tone === "default"
+          ? "var(--pf-orange-500)"
+          : "currentColor";
   return (
-    <svg viewBox="0 0 32 32" className={cn("shrink-0", className)} aria-hidden>
+    <svg viewBox="0 0 32 32" className={cn("shrink-0 overflow-visible", className)} aria-hidden>
       <path
         d={main}
         fill="none"

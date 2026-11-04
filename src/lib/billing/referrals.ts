@@ -3,6 +3,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export const REFERRAL_GOAL = 5;
 export const REFERRAL_BONUS_MS = 365 * 24 * 60 * 60 * 1000;
 
+/** Marketplace invites (staff or people looking for help) that unlock half price on the Services plan. */
+export const SERVICES_REFERRAL_GOAL = 5;
+
 export type ReferralProgress = {
   count: number;
   goal: number;
@@ -81,7 +84,8 @@ async function maybeGrantReferralYear(
   const { count } = await admin
     .from("referral_credits")
     .select("*", { count: "exact", head: true })
-    .eq("referrer_id", referrerId);
+    .eq("referrer_id", referrerId)
+    .in("source", ["register", "invite"]);
   if ((count ?? 0) < REFERRAL_GOAL) return;
 
   const target = await referrerCompanyOrgId(admin, referrerId);
@@ -113,7 +117,7 @@ export async function creditReferral(
   input: {
     referrerCode?: string | null;
     referredProfileId: string;
-    source: "register" | "invite";
+    source: "register" | "invite" | "services";
     fallbackReferrerId?: string | null;
   },
 ) {
@@ -131,7 +135,25 @@ export async function creditReferral(
   if (error?.code === "23505") return;
   if (error) throw error;
 
+  if (input.source === "services") {
+    await maybeGrantServicesDiscount(admin, referrerId);
+    return;
+  }
   await maybeGrantReferralYear(admin, referrerId);
+}
+
+async function maybeGrantServicesDiscount(admin: SupabaseClient, referrerId: string) {
+  const { count } = await admin
+    .from("referral_credits")
+    .select("*", { count: "exact", head: true })
+    .eq("referrer_id", referrerId)
+    .eq("source", "services");
+  if ((count ?? 0) < SERVICES_REFERRAL_GOAL) return;
+
+  await admin
+    .from("profiles")
+    .update({ services_referral_discount: true })
+    .eq("id", referrerId);
 }
 
 export async function getReferralProgress(
@@ -141,7 +163,8 @@ export async function getReferralProgress(
   const { count } = await admin
     .from("referral_credits")
     .select("*", { count: "exact", head: true })
-    .eq("referrer_id", profileId);
+    .eq("referrer_id", profileId)
+    .in("source", ["register", "invite"]);
 
   const target = await referrerCompanyOrgId(admin, profileId);
   let bonusEndsAt: string | null = null;

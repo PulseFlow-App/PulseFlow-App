@@ -1,7 +1,7 @@
 import { prosLang } from "@/lib/pros/catalog";
 import type { ProsLang } from "@/lib/pros/types";
 
-export const LEGAL_UPDATED = "1 November 2026";
+export const LEGAL_UPDATED = "4 November 2026";
 
 type Copy = { en: string } & Partial<Record<ProsLang, string>>;
 
@@ -39,6 +39,23 @@ export const LEGAL_SECTIONS: LegalSection[] = [
     ),
   },
   {
+    id: "permits",
+    audience: "staff",
+    doc: "terms",
+    heading: n(
+      "Who may register",
+      "ใครลงทะเบียนได้",
+      "Кто может зарегистрироваться",
+      "מי יכול להירשם",
+    ),
+    body: n(
+      "At the start of operations, only Thai people and Thai businesses are invited to register. This continues until the processes for work permits are set. Pulseflow Services is not responsible for a work permit. If the law requires a permit for the work, that permit is yours to hold.",
+      "ในช่วงเริ่มต้นของการให้บริการ เชิญเฉพาะคนไทยและธุรกิจไทยให้ลงทะเบียน จนกว่าขั้นตอนเรื่องใบอนุญาตทำงานจะจัดไว้แล้ว Pulseflow Services ไม่รับผิดชอบเรื่องใบอนุญาตทำงาน หากกฎหมายกำหนดให้ต้องมีใบอนุญาตสำหรับงานนั้น ใบอนุญาตเป็นหน้าที่ของคุณ",
+      "В начале работы приглашаются зарегистрироваться только граждане Таиланда и тайские компании. Так будет, пока не будут устроены процессы по разрешениям на работу. Pulseflow Services не отвечает за разрешение на работу. Если закон требует разрешение на эту работу, его получаете вы.",
+      "בתחילת הפעילות מוזמנים להירשם רק אנשים תאילנדים ועסקים תאילנדים. זה נמשך עד שיוסדרו התהליכים של היתרי עבודה. Pulseflow Services אינו אחראי להיתר עבודה. אם החוק דורש היתר לעבודה, ההיתר הוא באחריותכם.",
+    ),
+  },
+  {
     id: "accounts",
     audience: "staff",
     doc: "terms",
@@ -54,24 +71,24 @@ export const LEGAL_SECTIONS: LegalSection[] = [
     id: "orders",
     audience: "staff",
     doc: "terms",
-    heading: n("Orders", "คำสั่ง", "Заказы", "הזמנות"),
+    heading: n("Requests", "คำขอ", "Заявки", "בקשות"),
     body: n(
-      "The trial is 3 free orders. Each next order opens after a review of the finished job. After those 3, everyone gets 1 free order a month. The plan is 9 USD a month and includes the AI assistant. Payment is not collected yet. Turning a plan on does not charge you.",
-      "ทดลองใช้ได้ 3 คำสั่งฟรี คำสั่งถัดไปเปิดหลังรีวิวงานที่เสร็จ หลังจากนั้นทุกคนได้ 1 คำสั่งฟรีต่อเดือน แผน 9 ดอลลาร์ต่อเดือน รวมผู้ช่วย AI ยังไม่เก็บเงิน การเปิดแผนไม่เรียกเก็บเงิน",
-      "Пробный период: 3 бесплатных заказа. Следующий открывается после отзыва о законченной работе. Затем у всех 1 бесплатный заказ в месяц. План: 9 USD в месяц, включая ИИ-помощника. Оплату пока не берём. Включение плана ничего не списывает.",
-      "הניסיון הוא 3 הזמנות חינם. ההזמנה הבאה נפתחת אחרי ביקורת על העבודה שנגמרה. אחר כך לכל אחד הזמנה חינם אחת בחודש. המסלול הוא 9 דולר לחודש וכולל את עוזר הבינה המלאכותית. התשלום עדיין לא נגבה. הפעלת תוכנית לא מחייבת.",
+      "Listing yourself and receiving requests is free. Pulseflow Services does not charge maintenance staff a subscription, and there is no plan to turn on.",
+      "การลงประกาศและรับคำขอไม่มีค่าใช้จ่าย Pulseflow Services ไม่เก็บค่าสมาชิกจากช่างบำรุง และไม่มีแผนที่ต้องเปิด",
+      "Разместить себя и получать заявки можно бесплатно. Pulseflow Services не берёт с мастеров подписку, и включать план не нужно.",
+      "להירשם ולקבל בקשות זה בחינם. Pulseflow Services לא גובה מצוות התחזוקה מנוי, ואין מסלול שצריך להפעיל.",
     ),
   },
   {
     id: "payment",
     audience: "staff",
     doc: "terms",
-    heading: n("Payment", "การชำระเงิน", "Оплата", "תשלום"),
+    heading: n("How you are paid", "คุณได้รับเงินอย่างไร", "Как вам платят", "איך משלמים לכם"),
     body: n(
-      "You pay the professional directly. Pulse Flow does not guarantee the work, and professionals choose which requests to accept.",
-      "คุณจ่ายให้ผู้ประกอบอาชีพโดยตรง Pulse Flow ไม่รับประกันงาน และช่างเป็นผู้เลือกรับคำขอ",
-      "Вы платите специалисту напрямую. Pulse Flow не гарантирует работу, а специалисты сами решают, какие заявки принять.",
-      "אתם משלמים לבעל המקצוע ישירות. Pulse Flow אינו ערב לעבודה, ובעלי המקצוע בוחרים אילו בקשות לקבל.",
+      "The person who asked for the work pays you directly. Pulseflow Services does not charge you, and does not take a fee from that payment.",
+      "คนที่ขอให้งานจ่ายให้คุณโดยตรง Pulseflow Services ไม่เรียกเก็บเงินจากคุณ และไม่หักค่าธรรมเนียมจากการจ่ายนั้น",
+      "Человек, который попросил о работе, платит вам напрямую. Pulseflow Services не берёт с вас плату и не удерживает комиссию с этой оплаты.",
+      "האדם שביקש את העבודה משלם לכם ישירות. Pulseflow Services לא גובה מכם תשלום ולא לוקח עמלה מהתשלום הזה.",
     ),
   },
   {
@@ -183,6 +200,23 @@ export const LEGAL_SECTIONS: LegalSection[] = [
     ),
   },
   {
+    id: "c-permits",
+    audience: "customer",
+    doc: "terms",
+    heading: n(
+      "Who may register",
+      "ใครลงทะเบียนได้",
+      "Кто может зарегистрироваться",
+      "מי יכול להירשם",
+    ),
+    body: n(
+      "At the start of operations, only Thai people and Thai businesses are invited to register. This continues until the processes for work permits are set. Pulseflow Services is not responsible for a work permit. If the law requires a permit for the work, that permit is yours to hold.",
+      "ในช่วงเริ่มต้นของการให้บริการ เชิญเฉพาะคนไทยและธุรกิจไทยให้ลงทะเบียน จนกว่าขั้นตอนเรื่องใบอนุญาตทำงานจะจัดไว้แล้ว Pulseflow Services ไม่รับผิดชอบเรื่องใบอนุญาตทำงาน หากกฎหมายกำหนดให้ต้องมีใบอนุญาตสำหรับงานนั้น ใบอนุญาตเป็นหน้าที่ของคุณ",
+      "В начале работы приглашаются зарегистрироваться только граждане Таиланда и тайские компании. Так будет, пока не будут устроены процессы по разрешениям на работу. Pulseflow Services не отвечает за разрешение на работу. Если закон требует разрешение на эту работу, его получаете вы.",
+      "בתחילת הפעילות מוזמנים להירשם רק אנשים תאילנדים ועסקים תאילנדים. זה נמשך עד שיוסדרו התהליכים של היתרי עבודה. Pulseflow Services אינו אחראי להיתר עבודה. אם החוק דורש היתר לעבודה, ההיתר הוא באחריותכם.",
+    ),
+  },
+  {
     id: "c-account",
     audience: "customer",
     doc: "terms",
@@ -200,10 +234,10 @@ export const LEGAL_SECTIONS: LegalSection[] = [
     doc: "terms",
     heading: n("Orders", "คำสั่ง", "Заказы", "הזמנות"),
     body: n(
-      "A new account may send three orders. The next order becomes available only after a review of the finished job. After those three, one further order is available in each calendar month. The plan is 9 US dollars a month. It removes that monthly limit and includes the AI assistant. Payment is not collected at this time. Choosing a plan does not create a charge.",
-      "บัญชีใหม่อาจส่งคำสั่งได้สามครั้ง คำสั่งถัดไปจะเปิดเมื่อมีการรีวิวงานที่เสร็จแล้วเท่านั้น หลังจากสามครั้งนั้น จะมีคำสั่งเพิ่มได้อีกหนึ่งครั้งในแต่ละเดือนปฏิทิน แผนคือ 9 ดอลลาร์สหรัฐต่อเดือน ยกเลิกขีดจำกัดรายเดือน และรวมผู้ช่วย AI ขณะนี้ยังไม่มีการเรียกเก็บเงิน การเลือกแผนไม่ทำให้เกิดการเรียกเก็บ",
-      "Новый аккаунт может отправить три заказа. Следующий заказ открывается только после отзыва о выполненной работе. После этих трёх в каждом календарном месяце доступен ещё один заказ. План: 9 долларов США в месяц. Он снимает этот месячный предел и включает ИИ-помощника. Оплата сейчас не взимается. Выбор плана не создаёт списания.",
-      "חשבון חדש יכול לשלוח שלוש הזמנות. ההזמנה הבאה נפתחת רק אחרי ביקורת על העבודה שהסתיימה. אחרי שלוש אלה, הזמנה נוספת אחת זמינה בכל חודש קלנדרי. המסלול הוא 9 דולר ארה״ב לחודש. הוא מסיר את המגבלה החודשית וכולל את עוזר הבינה המלאכותית. בשלב זה לא נגבה תשלום. בחירת מסלול אינה יוצרת חיוב.",
+      "A new account may send three orders. The next order becomes available only after a review of the finished job. After those three are reviewed, you are offered the plan. The next month includes one further order, and each calendar month after that includes one further order. When that order is reviewed, you are offered the plan again if you have not subscribed. If you have subscribed, you are told two days before the payment date. The plan is 5 US dollars a month. It removes that monthly limit and includes the AI assistant. If five people join from your invite, whether they are staff or looking for help, that plan is half price: 2.50 US dollars a month. Payment is not collected at this time. Choosing a plan does not create a charge.",
+      "บัญชีใหม่อาจส่งคำสั่งได้สามครั้ง คำสั่งถัดไปจะเปิดเมื่อมีการรีวิวงานที่เสร็จแล้วเท่านั้น หลังจากสามครั้งนั้นถูกรีวิว จะมีการเสนอแผน เดือนถัดไปมีคำสั่งเพิ่มหนึ่งครั้ง และทุกเดือนปฏิทินหลังจากนั้นมีคำสั่งเพิ่มหนึ่งครั้ง เมื่อคำสั่งนั้นถูกรีวิว จะเสนอแผนอีกครั้งหากยังไม่ได้สมัคร หากสมัครแล้ว จะแจ้งสองวันก่อนวันชำระ แผนคือ 5 ดอลลาร์สหรัฐต่อเดือน ยกเลิกขีดจำกัดรายเดือน และรวมผู้ช่วย AI ถ้ามีคนสมัครจากคำเชิญของคุณห้าคน ไม่ว่าจะเป็นช่างหรือคนที่ต้องการความช่วยเหลือ แผนนั้นจะเหลือครึ่งราคา คือ 2.50 ดอลลาร์สหรัฐต่อเดือน ขณะนี้ยังไม่มีการเรียกเก็บเงิน การเลือกแผนไม่ทำให้เกิดการเรียกเก็บ",
+      "Новый аккаунт может отправить три заказа. Следующий заказ открывается только после отзыва о выполненной работе. После отзыва на эти три вам предлагают план. В следующем месяце доступен ещё один заказ, и в каждом календарном месяце после этого тоже один. Когда этот заказ получает отзыв, план предлагают снова, если вы не подписаны. Если подписаны, вам сообщают за два дня до даты оплаты. План: 5 долларов США в месяц. Он снимает этот месячный предел и включает ИИ-помощника. Если по вашей ссылке присоединятся пять человек, мастера или те, кому нужна помощь, этот план стоит вдвое дешевле: 2,50 доллара США в месяц. Оплата сейчас не взимается. Выбор плана не создаёт списания.",
+      "חשבון חדש יכול לשלוח שלוש הזמנות. ההזמנה הבאה נפתחת רק אחרי ביקורת על העבודה שהסתיימה. אחרי ביקורת על שלוש אלה מוצע המסלול. בחודש הבא זמינה הזמנה נוספת אחת, ובכל חודש קלנדרי אחריו גם אחת. כשההזמנה הזו מקבלת ביקורת, המסלול מוצע שוב אם לא נרשמתם. אם נרשמתם, מודיעים יומיים לפני מועד התשלום. המסלול הוא 5 דולר ארה״ב לחודש. הוא מסיר את המגבלה החודשית וכולל את עוזר הבינה המלאכותית. אם חמישה אנשים מצטרפים מההזמנה שלכם, צוות או אנשים שמחפשים עזרה, המסלול בחצי מחיר: 2.50 דולר ארה״ב לחודש. בשלב זה לא נגבה תשלום. בחירת מסלול אינה יוצרת חיוב.",
     ),
   },
   {

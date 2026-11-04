@@ -9,7 +9,7 @@ import { LOCALE_META } from "@/lib/i18n";
 import { PROS_LANGS, localizedName } from "@/lib/pros/catalog";
 import { allCategories, filterPros, sortOrganic } from "@/lib/pros/matching";
 import { servicesPath } from "@/lib/pros/paths";
-import { isHireAccount } from "@/lib/pros/intent";
+import { isWorkAccount } from "@/lib/pros/intent";
 import { usePros } from "@/lib/pros/store";
 import { useI18n } from "@/lib/i18n/provider";
 
@@ -19,12 +19,12 @@ function FindInner() {
   const router = useRouter();
   const { state, actor, actorReady, t } = usePros();
   const { locale } = useI18n();
-  const hire = isHireAccount(actor);
+  const work = isWorkAccount(actor);
 
   useEffect(() => {
-    if (!actorReady || hire) return;
+    if (!actorReady || !work) return;
     router.replace(servicesPath(pathname, "/"));
-  }, [actorReady, hire, pathname, router]);
+  }, [actorReady, work, pathname, router]);
 
   const [categoryId, setCategoryId] = useState(params.get("category") ?? "");
   const [language, setLanguage] = useState("");
@@ -53,7 +53,7 @@ function FindInner() {
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
   const back = encodeURIComponent(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`);
 
-  if (!actorReady || !hire) return null;
+  if (!actorReady || work) return null;
 
   return (
       <div className="space-y-3">
@@ -128,10 +128,10 @@ function FindInner() {
         </div>
         {actorReady && !actor ? (
           <div className="space-y-2">
-            <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("trialBody")}</p>
+            <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("signInToSee")}</p>
             <div className="flex flex-col gap-1">
               <Link
-                href={`${start}?next=${back}`}
+                href={servicesPath(pathname, "/register?track=customer")}
                 className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700"
               >
                 {t("signUp")}

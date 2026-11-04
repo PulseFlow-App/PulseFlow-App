@@ -15,7 +15,7 @@ import type { UserRole } from "@/lib/design-tokens";
 export const runtime = "nodejs";
 
 const FIELDS =
-  "id, role, full_name, job_search_visible, job_search_skills, job_search_tags, job_search_bio, job_search_location, job_search_country";
+  "id, role, full_name, job_search_visible, job_search_skills, job_search_tags, job_search_bio, job_search_location, job_search_country, nationality";
 
 const patchSchema = z.object({
   visible: z.boolean(),
@@ -24,6 +24,7 @@ const patchSchema = z.object({
   bio: z.string().max(500).nullable().optional(),
   location: z.string().max(120).nullable().optional(),
   country: z.string().max(80).nullable().optional(),
+  nationality: z.string().max(80).nullable().optional(),
 });
 
 async function signedInProfile() {
@@ -69,6 +70,7 @@ export async function PATCH(request: Request) {
   const bio = body.bio?.trim() || null;
   const location = normalizeLocationLabel(body.location);
   const country = normalizeCountryLabel(body.country);
+  const nationality = body.nationality === undefined ? undefined : normalizeCountryLabel(body.nationality);
   if (body.visible && !location && !country) {
     return NextResponse.json({ error: "Add the town or island before showing your profile." }, { status: 400 });
   }
@@ -83,6 +85,7 @@ export async function PATCH(request: Request) {
       job_search_bio: bio,
       job_search_location: location,
       job_search_country: country,
+      ...(nationality !== undefined ? { nationality } : {}),
       job_search_updated_at: new Date().toISOString(),
     })
     .eq("id", profile.id)

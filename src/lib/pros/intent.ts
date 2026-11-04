@@ -7,7 +7,8 @@ export function isWorkAccount(actor: ProsActor | null) {
   return actor.intent === "work";
 }
 
-/** Search home. Anyone who is not a maintenance account, including people who have not signed in. */
+/** Marketplace home. Only a signed-in account that came to look for staff. */
 export function isHireAccount(actor: ProsActor | null) {
-  return !isWorkAccount(actor);
+  if (!actor || isWorkAccount(actor)) return false;
+  return actor.intent === "hire";
 }

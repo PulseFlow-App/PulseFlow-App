@@ -7,6 +7,7 @@ import { DEMO_USER_COOKIE, isDemoMode } from "@/lib/env";
 import { authCookieDomain } from "@/lib/supabase/cookie-domain";
 import {
   isMarketplaceHost,
+  isServicesLocale,
   marketplaceOriginForHost,
   marketplacePath,
   prosReturnPath,
@@ -50,6 +51,7 @@ function isPublicPath(pathname: string) {
 
 const MARKET_PREFIXES = [
   "/find",
+  "/explore",
   "/request",
   "/requests",
   "/p",
@@ -72,15 +74,18 @@ function onMarketplaceHost(request: NextRequest) {
 
 function isMarketplacePath(pathname: string) {
   if (pathname === "/") return true;
+  if (isServicesLocale(pathname.slice(1))) return true;
   return MARKET_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
 function rewriteMarketplace(request: NextRequest, session: NextResponse) {
   const url = request.nextUrl.clone();
   const path = request.nextUrl.pathname;
-  url.pathname = path === "/" ? "/pros" : `/pros${path}`;
+  const lang = isServicesLocale(path.slice(1)) ? path.slice(1) : "";
+  url.pathname = path === "/" || lang ? "/pros" : `/pros${path}`;
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-public-path", path || "/");
+  if (lang) requestHeaders.set("x-services-lang", lang);
   const rewritten = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
   for (const cookie of session.cookies.getAll()) {
     rewritten.cookies.set(cookie);

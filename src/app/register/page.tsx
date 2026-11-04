@@ -492,36 +492,12 @@ export default function RegisterPage() {
           </h1>
         </div>
 
-        {/* Services host: seeker vs professional only */}
-        {ready && onServices ? (
-          <div className="grid grid-cols-2 gap-2">
-            <Choice
-              compact
-              icon={<PulseIcon name="maintenance" className="size-3.5" />}
-              title={t("register.proTitle")}
-              description={t("register.proHint")}
-              active={track === "maintenance"}
-              onClick={() => {
-                setTrack("maintenance");
-                setError(null);
-                setListingId(null);
-                setAccepted(false);
-              }}
-            />
-            <Choice
-              compact
-              icon={<PulseIcon name="search" className="size-3.5" />}
-              title={t("register.seeking")}
-              description={t("register.seekingHint")}
-              active={track === "customer"}
-              onClick={() => {
-                setTrack("customer");
-                setError(null);
-                setListingId(null);
-                setAccepted(false);
-              }}
-            />
-          </div>
+        {ready && onServices && !track ? (
+          <p className="text-center text-sm text-muted">
+            <Link href="/" className="font-semibold text-ink">
+              {prosT(locale, "registerPickSide")}
+            </Link>
+          </p>
         ) : null}
 
         {/* App host: two cards first; personal/company only after management */}

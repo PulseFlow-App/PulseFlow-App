@@ -12,8 +12,11 @@ import { ProsProvider, usePros } from "@/lib/pros/store";
 import type { ServiceDelivery } from "@/lib/pros/delivery";
 import { servicesPath } from "@/lib/pros/paths";
 import { isHireAccount, isWorkAccount } from "@/lib/pros/intent";
+import { isServicesLocale } from "@/lib/pros/paths";
+import { LOCALES, LOCALE_META } from "@/lib/i18n";
 import { LinkOffer } from "@/components/account/link-offer";
 import { AddToHomeScreenModal } from "@/components/pwa/add-to-home-screen-modal";
+import { BillingOffer } from "@/components/pros/billing-offer";
 import { cn } from "@/lib/utils";
 
 function Frame({ children }: { children: React.ReactNode }) {
@@ -25,7 +28,7 @@ function Frame({ children }: { children: React.ReactNode }) {
   const hideNav = here.startsWith("/reply") || here.startsWith("/claim");
   const workAccount = actorReady && isWorkAccount(actor);
   const searchAccount = actorReady && isHireAccount(actor);
-  const isHome = here === "/" && searchAccount;
+  const isHome = here === "/explore" || (here === "/" && searchAccount);
   const [incoming, setIncoming] = useState(0);
   const [companyToday, setCompanyToday] = useState(false);
   useEffect(() => {
@@ -98,7 +101,7 @@ function Frame({ children }: { children: React.ReactNode }) {
             wide ? "max-w-3xl" : "max-w-lg",
           )}
         >
-          {workAccount ? null : <PlacePicker variant="pill" />}
+          {searchAccount ? <PlacePicker variant="pill" /> : null}
           <div className="min-w-0 flex-1" />
           <LanguageSwitcher variant="code" />
           <ThemeIconToggle className="size-11 shrink-0" />
@@ -108,7 +111,7 @@ function Frame({ children }: { children: React.ReactNode }) {
             aria-current={here.startsWith("/settings") ? "page" : undefined}
             className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-pf-navy-900 text-pf-16 font-medium text-[#F5F7FC]"
           >
-            {actor ? actor.name.slice(0, 1) : <PfIcon name="person" tone="onNavy" className="size-5" />}
+            {actor ? actor.name.slice(0, 1) : <PfIcon name="person" tone="onNavy" className="size-6" />}
           </Link>
         </div>
       </header>
@@ -121,6 +124,7 @@ function Frame({ children }: { children: React.ReactNode }) {
       >
         <div className={cn("mx-auto w-full", isHome ? "max-w-lg" : "px-4 py-4", !isHome && (wide ? "max-w-3xl" : "max-w-lg"))}>
           {hideNav ? null : <LinkOffer app="services" />}
+          {searchAccount ? <BillingOffer /> : null}
           {children}
           {isHome || here.startsWith("/admin") ? null : (
             <div className="mt-8 space-y-2 text-center">
@@ -133,6 +137,21 @@ function Frame({ children }: { children: React.ReactNode }) {
                   {t("privacyLink")}
                 </Link>
               </p>
+              {here === "/" || isServicesLocale(here.slice(1)) ? (
+                <nav aria-label={t("languages")} className="flex flex-wrap justify-center gap-x-3 gap-y-1">
+                  {LOCALES.map((code) => (
+                    <Link
+                      key={code}
+                      href={servicesPath(pathname, `/${code}`)}
+                      hrefLang={code}
+                      lang={code}
+                      className="text-pf-14 font-medium text-pf-text-secondary"
+                    >
+                      {LOCALE_META[code].native}
+                    </Link>
+                  ))}
+                </nav>
+              ) : null}
             </div>
           )}
         </div>

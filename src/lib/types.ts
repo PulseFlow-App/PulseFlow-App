@@ -60,6 +60,10 @@ export type Profile = {
   job_search_location: string | null;
   /** Country on Pulseflow Services, e.g. "Thailand" */
   job_search_country: string | null;
+  /** Citizenship, for the work-permit reminder. Not the place they work. */
+  nationality?: string | null;
+  /** Half price on the Services plan after enough marketplace invites. */
+  services_referral_discount?: boolean;
   job_search_lat: number | null;
   job_search_lng: number | null;
   job_search_updated_at: string | null;

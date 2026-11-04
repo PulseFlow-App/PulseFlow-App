@@ -3,7 +3,10 @@
  */
 import type { Metadata, MetadataRoute } from "next";
 import { brand } from "@/lib/design-tokens";
+import { LOCALES } from "@/lib/i18n/types";
 import { AREAS, CATEGORIES, localizedName } from "@/lib/pros/catalog";
+import { prosT } from "@/lib/pros/i18n";
+import { isServicesLocale } from "@/lib/pros/paths";
 
 export const APP_URL = "https://app.pulseflow.site";
 export const MARKETING_URL = "https://pulseflow.site";
@@ -29,12 +32,19 @@ export function servicesUrl(path = "/"): string {
 }
 
 const SERVICES_DESCRIPTION =
-  "Find local plumbers, electricians, cleaners and more. Describe the problem, compare, and book. In English, Thai, Russian and Hebrew.";
+  "Find local plumbers, electricians, cleaners and more. Describe the problem, compare, and book.";
+
+function servicesLanguageAlternates() {
+  return {
+    "x-default": SERVICES_URL,
+    ...Object.fromEntries(LOCALES.map((code) => [code, servicesUrl(`/${code}`)])),
+  };
+}
 
 /** Public Services pages search engines should list. Profiles stay out: a full profile needs an account. */
 export function servicesIndexable(path: string) {
   const clean = path.split("?")[0] || "/";
-  if (clean === "/" || clean === "/find" || clean === "/terms" || clean === "/privacy" || clean === "/register") {
+  if (clean === "/" || isServicesLocale(clean.slice(1)) || clean === "/find" || clean === "/terms" || clean === "/privacy" || clean === "/register") {
     return true;
   }
   if (clean.startsWith("/c/")) return CATEGORIES.some((row) => clean === `/c/${row.slug}`);
@@ -44,7 +54,8 @@ export function servicesIndexable(path: string) {
 
 export function servicesMetadataForPath(path: string): Metadata {
   const clean = path.split("?")[0] || "/";
-  const category = clean.startsWith("/c/")
+  const lang = isServicesLocale(clean.slice(1)) ? clean.slice(1) : clean === "/" ? "en" : "";
+  const category = !lang && clean.startsWith("/c/")
     ? CATEGORIES.find((row) => clean === `/c/${row.slug}`)
     : undefined;
   const area = clean.startsWith("/a/")
@@ -67,7 +78,9 @@ export function servicesMetadataForPath(path: string): Metadata {
             ? "Privacy for people looking for a service, and for professionals, on Pulseflow Services."
             : clean === "/register"
               ? "Create a free Pulseflow Services profile so people nearby can find you, or to request work."
-              : SERVICES_DESCRIPTION;
+              : lang
+                ? prosT(lang, "shareDescription")
+                : SERVICES_DESCRIPTION;
   const title = name
     ? `${name} · Pulseflow Services`
     : clean === "/find"
@@ -78,15 +91,16 @@ export function servicesMetadataForPath(path: string): Metadata {
           ? "Privacy · Pulseflow Services"
           : clean === "/register"
             ? "Create an account · Pulseflow Services"
-            : "Find local professionals · Pulseflow Services";
+            : `${prosT(lang || "en", "shareTitle")} · Pulseflow Services`;
   const canonical = servicesUrl(clean);
   const index = servicesIndexable(clean);
+  const home = clean === "/" || Boolean(lang);
   return {
     title: { absolute: title },
     description,
     applicationName: "Pulseflow Services",
     robots: index ? { index: true, follow: true } : { index: false, follow: false },
-    alternates: { canonical },
+    alternates: home ? { canonical, languages: servicesLanguageAlternates() } : { canonical },
     openGraph: {
       type: "website",
       siteName: "Pulseflow Services",
@@ -105,9 +119,10 @@ export function servicesMetadataForPath(path: string): Metadata {
 }
 
 export function servicesSitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date("2026-11-02");
+  const lastModified = new Date("2026-11-04");
   const paths = [
     "/",
+    ...LOCALES.map((code) => `/${code}`),
     "/find",
     "/register",
     "/terms",

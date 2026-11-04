@@ -55,7 +55,7 @@ type RequestInput = {
   invitedProfileId: string | null;
 };
 
-type StoreResult = { ok: true; id?: string } | { ok: false; error: "auth" | "short" | "rate" | "duplicate" | "consent" | "missing" | "review" | "finish" | "plan" };
+type StoreResult = { ok: true; id?: string } | { ok: false; error: "auth" | "short" | "rate" | "duplicate" | "consent" | "missing" | "review" | "finish" | "plan" | "nextMonth" };
 
 type Api = {
   ready: boolean;

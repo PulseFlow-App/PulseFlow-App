@@ -113,10 +113,10 @@ export function ServicesAccountGate({ next }: { next: string }) {
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
   return (
     <div className="space-y-3 rounded-[20px] border border-pf-line bg-pf-card p-4">
-      <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("trialBody")}</p>
+      <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("signInToSee")}</p>
       <div className="flex flex-col gap-2">
         <Link
-          href={`${start}?next=${encodeURIComponent(next)}`}
+          href={pathname.startsWith("/pros") ? "/pros/register?track=customer" : "/register?track=customer"}
           className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700"
         >
           {t("signUp")}
@@ -149,9 +149,8 @@ export function ProCard({
   const trade = categoryName(state, pro.categoryIds[0] ?? null, locale);
   const onAppPath = pathname === "/pros" || pathname.startsWith("/pros/");
   const profilePath = onAppPath ? `/pros/p/${pro.id}` : `/p/${pro.id}`;
-  const start = onAppPath ? "/pros/start" : "/start";
   const guest = !reveal && !actor;
-  const href = guest ? `${start}?next=${encodeURIComponent(profilePath)}` : profilePath;
+  const href = guest ? (onAppPath ? "/pros/register?track=customer" : "/register?track=customer") : profilePath;
   const veil = guest ? "select-none blur-[6px]" : undefined;
   return (
     <Link

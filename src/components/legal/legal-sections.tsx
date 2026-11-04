@@ -398,7 +398,9 @@ export function TermsCommonSections({
           exist forever). Included: the Company plan features then generally
           sold for USD 15 / month and the 10 included seats. Not included unless
           we state otherwise in writing: Pro (USD 24 / month), seats beyond 10
-          (USD 2 / month each), and any future add-ons. The offer is
+          (USD 2 / month each), and any future add-ons. The AI feature planned
+          later for app.pulseflow.site is a paid extra. It is not included for
+          these founding companies. The offer is
           non-transferable, one per company workspace, and does not create
           equity in {brand.name}. If we rename, restructure or replace the
           Company plan, we will move founding workspaces to a successor with

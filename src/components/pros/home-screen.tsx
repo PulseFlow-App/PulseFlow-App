@@ -148,7 +148,7 @@ function HomeBar() {
     };
   }, []);
 
-  const account = actor ? to("/settings") : `${to("/start")}?mode=sign-in&next=/`;
+  const account = actor ? to("/settings") : to("/register?track=customer");
 
   return (
     <div className="sticky top-0 z-10 bg-pf-page px-4 pt-[max(0.5rem,env(safe-area-inset-top))]">
@@ -161,7 +161,7 @@ function HomeBar() {
           aria-label={actor ? t("settings") : t("signIn")}
           className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-pf-navy-900 text-[15px] font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
         >
-          {actor ? actor.name.slice(0, 1) : <PfIcon name="person" tone="onNavy" className="size-5" />}
+          {actor ? actor.name.slice(0, 1) : <PfIcon name="person" tone="onNavy" className="size-6" />}
         </Link>
       </div>
       <h1 className="pb-2 text-[28px] font-bold tracking-[-0.02em] text-pf-ink">
@@ -547,9 +547,8 @@ function HomeProCard({ pro }: { pro: ProProfile }) {
   const pathname = usePathname();
   const onAppPath = pathname === "/pros" || pathname.startsWith("/pros/");
   const profilePath = onAppPath ? `/pros/p/${pro.id}` : `/p/${pro.id}`;
-  const start = onAppPath ? "/pros/start" : "/start";
   const guest = !actor;
-  const href = guest ? `${start}?next=${encodeURIComponent(profilePath)}` : profilePath;
+  const href = guest ? servicesPath(pathname, "/register?track=customer") : profilePath;
   const trade = categoryName(state, pro.categoryIds[0] ?? null, locale);
   const minutes = averageReply(state, pro);
   const channels = [
