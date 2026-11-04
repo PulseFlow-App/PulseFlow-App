@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   companyTrialEndsAt,
+  inviteTokenFromLink,
   slugifyName,
   uniqueShareSlug,
   type RegisterWorkspaceInput,
 } from "@/lib/auth/helpers";
+import { attachInviteToExistingProfile } from "@/lib/auth/attach-org";
 import { creditReferral } from "@/lib/billing/referrals";
+import { ensureStaffContact } from "@/lib/contacts/ensure-staff-contact";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 import {
   clientIp,
@@ -65,8 +68,8 @@ export async function POST(request: Request) {
   if (kind !== "personal" && kind !== "company") {
     return NextResponse.json({ error: "Invalid organization kind." }, { status: 400 });
   }
-  // Public register: personal solo, company as owner/manager, or on-site staff (personal workspace).
-  // Company field staff also join via invite (/join/[token]).
+  // Public register: personal solo or company as owner/manager.
+  // On-site staff must bring a company invite link and join that company.
   if (kind === "company" && !orgName) {
     return NextResponse.json(
       { error: "Company name is required." },
@@ -103,19 +106,89 @@ export async function POST(request: Request) {
     );
   }
 
-  const resolvedRole = onSiteStaff
-    ? role === "cleaner"
-      ? ("cleaner" as const)
-      : ("staff" as const)
-    : kind === "company" && role === "manager"
-      ? ("manager" as const)
-      : ("owner" as const);
+  const admin = createAdminClient();
+
+  let staffInvite: {
+    id: string;
+    org_id: string;
+    role: string;
+    job_title: string | null;
+  } | null = null;
+  if (onSiteStaff) {
+    const token = inviteTokenFromLink(body.inviteToken ?? "");
+    if (!token) {
+      return NextResponse.json(
+        { error: "A company invite link is required for maintenance staff." },
+        { status: 400 },
+      );
+    }
+    const { data: invite } = await admin
+      .from("invites")
+      .select("id, org_id, role, job_title")
+      .eq("token", token)
+      .is("used_at", null)
+      .maybeSingle();
+    if (!invite || invite.role === "guest") {
+      return NextResponse.json(
+        { error: "That company invite link is invalid or already used." },
+        { status: 400 },
+      );
+    }
+    const { data: inviteOrg } = await admin
+      .from("organizations")
+      .select("kind")
+      .eq("id", invite.org_id)
+      .maybeSingle();
+    if (inviteOrg?.kind !== "company") {
+      return NextResponse.json(
+        { error: "That invite is not for a company team." },
+        { status: 400 },
+      );
+    }
+    const { data: claimed, error: claimErr } = await admin
+      .from("invites")
+      .update({ used_at: new Date().toISOString() })
+      .eq("id", invite.id)
+      .is("used_at", null)
+      .select("id");
+    if (claimErr || !claimed?.length) {
+      return NextResponse.json(
+        { error: "That company invite link is invalid or already used." },
+        { status: 400 },
+      );
+    }
+    staffInvite = invite;
+  }
+
+  const releaseStaffInvite = async () => {
+    if (!staffInvite) return;
+    await admin
+      .from("invites")
+      .update({ used_at: null, used_by: null })
+      .eq("id", staffInvite.id);
+  };
+
+  const invitedRole =
+    staffInvite &&
+    (staffInvite.role === "owner" ||
+      staffInvite.role === "manager" ||
+      staffInvite.role === "staff" ||
+      staffInvite.role === "cleaner")
+      ? staffInvite.role
+      : null;
+  const resolvedRole = invitedRole
+    ? invitedRole
+    : onSiteStaff
+      ? role === "cleaner"
+        ? ("cleaner" as const)
+        : ("staff" as const)
+      : kind === "company" && role === "manager"
+        ? ("manager" as const)
+        : ("owner" as const);
   const registrantPays =
     kind !== "company" ||
     (resolvedRole === "owner" && payer === "owner") ||
     (resolvedRole === "manager" && payer === "manager");
-
-  const admin = createAdminClient();
 
   const { data: created, error: createErr } = await admin.auth.admin.createUser({
     email,
@@ -128,6 +201,7 @@ export async function POST(request: Request) {
     },
   });
   if (createErr || !created.user) {
+    await releaseStaffInvite();
     return NextResponse.json(
       { error: createErr?.message ?? "Could not create user." },
       { status: 400 },
@@ -171,6 +245,7 @@ export async function POST(request: Request) {
         .select("id")
         .single();
       if (retry.error || !retry.data) {
+        await releaseStaffInvite();
         await admin.auth.admin.deleteUser(userId);
         return NextResponse.json(
           { error: retry.error?.message ?? "Could not create organization." },
@@ -179,6 +254,7 @@ export async function POST(request: Request) {
       }
       org = retry.data;
     } else if (first.error || !first.data) {
+      await releaseStaffInvite();
       await admin.auth.admin.deleteUser(userId);
       return NextResponse.json(
         { error: first.error?.message ?? "Could not create organization." },
@@ -209,11 +285,13 @@ export async function POST(request: Request) {
     full_name: fullName,
     phone,
     email,
-    job_title: onSiteStaff
-      ? resolvedRole === "cleaner"
-        ? "On-site staff"
-        : "Staff"
-      : kind === "personal"
+    job_title: staffInvite?.job_title?.trim()
+      ? staffInvite.job_title.trim()
+      : onSiteStaff
+        ? resolvedRole === "cleaner"
+          ? "On-site staff"
+          : "Staff"
+        : kind === "personal"
         ? "Personal"
         : resolvedRole === "manager"
           ? "Manager"
@@ -241,6 +319,7 @@ export async function POST(request: Request) {
   }
 
   if (profileErr) {
+    await releaseStaffInvite();
     await admin.from("organizations").delete().eq("id", org.id);
     await admin.auth.admin.deleteUser(userId);
     return NextResponse.json(
@@ -257,6 +336,60 @@ export async function POST(request: Request) {
     });
   }
 
+  let joinedOrgId = org.id;
+  if (staffInvite) {
+    try {
+      const attached = await attachInviteToExistingProfile(admin, {
+        profile: {
+          id: userId,
+          org_id: org.id,
+          personal_org_id,
+          role: resolvedRole,
+          full_name: fullName,
+          phone,
+          job_title: typeof profileRow.job_title === "string" ? profileRow.job_title : null,
+        },
+        inviteOrgId: staffInvite.org_id,
+        inviteRole: staffInvite.role,
+        phone,
+        jobTitle: staffInvite.job_title,
+      });
+      joinedOrgId = attached.nextOrgId;
+      await admin
+        .from("invites")
+        .update({
+          full_name: fullName,
+          email,
+          phone,
+          used_by: userId,
+        })
+        .eq("id", staffInvite.id);
+      try {
+        if (staffInvite.role !== "guest" && staffInvite.role !== "owner") {
+          await ensureStaffContact(admin, {
+            orgId: staffInvite.org_id,
+            profile: {
+              id: userId,
+              full_name: fullName,
+              phone,
+              job_title: staffInvite.job_title,
+              role: staffInvite.role,
+            },
+          });
+        }
+      } catch (e) {
+        console.warn("ensureStaffContact failed", e);
+      }
+    } catch (e) {
+      await releaseStaffInvite();
+      await admin.from("profiles").delete().eq("id", userId);
+      await admin.from("organizations").delete().eq("id", org.id);
+      await admin.auth.admin.deleteUser(userId);
+      const message = e instanceof Error ? e.message : "Could not join the company.";
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
+  }
+
   try {
     await creditReferral(admin, {
       referrerCode: body.referredBy,
@@ -267,5 +400,5 @@ export async function POST(request: Request) {
     console.warn("referral credit failed", e);
   }
 
-  return NextResponse.json({ ok: true, orgId: org.id, userId });
+  return NextResponse.json({ ok: true, orgId: joinedOrgId, userId });
 }

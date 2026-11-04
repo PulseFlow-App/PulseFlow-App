@@ -1,6 +1,6 @@
 import type { UserRole } from "@/lib/design-tokens";
 
-/** Professions a person can list on Pulse Flow Services. */
+/** Professions a person can list on Pulseflow Services. */
 export const TALENT_SKILLS = [
   "cleaner",
   "electrician",

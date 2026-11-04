@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PfIcon, type PfIconName } from "@/components/pros/pf-icons";
@@ -8,7 +7,6 @@ import { selectionTick } from "@/components/pros/haptics";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { PlacePicker } from "@/components/pros/place-picker";
 import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
-import { isServicesWorker } from "@/lib/pros/join";
 import { ProsProvider, usePros } from "@/lib/pros/store";
 import { servicesPath } from "@/lib/pros/paths";
 import { cn } from "@/lib/utils";
@@ -21,22 +19,12 @@ function Frame({ children }: { children: React.ReactNode }) {
   const wide = here.startsWith("/admin") || here.startsWith("/profile");
   const hideNav = here.startsWith("/reply") || here.startsWith("/claim");
   const isHome = here === "/";
-  const [worker, setWorker] = useState(false);
-  useEffect(() => {
-    setWorker(Boolean(actor) && isServicesWorker());
-  }, [actor]);
-  const tabs: [string, string, string, PfIconName][] = worker
-    ? [
-        ["/", t("home"), "/pros", "home"],
-        ["/inbox", t("inbox"), "/pros/inbox", "clipboard"],
-        ["/find", t("find"), "/pros/find", "search"],
-      ]
-    : [
-        ["/", t("home"), "/pros", "home"],
-        ["/find", t("find"), "/pros/find", "search"],
-        ["/inbox", t("messages"), "/pros/inbox", "chat"],
-        ["/requests", t("requests"), "/pros/requests", "clipboard"],
-      ];
+  const tabs: [string, string, string, PfIconName][] = [
+    ["/", t("home"), "/pros", "home"],
+    ["/find", t("find"), "/pros/find", "search"],
+    ["/inbox", t("messages"), "/pros/inbox", "chat"],
+    ["/requests", t("requests"), "/pros/requests", "clipboard"],
+  ];
   return (
     <div className="flex h-dvh min-h-0 w-full flex-col overflow-hidden bg-pf-page font-[family-name:var(--font-pf-sans)] text-pf-ink">
       {isHome ? null : (

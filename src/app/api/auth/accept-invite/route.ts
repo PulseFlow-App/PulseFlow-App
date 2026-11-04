@@ -50,7 +50,7 @@ type Body = {
   password?: string;
   referredBy?: string | null;
   joinWithSession?: boolean;
-  /** Staff/cleaner may opt into Pulse Flow Services listing (starts private). */
+  /** Staff/cleaner may opt into Pulseflow Services listing (starts private). */
   listOnServices?: boolean;
 };
 

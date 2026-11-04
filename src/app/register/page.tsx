@@ -6,13 +6,15 @@ import { useRouter } from "next/navigation";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { ServicesMark } from "@/components/brand/services-mark";
 import { PulseIcon } from "@/components/icons/pulse-icon";
+import { AddToHomeScreenModal } from "@/components/pwa/add-to-home-screen-modal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
+import { inviteTokenFromLink } from "@/lib/auth/helpers";
 import type { UserRole } from "@/lib/design-tokens";
-import { isDemoMode } from "@/lib/supabase/client";
+import { isDemoMode, isSupabaseConfigured } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
@@ -77,6 +79,7 @@ export default function RegisterPage() {
   /** null until the user taps a top card — keeps Personal/Company hidden on first paint. */
   const [position, setPosition] = useState<Position | null>(null);
   const [listOnServices, setListOnServices] = useState(false);
+  const [companyInvite, setCompanyInvite] = useState("");
   const [companySeat, setCompanySeat] = useState<CompanySeat | null>(null);
   const [payer, setPayer] = useState<CompanySeat | null>(null);
   const [fullName, setFullName] = useState("");
@@ -330,6 +333,15 @@ export default function RegisterPage() {
       return;
     }
     const onSite = position === "staff";
+    const companyInviteToken = onSite ? inviteTokenFromLink(companyInvite) : null;
+    if (onSite && !companyInvite.trim()) {
+      setError(t("register.companyInviteRequired"));
+      return;
+    }
+    if (onSite && !companyInviteToken) {
+      setError(t("register.companyInviteInvalid"));
+      return;
+    }
     if (onSite && listOnServices && !accepted) {
       setError(prosT(locale, "legalNeedScroll"));
       return;
@@ -382,7 +394,7 @@ export default function RegisterPage() {
         });
       }
 
-      if (isDemoMode()) {
+      if (isDemoMode() && !(onSite && isSupabaseConfigured())) {
         if (onSite) {
           router.replace(listOnServices ? servicesHref + "settings" : "/home");
           return;
@@ -409,6 +421,7 @@ export default function RegisterPage() {
             payer: !onSite && plan === "company" ? payer ?? companySeat ?? "owner" : undefined,
             position: onSite ? "staff" : "management",
             track: onSite ? "maintenance" : "management",
+            inviteToken: onSite ? companyInviteToken : undefined,
             listOnServices: onSite ? listOnServices : false,
             referredBy: referralCode,
             acquisitionSource,
@@ -452,6 +465,7 @@ export default function RegisterPage() {
           "max(0.5rem, env(safe-area-inset-left)) max(0.5rem, env(safe-area-inset-right))",
       }}
     >
+      <AddToHomeScreenModal />
       <div className="mx-auto w-full max-w-lg animate-rise">
         <div className="mb-4 flex items-center justify-between gap-1.5">
           {ready && onServices ? (
@@ -783,6 +797,26 @@ export default function RegisterPage() {
                   onChange={(e) => setOrgName(e.target.value)}
                   placeholder="Sam's properties"
                 />
+              </div>
+            ) : null}
+
+            {position === "staff" ? (
+              <div>
+                <Label>{t("register.companyInvite")}</Label>
+                <Input
+                  value={companyInvite}
+                  onChange={(e) => setCompanyInvite(e.target.value)}
+                  placeholder={t("register.companyInvitePlaceholder")}
+                  autoComplete="off"
+                  inputMode="url"
+                  required
+                />
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  {t("register.companyInviteNote")}{" "}
+                  <a href={MARKETPLACE_ORIGIN} className="font-semibold text-primary">
+                    {t("register.companyInviteHere")}
+                  </a>.
+                </p>
               </div>
             ) : null}
 

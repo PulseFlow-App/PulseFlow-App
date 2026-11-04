@@ -10,7 +10,13 @@ import {
 
 export async function POST(request: Request) {
   if (!adminKey()) {
-    return NextResponse.json({ error: "Admin access is not configured." }, { status: 503 });
+    return NextResponse.json(
+      {
+        error:
+          "Admin access is not configured. Set PROS_ADMIN_KEY on the server (Vercel Environment Variables) and redeploy.",
+      },
+      { status: 503 },
+    );
   }
   let secret = "";
   let word = "";

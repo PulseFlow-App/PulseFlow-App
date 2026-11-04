@@ -14,7 +14,7 @@ export function prosNote(request: ProRequest, professionalName: string) {
 
 function upsertNotes(existing: string | null | undefined, block: string) {
   const source = existing ?? "";
-  const pattern = /— (?:Pulse Flow Services|Pulse Pros) —[\s\S]*?— End (?:Pulse Flow Services|Pros) —/;
+  const pattern = /— (?:Pulseflow Services|Pulse Pros) —[\s\S]*?— End (?:Pulseflow Services|Pros) —/;
   if (pattern.test(source)) return source.replace(pattern, block);
   return source.trim() ? `${source.trim()}\n\n${block}` : block;
 }

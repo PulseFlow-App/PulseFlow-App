@@ -1,7 +1,7 @@
 import { prosLang } from "@/lib/pros/catalog";
 import { PROS_EXTRA_LOCALES } from "@/lib/pros/i18n-extra";
 
-export const PRODUCT_NAME = "Pulse Flow Services";
+export const PRODUCT_NAME = "Pulseflow Services";
 
 const COPY = {
   productName: { en: PRODUCT_NAME, th: PRODUCT_NAME, ru: PRODUCT_NAME, he: PRODUCT_NAME },
@@ -331,10 +331,10 @@ const COPY = {
     he: "גללו את התנאים והפרטיות עד הסוף, ואז סמנו הסכמה.",
   },
   emailOptIn: {
-    en: "Send me informational email from Pulse Flow Services",
-    th: "ส่งอีเมลข้อมูลจาก Pulse Flow Services ให้ฉัน",
-    ru: "Присылать мне информационные письма от Pulse Flow Services",
-    he: "שלחו לי דוא״ל מידעי מ-Pulse Flow Services",
+    en: "Send me informational email from Pulseflow Services",
+    th: "ส่งอีเมลข้อมูลจาก Pulseflow Services ให้ฉัน",
+    ru: "Присылать мне информационные письма от Pulseflow Services",
+    he: "שלחו לי דוא״ל מידעי מ-Pulseflow Services",
   },
   emailOptInHint: {
     en: "Leave this unticked and we will not send optional email.",
@@ -357,8 +357,35 @@ const COPY = {
   active: { en: "Active", th: "กำลังดำเนินการ", ru: "Активные", he: "פעיל" },
   favourites: { en: "Saved", th: "ที่บันทึกไว้", ru: "Сохранённые", he: "שמורים" },
   recent: { en: "Recent", th: "ใช้ล่าสุด", ru: "Недавние", he: "אחרונים" },
-  saveFavourite: { en: "Save", th: "บันทึก", ru: "Сохранить", he: "שמירה" },
+  saveFavourite: { en: "Save this pro", th: "บันทึกช่างคนนี้", ru: "Сохранить этого мастера", he: "שמירת בעל המקצוע" },
   savedFavourite: { en: "Saved", th: "บันทึกแล้ว", ru: "Сохранено", he: "נשמר" },
+  reviewsTitle: { en: "Reviews", th: "รีวิว", ru: "Отзывы", he: "ביקורות" },
+  whenLabel: { en: "When", th: "เมื่อไหร่", ru: "Когда", he: "מתי" },
+  asked: { en: "Asked", th: "ส่งถึง", ru: "Кому отправлено", he: "נשלח אל" },
+  sentTo: { en: "Sent to {name}", th: "ส่งถึง {name}", ru: "Отправлено: {name}", he: "נשלח אל {name}" },
+  notifiedInApp: {
+    en: "They get this request in the app, and a notification on their phone.",
+    th: "ช่างได้รับคำขอนี้ในแอป และการแจ้งเตือนบนโทรศัพท์",
+    ru: "Специалист получит заявку в приложении и уведомление на телефон.",
+    he: "בעל המקצוע מקבל את הבקשה באפליקציה והתראה בטלפון.",
+  },
+  notOnApp: {
+    en: "This person is not on Pulseflow Services yet, so the request stays on your phone.",
+    th: "คนนี้ยังไม่ได้อยู่บน Pulseflow Services คำขอจึงอยู่บนโทรศัพท์คุณ",
+    ru: "Этого человека ещё нет в Pulseflow Services, поэтому заявка остаётся на вашем телефоне.",
+    he: "האדם הזה עדיין לא ב-Pulseflow Services, ולכן הבקשה נשארת בטלפון שלכם.",
+  },
+  incomingTitle: { en: "New request", th: "คำขอใหม่", ru: "Новая заявка", he: "בקשה חדשה" },
+  sendReply: { en: "Send reply", th: "ส่งคำตอบ", ru: "Отправить ответ", he: "שליחת תשובה" },
+  replyPlaceholder: { en: "Your reply", th: "คำตอบของคุณ", ru: "Ваш ответ", he: "התשובה שלכם" },
+  replySent: { en: "Reply sent.", th: "ส่งคำตอบแล้ว", ru: "Ответ отправлен.", he: "התשובה נשלחה." },
+  reportNeedReason: {
+    en: "Write what happened, then send the report.",
+    th: "เขียนสิ่งที่เกิดขึ้น แล้วส่งรายงาน",
+    ru: "Опишите, что случилось, и отправьте жалобу.",
+    he: "כתבו מה קרה, ואז שלחו את הדיווח.",
+  },
+  sendReport: { en: "Send report", th: "ส่งรายงาน", ru: "Отправить жалобу", he: "שליחת הדיווח" },
   notAvailable: {
     en: "That professional is not available.",
     th: "ช่างคนนี้ไม่พร้อมรับงาน",
@@ -374,7 +401,7 @@ const COPY = {
   agreedPrice: { en: "Agreed price", th: "ราคาที่ตกลง", ru: "Согласованная цена", he: "מחיר שסוכם" },
   finalPrice: { en: "Final price", th: "ราคาสุดท้าย", ru: "Итоговая цена", he: "מחיר סופי" },
   markPaid: { en: "We paid directly", th: "จ่ายตรงแล้ว", ru: "Оплатили напрямую", he: "שילמנו ישירות" },
-  paidDirect: { en: "Paid directly. Pulse Flow Services did not handle the money.", th: "จ่ายตรงแล้ว Pulse Flow Services ไม่ได้ถือเงิน", ru: "Оплачено напрямую. Pulse Flow Services деньги не принимал.", he: "שולם ישירות. Pulse Flow Services לא החזיק בכסף." },
+  paidDirect: { en: "Paid directly. Pulseflow Services did not handle the money.", th: "จ่ายตรงแล้ว Pulseflow Services ไม่ได้ถือเงิน", ru: "Оплачено напрямую. Pulseflow Services деньги не принимал.", he: "שולם ישירות. Pulseflow Services לא החזיק בכסף." },
   emailVerified: { en: "Email verified", th: "ยืนยันอีเมลแล้ว", ru: "Почта подтверждена", he: "אימייל אומת" },
   qualificationChecked: { en: "Qualification checked", th: "ตรวจคุณวุฒิแล้ว", ru: "Квалификация проверена", he: "הכשרה נבדקה" },
   trackPros: { en: "Track quote", th: "ติดตามใบเสนอราคา", ru: "Открыть заявку", he: "מעקב אחרי ההצעה" },
@@ -481,10 +508,10 @@ const COPY = {
     he: "כדי להמשיך צריך חשבון. ניסיון: 3 הזמנות חינם, כל אחת עם ביקורת, ואז הזמנה חינם אחת בחודש. המסלול הוא 9 דולר לחודש וכולל את עוזר הבינה המלאכותית.",
   },
   createServicesAccount: {
-    en: "Create a Pulse Flow Services account",
-    th: "สร้างบัญชี Pulse Flow Services",
-    ru: "Создать аккаунт Pulse Flow Services",
-    he: "יצירת חשבון Pulse Flow Services",
+    en: "Create a Pulseflow Services account",
+    th: "สร้างบัญชี Pulseflow Services",
+    ru: "Создать аккаунт Pulseflow Services",
+    he: "יצירת חשבון Pulseflow Services",
   },
   reviewRequired: {
     en: "Leave the review on your last order before the next one is offered.",
@@ -529,17 +556,17 @@ const COPY = {
     he: "הביקורת הזו פותחת את ההזמנה הבאה.",
   },
   ordersEmpty: {
-    en: "Your orders show up here after you create a Pulse Flow Services account.",
-    th: "คำสั่งของคุณจะอยู่ที่นี่หลังสร้างบัญชี Pulse Flow Services",
-    ru: "Заказы появятся здесь после аккаунта Pulse Flow Services.",
-    he: "ההזמנות יופיעו כאן אחרי יצירת חשבון Pulse Flow Services.",
+    en: "Your orders show up here after you create a Pulseflow Services account.",
+    th: "คำสั่งของคุณจะอยู่ที่นี่หลังสร้างบัญชี Pulseflow Services",
+    ru: "Заказы появятся здесь после аккаунта Pulseflow Services.",
+    he: "ההזמנות יופיעו כאן אחרי יצירת חשבון Pulseflow Services.",
   },
   position: { en: "Profession", th: "อาชีพ", ru: "Профессия", he: "מקצוע" },
   welcomeTitle: {
-    en: "Pulse Flow Services",
-    th: "Pulse Flow Services",
-    ru: "Pulse Flow Services",
-    he: "Pulse Flow Services",
+    en: "Pulseflow Services",
+    th: "Pulseflow Services",
+    ru: "Pulseflow Services",
+    he: "Pulseflow Services",
   },
   welcomeLead: {
     en: "Local maintenance for your property. You look first. We introduce you to people nearby. You pay the professional directly. Pulse Flow does not guarantee the work, and professionals choose which requests to accept.",
@@ -674,10 +701,10 @@ const COPY = {
     he: "הוסיפו תמונה, מקצועות ואזורים בהגדרות כדי שימצאו אתכם.",
   },
   shareInvite: {
-    en: "Share Pulse Flow Services",
-    th: "แชร์ Pulse Flow Services",
-    ru: "Поделиться Pulse Flow Services",
-    he: "שתפו את Pulse Flow Services",
+    en: "Share Pulseflow Services",
+    th: "แชร์ Pulseflow Services",
+    ru: "Поделиться Pulseflow Services",
+    he: "שתפו את Pulseflow Services",
   },
   openRequests: {
     en: "Your open requests",
@@ -715,10 +742,10 @@ const COPY = {
     he: "התשלום עדיין לא נגבה. הפעלת תוכנית כאן לא מחייבת.",
   },
   settingsNeedAccount: {
-    en: "Create a Pulse Flow Services account to turn these on.",
-    th: "สร้างบัญชี Pulse Flow Services เพื่อเปิดแผนเหล่านี้",
-    ru: "Создайте аккаунт Pulse Flow Services, чтобы включить это.",
-    he: "צרו חשבון Pulse Flow Services כדי להפעיל את אלה.",
+    en: "Create a Pulseflow Services account to turn these on.",
+    th: "สร้างบัญชี Pulseflow Services เพื่อเปิดแผนเหล่านี้",
+    ru: "Создайте аккаунт Pulseflow Services, чтобы включить это.",
+    he: "צרו חשבון Pulseflow Services כדי להפעיל את אלה.",
   },
   signInToSee: {
     en: "Sign in to see this professional",

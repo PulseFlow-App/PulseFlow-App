@@ -17,6 +17,7 @@ export function ProfileView({ id }: { id: string }) {
   const pathname = usePathname();
   const pro = state.profiles.find((row) => row.id === id);
   const [reason, setReason] = useState("");
+  const [reporting, setReporting] = useState(false);
   const [sent, setSent] = useState(false);
   if (!pro || pro.status === "suspended") return <p className="text-pf-16 text-pf-text-secondary">{t("noPros")}</p>;
   const team = Boolean(actor?.orgId && pro.orgId === actor.orgId);
@@ -64,22 +65,26 @@ export function ProfileView({ id }: { id: string }) {
           ))}
         </div>
       </div>
-      <OriginalText
-        text={pro.description}
-        locale={pro.descriptionLocale}
-        translations={pro.translations}
-        onSave={(lang, text) => rememberTranslation("profile", pro.id, lang, text)}
-      />
-      <p className="text-pf-16 text-pf-ink">
-        {rating == null ? t("noReviews") : rating.toFixed(1)}
-      </p>
+      {pro.description.trim() ? (
+        <section className="rounded-[20px] border border-pf-line bg-pf-card p-4">
+          <h2 className="text-pf-12 font-medium text-pf-slate-ink">{t("about")}</h2>
+          <div className="mt-2">
+            <OriginalText
+              text={pro.description}
+              locale={pro.descriptionLocale}
+              translations={pro.translations}
+              onSave={(lang, text) => rememberTranslation("profile", pro.id, lang, text)}
+            />
+          </div>
+        </section>
+      ) : null}
       {jobs.length > 0 ? (
         <p className="text-pf-14 text-pf-text-secondary">{jobs.length === 1 ? t("verifiedJob") : t("verifiedJobs", { count: jobs.length })}</p>
       ) : null}
       {checks.length > 0 ? (
-        <ul className="space-y-1 text-pf-16 text-pf-ink">
+        <ul className="flex flex-wrap gap-1.5">
           {checks.map((label) => (
-            <li key={label}>{label}</li>
+            <li key={label} className="rounded-full bg-pf-peach-100 px-2 py-0.5 text-pf-12 font-medium text-pf-ink">{label}</li>
           ))}
         </ul>
       ) : null}
@@ -91,43 +96,71 @@ export function ProfileView({ id }: { id: string }) {
           ))}
         </div>
       ) : null}
+      <section className="space-y-3 rounded-[20px] border border-pf-line bg-pf-card p-4">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="text-pf-12 font-medium text-pf-slate-ink">{t("reviewsTitle")}</h2>
+          {rating != null ? <p className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{rating.toFixed(1)}</p> : null}
+        </div>
+        {reviews.length === 0 ? <p className="text-pf-16 text-pf-text-secondary">{t("noReviews")}</p> : null}
+        {reviews.map((review) => (
+          <article key={review.id} className="border-t border-pf-line pt-3">
+            <p className="text-pf-14 font-medium text-pf-ink">{review.stars}</p>
+            <OriginalText
+              text={review.comment}
+              locale={review.originalLocale}
+              translations={review.translations}
+              onSave={(lang, text) => rememberTranslation("review", review.id, lang, text)}
+            />
+          </article>
+        ))}
+      </section>
       {actor ? (
-        <button type="button" className="min-h-12 text-pf-14 font-medium text-pf-text-secondary" onClick={() => toggleFavourite(pro.id)}>
+        <button
+          type="button"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink"
+          onClick={() => toggleFavourite(pro.id)}
+        >
           {saved ? t("savedFavourite") : t("saveFavourite")}
         </button>
       ) : null}
-      <p className="text-pf-14 text-pf-text-secondary">{t("contactHidden")}</p>
       <Link
         href={servicesPath(pathname, `/request?profile=${pro.id}&category=${pro.categoryIds[0] ?? ""}`)}
         className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700"
       >
         {t("sendRequest")}
       </Link>
-      {reviews.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noReviews")}</p> : null}
-      {reviews.map((review) => (
-        <article key={review.id} className="rounded-[20px] border border-pf-line bg-pf-card p-3">
-          <p className="text-pf-14 font-medium text-pf-ink">{review.stars}</p>
-          <OriginalText
-            text={review.comment}
-            locale={review.originalLocale}
-            translations={review.translations}
-            onSave={(lang, text) => rememberTranslation("review", review.id, lang, text)}
-          />
-        </article>
-      ))}
-      <form
-        className="space-y-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          report("profile", pro.id, reason);
-          setSent(true);
-        }}
-      >
-        <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("reason")} aria-label={t("reason")} />
-        <Button type="submit" variant="ghost" reflectGlobalBusy={false}>
-          {sent ? t("reported") : t("report")}
-        </Button>
-      </form>
+      {sent ? (
+        <p className="text-pf-14 font-medium text-pf-text-secondary">{t("reported")}</p>
+      ) : (
+        <div className="space-y-2">
+          <button
+            type="button"
+            className="inline-flex min-h-11 items-center rounded-full border border-pf-danger-ink px-4 text-pf-16 font-medium text-pf-danger-ink"
+            onClick={() => setReporting(true)}
+            aria-expanded={reporting}
+          >
+            {t("report")}
+          </button>
+          {reporting ? (
+            <form
+              className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const note = reason.trim();
+                if (!note) return;
+                report("profile", pro.id, note);
+                setSent(true);
+              }}
+            >
+              <p className="text-pf-14 text-pf-text-secondary">{t("reportNeedReason")}</p>
+              <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("reason")} aria-label={t("reason")} required />
+              <Button type="submit" variant="ghost" reflectGlobalBusy={false} disabled={!reason.trim()} className="border-pf-danger-ink text-pf-danger-ink">
+                {t("sendReport")}
+              </Button>
+            </form>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }

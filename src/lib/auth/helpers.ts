@@ -59,6 +59,8 @@ export type RegisterWorkspaceInput = {
   termsAcceptedAt?: string | null;
   /** Optional email. Unset means no. */
   emailOptIn?: boolean;
+  /** App on-site staff: company invite URL or /join token. Required for that path. */
+  inviteToken?: string | null;
 };
 
 export const COMPANY_TRIAL_DAYS = 90;
@@ -67,4 +69,20 @@ export function companyTrialEndsAt(from = new Date()) {
   const d = new Date(from);
   d.setDate(d.getDate() + COMPANY_TRIAL_DAYS);
   return d.toISOString();
+}
+
+/** Pull a join token from a pasted invite URL, /join/token path, or bare token. */
+export function inviteTokenFromLink(raw: string): string | null {
+  const text = raw.trim();
+  if (!text) return null;
+  const fromPath = text.match(/\/join\/([^/?#\s]+)/i);
+  if (fromPath?.[1]) {
+    try {
+      return decodeURIComponent(fromPath[1]);
+    } catch {
+      return fromPath[1];
+    }
+  }
+  if (/^[A-Za-z0-9_-]{16,128}$/.test(text)) return text;
+  return null;
 }

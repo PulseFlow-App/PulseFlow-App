@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Fingerprint } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { AddToHomeScreenModal } from "@/components/pwa/add-to-home-screen-modal";
 import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
 import { useI18n } from "@/lib/i18n/provider";
 import { useBrandName } from "@/lib/i18n/use-brand-name";
@@ -241,6 +242,7 @@ export default function LoginPage() {
           "max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right))",
       }}
     >
+      <AddToHomeScreenModal />
       <div className="mx-auto flex min-h-full w-full max-w-md items-center">
         <div className="w-full">
           <div className="mb-4 flex items-center justify-end gap-2">

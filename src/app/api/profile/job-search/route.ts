@@ -58,7 +58,7 @@ export async function PATCH(request: Request) {
 
   if (!canListInTalentSearch(profile.role as UserRole)) {
     return NextResponse.json(
-      { error: "Only field staff and managers can list on Pulse Flow Services." },
+      { error: "Only field staff and managers can list on Pulseflow Services." },
       { status: 403 },
     );
   }

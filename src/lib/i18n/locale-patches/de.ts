@@ -7,7 +7,7 @@ export const deLocalePatch: Partial<Dictionary> = {
   "nav.menu": "Menü",
   "nav.dateRequests": "Datumsanfragen",
   "nav.reports": "Berichte & Übergaben",
-  "nav.talent": "Pulse Flow Services",
+  "nav.talent": "Pulseflow Services",
   "nav.invites": "Einladungen",
   "nav.company": "Firma",
   "home.checkInsOuts": "Ein- & Auschecken",

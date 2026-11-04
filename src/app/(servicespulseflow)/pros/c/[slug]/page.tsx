@@ -7,9 +7,9 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const cat = CATEGORIES.find((row) => row.slug === slug);
-  const name = cat ? localizedName(cat.names, "en") : "Pulse Flow Services";
+  const name = cat ? localizedName(cat.names, "en") : "Pulseflow Services";
   return {
-    title: { absolute: cat ? `${name} · Pulse Flow Services` : "Pulse Flow Services" },
+    title: { absolute: cat ? `${name} · Pulseflow Services` : "Pulseflow Services" },
     description: cat
       ? `${localizedName(cat.descriptions, "en")} Find a local professional near you. You pay them directly.`
       : "Find a local professional.",

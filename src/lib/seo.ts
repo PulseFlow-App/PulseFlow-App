@@ -20,7 +20,7 @@ export const SERVICES_OG_IMAGE = {
   url: "/brand/services-og.jpg",
   width: 1200,
   height: 630,
-  alt: "Pulse Flow Services — find local plumbers, electricians, cleaners and more.",
+  alt: "Pulseflow Services — find local plumbers, electricians, cleaners and more.",
 } as const;
 
 export function servicesUrl(path = "/"): string {
@@ -62,34 +62,34 @@ export function servicesMetadataForPath(path: string): Metadata {
       : clean === "/find"
         ? "Find a local professional by profession and area. In English, Thai, Russian and Hebrew."
         : clean === "/terms"
-          ? "Terms for people looking for a service, and for professionals, on Pulse Flow Services."
+          ? "Terms for people looking for a service, and for professionals, on Pulseflow Services."
           : clean === "/privacy"
-            ? "Privacy for people looking for a service, and for professionals, on Pulse Flow Services."
+            ? "Privacy for people looking for a service, and for professionals, on Pulseflow Services."
             : clean === "/register"
-              ? "Create a free Pulse Flow Services profile so people nearby can find you, or to request work."
+              ? "Create a free Pulseflow Services profile so people nearby can find you, or to request work."
               : SERVICES_DESCRIPTION;
   const title = name
-    ? `${name} · Pulse Flow Services`
+    ? `${name} · Pulseflow Services`
     : clean === "/find"
-      ? "Find a professional · Pulse Flow Services"
+      ? "Find a professional · Pulseflow Services"
       : clean === "/terms"
-        ? "Terms · Pulse Flow Services"
+        ? "Terms · Pulseflow Services"
         : clean === "/privacy"
-          ? "Privacy · Pulse Flow Services"
+          ? "Privacy · Pulseflow Services"
           : clean === "/register"
-            ? "Create an account · Pulse Flow Services"
-            : "Find local professionals · Pulse Flow Services";
+            ? "Create an account · Pulseflow Services"
+            : "Find local professionals · Pulseflow Services";
   const canonical = servicesUrl(clean);
   const index = servicesIndexable(clean);
   return {
     title: { absolute: title },
     description,
-    applicationName: "Pulse Flow Services",
+    applicationName: "Pulseflow Services",
     robots: index ? { index: true, follow: true } : { index: false, follow: false },
     alternates: { canonical },
     openGraph: {
       type: "website",
-      siteName: "Pulse Flow Services",
+      siteName: "Pulseflow Services",
       title,
       description,
       url: canonical,

@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "Pulse Flow Services",
+  name: "Pulseflow Services",
   url: SERVICES_URL,
   description:
     "Find local plumbers, electricians, cleaners and more. Describe the problem, compare, and book. In English, Thai, Russian and Hebrew.",

@@ -119,22 +119,22 @@ const appMetadata: Metadata = {
 
 const servicesDescription =
   "Find local plumbers, electricians, cleaners and more. Describe the problem, compare, and book. In English, Thai, Russian and Hebrew.";
-const servicesShareTitle = "Find local professionals · Pulse Flow Services";
+const servicesShareTitle = "Find local professionals · Pulseflow Services";
 
 const servicesMetadata: Metadata = {
   ...appMetadata,
   metadataBase: new URL(SERVICES_URL),
   title: {
     default: servicesShareTitle,
-    template: "%s · Pulse Flow Services",
+    template: "%s · Pulseflow Services",
   },
-  applicationName: "Services by Pulse Flow",
+  applicationName: "Pulseflow Services",
   description: servicesDescription,
   manifest: "/services.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Services by Pulse Flow",
+    title: "Pulseflow Services",
   },
   icons: {
     icon: [
@@ -146,7 +146,7 @@ const servicesMetadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    siteName: "Pulse Flow Services",
+    siteName: "Pulseflow Services",
     title: servicesShareTitle,
     description: servicesDescription,
     url: SERVICES_URL,

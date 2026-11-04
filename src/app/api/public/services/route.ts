@@ -29,7 +29,7 @@ function areaIdsFor(location: string) {
   }).map((area) => area.id);
 }
 
-/** People who already listed on Pulse Flow Services. No phone or email. */
+/** People who already listed on Pulseflow Services. No phone or email. */
 export async function GET() {
   if (isDemoMode() || !isSupabaseConfigured()) {
     return NextResponse.json({ profiles: [] });
@@ -81,7 +81,7 @@ export async function GET() {
       available: true,
       consentAt: row.job_search_updated_at,
       consentBy: null,
-      consentNote: "Listed on Pulse Flow Services.",
+      consentNote: "Listed on Pulseflow Services.",
       claimToken: row.id,
       claimedAt: row.job_search_updated_at,
       listingTier: "free",

@@ -179,6 +179,20 @@ export function isServicesWorker(): boolean {
   return Boolean(readMyListingId());
 }
 
+/** The settings button used to create an empty private listing and lock the home screen. Drop that listing. */
+export function releaseAccidentalListing() {
+  if (typeof window === "undefined") return;
+  const id = readMyListingId();
+  if (!id) return;
+  const state = readProsState();
+  const row = state?.profiles.find((profile) => profile.id === id);
+  const empty =
+    !row ||
+    (row.visibility !== "public" && !row.categoryIds.length && !row.description.trim() && !row.photoUrl);
+  if (!empty) return;
+  localStorage.removeItem(SERVICE_PROFILE_KEY);
+}
+
 export function ensureMyServiceListing(actor: { id: string; name: string }) {
   const state = readProsState() ?? createSeedState();
   const stored = localStorage.getItem(SERVICE_PROFILE_KEY);

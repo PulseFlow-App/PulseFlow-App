@@ -9,32 +9,12 @@ import { Input, Label } from "@/components/ui/input";
 import { assignRequestToTask } from "@/lib/pros/assign-task";
 import { preferredDateKey, preferredTimeKey, statusKey } from "@/lib/pros/i18n";
 import { nextKey, offerHasReply } from "@/lib/pros/matching";
+import type { ServiceDelivery } from "@/lib/pros/delivery";
 import { usePros } from "@/lib/pros/store";
 import { formatLongDateLocalized } from "@/lib/i18n/date-format";
 import { useI18n } from "@/lib/i18n/provider";
 import { parseISO } from "date-fns";
-import { lineDeepLink } from "@/lib/utils";
-import type { ProOffer, ProProfile, ProsStatus } from "@/lib/pros/types";
-
-function replyText(title: string, url: string) {
-  return `${title}\n${url}`;
-}
-
-function channels(pro: ProProfile, text: string) {
-  const rows: { href: string; key: "openWhatsApp" | "openLine" | "openSms" }[] = [];
-  const phone = (pro.whatsapp || pro.phone || "").replace(/\D/g, "");
-  if (phone && (pro.whatsapp || pro.phone)) {
-    rows.push({ href: `https://wa.me/${phone}?text=${encodeURIComponent(text)}`, key: "openWhatsApp" });
-  }
-  if (pro.lineId) rows.push({ href: lineDeepLink(pro.lineId), key: "openLine" });
-  if (pro.phone) {
-    rows.push({
-      href: `sms:${pro.phone.replace(/\D/g, "")}?&body=${encodeURIComponent(text)}`,
-      key: "openSms",
-    });
-  }
-  return rows;
-}
+import type { ProOffer, ProsStatus } from "@/lib/pros/types";
 
 export default function RequestDetailPage() {
   const params = useParams<{ id: string }>();
@@ -42,11 +22,23 @@ export default function RequestDetailPage() {
   const { locale } = useI18n();
   const request = state.requests.find((row) => row.id === params.id);
   const [assigned, setAssigned] = useState(false);
-  const [copied, setCopied] = useState<string | null>(null);
   const [finalAmount, setFinalAmount] = useState("");
   const [finalCurrency, setFinalCurrency] = useState("");
-  const [origin, setOrigin] = useState("https://services.pulseflow.site");
-  useEffect(() => setOrigin(window.location.origin), []);
+  const [deliveries, setDeliveries] = useState<ServiceDelivery[]>([]);
+  useEffect(() => {
+    let cancel = false;
+    void fetch("/api/services/requests")
+      .then((res) => (res.ok ? res.json() : { requests: [] }))
+      .then((payload: { requests?: ServiceDelivery[] }) => {
+        if (!cancel) setDeliveries(payload.requests ?? []);
+      })
+      .catch(() => {
+        if (!cancel) setDeliveries([]);
+      });
+    return () => {
+      cancel = true;
+    };
+  }, [params.id]);
   if (!request) {
     return (
       <RequireUser>
@@ -55,7 +47,13 @@ export default function RequestDetailPage() {
     );
   }
   const offers = state.offers.filter((row) => row.requestId === request.id);
-  const visible = offers.filter(offerHasReply);
+  const remote = deliveries.filter((row) => row.request_id === request.id);
+  const replyFor = (profileId: string) => {
+    const linked = state.profiles.find((row) => row.id === profileId)?.linkedProfileId;
+    if (!linked) return null;
+    return remote.find((row) => row.target_profile_id === linked && row.reply_message) ?? null;
+  };
+  const visible = offers.filter((offer) => offerHasReply(offer) || replyFor(offer.profileId));
   const mine = actor?.id === request.createdBy;
   const chosen = state.profiles.find((row) => row.id === request.chosenProfileId) ?? null;
   const reviewed = state.reviews.some((row) => row.requestId === request.id);
@@ -64,59 +62,51 @@ export default function RequestDetailPage() {
 
   return (
     <RequireUser>
-      <div className="space-y-5">
-        <div>
+      <div className="space-y-3">
+        <section className="rounded-[20px] border border-pf-line bg-pf-card p-4">
           <p className="text-pf-12 font-medium text-pf-slate-ink">{t(statusKey(request.status))}</p>
-          <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{request.title}</h1>
-          <p className="mt-1 text-pf-16 text-pf-ink">{t(nextKey(request.status))}</p>
-          {preferredDateKey(request.preferredDate) ? (
-            <p className="mt-1 text-pf-16 text-pf-ink">{t(preferredDateKey(request.preferredDate)!)}</p>
-          ) : request.preferredDate && /^\d{4}-\d{2}-\d{2}/.test(request.preferredDate) ? (
-            <p className="mt-1 text-pf-16 text-pf-ink">{formatLongDateLocalized(parseISO(request.preferredDate.slice(0, 10)), locale)}</p>
-          ) : null}
-          {request.preferredTime ? (
-            <p className="text-pf-14 text-pf-text-secondary">
-              {preferredTimeKey(request.preferredTime) ? t(preferredTimeKey(request.preferredTime)!) : request.preferredTime}
-            </p>
-          ) : null}
-        </div>
-        <OriginalText
-          text={request.description}
-          locale={request.originalLocale}
-          translations={request.translations}
-          onSave={(lang, text) => rememberTranslation("request", request.id, lang, text)}
-        />
-        {request.taskId ? <p className="text-pf-14 text-pf-text-secondary">{t("fromTask")}</p> : null}
-        <section className="space-y-3">
-          <h2 className="text-pf-14 font-medium text-pf-ink">{t("matches")}</h2>
-          <p className="text-pf-12 text-pf-slate-ink">{t("replyHint")}</p>
-          {offers.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noMatches")}</p> : null}
+          <h1 className="mt-1 text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{request.title}</h1>
+          <p className="mt-2 text-pf-16 text-pf-text-secondary">{t(nextKey(request.status))}</p>
+        </section>
+        {preferredDateKey(request.preferredDate) || request.preferredDate || request.preferredTime ? (
+          <section className="rounded-[20px] border border-pf-line bg-pf-card p-4">
+            <h2 className="text-pf-12 font-medium text-pf-slate-ink">{t("whenLabel")}</h2>
+            {preferredDateKey(request.preferredDate) ? (
+              <p className="mt-2 text-pf-18 font-medium text-pf-ink">{t(preferredDateKey(request.preferredDate)!)}</p>
+            ) : request.preferredDate && /^\d{4}-\d{2}-\d{2}/.test(request.preferredDate) ? (
+              <p className="mt-2 text-pf-18 font-medium text-pf-ink">{formatLongDateLocalized(parseISO(request.preferredDate.slice(0, 10)), locale)}</p>
+            ) : null}
+            {request.preferredTime ? (
+              <p className="mt-1 text-pf-16 text-pf-text-secondary">
+                {preferredTimeKey(request.preferredTime) ? t(preferredTimeKey(request.preferredTime)!) : request.preferredTime}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+        <section className="rounded-[20px] border border-pf-line bg-pf-card p-4">
+          <h2 className="text-pf-12 font-medium text-pf-slate-ink">{t("about")}</h2>
+          <div className="mt-2">
+            <OriginalText
+              text={request.description}
+              locale={request.originalLocale}
+              translations={request.translations}
+              onSave={(lang, text) => rememberTranslation("request", request.id, lang, text)}
+            />
+          </div>
+          {request.taskId ? <p className="mt-3 text-pf-14 text-pf-text-secondary">{t("fromTask")}</p> : null}
+        </section>
+        <section className="space-y-3 rounded-[20px] border border-pf-line bg-pf-card p-4">
+          <h2 className="text-pf-12 font-medium text-pf-slate-ink">{t("asked")}</h2>
+          {offers.length === 0 ? <p className="text-pf-16 text-pf-text-secondary">{t("noMatches")}</p> : null}
           {offers.map((offer) => {
             const pro = state.profiles.find((row) => row.id === offer.profileId);
             if (!pro) return null;
-            const url = `${origin}${origin.includes("services.") || origin.includes("pros.") ? "" : "/pros"}/reply/${offer.token}`;
-            const text = replyText(request.title, url);
             return (
-              <div key={offer.id} className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-3">
-                <p className="font-medium text-pf-ink">{pro.name}</p>
-                <p className="break-all text-pf-12 text-pf-slate-ink">{url}</p>
-                <div className="flex flex-wrap gap-2">
-                  {channels(pro, text).map((row) => (
-                    <a key={row.key} href={row.href} className="inline-flex min-h-11 items-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink">
-                      {t(row.key)}
-                    </a>
-                  ))}
-                  <button
-                    type="button"
-                    className="inline-flex min-h-11 items-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink"
-                    onClick={() => {
-                      void navigator.clipboard.writeText(url);
-                      setCopied(offer.id);
-                    }}
-                  >
-                    {copied === offer.id ? t("copied") : t("copyLink")}
-                  </button>
-                </div>
+              <div key={offer.id}>
+                <p className="text-pf-18 font-medium text-pf-ink">{t("sentTo", { name: pro.name })}</p>
+                <p className="mt-1 text-pf-16 text-pf-text-secondary">
+                  {pro.linkedProfileId ? t("notifiedInApp") : t("notOnApp")}
+                </p>
               </div>
             );
           })}
@@ -126,6 +116,8 @@ export default function RequestDetailPage() {
           {visible.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noOffers")}</p> : null}
           {visible.map((offer: ProOffer) => {
             const pro = state.profiles.find((row) => row.id === offer.profileId);
+            const remoteReply = replyFor(offer.profileId);
+            const message = offer.message || remoteReply?.reply_message || "";
             return (
               <article key={offer.id} className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-3">
                 <p className="font-medium text-pf-ink">{pro?.name}</p>
@@ -134,17 +126,21 @@ export default function RequestDetailPage() {
                   <p className="text-pf-16 text-pf-ink">
                     {offer.amount} {offer.currency ?? ""}
                   </p>
+                ) : remoteReply?.reply_amount != null ? (
+                  <p className="text-pf-16 text-pf-ink">
+                    {remoteReply.reply_amount} {remoteReply.reply_currency ?? ""}
+                  </p>
                 ) : null}
                 {offer.proposedTime ? <p className="text-pf-16 text-pf-ink">{offer.proposedTime}</p> : null}
-                {offer.message ? (
+                {message ? (
                   <OriginalText
-                    text={offer.message}
+                    text={message}
                     locale={offer.originalLocale}
                     translations={offer.translations}
                     onSave={(lang, text) => rememberTranslation("offer", offer.id, lang, text)}
                   />
                 ) : null}
-                {mine && request.status !== "cancelled" && request.status !== "completed" && offer.status === "pending" && offerHasReply(offer) ? (
+                {mine && request.status !== "cancelled" && request.status !== "completed" && offer.status === "pending" && (offerHasReply(offer) || remoteReply) ? (
                   <Button type="button" reflectGlobalBusy={false} onClick={() => chooseOffer(offer.id)}>
                     {t("choose")}
                   </Button>

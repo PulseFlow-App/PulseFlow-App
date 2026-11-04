@@ -30,12 +30,12 @@ export const LEGAL_SECTIONS: LegalSection[] = [
     id: "what",
     audience: "staff",
     doc: "terms",
-    heading: n("What Pulse Flow Services is", "Pulse Flow Services คืออะไร", "Что такое Pulse Flow Services", "מה זה Pulse Flow Services"),
+    heading: n("What Pulseflow Services is", "Pulseflow Services คืออะไร", "Что такое Pulseflow Services", "מה זה Pulseflow Services"),
     body: n(
-      "Pulse Flow Services introduces you to people who do house maintenance. The first places are Koh Phangan, Koh Samui, and Koh Tao. Other places can be added. We are not the person who does the work.",
-      "Pulse Flow Services แนะนำคุณให้รู้จักคนทำงานซ่อมบำรุงบ้าน พื้นที่แรกคือเกาะพะงัน เกาะสมุย และเกาะเต่า เพิ่มพื้นที่อื่นได้ เราไม่ใช่คนที่ทำงานนั้น",
-      "Pulse Flow Services знакомит вас с людьми, которые делают домашний ремонт. Первые места — Ко Панган, Ко Самуи и Ко Тао. Другие места можно добавить. Мы не тот человек, который выполняет работу.",
-      "Pulse Flow Services מציג אתכם לאנשים שעושים תחזוקת בית. המקומות הראשונים הם קו פנגן, קו סמוי וקו טאו. אפשר להוסיף מקומות אחרים. אנחנו לא האדם שמבצע את העבודה.",
+      "Pulseflow Services introduces you to people who do house maintenance. The first places are Koh Phangan, Koh Samui, and Koh Tao. Other places can be added. We are not the person who does the work.",
+      "Pulseflow Services แนะนำคุณให้รู้จักคนทำงานซ่อมบำรุงบ้าน พื้นที่แรกคือเกาะพะงัน เกาะสมุย และเกาะเต่า เพิ่มพื้นที่อื่นได้ เราไม่ใช่คนที่ทำงานนั้น",
+      "Pulseflow Services знакомит вас с людьми, которые делают домашний ремонт. Первые места — Ко Панган, Ко Самуи и Ко Тао. Другие места можно добавить. Мы не тот человек, который выполняет работу.",
+      "Pulseflow Services מציג אתכם לאנשים שעושים תחזוקת בית. המקומות הראשונים הם קו פנגן, קו סמוי וקו טאו. אפשר להוסיף מקומות אחרים. אנחנו לא האדם שמבצע את העבודה.",
     ),
   },
   {
@@ -176,10 +176,10 @@ export const LEGAL_SECTIONS: LegalSection[] = [
     doc: "terms",
     heading: n("The service", "บริการ", "Сервис", "השירות"),
     body: n(
-      "These terms govern a person who registers with Pulse Flow Services in order to request work from an independent professional. Pulse Flow Services provides the directory and the means to send a request. It does not employ the professional, and it does not carry out the work.",
-      "ข้อกำหนดนี้ใช้กับบุคคลที่ลงทะเบียนกับ Pulse Flow Services เพื่อขอรับงานจากผู้ประกอบอาชีพอิสระ Pulse Flow Services ให้สารบบและช่องทางส่งคำขอ ไม่ได้จ้างผู้ประกอบอาชีพ และไม่ได้เป็นผู้ทำงานนั้น",
-      "Эти условия относятся к человеку, который регистрируется в Pulse Flow Services, чтобы запросить работу у независимого специалиста. Pulse Flow Services предоставляет каталог и способ отправить заявку. Сервис не нанимает специалиста и не выполняет работу.",
-      "תנאים אלה חלים על אדם שנרשם ל-Pulse Flow Services כדי לבקש עבודה מבעל מקצוע עצמאי. Pulse Flow Services מספק את המדריך ואת הדרך לשלוח בקשה. השירות אינו מעסיק את בעל המקצוע ואינו מבצע את העבודה.",
+      "These terms govern a person who registers with Pulseflow Services in order to request work from an independent professional. Pulseflow Services provides the directory and the means to send a request. It does not employ the professional, and it does not carry out the work.",
+      "ข้อกำหนดนี้ใช้กับบุคคลที่ลงทะเบียนกับ Pulseflow Services เพื่อขอรับงานจากผู้ประกอบอาชีพอิสระ Pulseflow Services ให้สารบบและช่องทางส่งคำขอ ไม่ได้จ้างผู้ประกอบอาชีพ และไม่ได้เป็นผู้ทำงานนั้น",
+      "Эти условия относятся к человеку, который регистрируется в Pulseflow Services, чтобы запросить работу у независимого специалиста. Pulseflow Services предоставляет каталог и способ отправить заявку. Сервис не нанимает специалиста и не выполняет работу.",
+      "תנאים אלה חלים על אדם שנרשם ל-Pulseflow Services כדי לבקש עבודה מבעל מקצוע עצמאי. Pulseflow Services מספק את המדריך ואת הדרך לשלוח בקשה. השירות אינו מעסיק את בעל המקצוע ואינו מבצע את העבודה.",
     ),
   },
   {

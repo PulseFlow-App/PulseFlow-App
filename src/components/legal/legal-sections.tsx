@@ -298,7 +298,7 @@ export function TermsStaffSection() {
           company that invited you.
         </li>
         <li>
-          Pulse Flow Services listing is optional and can be turned off. Guest
+          Pulseflow Services listing is optional and can be turned off. Guest
           Support and deposits are for invited guests, not staff screens.
         </li>
         <li>Staff cannot create an AI agent connection key.</li>
@@ -499,7 +499,7 @@ export function PrivacyWhoCanSeeSection() {
           team can see this data. Other guests cannot.
         </li>
         <li>
-          Pulse Flow Services: if staff opt in, owners and managers searching in
+          Pulseflow Services: if staff opt in, owners and managers searching in
           the app can see their listing, skills, location and reputation data.
         </li>
         <li>
@@ -577,7 +577,7 @@ export function PrivacyStaffSection() {
           are stored in cloud storage.
         </li>
         <li>
-          Pulse Flow Services: if staff opt in, owners and managers searching in
+          Pulseflow Services: if staff opt in, owners and managers searching in
           the app can see their listing, skills, location and reputation data.
         </li>
         <li>

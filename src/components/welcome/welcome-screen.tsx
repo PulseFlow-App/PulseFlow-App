@@ -15,6 +15,7 @@ import {
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { AppVersionMark } from "@/components/layout/app-version-mark";
 import { Button } from "@/components/ui/button";
+import { AddToHomeScreenModal } from "@/components/pwa/add-to-home-screen-modal";
 import { BottomSheet } from "@/components/welcome/bottom-sheet";
 import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
 import { useI18n } from "@/lib/i18n/provider";
@@ -136,16 +137,17 @@ export function WelcomeScreen() {
 
   return (
     <div
-      className="h-dvh overflow-x-hidden overflow-y-auto overscroll-y-contain bg-transparent text-ink"
+      className="h-dvh overflow-x-hidden overflow-y-auto overscroll-y-contain bg-pf-page font-pf-sans text-pf-ink"
       style={{
         paddingInline:
-          "max(0.75rem, env(safe-area-inset-left)) max(0.75rem, env(safe-area-inset-right))",
+          "max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right))",
       }}
     >
+      <AddToHomeScreenModal />
       <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <header className="flex items-center gap-2 pb-4">
+        <header className="flex items-center gap-2 pb-6">
           <PulseMark className="size-8 shrink-0 sm:size-9" />
-          <span className="min-w-0 truncate font-display text-sm font-bold tracking-tight sm:text-base">
+          <span className="min-w-0 truncate text-pf-16 font-bold tracking-[-0.02em]">
             {brandName}
           </span>
           <div className="ms-auto flex shrink-0 items-center gap-1.5">
@@ -153,10 +155,9 @@ export function WelcomeScreen() {
             <Link
               href="/login"
               className={cn(
-                "inline-flex h-8 shrink-0 items-center justify-center rounded-full px-2",
-                "text-xs font-semibold text-ink",
-                "hover:bg-canvas-deep",
-                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                "inline-flex min-h-11 shrink-0 items-center justify-center rounded-pf-pill px-3",
+                "text-pf-14 font-medium text-pf-ink",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600",
               )}
             >
               {t("welcome.signIn")}
@@ -167,17 +168,17 @@ export function WelcomeScreen() {
 
         <main className="flex flex-1 flex-col gap-8">
           <section className="space-y-4">
-            <h1 className="font-display text-[clamp(1.45rem,6.2vw,2.35rem)] font-bold leading-[1.15] tracking-tight text-ink max-sm:max-w-[18ch]">
+            <h1 className="max-w-[18ch] text-pf-36 font-extrabold leading-[1.05] tracking-[-0.03em] text-pf-ink">
               {t("welcome.title")}
             </h1>
-            <p className="max-w-[42ch] text-[0.95rem] leading-relaxed text-muted">
+            <p className="max-w-[42ch] text-pf-16 leading-relaxed text-pf-text-secondary">
               {t("welcome.subline")}
             </p>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
               <Button
                 type="button"
                 size="lg"
-                className="h-12 w-full min-h-[44px] sm:flex-1"
+                className="w-full sm:flex-1"
                 onClick={() => {
                   trackWelcomeEvent("welcome_start_free");
                   router.push("/register");
@@ -187,9 +188,9 @@ export function WelcomeScreen() {
               </Button>
               <Button
                 type="button"
-                variant="ghost"
+                variant="secondary"
                 size="lg"
-                className="h-12 w-full min-h-[44px] sm:flex-1"
+                className="w-full sm:flex-1"
                 onClick={() => {
                   trackWelcomeEvent("welcome_see_demo");
                   setDemoOpen(true);
@@ -204,7 +205,7 @@ export function WelcomeScreen() {
             aria-label={t("welcome.title")}
             className="grid grid-cols-1 gap-3 sm:grid-cols-2"
           >
-            {CARDS.map(({ id, titleKey, bodyKey, icon }) => (
+            {CARDS.map(({ id, titleKey, bodyKey, icon }, index) => (
               <button
                 key={id}
                 type="button"
@@ -213,20 +214,20 @@ export function WelcomeScreen() {
                   setOpenCard(id);
                 }}
                 className={cn(
-                  "flex w-full items-start gap-3 overflow-hidden rounded-[1.15rem]",
-                  "border border-[var(--color-border)] bg-card px-3.5 py-3.5 text-start soft-shadow",
-                  "transition hover:bg-canvas-deep active:scale-[0.99]",
-                  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                  "flex w-full items-start gap-3 overflow-hidden rounded-pf-card border border-pf-line bg-pf-card px-4 py-4 text-start",
+                  "motion-reduce:transform-none active:scale-[0.99]",
+                  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600",
+                  index === 0 && "sm:col-span-2",
                 )}
               >
-                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-canvas-deep">
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-pf-control bg-pf-peach-100 text-pf-ink">
                   <PulseIcon name={icon} className="size-5" aria-hidden />
                 </span>
-                <span className="min-w-0 flex-1 space-y-0.5">
-                  <span className="block font-display text-sm font-bold leading-snug text-ink">
+                <span className="min-w-0 flex-1 space-y-1">
+                  <span className="block text-pf-16 font-bold leading-snug text-pf-ink">
                     {t(titleKey)}
                   </span>
-                  <span className="block text-xs leading-snug text-muted">
+                  <span className="block text-pf-14 leading-snug text-pf-text-secondary">
                     {t(bodyKey)}
                   </span>
                 </span>
@@ -267,23 +268,16 @@ export function WelcomeScreen() {
                           trackWelcomeEvent("welcome_role_chip", { role });
                         }}
                         className={cn(
-                          "inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 text-sm font-semibold sm:px-3.5",
-                          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                          "inline-flex min-h-11 items-center gap-1.5 rounded-pf-pill px-3 text-pf-14 font-medium sm:px-3.5",
+                          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600",
                           selected
-                            ? "bg-primary text-white shadow-[0_6px_16px_rgba(242,106,54,0.28)]"
-                            : "border border-[var(--color-border)] bg-card text-ink hover:bg-canvas-deep",
+                            ? "border border-pf-line bg-pf-peach-100 text-pf-ink"
+                            : "border border-pf-line bg-pf-card text-pf-ink",
                         )}
                       >
                         {t(ROLE_LABEL[role])}
                         {role === "agent" ? (
-                          <span
-                            className={cn(
-                              "rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide",
-                              selected
-                                ? "bg-white/20 text-white"
-                                : "bg-sun/25 text-ink",
-                            )}
-                          >
+                          <span className="rounded-pf-pill bg-pf-yellow-300 px-2 py-0.5 text-pf-12 font-medium text-pf-warning-ink">
                             {t("welcome.roleNew")}
                           </span>
                         ) : null}
@@ -294,7 +288,7 @@ export function WelcomeScreen() {
               ))}
             </div>
             <p
-              className="mx-auto min-h-[2.75rem] max-w-[36ch] text-center text-sm leading-relaxed text-muted"
+              className="mx-auto min-h-11 max-w-[36ch] text-center text-pf-14 leading-relaxed text-pf-text-secondary"
               role="status"
             >
               {t(ROLE_LINE[chip])}
@@ -303,7 +297,7 @@ export function WelcomeScreen() {
               <button
                 type="button"
                 onClick={() => openDemo(demoForChip.role)}
-                className="mx-auto block text-center text-sm font-semibold text-sky underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="mx-auto inline-flex min-h-11 items-center text-center text-pf-14 font-medium text-pf-navy-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
               >
                 {t("welcome.tryDemo", { role: t(demoForChip.labelKey) })}
               </button>
@@ -311,30 +305,27 @@ export function WelcomeScreen() {
           </section>
         </main>
 
-        <footer className="mt-8 space-y-3 border-t border-[var(--color-border)] pt-4 text-center">
+        <footer className="mt-8 space-y-2 border-t border-pf-line pt-4 text-center">
           <nav
             aria-label={`${t("settings.privacyLink")}, ${t("settings.termsLink")}`}
-            className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm font-semibold"
+            className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1"
           >
             <Link
               href="/privacy"
-              className="text-sky underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-navy-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
             >
               {t("settings.privacyLink")}
             </Link>
-            <span className="text-muted" aria-hidden>
-              ·
-            </span>
             <Link
               href="/terms"
-              className="text-sky underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-navy-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
             >
               {t("settings.termsLink")}
             </Link>
           </nav>
           <a
             href="mailto:support@pulseflow.site"
-            className="inline-block text-sm font-semibold text-sky underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-navy-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
           >
             {t("welcome.support")}
           </a>
@@ -349,18 +340,18 @@ export function WelcomeScreen() {
       >
         {activeCard ? (
           <div className="space-y-4">
-            <ul className="space-y-2 text-sm leading-relaxed text-ink">
+            <ul className="space-y-2 text-pf-16 leading-relaxed text-pf-ink">
               {activeCard.bullets.map((key) => (
                 <li key={key} className="flex gap-2">
                   <span
-                    className="mt-2 size-1.5 shrink-0 rounded-full bg-primary"
+                    className="mt-2 size-1.5 shrink-0 rounded-full bg-pf-orange-500"
                     aria-hidden
                   />
                   <span>{t(key)}</span>
                 </li>
               ))}
             </ul>
-            <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-canvas-deep">
+            <div className="overflow-hidden rounded-pf-card border border-pf-line bg-pf-page">
               <Image
                 src={activeCard.image}
                 alt={t(activeCard.imageAltKey)}
@@ -380,7 +371,9 @@ export function WelcomeScreen() {
         title={t("welcome.demoChooserTitle")}
         onClose={() => setDemoOpen(false)}
       >
-        <p className="mb-4 text-sm text-muted">{t("welcome.demoChooserHint")}</p>
+        <p className="mb-4 text-pf-14 text-pf-text-secondary">
+          {t("welcome.demoChooserHint")}
+        </p>
         <div className="grid gap-2">
           {DEMO_ROLES.map((account) => (
             <button
@@ -388,9 +381,9 @@ export function WelcomeScreen() {
               type="button"
               onClick={() => openDemo(account.role)}
               className={cn(
-                "min-h-[44px] rounded-2xl border border-[var(--color-border)] bg-canvas-deep px-4 py-3 text-start",
-                "font-semibold text-ink hover:bg-primary-soft",
-                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                "min-h-11 rounded-pf-card border border-pf-line bg-pf-page px-4 py-3 text-start",
+                "text-pf-16 font-medium text-pf-ink",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600",
               )}
             >
               {t(account.labelKey)}

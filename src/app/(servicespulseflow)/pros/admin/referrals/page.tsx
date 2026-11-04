@@ -51,9 +51,22 @@ export default function ReferralAdminPage() {
 
   return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">Who invited whom</h1>
-          <Link href={servicesPath(pathname, "/admin")} className="text-pf-14 font-medium text-pf-text-secondary">Back</Link>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <a
+              href="https://www.pulseflow.site/admin"
+              className="text-pf-14 font-medium text-pf-text-secondary"
+            >
+              Both apps
+            </a>
+            <Link
+              href={servicesPath(pathname, "/admin")}
+              className="text-pf-14 font-medium text-pf-text-secondary"
+            >
+              Back
+            </Link>
+          </div>
         </div>
         <p className="text-pf-14 text-pf-text-secondary">
           Marketing shares the general invite from Settings. The code after <span className="font-medium text-pf-ink">?from=</span> is that person’s share code. Company staff QR codes stay on the separate join link and are not listed as new companies here.

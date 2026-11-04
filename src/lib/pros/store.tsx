@@ -383,6 +383,23 @@ export function ProsProvider({ children }: { children: ReactNode }) {
           ],
         }));
         const linked = matches.filter((pro) => pro.linkedProfileId && request.orgId);
+        const targets = matches
+          .filter((pro) => pro.linkedProfileId)
+          .map((pro) => ({ profileId: pro.linkedProfileId as string, name: pro.name }));
+        if (targets.length) {
+          const whenLabel = [request.preferredDate, request.preferredTime].filter(Boolean).join(" · ");
+          void fetch("/api/services/requests", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              requestId: request.id,
+              title: request.title,
+              description: request.description,
+              whenLabel,
+              targets,
+            }),
+          });
+        }
         if ((isDemoMode() || hasDemoUserCookie()) && linked.length && request.orgId) {
           updateDemoStore((store) => ({
             ...store,

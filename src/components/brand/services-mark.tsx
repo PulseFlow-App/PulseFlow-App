@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Anastasia Boltrushevich / Pulse Flow. All rights reserved.
  */
 
-/** Pulse Flow Services mark: house, pulse, spark, and wrench. */
+/** Pulseflow Services mark: house, pulse, spark, and wrench. */
 export function ServicesMark({ className = "h-8 w-8" }: { className?: string }) {
   return (
     <img

@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
   if (!isSupabaseConfigured()) {
     return NextResponse.json(
-      { error: "Pulse Flow Services invites require a signed-in company account." },
+      { error: "Pulseflow Services invites require a signed-in company account." },
       { status: 400 },
     );
   }
