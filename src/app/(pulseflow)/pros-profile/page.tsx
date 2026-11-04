@@ -7,7 +7,7 @@ import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { readPhoto } from "@/components/pros/parts";
 import { ProsProvider, usePros } from "@/lib/pros/store";
 import { LOCALE_META } from "@/lib/i18n";
-import { PROS_LANGS, localizedName } from "@/lib/pros/catalog";
+import { localizedName } from "@/lib/pros/catalog";
 import { allAreas, allCategories } from "@/lib/pros/matching";
 import { useData } from "@/lib/data/use-app-data";
 import { useI18n } from "@/lib/i18n/provider";
@@ -135,7 +135,7 @@ function Editor() {
       <div>
         <Label>{t("languages")}</Label>
         <div className="flex flex-wrap gap-3">
-          {PROS_LANGS.map((lang) => (
+          {(["en", "th"] as const).map((lang) => (
             <label key={lang} className="flex min-h-12 items-center gap-2 text-sm">
               <input type="checkbox" checked={draft.languages.includes(lang)} onChange={() => toggle("languages", lang)} />
               {LOCALE_META[lang].native}

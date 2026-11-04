@@ -17,10 +17,15 @@ import { LOCALES, LOCALE_META } from "@/lib/i18n";
 import { LinkOffer } from "@/components/account/link-offer";
 import { AddToHomeScreenModal } from "@/components/pwa/add-to-home-screen-modal";
 import { BillingOffer } from "@/components/pros/billing-offer";
+import { VisitNotice } from "@/components/pros/visit-notice";
+import { useI18n } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
+
+const STAFF_LOCALES = ["en", "th"] as const;
 
 function Frame({ children }: { children: React.ReactNode }) {
   const { t, actor, actorReady } = usePros();
+  const { locale, setLocale } = useI18n();
   const pathname = usePathname();
   const onAppPath = pathname === "/pros" || pathname.startsWith("/pros/");
   const here = onAppPath ? (pathname === "/pros" ? "/" : pathname.slice("/pros".length)) : pathname;
@@ -28,6 +33,11 @@ function Frame({ children }: { children: React.ReactNode }) {
   const hideNav = here.startsWith("/reply") || here.startsWith("/claim");
   const workAccount = actorReady && isWorkAccount(actor);
   const searchAccount = actorReady && isHireAccount(actor);
+  useEffect(() => {
+    if (!workAccount) return;
+    if (locale === "en" || locale === "th") return;
+    setLocale("en");
+  }, [workAccount, locale, setLocale]);
   const isHome = here === "/explore" || (here === "/" && searchAccount);
   const [incoming, setIncoming] = useState(0);
   const [companyToday, setCompanyToday] = useState(false);
@@ -82,7 +92,7 @@ function Frame({ children }: { children: React.ReactNode }) {
       : []),
     ["/", t("home"), "/pros", "home"],
     ["/find", t("find"), "/pros/find", "search"],
-    ["/inbox", t("messages"), "/pros/inbox", "chat"],
+    ["/inbox", workAccount ? t("staffOrders") : t("messages"), "/pros/inbox", workAccount ? "check" : "chat"],
     ["/requests", t("requests"), "/pros/requests", "clipboard"],
   ];
   const visibleTabs = tabs.filter(([publicHref]) => {
@@ -103,7 +113,7 @@ function Frame({ children }: { children: React.ReactNode }) {
         >
           {searchAccount ? <PlacePicker variant="pill" /> : null}
           <div className="min-w-0 flex-1" />
-          <LanguageSwitcher variant="code" />
+          <LanguageSwitcher variant="code" locales={workAccount ? STAFF_LOCALES : undefined} />
           <ThemeIconToggle className="size-11 shrink-0" />
           <Link
             href={actor ? (onAppPath ? "/pros/settings" : "/settings") : `${onAppPath ? "/pros/start" : "/start"}?mode=sign-in&next=${encodeURIComponent(pathname)}`}
@@ -125,6 +135,7 @@ function Frame({ children }: { children: React.ReactNode }) {
         <div className={cn("mx-auto w-full", isHome ? "max-w-lg" : "px-4 py-4", !isHome && (wide ? "max-w-3xl" : "max-w-lg"))}>
           {hideNav ? null : <LinkOffer app="services" />}
           {searchAccount ? <BillingOffer /> : null}
+          {searchAccount ? <VisitNotice /> : null}
           {children}
           {isHome || here.startsWith("/admin") ? null : (
             <div className="mt-8 space-y-2 text-center">
@@ -137,7 +148,7 @@ function Frame({ children }: { children: React.ReactNode }) {
                   {t("privacyLink")}
                 </Link>
               </p>
-              {here === "/" || isServicesLocale(here.slice(1)) ? (
+              {!workAccount && (here === "/" || isServicesLocale(here.slice(1))) ? (
                 <nav aria-label={t("languages")} className="flex flex-wrap justify-center gap-x-3 gap-y-1">
                   {LOCALES.map((code) => (
                     <Link

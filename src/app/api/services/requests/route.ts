@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { AGREED_REPLY } from "@/lib/pros/delivery";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 import { clientIp, rateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -23,12 +24,15 @@ const postSchema = z.object({
     .max(12),
 });
 
-const patchSchema = z.object({
-  id: z.string().uuid(),
-  message: z.string().trim().min(1).max(1000),
-  amount: z.number().finite().nonnegative().nullable().optional(),
-  currency: z.string().trim().max(8).optional(),
-});
+const patchSchema = z
+  .object({
+    id: z.string().uuid(),
+    agree: z.literal(true).optional(),
+    message: z.string().trim().min(1).max(1000).optional(),
+    amount: z.number().finite().nonnegative().nullable().optional(),
+    currency: z.string().trim().max(8).optional(),
+  })
+  .refine((body) => body.agree === true || Boolean(body.message));
 
 async function actor() {
   const supabase = await createClient();
@@ -139,7 +143,7 @@ export async function PATCH(request: Request) {
   const { error } = await admin
     .from("service_requests")
     .update({
-      reply_message: body.message,
+      reply_message: body.agree ? AGREED_REPLY : body.message,
       reply_amount: body.amount ?? null,
       reply_currency: body.currency?.trim() || null,
       replied_at: new Date().toISOString(),

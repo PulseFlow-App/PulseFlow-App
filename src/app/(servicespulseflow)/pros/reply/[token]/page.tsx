@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { VisitCalendarSheet } from "@/components/pros/visit-notice";
 import { Button } from "@/components/ui/button";
-import { Input, Label, Textarea } from "@/components/ui/input";
 import { areaName, categoryName } from "@/lib/pros/matching";
 import { preferredDateKey, preferredTimeKey } from "@/lib/pros/i18n";
 import { needsWorkPermit } from "@/lib/pros/permit";
@@ -19,15 +19,11 @@ export default function ReplyPage() {
   const { locale } = useI18n();
   const offer = state.offers.find((row) => row.token === params.token);
   const request = state.requests.find((row) => row.id === offer?.requestId);
-  const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState("");
-  const [message, setMessage] = useState("");
-  const [when, setWhen] = useState("");
-  const [done, setDone] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<"agree" | "decline" | null>(null);
   const [nationality, setNationality] = useState<string | null>(null);
   const [nationalityReady, setNationalityReady] = useState(false);
-  const [pending, setPending] = useState<"quote" | "time" | null>(null);
+  const [pending, setPending] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   useEffect(() => {
     let cancel = false;
@@ -58,20 +54,18 @@ export default function ReplyPage() {
     );
   }
 
-  const send = (action: "quote" | "decline" | "time") => {
+  const send = (action: "agree" | "decline") => {
     const result = reply({
       token: offer.token,
       action,
-      amount: amount.trim() ? Number(amount) : null,
-      currency: currency.trim() || null,
-      message,
-      proposedTime: when.trim() || null,
+      amount: null,
+      currency: null,
+      message: "",
+      proposedTime: null,
     });
-    if (!result.ok) {
-      setError(t("tooShort"));
-      return;
-    }
-    setDone(action === "decline" ? t("declinedSent") : t("quoteSent"));
+    if (!result.ok) return;
+    setDone(action);
+    if (action === "agree") setCalendarOpen(true);
   };
 
   return (
@@ -79,7 +73,7 @@ export default function ReplyPage() {
       <Link href="/" className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-ink">
         {t("home")}
       </Link>
-      <p className="text-pf-14 text-pf-text-secondary">{t("replyHint")}</p>
+      <p className="text-pf-14 text-pf-text-secondary">{t("incomingTitle")}</p>
       <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{request.title}</h1>
       <p className="whitespace-pre-wrap text-pf-16 text-pf-ink">{request.description}</p>
       <p className="text-pf-14 text-pf-text-secondary">
@@ -96,60 +90,42 @@ export default function ReplyPage() {
           {preferredTimeKey(request.preferredTime) ? t(preferredTimeKey(request.preferredTime)!) : request.preferredTime}
         </p>
       ) : null}
-      {done ? <p className="text-pf-14 font-medium text-pf-ink">{done}</p> : null}
+      {done === "agree" && !calendarOpen ? <p className="text-pf-14 font-medium text-pf-ink">{t("agreedComing")}</p> : null}
+      {done === "decline" ? <p className="text-pf-14 font-medium text-pf-ink">{t("declinedSent")}</p> : null}
       {offer.status !== "pending" || done ? null : (
         <div className="space-y-2">
-          <div>
-            <Label>{t("price")}</Label>
-            <Input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
-          </div>
-          <div>
-            <Label>{t("currency")}</Label>
-            <Input value={currency} onChange={(e) => setCurrency(e.target.value)} />
-          </div>
-          <div>
-            <Label>{t("message")}</Label>
-            <Textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={3} />
-          </div>
-          <div>
-            <Label>{t("proposedTime")}</Label>
-            <Input value={when} onChange={(e) => setWhen(e.target.value)} />
-          </div>
-          {error ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
           <Button
             type="button"
             className="min-h-12 w-full"
             reflectGlobalBusy={false}
             onClick={() => {
               if (nationalityReady && needsWorkPermit(nationality)) {
-                setPending("quote");
+                setPending(true);
                 return;
               }
-              send("quote");
+              send("agree");
             }}
           >
-            {t("sendQuote")}
+            {t("agree")}
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="min-h-12 w-full"
-            reflectGlobalBusy={false}
-            onClick={() => {
-              if (nationalityReady && needsWorkPermit(nationality)) {
-                setPending("time");
-                return;
-              }
-              send("time");
-            }}
-          >
-            {t("proposedTime")}
-          </Button>
-          <Button type="button" variant="danger" className="min-h-12 w-full" reflectGlobalBusy={false} onClick={() => send("decline")}>
+          <Button type="button" variant="ghost" className="min-h-12 w-full" reflectGlobalBusy={false} onClick={() => send("decline")}>
             {t("decline")}
           </Button>
         </div>
       )}
+      <VisitCalendarSheet
+        visit={
+          calendarOpen
+            ? {
+                id: request.id,
+                title: request.title,
+                whenLabel: [request.preferredDate, request.preferredTime].filter(Boolean).join(" · ") || null,
+                details: request.description,
+              }
+            : null
+        }
+        onClose={() => setCalendarOpen(false)}
+      />
       {pending ? (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-pf-ink/40 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center">
           <div role="dialog" aria-modal="true" aria-labelledby="permit-title" className="w-full max-w-md rounded-[28px] bg-pf-card p-5">
@@ -162,9 +138,8 @@ export default function ReplyPage() {
               className="mt-4 min-h-12 w-full"
               reflectGlobalBusy={false}
               onClick={() => {
-                const action = pending;
-                setPending(null);
-                send(action);
+                setPending(false);
+                send("agree");
               }}
             >
               {t("permitContinue")}
@@ -172,7 +147,7 @@ export default function ReplyPage() {
             <button
               type="button"
               className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink"
-              onClick={() => setPending(null)}
+              onClick={() => setPending(false)}
             >
               {t("permitNotNow")}
             </button>

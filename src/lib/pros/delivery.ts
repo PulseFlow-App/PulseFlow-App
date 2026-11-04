@@ -1,3 +1,10 @@
+/** Stored on service_requests.reply_message when staff agree. Not shown as a chat reply. */
+export const AGREED_REPLY = "agreed";
+
+export function isAgreedReply(message: string | null | undefined) {
+  return Boolean(message && message.trim());
+}
+
 export type ServiceDelivery = {
   id: string;
   request_id: string;

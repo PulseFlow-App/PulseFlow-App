@@ -18,6 +18,9 @@ import { isDemoMode, isSupabaseConfigured } from "@/lib/supabase/client";
 import { demoLogout } from "@/lib/demo/store";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/provider";
+import { LOCALE_META, type Locale } from "@/lib/i18n/types";
+
+const STAFF_LOCALES = ["en", "th"] as const satisfies readonly Locale[];
 import {
   REFERRAL_STORAGE_KEY,
   readReferralParam,
@@ -49,13 +52,6 @@ function catalogName(names: { en: string }, locale: string) {
   return bag[locale] ?? names.en;
 }
 
-const LANGUAGES = [
-  { id: "en", label: "English" },
-  { id: "th", label: "ไทย" },
-  { id: "ru", label: "Русский" },
-  { id: "he", label: "עברית" },
-];
-
 const MARKETING_SERVICES = "https://www.pulseflow.site/services";
 
 function existingAccount(message: string) {
@@ -73,7 +69,7 @@ async function signInWithPassword(email: string, password: string) {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { t, locale } = useI18n();
+  const { t, locale, setLocale } = useI18n();
   const [track, setTrack] = useState<Track | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   /** null until the user taps a top card — keeps Personal/Company hidden on first paint. */
@@ -143,7 +139,8 @@ export default function RegisterPage() {
 
     if (services) {
       const as = params.get("as");
-      if (as === "pro" || params.get("track") === "maintenance") setTrack("maintenance");
+      const maintenance = as === "pro" || params.get("track") === "maintenance";
+      if (maintenance) setTrack("maintenance");
       else if (as === "seeker" || params.get("track") === "customer") setTrack("customer");
     } else {
       // Always start with only the two top cards. Sub-plans appear after a tap.
@@ -155,6 +152,12 @@ export default function RegisterPage() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (!onServices || track !== "maintenance") return;
+    if (locale === "en" || locale === "th") return;
+    setLocale("en");
+  }, [onServices, track, locale, setLocale]);
 
   const islands = useMemo(
     () => AREAS.filter((area) => area.level === "locality"),
@@ -170,11 +173,11 @@ export default function RegisterPage() {
   const submitServices = async () => {
     if (!track) return;
     if (!fullName.trim() || !email.trim() || password.length < 6) {
-      setError("Name, email, and a password (6+ chars) are required.");
+      setError(prosT(locale, "regRequired"));
       return;
     }
     if (password !== confirm) {
-      setError("Passwords do not match.");
+      setError(prosT(locale, "regMismatch"));
       return;
     }
     if (!accepted) {
@@ -184,11 +187,11 @@ export default function RegisterPage() {
     const termsAcceptedAt = new Date().toISOString();
     if (track === "maintenance") {
       if (!whatsapp.trim() && !lineId.trim()) {
-        setError(t("register.contactEither"));
+        setError(prosT(locale, "regContact"));
         return;
       }
       if (!categoryIds.length || !areaIds.length) {
-        setError(t("register.needProfession"));
+        setError(prosT(locale, "regNeedTrade"));
         return;
       }
     }
@@ -216,7 +219,7 @@ export default function RegisterPage() {
         });
         const payload = (await res.json()) as { error?: string };
         if (!res.ok) {
-          const message = payload.error ?? "Could not register.";
+          const message = payload.error ?? prosT(locale, "regFailed");
           if (/supabase|demo/i.test(message)) {
             saveServicesCustomer({ name: fullName, email, termsAcceptedAt, emailOptIn: emails });
             router.replace("/");
@@ -289,7 +292,7 @@ export default function RegisterPage() {
         });
         const payload = (await res.json()) as { error?: string };
         if (!res.ok && !existingAccount(payload.error ?? "")) {
-          throw new Error(payload.error ?? "Could not register.");
+          throw new Error(payload.error ?? prosT(locale, "regFailed"));
         }
         const signInError = await signInWithPassword(email, password);
         if (signInError) {
@@ -319,7 +322,7 @@ export default function RegisterPage() {
       router.replace("/settings");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not register.");
+      setError(e instanceof Error ? e.message : prosT(locale, "regFailed"));
     } finally {
       setSaving(false);
     }
@@ -472,23 +475,25 @@ export default function RegisterPage() {
       <div className="mx-auto w-full max-w-lg animate-rise">
         <div className="mb-4 flex items-center justify-between gap-1.5">
           {ready && onServices ? (
-            <Link href="/" className="text-sm font-semibold text-ink">
-              {prosT(locale, "home")}
+            <Link href="/" aria-label={prosT(locale, "home")} className="inline-flex items-center">
+              <ServicesMark className="size-12" />
             </Link>
           ) : (
             <span />
           )}
           <div className="flex items-center gap-1.5">
-            <LanguageSwitcher variant="inline" />
+            <LanguageSwitcher variant="inline" locales={onServices && track === "maintenance" ? STAFF_LOCALES : undefined} />
             <ThemeIconToggle />
           </div>
         </div>
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex justify-center">
-            {ready && onServices ? <ServicesMark className="size-12" /> : <PulseMark className="size-12" />}
-          </div>
+          {ready && !onServices ? (
+            <div className="mx-auto mb-3 flex justify-center">
+              <PulseMark className="size-12" />
+            </div>
+          ) : null}
           <h1 className="font-display text-2xl font-bold text-ink">
-            {t("register.accountTitle")}
+            {onServices ? prosT(locale, "regAccountTitle") : t("register.accountTitle")}
           </h1>
         </div>
 
@@ -565,52 +570,76 @@ export default function RegisterPage() {
           <Card className="mt-4 space-y-2 p-4">
             {listingId ? (
               <div className="space-y-3">
-                <Link href="/" className="inline-flex min-h-11 items-center text-sm font-semibold text-ink">
-                  {prosT(locale, "home")}
+                <Link href="/" aria-label={prosT(locale, "home")} className="inline-flex min-h-11 items-center">
+                  <ServicesMark className="size-10" />
                 </Link>
                 <p className="text-sm font-semibold text-ink">{t("register.savedListing")}</p>
                 <p className="text-sm text-muted">{t("register.listingStaysHidden")}</p>
                 <div className="flex gap-2">
                   <Button className="flex-1" type="button" onClick={() => router.push(`/p/${listingId}`)}>
-                    View profile
+                    {prosT(locale, "regView")}
                   </Button>
                   <Button className="flex-1" variant="secondary" type="button" onClick={() => router.push("/find")}>
-                    Directory
+                    {prosT(locale, "directory")}
                   </Button>
                 </div>
               </div>
             ) : (
               <>
                 <p className="font-display text-lg font-semibold text-ink">
-                  {track === "maintenance" ? t("register.proTitle") : t("register.seeking")}
+                  {track === "maintenance" ? prosT(locale, "regPro") : prosT(locale, "regSeeking")}
                 </p>
                 <div>
                   <Label>{prosT(locale, "yourName")}</Label>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" />
+                  <Input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    autoComplete="name"
+                    placeholder={prosT(locale, "yourName")}
+                  />
                 </div>
                 <div>
-                  <Label>Email</Label>
-                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+                  <Label>{prosT(locale, "regEmail")}</Label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    placeholder={prosT(locale, "regEmail")}
+                  />
                 </div>
                 {track === "maintenance" ? (
                   <>
                     <div>
-                      <Label>Phone (optional)</Label>
-                      <Input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
+                      <Label>{prosT(locale, "regPhone")}</Label>
+                      <Input
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        autoComplete="tel"
+                        placeholder={prosT(locale, "regPhone")}
+                      />
                     </div>
-                    <p className="text-xs leading-relaxed text-muted">{t("register.contactEither")}</p>
+                    <p className="text-xs leading-relaxed text-muted">{prosT(locale, "regContact")}</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
-                        <Label>{t("register.whatsapp")}</Label>
-                        <Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+                        <Label>{prosT(locale, "whatsapp")}</Label>
+                        <Input
+                          value={whatsapp}
+                          onChange={(e) => setWhatsapp(e.target.value)}
+                          placeholder={prosT(locale, "whatsapp")}
+                        />
                       </div>
                       <div>
-                        <Label>{t("register.line")}</Label>
-                        <Input value={lineId} onChange={(e) => setLineId(e.target.value)} />
+                        <Label>{prosT(locale, "line")}</Label>
+                        <Input
+                          value={lineId}
+                          onChange={(e) => setLineId(e.target.value)}
+                          placeholder={prosT(locale, "line")}
+                        />
                       </div>
                     </div>
                     <fieldset>
-                      <legend className="text-sm font-semibold text-ink">{t("register.trades")}</legend>
+                      <legend className="text-sm font-semibold text-ink">{prosT(locale, "trades")}</legend>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {CATEGORIES.map((category) => (
                           <Chip
@@ -623,7 +652,7 @@ export default function RegisterPage() {
                       </div>
                     </fieldset>
                     <fieldset>
-                      <legend className="text-sm font-semibold text-ink">{t("register.areas")}</legend>
+                      <legend className="text-sm font-semibold text-ink">{prosT(locale, "regAreas")}</legend>
                       <div className="mt-2 space-y-2">
                         {islands.map((island) => (
                           <div key={island.id}>
@@ -648,35 +677,47 @@ export default function RegisterPage() {
                       </div>
                     </fieldset>
                     <fieldset>
-                      <legend className="text-sm font-semibold text-ink">{t("register.languages")}</legend>
+                      <legend className="text-sm font-semibold text-ink">{prosT(locale, "languages")}</legend>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        {LANGUAGES.map((language) => (
+                        {STAFF_LOCALES.map((code) => (
                           <Chip
-                            key={language.id}
-                            active={languages.includes(language.id)}
-                            label={language.label}
-                            onClick={() => toggle(languages, language.id, setLanguages)}
+                            key={code}
+                            active={languages.includes(code)}
+                            label={LOCALE_META[code].native}
+                            onClick={() => toggle(languages, code, setLanguages)}
                           />
                         ))}
                       </div>
                     </fieldset>
                     <div>
-                      <Label>{t("register.availability")}</Label>
+                      <Label>{prosT(locale, "availability")}</Label>
                       <Input
                         value={availability}
                         onChange={(e) => setAvailability(e.target.value)}
-                        placeholder="Weekdays, or call the day before"
+                        placeholder={prosT(locale, "regWhenHint")}
                       />
                     </div>
                   </>
                 ) : null}
                 <div>
-                  <Label>Password</Label>
-                  <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
+                  <Label>{prosT(locale, "regPassword")}</Label>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    placeholder={prosT(locale, "regPassword")}
+                  />
                 </div>
                 <div>
                   <Label>{prosT(locale, "passwordAgain")}</Label>
-                  <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
+                  <Input
+                    type="password"
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                    autoComplete="new-password"
+                    placeholder={prosT(locale, "passwordAgain")}
+                  />
                 </div>
                 {error ? <p className="text-sm font-semibold text-danger">{error}</p> : null}
                 <LegalAccept
@@ -687,7 +728,7 @@ export default function RegisterPage() {
                   onEmails={setEmails}
                 />
                 <Button className="w-full" busy={saving} disabled={!accepted} onClick={() => void submitServices()}>
-                  {saving ? "Creating…" : "Create account"}
+                  {saving ? prosT(locale, "regCreating") : prosT(locale, "regCreate")}
                 </Button>
               </>
             )}
@@ -873,8 +914,10 @@ export default function RegisterPage() {
 
         {ready && onServices ? (
           <p className="mt-4 text-center text-sm text-muted">
-            Platform for property operations{" "}
-            <a href={appHref} className="font-semibold text-primary">Click here</a>
+            {prosT(locale, "regPropertyOps")}{" "}
+            <a href={appHref} className="font-semibold text-primary">
+              {prosT(locale, "regOpenApp")}
+            </a>
           </p>
         ) : null}
         {ready && !onServices ? (

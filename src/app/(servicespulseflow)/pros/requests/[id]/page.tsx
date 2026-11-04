@@ -7,7 +7,9 @@ import { ServiceReviewForm } from "@/components/pros/service-review";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { assignRequestToTask } from "@/lib/pros/assign-task";
+import { AGREED_REPLY, isAgreedReply } from "@/lib/pros/delivery";
 import { preferredDateKey, preferredTimeKey, statusKey } from "@/lib/pros/i18n";
+import { downloadVisitIcs } from "@/lib/pros/visit-calendar";
 import { nextKey, offerHasReply } from "@/lib/pros/matching";
 import type { ServiceDelivery } from "@/lib/pros/delivery";
 import { usePros } from "@/lib/pros/store";
@@ -117,12 +119,35 @@ export default function RequestDetailPage() {
           {visible.map((offer: ProOffer) => {
             const pro = state.profiles.find((row) => row.id === offer.profileId);
             const remoteReply = replyFor(offer.profileId);
-            const message = offer.message || remoteReply?.reply_message || "";
+            const agreed = offer.message === AGREED_REPLY || isAgreedReply(remoteReply?.reply_message);
+            const message = agreed ? "" : offer.message || remoteReply?.reply_message || "";
+            const whenLabel = [request.preferredDate, request.preferredTime].filter(Boolean).join(" · ") || remoteReply?.when_label || null;
+            if (!pro) return null;
             return (
               <article key={offer.id} className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-3">
                 <p className="font-medium text-pf-ink">{pro?.name}</p>
+                {agreed ? (
+                  <>
+                    <p className="text-pf-16 text-pf-ink">{t("staffComing", { name: pro.name })}</p>
+                    <button
+                      type="button"
+                      className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-navy-600 px-4 text-pf-16 font-medium text-white"
+                      onClick={() =>
+                        downloadVisitIcs({
+                          id: remoteReply?.id || offer.id,
+                          title: request.title,
+                          whenLabel,
+                          details: request.description,
+                          who: pro.name,
+                        })
+                      }
+                    >
+                      {t("addToCalendar")}
+                    </button>
+                  </>
+                ) : null}
                 {offer.status === "declined" ? <p className="text-pf-14 text-pf-text-secondary">{t("decline")}</p> : null}
-                {offer.amount != null ? (
+                {agreed ? null : offer.amount != null ? (
                   <p className="text-pf-16 text-pf-ink">
                     {offer.amount} {offer.currency ?? ""}
                   </p>
@@ -140,7 +165,7 @@ export default function RequestDetailPage() {
                     onSave={(lang, text) => rememberTranslation("offer", offer.id, lang, text)}
                   />
                 ) : null}
-                {mine && request.status !== "cancelled" && request.status !== "completed" && offer.status === "pending" && (offerHasReply(offer) || remoteReply) ? (
+                {mine && !agreed && request.status !== "cancelled" && request.status !== "completed" && offer.status === "pending" && (offerHasReply(offer) || remoteReply) ? (
                   <Button type="button" reflectGlobalBusy={false} onClick={() => chooseOffer(offer.id)}>
                     {t("choose")}
                   </Button>

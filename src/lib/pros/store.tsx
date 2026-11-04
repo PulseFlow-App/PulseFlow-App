@@ -15,6 +15,7 @@ import { getDemoProfile } from "@/lib/demo/store";
 import { hasDemoUserCookie, isDemoMode } from "@/lib/env";
 import { useI18n } from "@/lib/i18n/provider";
 import { createSeedState, SEED_PROFILES } from "@/lib/pros/catalog";
+import { AGREED_REPLY } from "@/lib/pros/delivery";
 import { PROS_EVENT, PROS_STORAGE_KEY, writeProsState } from "@/lib/pros/jobs";
 import { prosT, type ProsKey } from "@/lib/pros/i18n";
 import { matchPros } from "@/lib/pros/matching";
@@ -71,7 +72,7 @@ type Api = {
   createRequest: (input: RequestInput) => StoreResult & { matches?: ProOffer[] };
   reply: (input: {
     token: string;
-    action: "quote" | "decline" | "time";
+    action: "quote" | "decline" | "time" | "agree";
     amount: number | null;
     currency: string | null;
     message: string;
@@ -418,6 +419,7 @@ export function ProsProvider({ children }: { children: ReactNode }) {
         if (!offer || offer.status !== "pending") return { ok: false, error: "missing" };
         if (
           input.action !== "decline" &&
+          input.action !== "agree" &&
           input.amount == null &&
           !input.message.trim() &&
           !input.proposedTime
@@ -434,7 +436,12 @@ export function ProsProvider({ children }: { children: ReactNode }) {
                   status: input.action === "decline" ? "declined" : "pending",
                   amount: input.action === "quote" ? input.amount : row.amount,
                   currency: input.action === "quote" ? input.currency : row.currency,
-                  message: input.action === "decline" ? row.message : input.message.trim(),
+                  message:
+                    input.action === "decline"
+                      ? row.message
+                      : input.action === "agree"
+                        ? AGREED_REPLY
+                        : input.message.trim(),
                   proposedTime: input.proposedTime,
                   originalLocale: locale,
                   createdAt: now,

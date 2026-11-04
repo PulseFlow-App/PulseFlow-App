@@ -13,9 +13,11 @@ import { cn } from "@/lib/utils";
 function LocalePickerSheet({
   open,
   onClose,
+  locales = LOCALES,
 }: {
   open: boolean;
   onClose: () => void;
+  locales?: readonly Locale[];
 }) {
   const { locale, setLocale, t } = useI18n();
   const pathname = usePathname();
@@ -44,7 +46,7 @@ function LocalePickerSheet({
       compact
     >
       <ul className="space-y-0.5" role="listbox" aria-label={t("language.choose")}>
-        {LOCALES.map((code) => {
+        {locales.map((code) => {
           const selected = code === locale;
           const meta = LOCALE_META[code];
           return (
@@ -79,7 +81,7 @@ function LocalePickerSheet({
 }
 
 /** Compact header control — opens Horizon bottom sheet (not native select). */
-function InlineLanguageButton() {
+function InlineLanguageButton({ locales }: { locales?: readonly Locale[] }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
@@ -99,12 +101,12 @@ function InlineLanguageButton() {
       >
         <Languages className="size-4 shrink-0 text-pf-text-secondary" aria-hidden />
       </button>
-      <LocalePickerSheet open={open} onClose={() => setOpen(false)} />
+      <LocalePickerSheet open={open} onClose={() => setOpen(false)} locales={locales} />
     </>
   );
 }
 
-function SettingsLanguageButton() {
+function SettingsLanguageButton({ locales }: { locales?: readonly Locale[] }) {
   const { locale, t, dir } = useI18n();
   const [open, setOpen] = useState(false);
   const meta = LOCALE_META[locale];
@@ -135,12 +137,12 @@ function SettingsLanguageButton() {
           aria-hidden
         />
       </button>
-      <LocalePickerSheet open={open} onClose={() => setOpen(false)} />
+      <LocalePickerSheet open={open} onClose={() => setOpen(false)} locales={locales} />
     </>
   );
 }
 
-function CodeLanguageButton() {
+function CodeLanguageButton({ locales }: { locales?: readonly Locale[] }) {
   const { locale, t } = useI18n();
   const [open, setOpen] = useState(false);
 
@@ -156,7 +158,7 @@ function CodeLanguageButton() {
       >
         {locale.toUpperCase()}
       </button>
-      <LocalePickerSheet open={open} onClose={() => setOpen(false)} />
+      <LocalePickerSheet open={open} onClose={() => setOpen(false)} locales={locales} />
     </>
   );
 }
@@ -164,20 +166,23 @@ function CodeLanguageButton() {
 export function LanguageSwitcher({
   variant = "settings",
   hideHint = false,
+  locales,
 }: {
   /** `inline` for welcome/login header; `code` for the services home; `settings` for the settings card. */
   variant?: "inline" | "code" | "settings";
   /** Hide the helper line under the Language label (guest profile notes). */
   hideHint?: boolean;
+  /** Limit the list. Maintenance staff stay on English and Thai. */
+  locales?: readonly Locale[];
 }) {
   const { t } = useI18n();
 
   if (variant === "inline") {
-    return <InlineLanguageButton />;
+    return <InlineLanguageButton locales={locales} />;
   }
 
   if (variant === "code") {
-    return <CodeLanguageButton />;
+    return <CodeLanguageButton locales={locales} />;
   }
 
   return (
@@ -190,7 +195,7 @@ export function LanguageSwitcher({
           <p className="text-pf-14 text-pf-slate-ink">{t("settings.languageHint")}</p>
         ) : null}
       </div>
-      <SettingsLanguageButton />
+      <SettingsLanguageButton locales={locales} />
     </div>
   );
 }
