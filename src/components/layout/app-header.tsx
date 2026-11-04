@@ -33,7 +33,7 @@ export function AppHeader({
     canUseTeamChat(data.orgKind, data.profile?.role);
 
   return (
-    <header className="font-pf-chrome sticky top-0 z-40 -mx-[var(--shell-pad)] mb-2 flex w-[calc(100%+2*var(--shell-pad))] max-w-none items-center justify-between gap-2 border-b border-pf-line bg-pf-page/80 px-[var(--shell-pad)] pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 backdrop-blur-xl md:static md:mx-0 md:mb-0 md:w-full md:justify-end md:border-0 md:bg-transparent md:px-0 md:py-4 md:pt-4 md:backdrop-blur-none">
+    <header className="font-pf-chrome sticky top-0 z-40 -mx-[var(--shell-pad)] mb-2 flex w-[calc(100%+2*var(--shell-pad))] max-w-none items-center justify-between gap-2 border-b border-pf-line bg-pf-page px-[var(--shell-pad)] pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 md:static md:mx-0 md:mb-0 md:w-full md:justify-end md:border-0 md:bg-transparent md:px-0 md:py-4 md:pt-4">
       <Link
         href="/home"
         className="flex min-w-0 flex-1 items-center md:hidden"

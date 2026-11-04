@@ -89,7 +89,7 @@ function Frame({ children }: { children: React.ReactNode }) {
     return publicHref === "/";
   });
   return (
-    <div className="flex h-dvh min-h-0 w-full flex-col overflow-hidden bg-pf-page font-[family-name:var(--font-pf-sans)] text-pf-ink">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-pf-page font-[family-name:var(--font-pf-sans)] text-pf-ink">
       {isHome ? null : (
       <header className="z-20 shrink-0 border-b border-pf-line bg-pf-page/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
         <div
@@ -115,7 +115,7 @@ function Frame({ children }: { children: React.ReactNode }) {
       )}
       <main
         className={cn(
-          "min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-pf-page",
+          "min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-pf-page [overflow-anchor:none]",
           hideNav ? "pb-8" : "pb-2",
         )}
       >

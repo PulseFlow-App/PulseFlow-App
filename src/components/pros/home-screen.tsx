@@ -112,52 +112,35 @@ function HomeBar() {
   const { actor, t } = usePros();
   const pathname = usePathname();
   const to = (path: string) => servicesPath(pathname, path);
-  const [collapse, setCollapse] = useState(0);
-  const [pull, setPull] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
   const pullRef = useRef(0);
   const startY = useRef<number | null>(null);
 
   useEffect(() => {
     const main = document.querySelector("main");
     if (!main) return;
-    const onScroll = () => setCollapse(Math.min(1, main.scrollTop / 52));
     const onDown = (event: PointerEvent) => {
       if (main.scrollTop > 2) return;
       startY.current = event.clientY;
     };
     const onMove = (event: PointerEvent) => {
       if (startY.current == null || main.scrollTop > 2) return;
-      const next = Math.max(0, Math.min(72, event.clientY - startY.current));
-      pullRef.current = next;
-      setPull(next);
+      pullRef.current = Math.max(0, Math.min(72, event.clientY - startY.current));
     };
     const onUp = () => {
       if (startY.current == null) return;
       startY.current = null;
-      if (pullRef.current > 56) {
-        setRefreshing(true);
-        selectionTick();
-        window.dispatchEvent(new Event("pros-refresh"));
-        window.dispatchEvent(new Event(PROS_EVENT));
-        window.setTimeout(() => {
-          setRefreshing(false);
-          pullRef.current = 0;
-          setPull(0);
-        }, 700);
-        return;
-      }
+      const pulled = pullRef.current;
       pullRef.current = 0;
-      setPull(0);
+      if (pulled <= 56) return;
+      selectionTick();
+      window.dispatchEvent(new Event("pros-refresh"));
+      window.dispatchEvent(new Event(PROS_EVENT));
     };
-    onScroll();
-    main.addEventListener("scroll", onScroll, { passive: true });
     main.addEventListener("pointerdown", onDown);
     main.addEventListener("pointermove", onMove);
     main.addEventListener("pointerup", onUp);
     main.addEventListener("pointercancel", onUp);
     return () => {
-      main.removeEventListener("scroll", onScroll);
       main.removeEventListener("pointerdown", onDown);
       main.removeEventListener("pointermove", onMove);
       main.removeEventListener("pointerup", onUp);
@@ -168,23 +151,10 @@ function HomeBar() {
   const account = actor ? to("/settings") : `${to("/start")}?mode=sign-in&next=/`;
 
   return (
-    <div className="sticky top-0 z-10 bg-pf-page/90 px-4 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-xl">
-      <div
-        className="flex items-end justify-center overflow-hidden text-pf-12 font-medium text-pf-slate-ink"
-        style={{ height: refreshing || pull > 8 ? Math.max(pull, refreshing ? 28 : 0) : 0 }}
-        aria-live="polite"
-      >
-        {refreshing || pull > 24 ? t("refreshing") : null}
-      </div>
+    <div className="sticky top-0 z-10 bg-pf-page px-4 pt-[max(0.5rem,env(safe-area-inset-top))]">
       <div className="flex items-center gap-2 pb-2">
         <PlacePicker variant="pill" />
-        <p
-          aria-hidden={collapse < 0.55}
-          className="min-w-0 flex-1 truncate text-center font-[family-name:var(--font-pf-chrome)] text-[17px] font-semibold text-pf-ink"
-          style={{ opacity: collapse }}
-        >
-          {t("homeTitle")}
-        </p>
+        <div className="min-w-0 flex-1" />
         <LanguageSwitcher variant="code" />
         <Link
           href={account}
@@ -194,15 +164,7 @@ function HomeBar() {
           {actor ? actor.name.slice(0, 1) : <PfIcon name="person" tone="onNavy" className="size-5" />}
         </Link>
       </div>
-      <h1
-        aria-hidden={collapse > 0.55}
-        className="overflow-hidden text-[28px] font-bold tracking-[-0.02em] text-pf-ink"
-        style={{
-          maxHeight: `${(1 - collapse) * 44}px`,
-          opacity: 1 - collapse,
-          marginBottom: `${(1 - collapse) * 8}px`,
-        }}
-      >
+      <h1 className="pb-2 text-[28px] font-bold tracking-[-0.02em] text-pf-ink">
         {t("homeTitle")}
       </h1>
     </div>
@@ -569,7 +531,7 @@ function ProRow({
       ) : pros.length === 0 ? (
         <p className="max-w-[70ch] text-pf-16 text-pf-text-secondary">{empty}</p>
       ) : (
-        <div className="@container -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1">
+        <div className="@container -mx-4 flex snap-x snap-proximity scroll-px-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 [touch-action:pan-x_pan-y]">
           {pros.map((pro) => (
             <HomeProCard key={`${title}-${pro.id}`} pro={pro} />
           ))}
@@ -596,13 +558,13 @@ function HomeProCard({ pro }: { pro: ProProfile }) {
   ].filter((row): row is NonNullable<typeof row> => Boolean(row));
 
   return (
-    <article className="flex w-[calc((100cqw-0.75rem)/2)] shrink-0 snap-start flex-col gap-3 rounded-[20px] border border-pf-line bg-pf-card p-3">
-      <div className={cn("flex flex-col gap-3", guest && "select-none blur-[6px]")}>
+    <article className="flex w-[calc((100cqw-0.75rem)/2)] shrink-0 snap-start flex-col gap-3 overflow-hidden rounded-[20px] border border-pf-line bg-pf-card p-3">
+      <div className={cn("flex min-w-0 flex-col gap-3", guest && "select-none blur-[6px]")}>
       <Link href={href} className="flex min-w-0 items-center gap-3">
         <TradeSlot name={pro.name} photo={pro.photoUrl} />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-pf-16 font-medium text-pf-ink">{pro.name}</span>
-          <span className="block text-pf-14 text-pf-text-secondary">{trade || t("position")}</span>
+          <span className="block truncate text-pf-14 text-pf-text-secondary">{trade || t("position")}</span>
         </span>
       </Link>
       <div className="flex flex-wrap items-center gap-1.5">

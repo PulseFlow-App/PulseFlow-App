@@ -63,11 +63,11 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   ]);
 
   return (
-    <div className="app-shell font-pf-sans mx-auto flex h-dvh w-full max-w-[90rem] overflow-hidden bg-pf-page text-pf-ink">
+    <div className="app-shell font-pf-sans mx-auto flex h-full min-h-0 w-full max-w-[90rem] overflow-hidden bg-pf-page text-pf-ink">
       <SideNav />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <div
-          className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pb-[max(5.5rem,calc(4.5rem+env(safe-area-inset-bottom)))] md:pb-8"
+          className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pb-[max(5.5rem,calc(4.5rem+env(safe-area-inset-bottom)))] [overflow-anchor:none] md:pb-8"
           style={{
             paddingInline:
               "max(var(--shell-pad), env(safe-area-inset-left)) max(var(--shell-pad), env(safe-area-inset-right))",

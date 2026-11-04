@@ -68,7 +68,7 @@ function StepRow({ label, steps, icon }: StepRowProps) {
         </span>
         {label}
       </p>
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
         {steps.map((step, index) => (
           <span key={`${label}-${step}`} className="contents">
             {index > 0 ? (
@@ -84,7 +84,7 @@ function StepRow({ label, steps, icon }: StepRowProps) {
                 />
               </svg>
             ) : null}
-            <span className="inline-flex min-h-7 items-center rounded-pf-pill border border-pf-line bg-pf-page px-2.5 text-pf-12 font-medium text-pf-ink">
+            <span className="inline-flex min-h-7 max-w-full items-center rounded-pf-pill border border-pf-line bg-pf-page px-2.5 text-center text-pf-12 font-medium text-pf-ink">
               {step}
             </span>
           </span>
@@ -131,10 +131,10 @@ export function AddToHomeScreenModal() {
   if (!mounted || !open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[90] flex items-end justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center sm:pb-4">
+    <div className="fixed inset-0 z-[90] flex h-dvh max-h-dvh flex-col bg-pf-ink/40 p-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-[2px] sm:items-center sm:justify-center">
       <button
         type="button"
-        className="absolute inset-0 bg-pf-ink/40 backdrop-blur-[2px]"
+        className="absolute inset-0"
         aria-label={t("common.close")}
         onClick={dismiss}
       />
@@ -143,37 +143,39 @@ export function AddToHomeScreenModal() {
         aria-modal="true"
         aria-labelledby="add-home-title"
         aria-describedby="add-home-desc"
-        className="relative z-10 w-full max-w-md space-y-4 p-5 animate-rise sm:rounded-[1.5rem]"
+        className="relative z-10 flex min-h-0 w-full max-w-md flex-1 flex-col overflow-hidden rounded-[28px] p-5 animate-rise sm:max-h-full sm:flex-none"
       >
-        <div className="space-y-2">
-          <h2
-            id="add-home-title"
-            className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink"
-          >
-            {t("pwa.addToHomeTitle")}
-          </h2>
-          <p id="add-home-desc" className="text-pf-14 leading-relaxed text-pf-text-secondary">
-            {t("pwa.addToHomeLead")}
-          </p>
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
+          <div className="space-y-2">
+            <h2
+              id="add-home-title"
+              className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink"
+            >
+              {t("pwa.addToHomeTitle")}
+            </h2>
+            <p id="add-home-desc" className="text-pf-14 leading-relaxed text-pf-text-secondary">
+              {t("pwa.addToHomeLead")}
+            </p>
+          </div>
+
+          <div className="space-y-4 overflow-hidden rounded-[20px] border border-pf-line bg-pf-page/80 p-3.5">
+            <StepRow
+              icon="ios"
+              label={t("pwa.iosLabel")}
+              steps={[t("pwa.iosStep1"), t("pwa.iosStep2"), t("pwa.iosStep3")]}
+            />
+            <StepRow
+              icon="android"
+              label={t("pwa.androidLabel")}
+              steps={[t("pwa.androidStep1"), t("pwa.androidStep2"), t("pwa.androidStep3")]}
+            />
+            <p className="border-t border-pf-line pt-3 text-pf-12 font-medium text-pf-slate-ink">
+              {t("pwa.storesLater")}
+            </p>
+          </div>
         </div>
 
-        <div className="space-y-4 rounded-[20px] border border-pf-line bg-pf-page/80 p-3.5">
-          <StepRow
-            icon="ios"
-            label={t("pwa.iosLabel")}
-            steps={[t("pwa.iosStep1"), t("pwa.iosStep2"), t("pwa.iosStep3")]}
-          />
-          <StepRow
-            icon="android"
-            label={t("pwa.androidLabel")}
-            steps={[t("pwa.androidStep1"), t("pwa.androidStep2"), t("pwa.androidStep3")]}
-          />
-          <p className="border-t border-pf-line pt-3 text-pf-12 font-medium text-pf-slate-ink">
-            {t("pwa.storesLater")}
-          </p>
-        </div>
-
-        <Button type="button" className="w-full min-h-12" onClick={dismiss} reflectGlobalBusy={false}>
+        <Button type="button" className="mt-4 w-full min-h-12 shrink-0" onClick={dismiss} reflectGlobalBusy={false}>
           {t("pwa.addToHomeGotIt")}
         </Button>
       </Card>

@@ -105,8 +105,8 @@ export function TodayScreen({ data }: { data: AppData }) {
   const [zoom, setZoom] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [pull, setPull] = useState(0);
   const pullStart = useRef<number | null>(null);
+  const pullAmount = useRef(0);
 
   const model = useMemo(() => {
     if (!data.profile) {
@@ -175,23 +175,17 @@ export function TodayScreen({ data }: { data: AppData }) {
       onTouchMove={(e) => {
         if (pullStart.current == null) return;
         const dy = (e.touches[0]?.clientY ?? 0) - pullStart.current;
-        setPull(Math.max(0, Math.min(72, dy)));
+        pullAmount.current = Math.max(0, Math.min(72, dy));
       }}
       onTouchEnd={() => {
-        const should = pull > 56;
+        const should = pullAmount.current > 56;
         pullStart.current = null;
-        setPull(0);
+        pullAmount.current = 0;
         if (!should) return;
         setError(null);
         void data.refresh().catch(() => setError(copy.refreshFail));
       }}
     >
-      {pull > 56 ? (
-        <p className="text-pf-text-secondary mb-2 text-center text-pf-14">
-          {copy.release}
-        </p>
-      ) : null}
-
       <h1 className="text-pf-36 font-extrabold tracking-[-0.03em] text-pf-ink">
         {copy.title}
       </h1>
