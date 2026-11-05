@@ -166,4 +166,6 @@ export type ProsActor = {
   orgId: string | null;
   /** hire looks for staff. work is maintenance. Staff and cleaners are always work. */
   intent: "hire" | "work" | null;
+  /** Optional logo chosen at registration. */
+  logoUrl?: string | null;
 };

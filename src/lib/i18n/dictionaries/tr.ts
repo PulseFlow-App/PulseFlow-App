@@ -1596,7 +1596,7 @@ const tr: Dictionary = {
   "register.needProfession": "Choose at least one profession and one area.",
   "register.areas": "Areas you cover",
   "register.languages": "Languages",
-  "register.availability": "When you can work",
+  "register.availability": "Ne zaman çalışabilirsiniz (isteğe bağlı)",
   "register.listNow": "Open my listing on Pulseflow Services",
   "register.listNowHint": "Leave this off to finish the profile first. You can turn it on later in Settings.",
   "register.savedListing": "Your professional profile is saved.",

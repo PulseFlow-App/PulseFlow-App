@@ -86,6 +86,7 @@ export function joinProfessional(input: {
   referrer: string | null;
   emailOptIn?: boolean;
   termsAcceptedAt?: string | null;
+  photoUrl?: string | null;
 }) {
   const state = readProsState() ?? createSeedState();
   const id = crypto.randomUUID();
@@ -102,8 +103,8 @@ export function joinProfessional(input: {
     description: about,
     descriptionLocale: "en",
     translations: {},
-    photoUrl: null,
-    photos: [],
+    photoUrl: input.photoUrl ?? null,
+    photos: input.photoUrl ? [input.photoUrl] : [],
     categoryIds: input.categoryIds,
     areaIds: input.areaIds,
     languages: input.languages.length ? input.languages : ["en"],

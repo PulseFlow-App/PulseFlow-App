@@ -217,6 +217,11 @@ export function ProsProvider({ children }: { children: ReactNode }) {
       );
       return;
     }
+    const onLogo = (event: Event) => {
+      const url = (event as CustomEvent<string | null>).detail;
+      setActor((prev) => (prev ? { ...prev, logoUrl: url } : prev));
+    };
+    window.addEventListener("pulseflow-logo", onLogo);
     window.addEventListener(SERVICES_CUSTOMER_EVENT, onCustomer);
     const supabase = createClient();
     const loadAuthUser = async (userId: string | null, email: string | null) => {
@@ -224,11 +229,25 @@ export function ProsProvider({ children }: { children: ReactNode }) {
         apply(localCustomer());
         return;
       }
-      const { data: profile } = await supabase
+      const columns = "id, full_name, role, org_id, services_intent";
+      const withLogo = await supabase
         .from("profiles")
-        .select("id, full_name, role, org_id, services_intent")
+        .select(`${columns}, logo_url`)
         .eq("id", userId)
         .maybeSingle();
+      const loaded =
+        withLogo.error && /logo_url/.test(withLogo.error.message)
+          ? await supabase.from("profiles").select(columns).eq("id", userId).maybeSingle()
+          : withLogo;
+      const profile = loaded.data as {
+        id: string;
+        full_name: string;
+        role: string;
+        org_id: string | null;
+        services_intent: string | null;
+        logo_url?: string | null;
+      } | null;
+      const logoUrl = typeof profile?.logo_url === "string" ? profile.logo_url : null;
       apply(
         profile
           ? {
@@ -240,6 +259,7 @@ export function ProsProvider({ children }: { children: ReactNode }) {
                 profile.services_intent === "hire" || profile.services_intent === "work"
                   ? profile.services_intent
                   : null,
+              logoUrl,
             }
           : { id: userId, name: email ?? "User", role: "owner", orgId: null, intent: null },
       );
@@ -252,6 +272,7 @@ export function ProsProvider({ children }: { children: ReactNode }) {
       }, 0);
     });
     return () => {
+      window.removeEventListener("pulseflow-logo", onLogo);
       window.removeEventListener(SERVICES_CUSTOMER_EVENT, onCustomer);
       authListener.subscription.unsubscribe();
     };

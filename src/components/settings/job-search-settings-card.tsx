@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,9 @@ import {
   geoErrorMessageKey,
   getDevicePosition,
 } from "@/lib/geo/device-position";
+import { readPhoto } from "@/components/pros/parts";
 import { readProsState } from "@/lib/pros/jobs";
+import { prepareVillaPhotoFile } from "@/lib/villas/prepare-photo";
 import { SERVICE_PROFILE_KEY, updateServiceListing } from "@/lib/pros/join";
 
 export function JobSearchSettingsCard() {
@@ -35,6 +37,8 @@ export function JobSearchSettingsCard() {
   const [availability, setAvailability] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [lineId, setLineId] = useState("");
+  const [logo, setLogo] = useState<string | null>(null);
+  const logoInput = useRef<HTMLInputElement>(null);
   const [location, setLocation] = useState("");
   const [country, setCountry] = useState("");
   const [lat, setLat] = useState<number | null>(null);
@@ -49,6 +53,7 @@ export function JobSearchSettingsCard() {
   useEffect(() => {
     if (!profile) return;
     setVisible(Boolean(profile.job_search_visible));
+    setLogo(profile.logo_url ?? null);
     setSkills(profile.job_search_skills ?? []);
     const storedBio = profile.job_search_bio ?? "";
     setBio(storedBio.replace(/\n\nAvailable:[\s\S]*$/, ""));
@@ -84,6 +89,7 @@ export function JobSearchSettingsCard() {
     profile?.job_search_country,
     profile?.job_search_lat,
     profile?.job_search_lng,
+    profile?.logo_url,
   ]);
 
   const skillLabel = useMemo(
@@ -158,10 +164,21 @@ export function JobSearchSettingsCard() {
           lat,
           lng,
           clear_pin: lat == null || lng == null,
+          ...(logo?.startsWith("data:") || (logo == null && profile.logo_url) ? { logo } : {}),
         }),
       });
       const payload = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(payload.error ?? t("common.error"));
+      if (logo?.startsWith("data:")) {
+        window.dispatchEvent(new CustomEvent("pulseflow-logo", { detail: logo }));
+      } else if (logo == null) {
+        window.dispatchEvent(new CustomEvent("pulseflow-logo", { detail: null }));
+      }
+      updateServiceListing({
+        availability,
+        visibility: visible ? "public" : "private",
+        ...(logo ? { photoUrl: logo } : {}),
+      });
       setMessage(t("talent.settingsSaved"));
       await data.refresh();
     } catch (e) {
@@ -181,6 +198,47 @@ export function JobSearchSettingsCard() {
           </h2>
           <p className="mt-1 text-sm text-muted">{t("talent.settingsHint")}</p>
         </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => logoInput.current?.click()}
+          aria-label={t("register.logoOptional")}
+          className="inline-flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--color-border)] bg-card text-lg font-semibold text-ink"
+        >
+          {logo ? <img src={logo} alt="" className="size-full object-cover" /> : "+"}
+        </button>
+        <div>
+          <p className="text-sm font-semibold text-ink">{t("register.logoOptional")}</p>
+          {logo ? (
+            <button type="button" className="mt-1 min-h-11 text-sm font-semibold text-ink underline" onClick={() => setLogo(null)}>
+              {t("register.logoRemove")}
+            </button>
+          ) : null}
+        </div>
+        <input
+          ref={logoInput}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/*"
+          className="sr-only"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (!file) return;
+            void prepareVillaPhotoFile(file, 512)
+              .then((prepared) => readPhoto(prepared))
+              .then((data) => {
+                if (!data) {
+                  setError("Use a photo under 1.4 MB.");
+                  return;
+                }
+                setError(null);
+                setLogo(data);
+              })
+              .catch(() => setError("Use a photo under 1.4 MB."));
+          }}
+        />
       </div>
 
       <label className="flex items-start gap-3 rounded-2xl bg-canvas-deep px-3 py-3">

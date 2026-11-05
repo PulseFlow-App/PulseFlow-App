@@ -159,9 +159,15 @@ function HomeBar() {
         <Link
           href={account}
           aria-label={actor ? t("settings") : t("signIn")}
-          className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-pf-navy-900 text-[15px] font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
+          className="inline-flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pf-navy-900 text-[15px] font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
         >
-          {actor ? actor.name.slice(0, 1) : <PfIcon name="person" tone="onNavy" className="size-6" />}
+          {actor?.logoUrl ? (
+            <img src={actor.logoUrl} alt="" className="size-full object-cover" />
+          ) : actor ? (
+            actor.name.slice(0, 1)
+          ) : (
+            <PfIcon name="person" tone="onNavy" className="size-6" />
+          )}
         </Link>
       </div>
       <h1 className="pb-2 text-[28px] font-bold tracking-[-0.02em] text-pf-ink">

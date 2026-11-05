@@ -11,6 +11,7 @@ import { attachInviteToExistingProfile } from "@/lib/auth/attach-org";
 import { creditReferral } from "@/lib/billing/referrals";
 import { ensureStaffContact } from "@/lib/contacts/ensure-staff-contact";
 import { normalizeWorkTags } from "@/lib/talent";
+import { storeAccountLogo } from "@/lib/auth/logo";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/env";
 import {
   clientIp,
@@ -299,14 +300,17 @@ export async function POST(request: Request) {
           : "Owner",
     share_slug,
   };
+  if (typeof body.logo === "string" && body.logo.startsWith("data:image/")) {
+    const logoUrl = await storeAccountLogo(admin, userId, body.logo);
+    if (logoUrl) profileRow.logo_url = logoUrl;
+  }
   if (body.servicesIntent === "hire" || body.servicesIntent === "work") {
     profileRow.services_intent = body.servicesIntent;
   } else if (onSiteStaff) {
     profileRow.services_intent = "work";
   }
   if (onSiteStaff || listOnServices) {
-    // Listing stays private until they open it on Services; listNow only forces visible.
-    profileRow.job_search_visible = Boolean(service?.listNow);
+    profileRow.job_search_visible = Boolean(body.listOnServices || service?.listNow);
     profileRow.job_search_skills = service?.skills?.length
       ? service.skills
       : ["maintenance"];
@@ -318,6 +322,10 @@ export async function POST(request: Request) {
   }
 
   let profileErr = (await admin.from("profiles").insert(profileRow)).error;
+  if (profileErr && /logo_url/.test(profileErr.message)) {
+    delete profileRow.logo_url;
+    profileErr = (await admin.from("profiles").insert(profileRow)).error;
+  }
   if (profileErr && /services_intent/.test(profileErr.message)) {
     delete profileRow.services_intent;
     profileErr = (await admin.from("profiles").insert(profileRow)).error;

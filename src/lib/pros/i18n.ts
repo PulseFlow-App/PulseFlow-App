@@ -42,6 +42,19 @@ const COPY = {
     he: "כבר יש חשבון?",
   },
   yourName: { en: "Name", th: "ชื่อ", ru: "Имя", he: "שם" },
+  regLogo: {
+    en: "Logo (optional)",
+    th: "โลโก้ (ไม่บังคับ)",
+    ru: "Логотип (необязательно)",
+    he: "לוגו (לא חובה)",
+  },
+  regLogoRemove: { en: "Remove", th: "เอาออก", ru: "Убрать", he: "הסרה" },
+  regListMarketplace: {
+    en: "List me on the services marketplace",
+    th: "แสดงฉันในตลาดบริการ",
+    ru: "Показать меня на рынке услуг",
+    he: "הציגו אותי בשוק השירותים",
+  },
   passwordAgain: { en: "Type it again", th: "พิมพ์อีกครั้ง", ru: "Введите ещё раз", he: "הקלידו שוב" },
   regAccountTitle: {
     en: "Create an account",
@@ -875,7 +888,12 @@ const COPY = {
   phone: { en: "Phone", th: "โทรศัพท์", ru: "Телефон", he: "טלפון" },
   whatsapp: { en: "WhatsApp", th: "WhatsApp", ru: "WhatsApp", he: "וואטסאפ" },
   line: { en: "LINE", th: "LINE", ru: "LINE", he: "LINE" },
-  availability: { en: "When you can work", th: "เวลาที่รับงาน", ru: "Когда можете работать", he: "מתי אפשר לעבוד" },
+  availability: {
+    en: "When you can work (optional)",
+    th: "เวลาที่รับงาน (ไม่บังคับ)",
+    ru: "Когда можете работать (необязательно)",
+    he: "מתי אפשר לעבוד (לא חובה)",
+  },
   trades: { en: "Professions", th: "อาชีพ", ru: "Профессии", he: "מקצועות" },
   listingOpen: { en: "Open in the directory", th: "เปิดในสารบบ", ru: "Открыть в каталоге", he: "פתוח במדריך" },
   listingHidden: { en: "Hidden", th: "ซ่อน", ru: "Скрыто", he: "מוסתר" },

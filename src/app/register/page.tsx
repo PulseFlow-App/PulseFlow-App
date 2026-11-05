@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { PulseMark } from "@/components/brand/pulse-mark";
 import { ServicesMark } from "@/components/brand/services-mark";
 import { PulseIcon } from "@/components/icons/pulse-icon";
@@ -32,6 +33,7 @@ import {
 import { DEMO_READ_ONLY_MESSAGE } from "@/lib/demo/guard";
 import { AREAS, CATEGORIES } from "@/lib/pros/catalog";
 import { appOriginForHost, isMarketplaceHost, MARKETPLACE_ORIGIN } from "@/lib/pros/paths";
+import { readPhoto } from "@/components/pros/parts";
 import { LegalAccept } from "@/components/pros/legal-accept";
 import { prosT } from "@/lib/pros/i18n";
 import { saveServicesCustomer } from "@/lib/pros/trial";
@@ -41,6 +43,7 @@ import {
   recordSignup,
   talentSkillsForCategories,
 } from "@/lib/pros/join";
+import { prepareVillaPhotoFile } from "@/lib/villas/prepare-photo";
 
 type Track = "maintenance" | "customer";
 type Plan = "personal" | "company";
@@ -58,6 +61,59 @@ function existingAccount(message: string) {
   return /already been registered|already registered|already exists/i.test(message);
 }
 
+function LogoField({
+  logo,
+  label,
+  removeLabel,
+  onPick,
+  onClear,
+}: {
+  logo: string | null;
+  label: string;
+  removeLabel: string;
+  onPick: (file: File | undefined) => void;
+  onClear: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <div className="flex items-center gap-3">
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        aria-label={label}
+        className="inline-flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--color-border)] bg-card text-lg font-semibold text-ink"
+      >
+        {logo ? <img src={logo} alt="" className="size-full object-cover" /> : "+"}
+      </button>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-ink">{label}</p>
+        {logo ? (
+          <button
+            type="button"
+            className="mt-1 min-h-11 text-sm font-semibold text-ink underline"
+            onClick={() => {
+              if (inputRef.current) inputRef.current.value = "";
+              onClear();
+            }}
+          >
+            {removeLabel}
+          </button>
+        ) : null}
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/*"
+        className="sr-only"
+        onChange={(e) => {
+          onPick(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
+    </div>
+  );
+}
+
 async function signInWithPassword(email: string, password: string) {
   const { createClient } = await import("@/lib/supabase/client");
   const { error } = await createClient().auth.signInWithPassword({
@@ -69,7 +125,7 @@ async function signInWithPassword(email: string, password: string) {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { t, locale, setLocale } = useI18n();
+  const { t, locale, setLocale, dir } = useI18n();
   const [track, setTrack] = useState<Track | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   /** null until the user taps a top card — keeps Personal/Company hidden on first paint. */
@@ -95,6 +151,7 @@ export default function RegisterPage() {
   const [accepted, setAccepted] = useState(false);
   const [emails, setEmails] = useState(false);
   const [listingId, setListingId] = useState<string | null>(null);
+  const [logo, setLogo] = useState<string | null>(null);
   const [servicesHref, setServicesHref] = useState(MARKETING_SERVICES);
   const [appHref, setAppHref] = useState("https://app.pulseflow.site/");
   const [onServices, setOnServices] = useState(false);
@@ -170,6 +227,24 @@ export default function RegisterPage() {
     set(list.includes(id) ? list.filter((row) => row !== id) : [...list, id]);
   };
 
+  const pickLogo = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const prepared = await prepareVillaPhotoFile(file, 512);
+      const data = await readPhoto(prepared);
+      if (!data) {
+        setLogo(null);
+        setError(onServices ? prosT(locale, "photoTooBig") : "Use a photo under 1.4 MB.");
+        return;
+      }
+      setError(null);
+      setLogo(data);
+    } catch {
+      setLogo(null);
+      setError(onServices ? prosT(locale, "photoTooBig") : "Use a photo under 1.4 MB.");
+    }
+  };
+
   const submitServices = async () => {
     if (!track) return;
     if (!fullName.trim() || !email.trim() || password.length < 6) {
@@ -215,6 +290,7 @@ export default function RegisterPage() {
             acquisitionSource,
             termsAcceptedAt,
             emailOptIn: emails,
+            ...(logo ? { logo } : {}),
           }),
         });
         const payload = (await res.json()) as { error?: string };
@@ -253,10 +329,11 @@ export default function RegisterPage() {
             categoryIds,
             areaIds,
             languages,
-            listNow: false,
+            listNow: listOnServices,
             referrer: referralCode,
             emailOptIn: emails,
             termsAcceptedAt,
+            photoUrl: logo,
           }).id,
         );
         return;
@@ -281,13 +358,15 @@ export default function RegisterPage() {
             acquisitionSource,
             termsAcceptedAt,
             emailOptIn: emails,
+            listOnServices,
             service: {
               skills: talentSkillsForCategories(categoryIds),
               bio: availability.trim() ? `Available: ${availability.trim()}` : "",
               location: areaLabels(areaIds).join(", "),
               country: "Thailand",
-              listNow: false,
+              listNow: listOnServices,
             },
+            ...(logo ? { logo } : {}),
           }),
         });
         const payload = (await res.json()) as { error?: string };
@@ -314,10 +393,11 @@ export default function RegisterPage() {
         categoryIds,
         areaIds,
         languages,
-        listNow: false,
+        listNow: listOnServices,
         referrer: referralCode,
         emailOptIn: emails,
         termsAcceptedAt,
+        photoUrl: logo,
       });
       router.replace("/settings");
       router.refresh();
@@ -376,14 +456,15 @@ export default function RegisterPage() {
           whatsapp: "",
           lineId: "",
           description: "",
-          availability: "",
+          availability,
           categoryIds: [],
           areaIds: [],
           languages: [locale],
-          listNow: false,
+          listNow: true,
           referrer: referralCode,
           emailOptIn: emails,
           termsAcceptedAt,
+          photoUrl: logo,
         });
       } else if (!onSite && plan) {
         recordSignup({
@@ -433,10 +514,12 @@ export default function RegisterPage() {
             acquisitionSource,
             termsAcceptedAt,
             emailOptIn: emails,
+            ...(logo ? { logo } : {}),
             service: onSite
               ? {
                   skills: ["maintenance"],
-                  listNow: false,
+                  bio: availability.trim() ? `Available: ${availability.trim()}` : "",
+                  listNow: listOnServices,
                 }
               : undefined,
           }),
@@ -474,22 +557,22 @@ export default function RegisterPage() {
       <AddToHomeScreenModal />
       <div className="mx-auto w-full max-w-lg animate-rise">
         <div className="mb-4 flex items-center justify-between gap-1.5">
-          {ready && onServices ? (
-            <Link href="/" aria-label={prosT(locale, "home")} className="inline-flex items-center">
-              <ServicesMark className="size-12" />
-            </Link>
-          ) : (
-            <span />
-          )}
+          <Link
+            href="/"
+            className="inline-flex min-h-11 items-center gap-1 rounded-full border border-[var(--color-border)] bg-card px-3 text-sm font-semibold text-ink"
+          >
+            <ArrowLeft className={cn("size-4", dir === "rtl" && "rotate-180")} strokeWidth={2} aria-hidden />
+            {onServices ? prosT(locale, "back") : t("common.back")}
+          </Link>
           <div className="flex items-center gap-1.5">
             <LanguageSwitcher variant="inline" locales={onServices && track === "maintenance" ? STAFF_LOCALES : undefined} />
             <ThemeIconToggle />
           </div>
         </div>
         <div className="mb-6 text-center">
-          {ready && !onServices ? (
+          {ready ? (
             <div className="mx-auto mb-3 flex justify-center">
-              <PulseMark className="size-12" />
+              {onServices ? <ServicesMark className="size-12" /> : <PulseMark className="size-12" />}
             </div>
           ) : null}
           <h1 className="font-display text-2xl font-bold text-ink">
@@ -570,9 +653,6 @@ export default function RegisterPage() {
           <Card className="mt-4 space-y-2 p-4">
             {listingId ? (
               <div className="space-y-3">
-                <Link href="/" aria-label={prosT(locale, "home")} className="inline-flex min-h-11 items-center">
-                  <ServicesMark className="size-10" />
-                </Link>
                 <p className="text-sm font-semibold text-ink">{t("register.savedListing")}</p>
                 <p className="text-sm text-muted">{t("register.listingStaysHidden")}</p>
                 <div className="flex gap-2">
@@ -589,6 +669,13 @@ export default function RegisterPage() {
                 <p className="font-display text-lg font-semibold text-ink">
                   {track === "maintenance" ? prosT(locale, "regPro") : prosT(locale, "regSeeking")}
                 </p>
+                <LogoField
+                  logo={logo}
+                  label={prosT(locale, "regLogo")}
+                  removeLabel={prosT(locale, "regLogoRemove")}
+                  onPick={(file) => void pickLogo(file)}
+                  onClear={() => setLogo(null)}
+                />
                 <div>
                   <Label>{prosT(locale, "yourName")}</Label>
                   <Input
@@ -727,6 +814,17 @@ export default function RegisterPage() {
                   emails={emails}
                   onEmails={setEmails}
                 />
+                {track === "maintenance" ? (
+                  <label className="flex items-start gap-3 rounded-2xl border border-[var(--color-border)] bg-card px-3 py-3 text-sm text-ink">
+                    <input
+                      type="checkbox"
+                      className="mt-1 size-4"
+                      checked={listOnServices}
+                      onChange={(e) => setListOnServices(e.target.checked)}
+                    />
+                    <span className="font-semibold">{prosT(locale, "regListMarketplace")}</span>
+                  </label>
+                ) : null}
                 <Button className="w-full" busy={saving} disabled={!accepted} onClick={() => void submitServices()}>
                   {saving ? prosT(locale, "regCreating") : prosT(locale, "regCreate")}
                 </Button>
@@ -737,6 +835,13 @@ export default function RegisterPage() {
 
         {showAppForm ? (
           <Card className="mt-4 space-y-2 p-4">
+            <LogoField
+              logo={logo}
+              label={t("register.logoOptional")}
+              removeLabel={t("register.logoRemove")}
+              onPick={(file) => void pickLogo(file)}
+              onClear={() => setLogo(null)}
+            />
             <div>
               <Label>Full name</Label>
               <Input value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" />
@@ -822,6 +927,17 @@ export default function RegisterPage() {
 
             {position === "staff" ? (
               <div>
+                <Label>{t("register.availability")}</Label>
+                <Input
+                  value={availability}
+                  onChange={(e) => setAvailability(e.target.value)}
+                  placeholder={prosT(locale, "regWhenHint")}
+                />
+              </div>
+            ) : null}
+
+            {position === "staff" ? (
+              <div>
                 <Label>{t("register.companyInvite")}</Label>
                 <Input
                   value={companyInvite}
@@ -837,33 +953,6 @@ export default function RegisterPage() {
                     {t("register.companyInviteHere")}
                   </a>.
                 </p>
-              </div>
-            ) : null}
-
-            {position === "staff" ? (
-              <div className="space-y-2 rounded-2xl bg-canvas-deep p-3">
-                <label className="flex items-start gap-3 text-sm text-ink">
-                  <input
-                    type="checkbox"
-                    className="mt-1 size-4 accent-[var(--color-primary)]"
-                    checked={listOnServices}
-                    onChange={(e) => setListOnServices(e.target.checked)}
-                  />
-                  <span>
-                    <span className="font-semibold">{t("register.listOnServices")}</span>
-                    <span className="mt-1 block text-xs leading-relaxed text-muted">
-                      {t("register.listOnServicesHint")}{" "}
-                      <a
-                        href={MARKETING_SERVICES}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-semibold text-primary"
-                      >
-                        {t("register.whatIsServices")}
-                      </a>
-                    </span>
-                  </span>
-                </label>
               </div>
             ) : null}
 
@@ -891,6 +980,17 @@ export default function RegisterPage() {
                 {" and "}
                 <Link href="/privacy" className="font-semibold text-primary">Privacy</Link>.
               </p>
+            ) : null}
+            {position === "staff" ? (
+              <label className="flex items-start gap-3 rounded-2xl border border-[var(--color-border)] bg-card px-3 py-3 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  className="mt-1 size-4"
+                  checked={listOnServices}
+                  onChange={(e) => setListOnServices(e.target.checked)}
+                />
+                <span className="font-semibold">{t("register.listOnServices")}</span>
+              </label>
             ) : null}
             {position === "staff" && listOnServices ? (
               <LegalAccept

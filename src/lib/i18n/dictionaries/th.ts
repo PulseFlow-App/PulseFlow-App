@@ -1352,7 +1352,7 @@ const th: Dictionary = {
   "talent.settingsTitle": "Pulseflow Services",
   "talent.settingsHint":
     "Turn this on to appear in the Pulseflow Services directory. Company staff use this same list.",
-  "talent.settingsVisible": "List me on Pulseflow Services",
+  "talent.settingsVisible": "แสดงฉันในตลาดบริการ",
   "talent.settingsVisibleHint":
     "Your name, profession, and area show in the directory. Phone and LINE stay off the public list.",
   "talent.settingsSkills": "Skills & professions",
@@ -1401,7 +1401,7 @@ const th: Dictionary = {
   "talent.geoTimeout":
     "Could not get your location in time. Move somewhere with a clearer signal and try again.",
   "talent.geoBusy": "Getting your location…",
-  "talent.settingsAvailability": "When you can work",
+  "talent.settingsAvailability": "เวลาที่รับงาน (ไม่บังคับ)",
   "talent.settingsWhatsapp": "WhatsApp",
   "talent.settingsLine": "LINE",
   "talent.settingsBio": "Short bio (optional)",
@@ -1638,7 +1638,7 @@ const th: Dictionary = {
   "register.companyInviteHere": "here",
   "register.companyInviteRequired": "A company invite link is required.",
   "register.companyInviteInvalid": "That company invite link is invalid or already used.",
-  "register.listOnServices": "Also list me on Pulseflow Services",
+  "register.listOnServices": "แสดงฉันในตลาดบริการ",
   "register.positionStaffHint": "Cleaner, maintenance, or other field work for a property team.",
   "register.positionStaff": "On-site staff",
   "register.positionManagementHint": "Track villas, bills, tasks, and your team.",
@@ -1665,7 +1665,7 @@ const th: Dictionary = {
   "register.needProfession": "เลือกอย่างน้อยหนึ่งอาชีพและหนึ่งพื้นที่",
   "register.areas": "Areas you cover",
   "register.languages": "Languages",
-  "register.availability": "When you can work",
+  "register.availability": "เวลาที่รับงาน (ไม่บังคับ)",
   "register.listNow": "Open my listing on Pulseflow Services",
   "register.listNowHint": "Leave this off to finish the profile first. You can turn it on later in Settings.",
   "register.savedListing": "Your professional profile is saved.",

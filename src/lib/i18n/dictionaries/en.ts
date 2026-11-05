@@ -1629,6 +1629,8 @@ const en = {
 
   "register.referralSaved": "",
   "register.accountTitle": "Create an account",
+  "register.logoOptional": "Logo (optional)",
+  "register.logoRemove": "Remove",
   "register.management": "Management Staff",
   "register.maintenance": "Maintenance Staff",
   "register.managementHint": "Run properties, bills, and a team.",
@@ -1638,7 +1640,7 @@ const en = {
   "register.positionManagementHint": "Track villas, bills, tasks, and your team.",
   "register.positionStaff": "On-site staff",
   "register.positionStaffHint": "Cleaner, maintenance, or other field work for a property team.",
-  "register.listOnServices": "Also list me on Pulseflow Services",
+  "register.listOnServices": "List me on the services marketplace",
   "register.listOnServicesHint":
     "Optional. People nearby can find you for local jobs. Your listing stays hidden until you open it.",
   "register.companyInvite": "Company invite link",
@@ -1677,7 +1679,7 @@ const en = {
   "register.needProfession": "Choose at least one profession and one area.",
   "register.areas": "Areas you cover",
   "register.languages": "Languages",
-  "register.availability": "When you can work",
+  "register.availability": "When you can work (optional)",
   "register.listNow": "Open my listing on Pulseflow Services",
   "register.whatsapp": "WhatsApp",
   "register.line": "LINE",
@@ -1764,7 +1766,7 @@ const en = {
   "talent.settingsTitle": "Pulseflow Services",
   "talent.settingsHint":
     "Turn this on to appear in the Pulseflow Services directory. Company staff use this same list.",
-  "talent.settingsVisible": "List me on Pulseflow Services",
+  "talent.settingsVisible": "List me on the services marketplace",
   "talent.settingsVisibleHint":
     "Your name, profession, and area show in the directory. Phone and LINE stay off the public list.",
   "talent.settingsSkills": "Skills & professions",
@@ -1785,7 +1787,7 @@ const en = {
   "talent.geoTimeout":
     "Could not get your location in time. Move somewhere with a clearer signal and try again.",
   "talent.geoBusy": "Getting your location…",
-  "talent.settingsAvailability": "When you can work",
+  "talent.settingsAvailability": "When you can work (optional)",
   "talent.settingsWhatsapp": "WhatsApp",
   "talent.settingsLine": "LINE",
   "talent.settingsBio": "Short bio (optional)",

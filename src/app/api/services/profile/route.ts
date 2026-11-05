@@ -8,6 +8,7 @@ import {
   normalizeTalentSkills,
   normalizeWorkTags,
 } from "@/lib/talent";
+import { storeAccountLogo } from "@/lib/auth/logo";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/design-tokens";
@@ -22,6 +23,7 @@ const patchSchema = z.object({
   skills: z.array(z.string()).max(12).optional(),
   tags: z.array(z.string()).max(12).optional(),
   bio: z.string().max(500).nullable().optional(),
+  logo: z.string().max(2_000_000).nullable().optional(),
   location: z.string().max(120).nullable().optional(),
   country: z.string().max(80).nullable().optional(),
   nationality: z.string().max(80).nullable().optional(),
@@ -34,7 +36,14 @@ async function signedInProfile() {
   } = await supabase.auth.getUser();
   if (!user) return null;
   const admin = createAdminClient();
-  const { data } = await admin.from("profiles").select(FIELDS).eq("id", user.id).maybeSingle();
+  let { data, error } = await admin
+    .from("profiles")
+    .select(`${FIELDS}, logo_url`)
+    .eq("id", user.id)
+    .maybeSingle();
+  if (error && /logo_url/.test(error.message)) {
+    ({ data } = await admin.from("profiles").select(FIELDS).eq("id", user.id).maybeSingle());
+  }
   return data;
 }
 
@@ -76,21 +85,26 @@ export async function PATCH(request: Request) {
   }
 
   const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("profiles")
-    .update({
-      job_search_visible: body.visible,
-      ...(skills ? { job_search_skills: skills } : {}),
-      ...(tags ? { job_search_tags: tags } : {}),
-      job_search_bio: bio,
-      job_search_location: location,
-      job_search_country: country,
-      ...(nationality !== undefined ? { nationality } : {}),
-      job_search_updated_at: new Date().toISOString(),
-    })
-    .eq("id", profile.id)
-    .select(FIELDS)
-    .single();
+  const patch: Record<string, unknown> = {
+    job_search_visible: body.visible,
+    ...(skills ? { job_search_skills: skills } : {}),
+    ...(tags ? { job_search_tags: tags } : {}),
+    job_search_bio: bio,
+    job_search_location: location,
+    job_search_country: country,
+    ...(nationality !== undefined ? { nationality } : {}),
+    job_search_updated_at: new Date().toISOString(),
+  };
+  if (body.logo === null) patch.logo_url = null;
+  else if (typeof body.logo === "string" && body.logo.startsWith("data:image/")) {
+    const logoUrl = await storeAccountLogo(admin, profile.id, body.logo);
+    if (logoUrl) patch.logo_url = logoUrl;
+  }
+  let { data, error } = await admin.from("profiles").update(patch).eq("id", profile.id).select(`${FIELDS}, logo_url`).single();
+  if (error && /logo_url/.test(error.message)) {
+    delete patch.logo_url;
+    ({ data, error } = await admin.from("profiles").update(patch).eq("id", profile.id).select(FIELDS).single());
+  }
   if (error || !data) {
     return NextResponse.json({ error: "Could not save the profile." }, { status: 500 });
   }

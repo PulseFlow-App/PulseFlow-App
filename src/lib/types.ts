@@ -48,6 +48,8 @@ export type Profile = {
   full_name: string;
   phone: string | null;
   email: string;
+  /** Optional mark chosen at registration. */
+  logo_url?: string | null;
   job_title: string | null;
   /** Public slug for shareable reputation page */
   share_slug: string;

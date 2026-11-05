@@ -36,17 +36,37 @@ export async function GET() {
   }
 
   const admin = createAdminClient();
-  const { data, error } = await admin
+  const columns =
+    "id, full_name, job_search_bio, job_search_skills, job_search_tags, job_search_location, job_search_country, job_search_updated_at";
+  const withLogo = await admin
     .from("profiles")
-    .select(
-      "id, full_name, job_search_bio, job_search_skills, job_search_tags, job_search_location, job_search_country, job_search_updated_at",
-    )
+    .select(`${columns}, logo_url`)
     .eq("job_search_visible", true)
     .order("job_search_updated_at", { ascending: false })
     .limit(500);
-  if (error || !data) {
+  const result =
+    withLogo.error && /logo_url/.test(withLogo.error.message)
+      ? await admin
+          .from("profiles")
+          .select(columns)
+          .eq("job_search_visible", true)
+          .order("job_search_updated_at", { ascending: false })
+          .limit(500)
+      : withLogo;
+  if (result.error || !result.data) {
     return NextResponse.json({ profiles: [] });
   }
+  const data = result.data as Array<{
+    id: string;
+    full_name: string;
+    job_search_bio: string | null;
+    job_search_skills: string[] | null;
+    job_search_tags: string[] | null;
+    job_search_location: string | null;
+    job_search_country: string | null;
+    job_search_updated_at: string | null;
+    logo_url?: string | null;
+  }>;
 
   const profiles = data.map((row) => {
     const skills = Array.isArray(row.job_search_skills) ? row.job_search_skills : [];
@@ -68,7 +88,8 @@ export async function GET() {
       description: row.job_search_bio ?? "",
       descriptionLocale: "en",
       translations: {},
-      photoUrl: null,
+      photoUrl:
+        typeof row.logo_url === "string" && row.logo_url.startsWith("http") ? row.logo_url : null,
       photos: [],
       categoryIds: categoryIds.length ? categoryIds : [CATEGORIES.find((c) => c.slug === "other")!.id],
       areaIds,

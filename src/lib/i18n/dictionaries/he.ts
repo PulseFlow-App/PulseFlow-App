@@ -1664,7 +1664,7 @@ const he: Dictionary = {
   "register.needProfession": "בחרו לפחות מקצוע אחד ואזור אחד.",
   "register.areas": "Areas you cover",
   "register.languages": "Languages",
-  "register.availability": "When you can work",
+  "register.availability": "מתי אפשר לעבוד (לא חובה)",
   "register.listNow": "Open my listing on Pulseflow Services",
   "register.listNowHint": "Leave this off to finish the profile first. You can turn it on later in Settings.",
   "register.savedListing": "Your professional profile is saved.",

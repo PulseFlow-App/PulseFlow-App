@@ -2,13 +2,13 @@ const MAX_EDGE = 1600;
 const JPEG_QUALITY = 0.82;
 
 /** Decode + resize to a JPEG the browser can display (fixes iPhone HEIC / huge camera files). */
-export async function prepareVillaPhotoFile(file: File): Promise<File> {
+export async function prepareVillaPhotoFile(file: File, maxEdge = MAX_EDGE): Promise<File> {
   const source = await decodeImage(file);
   const width = "width" in source ? source.width : 0;
   const height = "height" in source ? source.height : 0;
   if (!width || !height) return file;
 
-  const scale = Math.min(1, MAX_EDGE / Math.max(width, height));
+  const scale = Math.min(1, maxEdge / Math.max(width, height));
   const w = Math.max(1, Math.round(width * scale));
   const h = Math.max(1, Math.round(height * scale));
   const canvas = document.createElement("canvas");

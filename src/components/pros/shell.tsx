@@ -119,9 +119,15 @@ function Frame({ children }: { children: React.ReactNode }) {
             href={actor ? (onAppPath ? "/pros/settings" : "/settings") : `${onAppPath ? "/pros/start" : "/start"}?mode=sign-in&next=${encodeURIComponent(pathname)}`}
             aria-label={actor ? t("settings") : t("signIn")}
             aria-current={here.startsWith("/settings") ? "page" : undefined}
-            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-pf-navy-900 text-pf-16 font-medium text-[#F5F7FC]"
+            className="inline-flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pf-navy-900 text-pf-16 font-medium text-[#F5F7FC]"
           >
-            {actor ? actor.name.slice(0, 1) : <PfIcon name="person" tone="onNavy" className="size-6" />}
+            {actor?.logoUrl ? (
+              <img src={actor.logoUrl} alt="" className="size-full object-cover" />
+            ) : actor ? (
+              actor.name.slice(0, 1)
+            ) : (
+              <PfIcon name="person" tone="onNavy" className="size-6" />
+            )}
           </Link>
         </div>
       </header>

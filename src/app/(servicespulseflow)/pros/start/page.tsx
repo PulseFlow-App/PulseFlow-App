@@ -3,9 +3,12 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
+import { useI18n } from "@/lib/i18n/provider";
 import { usePros } from "@/lib/pros/store";
+import { cn } from "@/lib/utils";
 import { LegalAccept } from "@/components/pros/legal-accept";
 import { saveServicesCustomer } from "@/lib/pros/trial";
 
@@ -18,6 +21,7 @@ function StartForm() {
   const router = useRouter();
   const params = useSearchParams();
   const { t } = usePros();
+  const { dir } = useI18n();
   const next = safeNext(params.get("next"));
   const [mode, setMode] = useState<"create" | "sign-in">(
     params.get("mode") === "sign-in" ? "sign-in" : "create",
@@ -113,8 +117,9 @@ function StartForm() {
 
   return (
     <div className="mx-auto max-w-lg space-y-3">
-      <Link href="/" className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-ink">
-        {t("home")}
+      <Link href="/" className="inline-flex min-h-11 items-center gap-1 self-start rounded-full border border-pf-line bg-pf-card px-3 text-pf-14 font-medium text-pf-ink">
+        <ArrowLeft className={cn("size-4", dir === "rtl" && "rotate-180")} strokeWidth={2} aria-hidden />
+        {t("back")}
       </Link>
       <div className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
         {mode === "create" ? (

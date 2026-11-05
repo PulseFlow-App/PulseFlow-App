@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { storeAccountLogo } from "@/lib/auth/logo";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isDemoMode } from "@/lib/env";
@@ -22,6 +23,7 @@ const bodySchema = z.object({
   lat: z.number().min(-90).max(90).nullable().optional(),
   lng: z.number().min(-180).max(180).nullable().optional(),
   clear_pin: z.boolean().optional(),
+  logo: z.string().max(2_000_000).nullable().optional(),
 });
 
 export async function PATCH(request: Request) {
@@ -87,25 +89,37 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const { data: updated, error } = await admin
+  const patch: Record<string, unknown> = {
+    job_search_visible: body.visible,
+    ...(skills ? { job_search_skills: skills } : {}),
+    ...(tags ? { job_search_tags: tags } : {}),
+    job_search_bio: bio,
+    job_search_location: location,
+    job_search_country: country,
+    job_search_lat: lat,
+    job_search_lng: lng,
+    job_search_updated_at: new Date().toISOString(),
+  };
+  if (body.logo === null) patch.logo_url = null;
+  else if (typeof body.logo === "string" && body.logo.startsWith("data:image/")) {
+    const logoUrl = await storeAccountLogo(admin, user.id, body.logo);
+    if (logoUrl) patch.logo_url = logoUrl;
+  }
+  let { data: updated, error } = await admin
     .from("profiles")
-    .update({
-      job_search_visible: body.visible,
-      ...(skills ? { job_search_skills: skills } : {}),
-      ...(tags ? { job_search_tags: tags } : {}),
-      job_search_bio: bio,
-      job_search_location: location,
-      job_search_country: country,
-      job_search_lat: lat,
-      job_search_lng: lng,
-      job_search_updated_at: new Date().toISOString(),
-    })
+    .update(patch)
     .eq("id", user.id)
     .select(
       "job_search_visible, job_search_skills, job_search_tags, job_search_bio, job_search_location, job_search_country, job_search_lat, job_search_lng, job_search_updated_at",
     )
     .single();
 
+  if (error && /logo_url/.test(error.message)) {
+    delete patch.logo_url;
+    ({ data: updated, error } = await admin.from("profiles").update(patch).eq("id", user.id).select(
+      "job_search_visible, job_search_skills, job_search_tags, job_search_bio, job_search_location, job_search_country, job_search_lat, job_search_lng, job_search_updated_at",
+    ).single());
+  }
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
