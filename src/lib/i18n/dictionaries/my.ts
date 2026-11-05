@@ -1624,6 +1624,8 @@ const my: Dictionary = {
   "contacts.deleteConfirm": "Delete contact",
   "register.howTitle": "How will you use PulseFlow?",
   "register.accountTitle": "Create an account",
+  "register.logoOptional": "လိုဂို (မထည့်လည်းရ)",
+  "register.logoRemove": "ဖယ်ရှားမည်",
   "register.billingInactive": "Billing isn't active yet.",
   "register.seePlans": "See plans",
   "register.listingStaysHidden": "The listing stays hidden until you open it.",
