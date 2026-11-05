@@ -1,6 +1,11 @@
 -- Pulse Flow Services. Additive. Does not alter contacts, tasks, or bills.
 -- Supersedes the unpublished services marketplace draft.
 
+create table if not exists public.pro_admins (
+  profile_id uuid primary key references public.profiles (id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
 create or replace function public.is_pro_admin()
 returns boolean
 language sql
@@ -12,11 +17,6 @@ as $$
     select 1 from public.pro_admins where profile_id = auth.uid()
   );
 $$;
-
-create table if not exists public.pro_admins (
-  profile_id uuid primary key references public.profiles (id) on delete cascade,
-  created_at timestamptz not null default now()
-);
 
 create table if not exists public.pro_categories (
   id uuid primary key default gen_random_uuid(),
