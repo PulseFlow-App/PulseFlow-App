@@ -114,6 +114,7 @@ const en = {
   "auth.inviteOpen": "Open invite",
   "auth.inviteInvalid": "That doesn't look like an invite link.",
   "auth.invalidCredentials": "Invalid email or password.",
+  "auth.emailNotConfirmed": "Confirm your email first. Open the link we sent, then sign in.",
   "auth.demoHint": "Password for all demos: TestPass123!",
   "auth.demoAccounts": "Quick demo sign-in",
   "auth.demoOwner": "Owner",
@@ -1629,6 +1630,10 @@ const en = {
 
   "register.referralSaved": "",
   "register.accountTitle": "Create an account",
+  "register.confirmTitle": "Check your email",
+  "register.confirmBody": "We sent a confirmation link to {email}. Open it to finish creating your account.",
+  "register.confirmResend": "Send the link again",
+  "register.confirmResent": "Sent again.",
   "register.logoOptional": "Logo (optional)",
   "register.logoRemove": "Remove",
   "register.management": "Management Staff",

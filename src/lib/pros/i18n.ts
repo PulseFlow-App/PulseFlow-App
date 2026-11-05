@@ -62,6 +62,30 @@ const COPY = {
     ru: "Создать аккаунт",
     he: "יצירת חשבון",
   },
+  regConfirmTitle: {
+    en: "Check your email",
+    th: "ตรวจอีเมลของคุณ",
+    ru: "Проверьте почту",
+    he: "בדקו את האימייל",
+  },
+  regConfirmBody: {
+    en: "We sent a confirmation link to {email}. Open it to finish creating your account.",
+    th: "เราส่งลิงก์ยืนยันไปที่ {email} เปิดลิงก์เพื่อสร้างบัญชีให้เสร็จ",
+    ru: "Мы отправили ссылку для подтверждения на {email}. Откройте её, чтобы закончить создание аккаунта.",
+    he: "שלחנו קישור אישור אל {email}. פתחו אותו כדי לסיים את יצירת החשבון.",
+  },
+  regConfirmResend: {
+    en: "Send the link again",
+    th: "ส่งลิงก์อีกครั้ง",
+    ru: "Отправить ссылку ещё раз",
+    he: "שלחו את הקישור שוב",
+  },
+  regConfirmResent: {
+    en: "Sent again.",
+    th: "ส่งอีกครั้งแล้ว",
+    ru: "Отправлено ещё раз.",
+    he: "נשלח שוב.",
+  },
   regCreate: {
     en: "Create account",
     th: "สร้างบัญชี",
@@ -888,6 +912,12 @@ const COPY = {
   phone: { en: "Phone", th: "โทรศัพท์", ru: "Телефон", he: "טלפון" },
   whatsapp: { en: "WhatsApp", th: "WhatsApp", ru: "WhatsApp", he: "וואטסאפ" },
   line: { en: "LINE", th: "LINE", ru: "LINE", he: "LINE" },
+  useSameNumber: {
+    en: "Use the same number",
+    th: "ใช้เบอร์เดียวกัน",
+    ru: "Использовать тот же номер",
+    he: "להשתמש באותו מספר",
+  },
   availability: {
     en: "When you can work (optional)",
     th: "เวลาที่รับงาน (ไม่บังคับ)",

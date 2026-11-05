@@ -8,7 +8,11 @@ import {
   type RegisterWorkspaceInput,
 } from "@/lib/auth/helpers";
 import { attachInviteToExistingProfile } from "@/lib/auth/attach-org";
-import { creditReferral } from "@/lib/billing/referrals";
+import {
+  isServicesRequest,
+  safeConfirmNext,
+  sendRegistrationConfirm,
+} from "@/lib/auth/confirm-email";
 import { ensureStaffContact } from "@/lib/contacts/ensure-staff-contact";
 import { normalizeWorkTags } from "@/lib/talent";
 import { storeAccountLogo } from "@/lib/auth/logo";
@@ -54,6 +58,7 @@ export async function POST(request: Request) {
     role === "cleaner";
   const listOnServices = Boolean(body.listOnServices || body.service?.listNow);
   const payer = body.payer === "manager" ? "manager" : "owner";
+  const marketplace = isServicesRequest(request);
 
   if (!body.termsAcceptedAt) {
     return NextResponse.json(
@@ -70,8 +75,8 @@ export async function POST(request: Request) {
   if (kind !== "personal" && kind !== "company") {
     return NextResponse.json({ error: "Invalid organization kind." }, { status: 400 });
   }
-  // Public register: personal solo or company as owner/manager.
-  // On-site staff must bring a company invite link and join that company.
+  // Property app: on-site staff join a company with an invite link.
+  // Services marketplace: maintenance accounts register on their own.
   if (kind === "company" && !orgName) {
     return NextResponse.json(
       { error: "Company name is required." },
@@ -116,11 +121,11 @@ export async function POST(request: Request) {
     role: string;
     job_title: string | null;
   } | null = null;
-  if (onSiteStaff) {
+  if (onSiteStaff && !marketplace) {
     const token = inviteTokenFromLink(body.inviteToken ?? "");
     if (!token) {
       return NextResponse.json(
-        { error: "A company invite link is required for maintenance staff." },
+        { error: "A company invite link is required." },
         { status: 400 },
       );
     }
@@ -192,14 +197,20 @@ export async function POST(request: Request) {
     (resolvedRole === "owner" && payer === "owner") ||
     (resolvedRole === "manager" && payer === "manager");
 
+  const servicesReferral =
+    (body.servicesIntent === "hire" || body.servicesIntent === "work") &&
+    !body.inviteToken;
   const { data: created, error: createErr } = await admin.auth.admin.createUser({
     email,
     password,
-    email_confirm: true,
+    email_confirm: false,
     user_metadata: {
       full_name: fullName,
       terms_accepted_at: body.termsAcceptedAt,
       email_opt_in: Boolean(body.emailOptIn),
+      list_on_services: listOnServices,
+      referred_by: body.referredBy?.trim() || null,
+      referral_source: servicesReferral ? "services" : "register",
     },
   });
   if (createErr || !created.user) {
@@ -310,7 +321,7 @@ export async function POST(request: Request) {
     profileRow.services_intent = "work";
   }
   if (onSiteStaff || listOnServices) {
-    profileRow.job_search_visible = Boolean(body.listOnServices || service?.listNow);
+    profileRow.job_search_visible = false;
     profileRow.job_search_skills = service?.skills?.length
       ? service.skills
       : ["maintenance"];
@@ -409,18 +420,26 @@ export async function POST(request: Request) {
     }
   }
 
-  try {
-    const servicesReferral =
-      (body.servicesIntent === "hire" || body.servicesIntent === "work") &&
-      !body.inviteToken;
-    await creditReferral(admin, {
-      referrerCode: body.referredBy,
-      referredProfileId: userId,
-      source: servicesReferral ? "services" : "register",
-    });
-  } catch (e) {
-    console.warn("referral credit failed", e);
+  const nextPath = safeConfirmNext(
+    marketplace ? (body.servicesIntent === "work" ? "/settings" : "/") : "/setup-passkey",
+    marketplace,
+  );
+  const mail = await sendRegistrationConfirm(admin, request, {
+    email,
+    locale: body.locale,
+    nextPath,
+  });
+  if (!mail.sent) {
+    await releaseStaffInvite();
+    await admin.from("org_memberships").delete().eq("profile_id", userId);
+    await admin.from("profiles").delete().eq("id", userId);
+    await admin.from("organizations").delete().eq("id", org.id);
+    await admin.auth.admin.deleteUser(userId);
+    return NextResponse.json(
+      { error: "Could not send the confirmation email. Try again in a moment." },
+      { status: 503 },
+    );
   }
 
-  return NextResponse.json({ ok: true, orgId: joinedOrgId, userId });
+  return NextResponse.json({ ok: true, confirmEmail: true, orgId: joinedOrgId });
 }

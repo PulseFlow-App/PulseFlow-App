@@ -20,6 +20,7 @@ const PUBLIC_PREFIXES = [
   "/merge",
   "/handoff",
   "/auth/callback",
+  "/auth/confirm",
   "/u",
   "/terms",
   "/privacy",

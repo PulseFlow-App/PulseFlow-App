@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n/provider";
+import { isEmailUnconfirmed, signOutIfUnconfirmed } from "@/lib/auth/email-confirmed";
 import { usePros } from "@/lib/pros/store";
 import { cn } from "@/lib/utils";
 import { LegalAccept } from "@/components/pros/legal-accept";
@@ -21,7 +22,7 @@ function StartForm() {
   const router = useRouter();
   const params = useSearchParams();
   const { t } = usePros();
-  const { dir } = useI18n();
+  const { dir, locale } = useI18n();
   const next = safeNext(params.get("next"));
   const [mode, setMode] = useState<"create" | "sign-in">(
     params.get("mode") === "sign-in" ? "sign-in" : "create",
@@ -34,6 +35,9 @@ function StartForm() {
   const [saving, setSaving] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [emails, setEmails] = useState(false);
+  const [confirmTo, setConfirmTo] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
 
   const go = () => {
     router.replace(next);
@@ -59,10 +63,15 @@ function StartForm() {
     try {
       if (mode === "sign-in") {
         const { createClient } = await import("@/lib/supabase/client");
-        const { error: signInError } = await createClient().auth.signInWithPassword({
+        const supabase = createClient();
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email: email.trim().toLowerCase(),
           password,
         });
+        if (isEmailUnconfirmed(signInError) || (!signInError && (await signOutIfUnconfirmed(supabase)))) {
+          setConfirmTo(email.trim());
+          return;
+        }
         if (signInError) throw signInError;
         go();
         return;
@@ -81,9 +90,10 @@ function StartForm() {
           servicesIntent: "hire",
           termsAcceptedAt,
           emailOptIn: emails,
+          locale,
         }),
       });
-      const payload = (await res.json()) as { error?: string };
+      const payload = (await res.json()) as { error?: string; confirmEmail?: boolean };
       if (!res.ok) {
         const message = payload.error ?? "Could not create the account.";
         if (/supabase|demo/i.test(message)) {
@@ -95,11 +105,20 @@ function StartForm() {
           throw new Error(message);
         }
       }
+      if (payload.confirmEmail) {
+        setConfirmTo(email.trim());
+        return;
+      }
       const { createClient } = await import("@/lib/supabase/client");
-      const { error: signInError } = await createClient().auth.signInWithPassword({
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       });
+      if (isEmailUnconfirmed(signInError) || (!signInError && (await signOutIfUnconfirmed(supabase)))) {
+        setConfirmTo(email.trim());
+        return;
+      }
       if (signInError) {
         throw new Error(
           /already been registered|already registered|already exists/i.test(payload.error ?? "")
@@ -122,6 +141,42 @@ function StartForm() {
         {t("back")}
       </Link>
       <div className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
+        {confirmTo ? (
+          <div className="space-y-3">
+            <p className="font-display text-lg font-semibold text-pf-ink">{t("regConfirmTitle")}</p>
+            <p className="text-sm leading-relaxed text-pf-slate-ink">{t("regConfirmBody", { email: confirmTo })}</p>
+            <button
+              type="button"
+              disabled={resending}
+              onClick={() => {
+                setResending(true);
+                void fetch("/api/auth/resend-confirm", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email: confirmTo, locale, next: "/" }),
+                })
+                  .then(async (res) => {
+                    if (!res.ok) {
+                      const payload = (await res.json()) as { error?: string };
+                      throw new Error(payload.error ?? "Could not send the email.");
+                    }
+                    setResent(true);
+                    setError(null);
+                  })
+                  .catch((e: unknown) => {
+                    setError(e instanceof Error ? e.message : "Could not send the email.");
+                  })
+                  .finally(() => setResending(false));
+              }}
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-sm font-semibold text-pf-ink disabled:opacity-50"
+            >
+              {t("regConfirmResend")}
+            </button>
+            {resent ? <p className="text-sm text-pf-slate-ink">{t("regConfirmResent")}</p> : null}
+            {error ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
+          </div>
+        ) : (
+          <>
         {mode === "create" ? (
           <div>
             <Label>{t("yourName")}</Label>
@@ -180,6 +235,8 @@ function StartForm() {
             {t("signIn")}
           </button>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

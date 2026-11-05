@@ -62,6 +62,8 @@ export type RegisterWorkspaceInput = {
   servicesIntent?: "hire" | "work" | null;
   /** Optional email. Unset means no. */
   emailOptIn?: boolean;
+  /** Language for the confirmation email. */
+  locale?: string | null;
   /** Optional account logo as a JPEG, PNG, or WebP data URL. */
   logo?: string | null;
   /** App on-site staff: company invite URL or /join token. Required for that path. */

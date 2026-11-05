@@ -18,6 +18,7 @@ import {
   passkeyErrorMessage,
   signInWithPasskey,
 } from "@/lib/auth/passkeys";
+import { isEmailUnconfirmed, signOutIfUnconfirmed } from "@/lib/auth/email-confirmed";
 import { isDemoMode, createClient } from "@/lib/supabase/client";
 import { prosReturnPath } from "@/lib/pros/paths";
 import { demoLogin, demoLogout } from "@/lib/demo/store";
@@ -152,6 +153,12 @@ export default function LoginPage() {
   }, []);
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("error") === "confirm") {
+      setError(t("auth.emailNotConfirmed"));
+    }
+  }, [t]);
+
+  useEffect(() => {
     if (window.location.hash === "#invite") {
       document.getElementById("invite-join")?.scrollIntoView({ behavior: "smooth" });
     }
@@ -192,6 +199,10 @@ export default function LoginPage() {
         email,
         password,
       });
+      if (isEmailUnconfirmed(signInError) || (!signInError && (await signOutIfUnconfirmed(supabase)))) {
+        setError(t("auth.emailNotConfirmed"));
+        return;
+      }
       if (signInError) {
         setError(signInError.message);
         return;

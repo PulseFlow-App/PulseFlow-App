@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
+import { isEmailUnconfirmed, signOutIfUnconfirmed } from "@/lib/auth/email-confirmed";
 import { inviteTokenFromLink } from "@/lib/auth/helpers";
 import type { UserRole } from "@/lib/design-tokens";
 import { isDemoMode, isSupabaseConfigured } from "@/lib/supabase/client";
@@ -43,6 +44,7 @@ import {
   recordSignup,
   talentSkillsForCategories,
 } from "@/lib/pros/join";
+import { formatThaiPhone } from "@/lib/utils";
 import { prepareVillaPhotoFile } from "@/lib/villas/prepare-photo";
 
 type Track = "maintenance" | "customer";
@@ -116,11 +118,16 @@ function LogoField({
 
 async function signInWithPassword(email: string, password: string) {
   const { createClient } = await import("@/lib/supabase/client");
-  const { error } = await createClient().auth.signInWithPassword({
+  const supabase = createClient();
+  const { error } = await supabase.auth.signInWithPassword({
     email: email.trim().toLowerCase(),
     password,
   });
-  return error;
+  if (error) return error;
+  if (await signOutIfUnconfirmed(supabase)) {
+    return { message: "Email not confirmed", code: "email_not_confirmed" };
+  }
+  return null;
 }
 
 export default function RegisterPage() {
@@ -139,18 +146,26 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [lineId, setLineId] = useState("");
+  const [sameWhatsapp, setSameWhatsapp] = useState(false);
+  const [sameLine, setSameLine] = useState(false);
   const [orgName, setOrgName] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [availability, setAvailability] = useState("");
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [areaIds, setAreaIds] = useState<string[]>([]);
+  const [openIsland, setOpenIsland] = useState<string | null>(null);
   const [languages, setLanguages] = useState<string[]>(["en"]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [emails, setEmails] = useState(false);
   const [listingId, setListingId] = useState<string | null>(null);
+  const [confirmTo, setConfirmTo] = useState<string | null>(null);
+  const [pendingNext, setPendingNext] = useState("/");
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
   const [logo, setLogo] = useState<string | null>(null);
   const [servicesHref, setServicesHref] = useState(MARKETING_SERVICES);
   const [appHref, setAppHref] = useState("https://app.pulseflow.site/");
@@ -220,8 +235,39 @@ export default function RegisterPage() {
     () => AREAS.filter((area) => area.level === "locality"),
     [],
   );
-  const showAppForm = ready && !onServices && (position === "staff" || plan != null);
-  const showServicesForm = ready && onServices && track != null;
+  const thaiPhone = formatThaiPhone(phone);
+  const whatsappValue = sameWhatsapp && thaiPhone ? thaiPhone : whatsapp;
+  const lineValue = sameLine && thaiPhone ? thaiPhone : lineId;
+  const showAppForm = ready && !onServices && !confirmTo && (position === "staff" || plan != null);
+  const showServicesForm = ready && onServices && !confirmTo && track != null;
+
+  const holdForEmail = (address: string, next: string) => {
+    setConfirmTo(address.trim());
+    setPendingNext(next);
+    setResent(false);
+    setResendError(null);
+    setError(null);
+  };
+
+  const resendConfirm = async () => {
+    if (!confirmTo) return;
+    setResending(true);
+    setResendError(null);
+    try {
+      const res = await fetch("/api/auth/resend-confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: confirmTo, locale, next: pendingNext }),
+      });
+      const payload = (await res.json()) as { error?: string };
+      if (!res.ok) throw new Error(payload.error ?? "Could not send the email.");
+      setResent(true);
+    } catch (e) {
+      setResendError(e instanceof Error ? e.message : "Could not send the email.");
+    } finally {
+      setResending(false);
+    }
+  };
 
   const toggle = (list: string[], id: string, set: (next: string[]) => void) => {
     set(list.includes(id) ? list.filter((row) => row !== id) : [...list, id]);
@@ -261,7 +307,7 @@ export default function RegisterPage() {
     }
     const termsAcceptedAt = new Date().toISOString();
     if (track === "maintenance") {
-      if (!whatsapp.trim() && !lineId.trim()) {
+      if (!whatsappValue.trim() && !lineValue.trim()) {
         setError(prosT(locale, "regContact"));
         return;
       }
@@ -290,10 +336,11 @@ export default function RegisterPage() {
             acquisitionSource,
             termsAcceptedAt,
             emailOptIn: emails,
+            locale,
             ...(logo ? { logo } : {}),
           }),
         });
-        const payload = (await res.json()) as { error?: string };
+        const payload = (await res.json()) as { error?: string; confirmEmail?: boolean };
         if (!res.ok) {
           const message = payload.error ?? prosT(locale, "regFailed");
           if (/supabase|demo/i.test(message)) {
@@ -303,7 +350,15 @@ export default function RegisterPage() {
           }
           if (!existingAccount(message)) throw new Error(message);
         }
+        if (payload.confirmEmail) {
+          holdForEmail(email, "/");
+          return;
+        }
         const signInError = await signInWithPassword(email, password);
+        if (isEmailUnconfirmed(signInError)) {
+          holdForEmail(email, "/");
+          return;
+        }
         if (signInError) {
           throw new Error(
             existingAccount(payload.error ?? "")
@@ -322,8 +377,8 @@ export default function RegisterPage() {
             name: fullName,
             email,
             phone,
-            whatsapp,
-            lineId,
+            whatsapp: whatsappValue,
+            lineId: lineValue,
             description: "",
             availability,
             categoryIds,
@@ -340,6 +395,7 @@ export default function RegisterPage() {
       }
 
       const { withActionBusy } = await import("@/lib/ui/action-busy");
+      let waitingForEmail = false;
       await withActionBusy(async () => {
         const res = await fetch("/api/auth/register", {
           method: "POST",
@@ -359,6 +415,7 @@ export default function RegisterPage() {
             termsAcceptedAt,
             emailOptIn: emails,
             listOnServices,
+            locale,
             service: {
               skills: talentSkillsForCategories(categoryIds),
               bio: availability.trim() ? `Available: ${availability.trim()}` : "",
@@ -369,11 +426,21 @@ export default function RegisterPage() {
             ...(logo ? { logo } : {}),
           }),
         });
-        const payload = (await res.json()) as { error?: string };
+        const payload = (await res.json()) as { error?: string; confirmEmail?: boolean };
         if (!res.ok && !existingAccount(payload.error ?? "")) {
           throw new Error(payload.error ?? prosT(locale, "regFailed"));
         }
+        if (payload.confirmEmail) {
+          waitingForEmail = true;
+          holdForEmail(email, "/settings");
+          return;
+        }
         const signInError = await signInWithPassword(email, password);
+        if (isEmailUnconfirmed(signInError)) {
+          waitingForEmail = true;
+          holdForEmail(email, "/settings");
+          return;
+        }
         if (signInError) {
           throw new Error(
             existingAccount(payload.error ?? "")
@@ -382,12 +449,13 @@ export default function RegisterPage() {
           );
         }
       });
+      if (waitingForEmail) return;
       joinProfessional({
         name: fullName,
         email,
         phone,
-        whatsapp,
-        lineId,
+        whatsapp: whatsappValue,
+        lineId: lineValue,
         description: "",
         availability,
         categoryIds,
@@ -492,6 +560,7 @@ export default function RegisterPage() {
         orgName.trim() ||
         `${fullName.trim().split(" ")[0] || "My"}'s properties`;
       const { withActionBusy } = await import("@/lib/ui/action-busy");
+      let waitingForEmail = false;
       await withActionBusy(async () => {
         const res = await fetch("/api/auth/register", {
           method: "POST",
@@ -514,6 +583,7 @@ export default function RegisterPage() {
             acquisitionSource,
             termsAcceptedAt,
             emailOptIn: emails,
+            locale,
             ...(logo ? { logo } : {}),
             service: onSite
               ? {
@@ -524,15 +594,32 @@ export default function RegisterPage() {
               : undefined,
           }),
         });
-        const payload = (await res.json()) as { error?: string };
+        const payload = (await res.json()) as { error?: string; confirmEmail?: boolean };
         if (!res.ok) throw new Error(payload.error ?? "Could not register.");
+        if (payload.confirmEmail) {
+          waitingForEmail = true;
+          holdForEmail(email, "/setup-passkey");
+          return;
+        }
         const { createClient } = await import("@/lib/supabase/client");
-        const { error: signInError } = await createClient().auth.signInWithPassword({
+        const supabase = createClient();
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email: email.trim().toLowerCase(),
           password,
         });
+        if (!signInError && (await signOutIfUnconfirmed(supabase))) {
+          waitingForEmail = true;
+          holdForEmail(email, "/setup-passkey");
+          return;
+        }
+        if (isEmailUnconfirmed(signInError)) {
+          waitingForEmail = true;
+          holdForEmail(email, "/setup-passkey");
+          return;
+        }
         if (signInError) throw signInError;
       });
+      if (waitingForEmail) return;
       if (onSite && listOnServices) {
         window.location.href = `${servicesHref.replace(/\/$/, "")}/settings`;
         return;
@@ -580,7 +667,34 @@ export default function RegisterPage() {
           </h1>
         </div>
 
-        {ready && onServices && !track ? (
+        {confirmTo ? (
+          <Card className="space-y-3 p-4">
+            <p className="font-display text-lg font-semibold text-ink">
+              {onServices ? prosT(locale, "regConfirmTitle") : t("register.confirmTitle")}
+            </p>
+            <p className="text-sm leading-relaxed text-muted">
+              {onServices
+                ? prosT(locale, "regConfirmBody", { email: confirmTo })
+                : t("register.confirmBody", { email: confirmTo })}
+            </p>
+            <button
+              type="button"
+              disabled={resending}
+              onClick={() => void resendConfirm()}
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-card px-4 text-sm font-semibold text-ink disabled:opacity-50"
+            >
+              {onServices ? prosT(locale, "regConfirmResend") : t("register.confirmResend")}
+            </button>
+            {resent ? (
+              <p className="text-sm text-muted">
+                {onServices ? prosT(locale, "regConfirmResent") : t("register.confirmResent")}
+              </p>
+            ) : null}
+            {resendError ? <p className="text-sm font-medium text-danger">{resendError}</p> : null}
+          </Card>
+        ) : null}
+
+        {ready && onServices && !track && !confirmTo ? (
           <p className="text-center text-sm text-muted">
             <Link href="/" className="font-semibold text-ink">
               {prosT(locale, "registerPickSide")}
@@ -589,7 +703,7 @@ export default function RegisterPage() {
         ) : null}
 
         {/* App host: two cards first; personal/company only after management */}
-        {ready && !onServices ? (
+        {ready && !onServices && !confirmTo ? (
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <Choice
@@ -711,18 +825,46 @@ export default function RegisterPage() {
                       <div>
                         <Label>{prosT(locale, "whatsapp")}</Label>
                         <Input
-                          value={whatsapp}
-                          onChange={(e) => setWhatsapp(e.target.value)}
+                          value={whatsappValue}
+                          onChange={(e) => {
+                            setSameWhatsapp(false);
+                            setWhatsapp(e.target.value);
+                          }}
                           placeholder={prosT(locale, "whatsapp")}
+                          readOnly={sameWhatsapp && Boolean(thaiPhone)}
                         />
+                        <label className="mt-1 flex min-h-11 items-center gap-2 text-sm text-ink">
+                          <input
+                            type="checkbox"
+                            className="size-4"
+                            checked={sameWhatsapp && Boolean(thaiPhone)}
+                            disabled={!thaiPhone}
+                            onChange={(e) => setSameWhatsapp(e.target.checked)}
+                          />
+                          <span>{prosT(locale, "useSameNumber")}</span>
+                        </label>
                       </div>
                       <div>
                         <Label>{prosT(locale, "line")}</Label>
                         <Input
-                          value={lineId}
-                          onChange={(e) => setLineId(e.target.value)}
+                          value={lineValue}
+                          onChange={(e) => {
+                            setSameLine(false);
+                            setLineId(e.target.value);
+                          }}
                           placeholder={prosT(locale, "line")}
+                          readOnly={sameLine && Boolean(thaiPhone)}
                         />
+                        <label className="mt-1 flex min-h-11 items-center gap-2 text-sm text-ink">
+                          <input
+                            type="checkbox"
+                            className="size-4"
+                            checked={sameLine && Boolean(thaiPhone)}
+                            disabled={!thaiPhone}
+                            onChange={(e) => setSameLine(e.target.checked)}
+                          />
+                          <span>{prosT(locale, "useSameNumber")}</span>
+                        </label>
                       </div>
                     </div>
                     <fieldset>
@@ -740,28 +882,44 @@ export default function RegisterPage() {
                     </fieldset>
                     <fieldset>
                       <legend className="text-sm font-semibold text-ink">{prosT(locale, "regAreas")}</legend>
-                      <div className="mt-2 space-y-2">
-                        {islands.map((island) => (
-                          <div key={island.id}>
-                            <p className="text-xs font-semibold text-muted">{catalogName(island.names, locale)}</p>
-                            <div className="mt-1 flex flex-wrap gap-2">
-                              <Chip
-                                active={areaIds.includes(island.id)}
-                                label={catalogName(island.names, locale)}
-                                onClick={() => toggle(areaIds, island.id, setAreaIds)}
-                              />
-                              {AREAS.filter((area) => area.parentId === island.id).map((area) => (
-                                <Chip
-                                  key={area.id}
-                                  active={areaIds.includes(area.id)}
-                                  label={catalogName(area.names, locale)}
-                                  onClick={() => toggle(areaIds, area.id, setAreaIds)}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        ))}
+                      <div className="mt-2 grid grid-cols-3 gap-2">
+                        {islands.map((island) => {
+                          const open = openIsland === island.id;
+                          const covered =
+                            areaIds.includes(island.id) ||
+                            AREAS.some((area) => area.parentId === island.id && areaIds.includes(area.id));
+                          return (
+                            <button
+                              key={island.id}
+                              type="button"
+                              aria-expanded={open}
+                              onClick={() => setOpenIsland(open ? null : island.id)}
+                              className={cn(
+                                "min-h-11 rounded-pf-card border px-2 py-2 text-center text-sm font-semibold leading-snug text-pf-ink",
+                                open
+                                  ? "border-pf-line bg-pf-peach-100"
+                                  : covered
+                                    ? "border-pf-navy-600 bg-pf-card"
+                                    : "border-pf-line bg-pf-card",
+                              )}
+                            >
+                              {catalogName(island.names, locale)}
+                            </button>
+                          );
+                        })}
                       </div>
+                      {openIsland ? (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {AREAS.filter((area) => area.parentId === openIsland).map((area) => (
+                            <Chip
+                              key={area.id}
+                              active={areaIds.includes(area.id)}
+                              label={catalogName(area.names, locale)}
+                              onClick={() => toggle(areaIds, area.id, setAreaIds)}
+                            />
+                          ))}
+                        </div>
+                      ) : null}
                     </fieldset>
                     <fieldset>
                       <legend className="text-sm font-semibold text-ink">{prosT(locale, "languages")}</legend>
@@ -1012,7 +1170,7 @@ export default function RegisterPage() {
           </Card>
         ) : null}
 
-        {ready && onServices ? (
+        {ready && onServices && !confirmTo ? (
           <p className="mt-4 text-center text-sm text-muted">
             {prosT(locale, "regPropertyOps")}{" "}
             <a href={appHref} className="font-semibold text-primary">
@@ -1020,7 +1178,7 @@ export default function RegisterPage() {
             </a>
           </p>
         ) : null}
-        {ready && !onServices ? (
+        {ready && !onServices && !confirmTo ? (
           <p className="mt-4 text-center text-sm text-muted">
             {t("register.lookingForServices")}{" "}
             <a href={servicesHref} className="font-semibold text-primary">
@@ -1097,7 +1255,7 @@ function Chip({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full px-3 py-1.5 text-xs font-semibold",
+        "inline-flex min-h-11 items-center rounded-full px-3 text-xs font-semibold",
         active ? "bg-primary text-white" : "bg-canvas-deep text-ink",
       )}
     >
