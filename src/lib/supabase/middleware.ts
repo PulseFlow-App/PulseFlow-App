@@ -21,6 +21,7 @@ const PUBLIC_PREFIXES = [
   "/handoff",
   "/auth/callback",
   "/auth/confirm",
+  "/auth/finish",
   "/u",
   "/terms",
   "/privacy",

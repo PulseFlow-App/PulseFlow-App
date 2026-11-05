@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { creditReferral } from "@/lib/billing/referrals";
+import { finishConfirmedSignup } from "@/lib/auth/finish-signup";
 import { isMarketplaceHost } from "@/lib/pros/paths";
 import { safeConfirmNext } from "@/lib/auth/confirm-email";
 
@@ -32,24 +32,7 @@ export async function GET(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    const admin = createAdminClient();
-    const meta = user.user_metadata ?? {};
-    if (meta.list_on_services === true) {
-      await admin.from("profiles").update({ job_search_visible: true }).eq("id", user.id);
-    }
-    const referredBy = typeof meta.referred_by === "string" ? meta.referred_by : null;
-    const source = meta.referral_source === "services" ? "services" : "register";
-    if (referredBy) {
-      try {
-        await creditReferral(admin, {
-          referrerCode: referredBy,
-          referredProfileId: user.id,
-          source,
-        });
-      } catch (e) {
-        console.warn("referral credit failed", e);
-      }
-    }
+    await finishConfirmedSignup(createAdminClient(), user);
   }
 
   return NextResponse.redirect(new URL(nextPath, url.origin));
