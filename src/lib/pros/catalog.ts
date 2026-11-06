@@ -56,6 +56,7 @@ export const CATEGORIES: CatalogCategory[] = [
   { id: "c2000001-0000-4000-8000-000000000018", slug: "moving", icon: "truck", names: n("Moving and delivery", "ขนย้ายและส่งของ", "Переезд и доставка", "הובלה ומשלוחים"), descriptions: n("Moving things locally", "ย้ายของในพื้นที่", "Местные перевозки", "הובלה מקומית") },
   { id: "c2000001-0000-4000-8000-000000000020", slug: "babysitting", icon: "users", names: n("Babysitters", "พี่เลี้ยงเด็ก", "Няни", "בייביסיטר"), descriptions: n("Childcare at the property", "ดูแลเด็กที่บ้าน", "Присмотр за детьми", "שמירה על ילדים") },
   { id: "c2000001-0000-4000-8000-000000000021", slug: "pet-sitting", icon: "home", names: n("Pet sitter", "พี่เลี้ยงสัตว์เลี้ยง", "Присмотр за питомцами", "שמירה על חיות מחמד"), descriptions: n("Care for pets at the property", "ดูแลสัตว์เลี้ยงที่บ้าน", "Присмотр за питомцами на объекте", "שמירה על חיות מחמד בנכס") },
+  { id: "c2000001-0000-4000-8000-000000000022", slug: "private-cook", icon: "utensils", names: n("Private cook", "พ่อครัวส่วนตัว", "Частный повар", "טבח פרטי"), descriptions: n("Meals cooked at the property", "ทำอาหารที่บ้าน", "Готовка на объекте", "בישול בנכס") },
   { id: "c2000001-0000-4000-8000-000000000019", slug: "other", icon: "dot", names: n("Other", "อื่นๆ", "Другое", "אחר"), descriptions: n("A profession that is not listed yet", "อาชีพที่ยังไม่มีหมวด", "Профессия вне списка", "מקצוע שעוד לא ברשימה") },
 ];
 

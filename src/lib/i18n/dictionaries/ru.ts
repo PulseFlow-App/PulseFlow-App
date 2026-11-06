@@ -1422,6 +1422,7 @@ const ru: Dictionary = {
   "talent.skill.manager": "On-site manager",
   "talent.skill.babysitter": "Няни",
   "talent.skill.pet-sitter": "Присмотр за питомцами",
+  "talent.skill.cook": "Частный повар",
   "talent.reviewsSection": "Reviews & endorsements",
   "talent.browseLink": "Start search",
   "common.on": "On",

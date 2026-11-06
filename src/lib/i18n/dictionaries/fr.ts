@@ -1424,6 +1424,7 @@ const fr: Dictionary = {
   "talent.skill.manager": "On-site manager",
   "talent.skill.babysitter": "Babysitters",
   "talent.skill.pet-sitter": "Garde d’animaux",
+  "talent.skill.cook": "Cuisinier privé",
   "talent.reviewsSection": "Reviews & endorsements",
   "talent.browseLink": "Start search",
   "common.on": "Marche",

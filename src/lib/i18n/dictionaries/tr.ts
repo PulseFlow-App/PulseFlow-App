@@ -1411,6 +1411,7 @@ const tr: Dictionary = {
   "talent.skill.manager": "Site yöneticisi",
   "talent.skill.babysitter": "Bebek bakıcısı",
   "talent.skill.pet-sitter": "Evcil hayvan bakıcısı",
+  "talent.skill.cook": "Özel aşçı",
   "talent.reviewsSection": "İncelemeler ve onaylar",
   "talent.browseLink": "Aramaya başla",
   "villas.acceptListing": "Apply listing",

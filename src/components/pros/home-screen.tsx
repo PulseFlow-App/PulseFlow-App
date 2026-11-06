@@ -149,31 +149,32 @@ function HomeBar() {
   }, []);
 
   return (
-    <div className="sticky top-0 z-10 bg-pf-page px-4 pt-[max(0.5rem,env(safe-area-inset-top))]">
-      <div className="flex items-center gap-2 pb-2">
+    <div className="sticky top-0 z-10 w-full min-w-0 bg-pf-page px-4 pt-[max(0.5rem,env(safe-area-inset-top))]">
+      <div className="flex min-w-0 items-center gap-2 pb-2">
         <PlacePicker variant="pill" />
-        <div className="min-w-0 flex-1" />
-        <LanguageSwitcher variant="code" />
-        {actor ? (
-          <Link
-            href={to("/settings")}
-            aria-label={t("settings")}
-            className="inline-flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pf-navy-900 text-[15px] font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
-          >
-            {actor.logoUrl ? (
-              <img src={actor.logoUrl} alt="" className="size-full object-cover" />
-            ) : (
-              actor.name.slice(0, 1)
-            )}
-          </Link>
-        ) : (
-          <Link
-            href={to("/start?mode=sign-in")}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink"
-          >
-            {t("signIn")}
-          </Link>
-        )}
+        <div className="ms-auto flex shrink-0 items-center gap-2">
+          <LanguageSwitcher variant="code" />
+          {actor ? (
+            <Link
+              href={to("/settings")}
+              aria-label={t("settings")}
+              className="inline-flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pf-navy-900 text-[15px] font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
+            >
+              {actor.logoUrl ? (
+                <img src={actor.logoUrl} alt="" className="size-full object-cover" />
+              ) : (
+                actor.name.slice(0, 1)
+              )}
+            </Link>
+          ) : (
+            <Link
+              href={to("/start?mode=sign-in")}
+              className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-pf-line bg-pf-card px-3 text-pf-14 font-medium text-pf-ink"
+            >
+              {t("signIn")}
+            </Link>
+          )}
+        </div>
       </div>
       <h1 className="pb-2 text-[28px] font-bold tracking-[-0.02em] text-pf-ink">
         {t("homeTitle")}

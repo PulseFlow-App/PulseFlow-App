@@ -65,14 +65,14 @@ export function PlacePicker({ variant = "bar" }: { variant?: "bar" | "pill" }) {
         onClick={() => setOpen(true)}
         className={cn(
           variant === "pill"
-            ? "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-pf-card px-3 text-pf-14 font-medium text-pf-ink shadow-pf-1 ring-1 ring-pf-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
+            ? "inline-flex h-11 min-w-0 max-w-full shrink items-center gap-1.5 overflow-hidden rounded-full bg-pf-card px-3 text-pf-14 font-medium text-pf-ink shadow-pf-1 ring-1 ring-pf-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600"
             : "relative inline-flex h-11 min-w-0 flex-1 items-center gap-1 rounded-full border border-pf-line bg-pf-card pe-2 ps-3 text-pf-14 font-medium text-pf-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pf-navy-600",
         )}
         aria-label={t("place")}
         aria-haspopup="dialog"
         aria-expanded={open}
       >
-        {variant === "pill" ? <PfIcon name="pin" className="size-4" /> : null}
+        {variant === "pill" ? <PfIcon name="pin" className="size-4 shrink-0" /> : null}
         <span className="min-w-0 truncate text-start">{current}</span>
         {variant === "pill" ? null : <ChevronDown className="size-4 shrink-0 text-pf-slate-ink" aria-hidden />}
       </button>

@@ -13,6 +13,7 @@ export const TALENT_SKILLS = [
   "manager",
   "babysitter",
   "pet-sitter",
+  "cook",
 ] as const;
 
 export type TalentSkill = (typeof TALENT_SKILLS)[number];
@@ -69,6 +70,8 @@ const WORK_TAG_SUGGESTIONS: Record<string, string[]> = {
   babysitting: ["Evenings", "Infants", "School age"],
   "pet-sitter": ["Dogs", "Cats", "Feeding"],
   "pet-sitting": ["Dogs", "Cats", "Feeding"],
+  cook: ["Thai food", "Western", "Meal prep"],
+  "private-cook": ["Thai food", "Western", "Meal prep"],
 };
 
 /** Short labels for tools and kinds of work, kept as the person typed them. */

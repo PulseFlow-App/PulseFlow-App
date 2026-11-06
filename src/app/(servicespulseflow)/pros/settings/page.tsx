@@ -13,9 +13,7 @@ import { serviceInviteUrl } from "@/lib/pros/join";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 import { SERVICES_CUSTOMER_EVENT, SERVICES_CUSTOMER_KEY } from "@/lib/pros/trial";
-import { SupportMail } from "@/components/pros/support-mail";
 import { createClient } from "@/lib/supabase/client";
-import { useI18n } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 
 function Chip({
@@ -46,7 +44,6 @@ export default function ServicesSettingsPage() {
   const pathname = usePathname();
   const router = useRouter();
   const { appearance, setAppearance } = useAppearance();
-  const { locale } = useI18n();
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
   const [invite, setInvite] = useState("");
   const [inviteLink, setInviteLink] = useState("");
@@ -100,19 +97,23 @@ export default function ServicesSettingsPage() {
       <LinkOffer app="services" variant="settings" />
 
       <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
-        <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("inviteCode")}</h2>
-        <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{t("inviteHint")}</p>
-        <p className="text-pf-16 leading-relaxed text-pf-ink">
-          {discount
-            ? t("referralUnlocked")
-            : t("referralProgress", { count: joined, goal })}
-        </p>
-        {!discount && goal > joined ? (
-          <p className="text-pf-16 leading-relaxed text-pf-text-secondary">
-            {t("referralRemaining", { remaining: goal - joined })}
-          </p>
-        ) : null}
-        {invite ? <p className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{invite}</p> : null}
+        <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{work ? t("invitePeople") : t("inviteCode")}</h2>
+        <p className="text-pf-16 leading-relaxed text-pf-text-secondary">{work ? t("invitePeopleHint") : t("inviteHint")}</p>
+        {work ? null : (
+          <>
+            <p className="text-pf-16 leading-relaxed text-pf-ink">
+              {discount
+                ? t("referralUnlocked")
+                : t("referralProgress", { count: joined, goal })}
+            </p>
+            {!discount && goal > joined ? (
+              <p className="text-pf-16 leading-relaxed text-pf-text-secondary">
+                {t("referralRemaining", { remaining: goal - joined })}
+              </p>
+            ) : null}
+            {invite ? <p className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{invite}</p> : null}
+          </>
+        )}
         <div className="grid gap-2 sm:grid-cols-2">
           <Button
             type="button"
@@ -190,7 +191,6 @@ export default function ServicesSettingsPage() {
       >
         {t("signOut")}
       </button>
-      <SupportMail locale={locale} />
     </div>
   );
 }

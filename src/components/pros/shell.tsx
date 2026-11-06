@@ -108,7 +108,7 @@ function Frame({ children }: { children: React.ReactNode }) {
       <header className="z-20 shrink-0 border-b border-pf-line bg-pf-page/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
         <div
           className={cn(
-            "mx-auto flex items-center gap-2 px-4 py-2",
+            "mx-auto flex min-w-0 items-center gap-2 px-4 py-2",
             wide ? "max-w-3xl" : "max-w-lg",
           )}
         >
@@ -132,7 +132,7 @@ function Frame({ children }: { children: React.ReactNode }) {
           ) : (
             <Link
               href={`${onAppPath ? "/pros/start" : "/start"}?mode=sign-in&next=${encodeURIComponent(pathname)}`}
-              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-pf-line bg-pf-card px-3 text-pf-14 font-medium text-pf-ink"
             >
               {t("signIn")}
             </Link>

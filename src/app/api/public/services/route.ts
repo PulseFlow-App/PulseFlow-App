@@ -15,6 +15,7 @@ const CATEGORY_BY_SKILL: Record<string, string> = {
   manager: "other",
   babysitter: "babysitting",
   "pet-sitter": "pet-sitting",
+  cook: "private-cook",
 };
 
 function areaIdsFor(location: string) {

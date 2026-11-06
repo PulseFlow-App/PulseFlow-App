@@ -1419,6 +1419,7 @@ const he: Dictionary = {
   "talent.skill.manager": "On-site manager",
   "talent.skill.babysitter": "בייביסיטר",
   "talent.skill.pet-sitter": "שמירה על חיות מחמד",
+  "talent.skill.cook": "טבח פרטי",
   "talent.reviewsSection": "Reviews & endorsements",
   "talent.browseLink": "Start search",
   "common.on": "On",

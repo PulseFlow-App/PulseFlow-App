@@ -1421,6 +1421,7 @@ const my: Dictionary = {
   "talent.skill.manager": "On-site manager",
   "talent.skill.babysitter": "Babysitters",
   "talent.skill.pet-sitter": "Pet sitter",
+  "talent.skill.cook": "ကိုယ်ပိုင် စားဖိုမှူး",
   "talent.reviewsSection": "Reviews & endorsements",
   "talent.browseLink": "Start search",
   "common.on": "On",

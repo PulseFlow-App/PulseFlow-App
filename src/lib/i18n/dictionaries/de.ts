@@ -1422,6 +1422,7 @@ const de: Dictionary = {
   "talent.skill.manager": "Vor-Ort-Manager",
   "talent.skill.babysitter": "Babysitter",
   "talent.skill.pet-sitter": "Tiersitter",
+  "talent.skill.cook": "Privatkoch",
   "talent.reviewsSection": "Bewertungen und Vermerke",
   "talent.browseLink": "Start search",
   "common.on": "Ein",

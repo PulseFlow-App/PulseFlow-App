@@ -29,6 +29,7 @@ export type PfIconName =
   | "key"
   | "trash"
   | "users"
+  | "utensils"
   | "dot";
 
 type Tone = "default" | "onNavy" | "muted" | "active";
@@ -62,6 +63,7 @@ const PATHS: Record<PfIconName, [string, string]> = {
   key: ["M8 16a4 4 0 1 0 8 0 4 4 0 0 0-8 0z", "M16 16h10M22 16v4"],
   trash: ["M10 12h12v12H10V12z", "M8 12h16M13 8h6"],
   users: ["M8 14a3 3 0 1 0 6 0 3 3 0 0 0-6 0z", "M18 15a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0z"],
+  utensils: ["M11 6v7a2 2 0 0 0 4 0V6M13 13v13", "M21 6c3 4 3 8 0 10l1 10"],
   dot: ["M16 10a6 6 0 1 0 0 12 6 6 0 0 0 0-12z", "M16 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"],
 };
 

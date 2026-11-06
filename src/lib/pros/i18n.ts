@@ -934,6 +934,13 @@ const COPY = {
   themeFrost: { en: "Light", th: "สว่าง", ru: "Светлая", he: "בהיר" },
   themeDark: { en: "Dark", th: "มืด", ru: "Тёмная", he: "כהה" },
   inviteCode: { en: "Invite code", th: "รหัสเชิญ", ru: "Код приглашения", he: "קוד הזמנה" },
+  invitePeople: { en: "Invite people", th: "ชวนคนอื่น", ru: "Пригласите людей", he: "הזמינו אנשים" },
+  invitePeopleHint: {
+    en: "Invite staff or people looking for help.",
+    th: "เชิญช่างหรือคนที่ต้องการความช่วยเหลือ",
+    ru: "Приглашайте мастеров или тех, кому нужна помощь.",
+    he: "הזמינו צוות או אנשים שמחפשים עזרה.",
+  },
   inviteHint: {
     en: "Invite staff or people looking for help. After 5 join, the Services plan is half price.",
     th: "เชิญช่างหรือคนที่ต้องการความช่วยเหลือ พอมี 5 คนสมัคร แผน Services จะเหลือครึ่งราคา",

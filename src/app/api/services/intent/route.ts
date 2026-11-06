@@ -29,6 +29,11 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient();
+  const { data: profile } = await admin.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  const role = profile?.role;
+  if (body.intent === "work" && role !== "staff" && role !== "cleaner") {
+    return NextResponse.json({ error: "This account looks for help. It is not a maintenance account." }, { status: 400 });
+  }
   const { error } = await admin.from("profiles").update({ services_intent: body.intent }).eq("id", user.id);
   if (error) return NextResponse.json({ error: "Could not save the choice." }, { status: 500 });
   return NextResponse.json({ ok: true, intent: body.intent });

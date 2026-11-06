@@ -1432,6 +1432,7 @@ const ar: Dictionary = {
   "talent.skill.manager": "On-site manager",
   "talent.skill.babysitter": "Babysitters",
   "talent.skill.pet-sitter": "جليسة حيوانات",
+  "talent.skill.cook": "طاهٍ خاص",
   "talent.reviewsSection": "Reviews & endorsements",
   "talent.browseLink": "Start search",
   "bills.displayCurrencyHint.guest": "",

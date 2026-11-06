@@ -164,7 +164,7 @@ export type ProsActor = {
   name: string;
   role: string;
   orgId: string | null;
-  /** hire looks for staff. work is maintenance. Staff and cleaners are always work. */
+  /** hire looks for staff. work is a maintenance signup. Staff and cleaners are always work. Owners stay on the search side. */
   intent: "hire" | "work" | null;
   /** Optional logo chosen at registration. */
   logoUrl?: string | null;

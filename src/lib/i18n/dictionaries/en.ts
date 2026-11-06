@@ -1812,6 +1812,7 @@ const en = {
   "talent.skill.manager": "On-site manager",
   "talent.skill.babysitter": "Babysitters",
   "talent.skill.pet-sitter": "Pet sitter",
+  "talent.skill.cook": "Private cook",
   "talent.reviewsSection": "Reviews & endorsements",
   "talent.browseLink": "Start search",
 

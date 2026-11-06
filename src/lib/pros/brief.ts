@@ -22,6 +22,7 @@ const HINTS: Record<string, string[]> = {
   moving: ["moving", "delivery", "relocat", "ขนย้าย", "переезд", "הובלה"],
   babysitting: ["babysit", "babysitter", "nanny", "childcare", "พี่เลี้ยง", "няня", "בייביסיטר"],
   "pet-sitting": ["pet sitter", "petsitter", "pet sitting", "dog", "cat", "walk the dog", "สัตว์เลี้ยง", "питом", "собак", "кошк", "כלב", "חתול", "חיות מחמד"],
+  "private-cook": ["private cook", "cook", "chef", "cooking", "meals", "พ่อครัว", "กุ๊ก", "повар", "готов", "טבח", "בישול"],
 };
 
 export type BriefMatch = {
