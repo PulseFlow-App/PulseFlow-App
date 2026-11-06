@@ -10,6 +10,7 @@ import { PlacePicker } from "@/components/pros/place-picker";
 import { ThemeIconToggle } from "@/components/welcome/theme-icon-toggle";
 import { ProsProvider, usePros } from "@/lib/pros/store";
 import type { ServiceDelivery } from "@/lib/pros/delivery";
+import { isAgreedReply } from "@/lib/pros/delivery";
 import { servicesPath } from "@/lib/pros/paths";
 import { isHireAccount, isWorkAccount } from "@/lib/pros/intent";
 import { isServicesLocale } from "@/lib/pros/paths";
@@ -41,10 +42,12 @@ function Frame({ children }: { children: React.ReactNode }) {
   }, [workAccount, locale, setLocale]);
   const isHome = here === "/explore" || (here === "/" && searchAccount);
   const [incoming, setIncoming] = useState(0);
+  const [attention, setAttention] = useState(0);
   const [companyToday, setCompanyToday] = useState(false);
   useEffect(() => {
     if (!actor || actor.id.startsWith("local")) {
       setIncoming(0);
+      setAttention(0);
       return;
     }
     let cancelled = false;
@@ -52,13 +55,25 @@ function Frame({ children }: { children: React.ReactNode }) {
       .then((res) => (res.ok ? res.json() : { requests: [] }))
       .then((payload: { requests?: ServiceDelivery[] }) => {
         if (cancelled) return;
-        const count = (payload.requests ?? []).filter(
-          (row) => row.target_profile_id === actor.id && !row.reply_message,
-        ).length;
-        setIncoming(count);
+        const rows = payload.requests ?? [];
+        setIncoming(
+          rows.filter((row) => row.target_profile_id === actor.id && !row.reply_message && !row.cancelled_at).length,
+        );
+        setAttention(
+          rows.filter(
+            (row) =>
+              row.created_by === actor.id &&
+              row.reply_amount != null &&
+              !isAgreedReply(row.reply_message) &&
+              !row.cancelled_at,
+          ).length,
+        );
       })
       .catch(() => {
-        if (!cancelled) setIncoming(0);
+        if (!cancelled) {
+          setIncoming(0);
+          setAttention(0);
+        }
       });
     return () => {
       cancelled = true;
@@ -116,7 +131,9 @@ function Frame({ children }: { children: React.ReactNode }) {
           {searchAccount ? <PlacePicker variant="pill" /> : null}
           <div className="min-w-0 flex-1" />
           <LanguageSwitcher variant="code" locales={workAccount ? STAFF_LOCALES : undefined} />
-          <ThemeIconToggle className="size-11 shrink-0" />
+          {here.startsWith("/requests") || here.startsWith("/order-cards") ? null : (
+            <ThemeIconToggle className="size-11 shrink-0" />
+          )}
           {actor ? (
             <Link
               href={onAppPath ? "/pros/settings" : "/settings"}
@@ -154,7 +171,9 @@ function Frame({ children }: { children: React.ReactNode }) {
           {children}
           {isHome || here.startsWith("/admin") ? null : (
             <div className={cn("space-y-2 text-center", here === "/" ? "mt-4" : "mt-8")}>
-              <p className="text-pf-12 text-pf-slate-ink">{t("terms")}</p>
+              {here.startsWith("/requests") || here.startsWith("/order-cards") ? null : (
+                <p className="text-pf-12 text-pf-slate-ink">{t("terms")}</p>
+              )}
               <p className="flex flex-wrap justify-center gap-4 text-pf-14">
                 <Link href={servicesPath(pathname, "/terms")} className="font-medium text-pf-text-secondary">
                   {t("termsLink")}
@@ -205,6 +224,11 @@ function Frame({ children }: { children: React.ReactNode }) {
                       {publicHref === "/inbox" && incoming > 0 ? (
                         <span className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-pf-pill bg-pf-orange-500 px-1 text-[10px] font-medium text-white">
                           {incoming > 9 ? "9+" : incoming}
+                        </span>
+                      ) : null}
+                      {publicHref === "/requests" && attention > 0 ? (
+                        <span className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-pf-pill bg-pf-orange-500 px-1 text-[10px] font-medium text-white">
+                          {attention > 9 ? "9+" : attention}
                         </span>
                       ) : null}
                     </span>

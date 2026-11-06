@@ -69,6 +69,7 @@ const MARKET_PREFIXES = [
   "/settings",
   "/saved",
   "/assistant",
+  "/order-cards",
   "/terms",
   "/privacy",
 ];

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import type { ServiceDelivery } from "@/lib/pros/delivery";
+import { compareDeliveries, isAgreedReply, type ServiceDelivery } from "@/lib/pros/delivery";
 import { appOriginForHost, servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 import { useI18n } from "@/lib/i18n/provider";
@@ -146,10 +146,14 @@ export function WorkHome() {
     };
   }, [actor]);
 
-  const waiting = (requests ?? []).filter((row) => !row.reply_message);
-  const confirmed = (requests ?? []).filter((row) => row.reply_message);
+  const open = (requests ?? [])
+    .filter((row) => !row.cancelled_at && !isAgreedReply(row.reply_message))
+    .sort(compareDeliveries);
+  const confirmed = (requests ?? [])
+    .filter((row) => !row.cancelled_at && isAgreedReply(row.reply_message))
+    .sort(compareDeliveries);
   const to = (path: string) => servicesPath(pathname, path);
-  const preview = waiting[0] ?? confirmed[0] ?? null;
+  const preview = confirmed[0] ?? open[0] ?? null;
   const openTask = (id: string) => {
     const origin = appOriginForHost(window.location.host, window.location.protocol);
     window.location.assign(`${origin}/tasks?focus=${id}`);
@@ -161,13 +165,13 @@ export function WorkHome() {
       {requests == null ? null : (
         <section className="rounded-[28px] bg-pf-navy-900 p-5 text-pf-on-panel">
           <div className="grid grid-cols-2 gap-3">
-            <a href="#work-active" className="block min-h-11">
-              <p className="text-pf-48 font-extrabold leading-none tracking-[-0.03em]">{waiting.length}</p>
-              <p className="mt-1 text-pf-14 font-medium">{t("workDashActive")}</p>
-            </a>
             <a href="#work-confirmed" className="block min-h-11">
               <p className="text-pf-48 font-extrabold leading-none tracking-[-0.03em]">{confirmed.length}</p>
               <p className="mt-1 text-pf-14 font-medium">{t("workDashConfirmed")}</p>
+            </a>
+            <a href="#work-active" className="block min-h-11">
+              <p className="text-pf-48 font-extrabold leading-none tracking-[-0.03em]">{open.length}</p>
+              <p className="mt-1 text-pf-14 font-medium">{t("workDashActive")}</p>
             </a>
           </div>
           {preview ? (
@@ -181,20 +185,6 @@ export function WorkHome() {
         </section>
       )}
 
-      <section id="work-active" className="space-y-2">
-        <h2 className="text-pf-18 font-medium text-pf-ink">{t("workDashActive")}</h2>
-        {requests != null && waiting.length === 0 ? (
-          <p className="text-pf-14 text-pf-text-secondary">{t("workDashActiveEmpty")}</p>
-        ) : null}
-        {waiting.map((row) => (
-          <Link key={row.id} href={to("/inbox")} className="block rounded-[20px] border border-pf-line bg-pf-card p-4">
-            <p className="text-pf-12 font-medium text-pf-slate-ink">{t("workDashNeedsReply")}</p>
-            <p className="mt-1 text-pf-18 font-medium text-pf-ink">{row.title}</p>
-            {row.when_label ? <p className="mt-1 text-pf-14 text-pf-text-secondary">{row.when_label}</p> : null}
-          </Link>
-        ))}
-      </section>
-
       <section id="work-confirmed" className="space-y-2">
         <h2 className="text-pf-18 font-medium text-pf-ink">{t("workDashConfirmed")}</h2>
         {requests != null && confirmed.length === 0 ? (
@@ -203,8 +193,8 @@ export function WorkHome() {
         {confirmed.map((row) => {
           const price = money(row.reply_amount, row.reply_currency);
           return (
-            <Link key={row.id} href={to("/inbox")} className="block rounded-[20px] border border-pf-line bg-pf-card p-4">
-              <p className="text-pf-12 font-medium text-pf-success-ink">{t("workDashYouReplied")}</p>
+            <Link key={row.id} href={to("/inbox")} className="pf-order-fixed block rounded-[20px] border border-pf-line p-4">
+              <p className="text-pf-12 font-medium text-pf-ink">{t("appointmentReady")}</p>
               <p className="mt-1 text-pf-18 font-medium text-pf-ink">{row.title}</p>
               {row.when_label || price ? (
                 <p className="mt-1 text-pf-14 text-pf-text-secondary">{[row.when_label, price].filter(Boolean).join(" · ")}</p>
@@ -212,6 +202,22 @@ export function WorkHome() {
             </Link>
           );
         })}
+      </section>
+
+      <section id="work-active" className="space-y-2">
+        <h2 className="text-pf-18 font-medium text-pf-ink">{t("workDashActive")}</h2>
+        {requests != null && open.length === 0 ? (
+          <p className="text-pf-14 text-pf-text-secondary">{t("workDashActiveEmpty")}</p>
+        ) : null}
+        {open.map((row) => (
+          <Link key={row.id} href={to("/inbox")} className="block rounded-[20px] border border-pf-line bg-pf-card p-4">
+            <p className="text-pf-12 font-medium text-pf-slate-ink">
+              {row.reply_amount != null ? t("quoteSent") : t("workDashNeedsReply")}
+            </p>
+            <p className="mt-1 text-pf-18 font-medium text-pf-ink">{row.title}</p>
+            {row.when_label ? <p className="mt-1 text-pf-14 text-pf-text-secondary">{row.when_label}</p> : null}
+          </Link>
+        ))}
       </section>
 
       {tasks.length ? (

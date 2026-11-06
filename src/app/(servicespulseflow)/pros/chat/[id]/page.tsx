@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { readPhoto } from "@/components/pros/parts";
 import { quoteLabel } from "@/lib/pros/delivery";
+import { OrderActions, cancelReasonText } from "@/components/pros/order-actions";
 import { needsWorkPermit } from "@/lib/pros/permit";
 import { QuoteModal, QuoteTag, type QuoteInput } from "@/components/pros/quote-form";
 import { servicesPath } from "@/lib/pros/paths";
@@ -33,6 +34,11 @@ type ChatPayload = {
   quoteMin?: number | null;
   quoteMax?: number | null;
   quoteCurrency?: string | null;
+  quoteNote?: string | null;
+  cancelled?: boolean;
+  cancelReason?: string | null;
+  description?: string;
+  whenLabel?: string | null;
   messages: ChatMessage[];
   error?: string;
 };
@@ -179,6 +185,7 @@ export default function ServiceChatPage() {
           min: quote.min,
           max: quote.max,
           currency: quote.currency,
+          note: quote.note,
         }),
       });
       if (!res.ok) {
@@ -253,8 +260,8 @@ export default function ServiceChatPage() {
               {payload.peerName ? <p className="text-pf-16 text-pf-text-secondary">{payload.peerName}</p> : null}
             </div>
             <div className="flex shrink-0 flex-col items-end gap-2">
-              {price ? <QuoteTag label={price} /> : null}
-              {payload.staff && !payload.accepted ? (
+              {price && !payload.cancelled ? <QuoteTag label={price} /> : null}
+              {payload.staff && !payload.accepted && !payload.cancelled ? (
                 <button
                   type="button"
                   className="inline-flex min-h-11 items-center justify-center rounded-full border border-pf-line bg-pf-card px-3 text-pf-14 font-medium text-pf-ink"
@@ -265,7 +272,24 @@ export default function ServiceChatPage() {
               ) : null}
             </div>
           </div>
-          {payload.open && !payload.staff && price && !payload.accepted ? (
+          {payload.quoteNote && !payload.cancelled ? (
+            <p className="whitespace-pre-wrap text-pf-16 text-pf-text-secondary">{payload.quoteNote}</p>
+          ) : null}
+          {payload.cancelled ? (
+            <p className="whitespace-pre-wrap text-pf-16 text-pf-text-secondary">
+              {t("cancelled")}
+              {cancelReasonText(payload.cancelReason, t) ? `\n${cancelReasonText(payload.cancelReason, t)}` : ""}
+            </p>
+          ) : null}
+          <OrderActions
+            id={params.id}
+            title={payload.title}
+            description={payload.description ?? ""}
+            whenLabel={payload.whenLabel ?? null}
+            cancelled={payload.cancelled}
+            onChanged={() => void load()}
+          />
+          {payload.open && !payload.staff && price && !payload.accepted && !payload.cancelled ? (
             <button
               type="button"
               className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-navy-600 px-4 text-pf-16 font-medium text-white"

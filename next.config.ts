@@ -10,7 +10,7 @@ const buildId =
 const nextConfig: NextConfig = {
   // Dev: allow both localhost and 127.0.0.1 so client chunks hydrate
   // (otherwise header buttons look live but never receive React handlers).
-  allowedDevOrigins: ["127.0.0.1", "localhost"],
+  allowedDevOrigins: ["127.0.0.1", "localhost", "services.localhost"],
   env: {
     NEXT_PUBLIC_BUILD_ID: buildId,
   },

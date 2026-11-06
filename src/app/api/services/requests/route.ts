@@ -28,10 +28,16 @@ const postSchema = z.object({
 
 const patchSchema = z.object({
   id: z.string().uuid(),
-  action: z.enum(["quote", "accept"]),
+  action: z.enum(["quote", "accept", "cancel", "edit"]),
   min: z.number().finite().nonnegative().optional(),
   max: z.number().finite().nonnegative().nullable().optional(),
   currency: z.string().trim().max(8).optional(),
+  note: z.string().trim().max(500).optional(),
+  reason: z.enum(["schedule", "price", "scope", "not_needed", "other"]).optional(),
+  detail: z.string().trim().max(280).optional(),
+  title: z.string().trim().min(3).max(120).optional(),
+  description: z.string().trim().min(12).max(2000).optional(),
+  whenLabel: z.string().trim().max(160).optional(),
 });
 
 async function actor() {
@@ -51,14 +57,14 @@ export async function GET() {
 
   const admin = createAdminClient();
   const full =
-    "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, reply_message, reply_amount, reply_currency, quote_max, photos, accepted_at, created_at, replied_at";
+    "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, reply_message, reply_amount, reply_currency, quote_max, quote_note, photos, accepted_at, cancelled_at, cancelled_by, cancel_reason, created_at, replied_at";
   const { data, error } = await admin
     .from("service_requests")
     .select(full)
     .or(`created_by.eq.${user.id},target_profile_id.eq.${user.id}`)
     .order("created_at", { ascending: false })
     .limit(40);
-  if (error && /quote_max|photos|accepted_at/.test(error.message)) {
+  if (error && /quote_max|quote_note|photos|accepted_at|cancelled_at|cancel_reason/.test(error.message)) {
     const fallback = await admin
       .from("service_requests")
       .select(
@@ -156,6 +162,28 @@ export async function POST(request: Request) {
   return NextResponse.json({ ok: true, sent: targets.length });
 }
 
+async function notifyOther(
+  row: { id: string; title: string; created_by: string; target_profile_id: string },
+  actorId: string,
+  body: string,
+) {
+  const audience = actorId === row.created_by ? row.target_profile_id : row.created_by;
+  try {
+    const { sendWebPush } = await import("@/lib/push/web-push");
+    await sendWebPush({
+      title: row.title,
+      body,
+      href: `/chat/${row.id}`,
+      tag: `services-change:${row.id}`,
+      kind: "message",
+      org_id: actorId,
+      audience_profile_ids: [audience],
+    });
+  } catch {
+    // The change is saved even when the phone alert cannot be sent.
+  }
+}
+
 export async function PATCH(request: Request) {
   if (isDemoMode() || !isSupabaseConfigured()) {
     return NextResponse.json({ ok: false }, { status: 400 });
@@ -170,16 +198,83 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
   }
 
+  type DeliveryRow = {
+    id: string;
+    target_profile_id: string;
+    created_by: string;
+    title: string;
+    description?: string | null;
+    when_label?: string | null;
+    request_id: string;
+    reply_message: string | null;
+    reply_amount: number | null;
+    reply_currency: string | null;
+    quote_max?: number | null;
+    cancelled_at?: string | null;
+  };
   const admin = createAdminClient();
-  const { data: row } = await admin
+  const full = await admin
     .from("service_requests")
-    .select("id, target_profile_id, created_by, title, request_id, reply_message, reply_amount, reply_currency")
+    .select("id, target_profile_id, created_by, title, description, when_label, request_id, reply_message, reply_amount, reply_currency, quote_max, cancelled_at")
     .eq("id", body.id)
     .maybeSingle();
+  let row = full.data as DeliveryRow | null;
+  if (full.error && /cancelled_at|quote_max|description|when_label/.test(full.error.message)) {
+    const plain = await admin
+      .from("service_requests")
+      .select("id, target_profile_id, created_by, title, request_id, reply_message, reply_amount, reply_currency")
+      .eq("id", body.id)
+      .maybeSingle();
+    row = (plain.data as DeliveryRow | null) ?? null;
+  } else if (full.error) {
+    return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
   if (!row) return NextResponse.json({ error: "Not found." }, { status: 404 });
   const staff = row.target_profile_id === user.id;
   const customer = row.created_by === user.id;
   if (!staff && !customer) return NextResponse.json({ error: "Not found." }, { status: 404 });
+  if (row.cancelled_at) {
+    return NextResponse.json({ error: "This job is cancelled." }, { status: 400 });
+  }
+
+  if (body.action === "cancel") {
+    if (!body.reason) return NextResponse.json({ error: "Pick a reason." }, { status: 400 });
+    const reason = body.detail ? `${body.reason}\n${body.detail}` : body.reason;
+    const { error } = await admin
+      .from("service_requests")
+      .update({
+        cancelled_at: new Date().toISOString(),
+        cancelled_by: user.id,
+        cancel_reason: reason,
+      })
+      .eq("id", body.id);
+    if (error) return NextResponse.json({ error: "Could not save the reply." }, { status: 500 });
+    await notifyOther(row, user.id, "Cancelled");
+    return NextResponse.json({ ok: true });
+  }
+
+  if (body.action === "edit") {
+    if (!body.title || !body.description || !body.whenLabel) {
+      return NextResponse.json({ error: "Add the work and a date." }, { status: 400 });
+    }
+    const patch = {
+      title: body.title,
+      description: body.description,
+      when_label: body.whenLabel,
+    };
+    let { error } = await admin
+      .from("service_requests")
+      .update(patch)
+      .eq("request_id", row.request_id)
+      .is("cancelled_at", null);
+    if (error && /cancelled_at/.test(error.message)) {
+      ({ error } = await admin.from("service_requests").update(patch).eq("request_id", row.request_id));
+    }
+    if (error) return NextResponse.json({ error: "Could not save the reply." }, { status: 500 });
+    await notifyOther(row, user.id, body.whenLabel);
+    return NextResponse.json({ ok: true });
+  }
+
   if (row.reply_message === AGREED_REPLY) return NextResponse.json({ ok: true });
 
   if (body.action === "quote") {
@@ -191,10 +286,11 @@ export async function PATCH(request: Request) {
       reply_currency: body.currency?.trim() || "THB",
       replied_at: new Date().toISOString(),
       quote_max: body.max ?? null,
+      quote_note: body.note?.trim() || null,
       chat_open: true,
     };
     let { error } = await admin.from("service_requests").update(patch).eq("id", body.id);
-    if (error && /quote_max|chat_open/.test(error.message)) {
+    if (error && /quote_max|quote_note|chat_open/.test(error.message)) {
       ({ error } = await admin
         .from("service_requests")
         .update({
@@ -209,7 +305,11 @@ export async function PATCH(request: Request) {
       const { sendWebPush } = await import("@/lib/push/web-push");
       await sendWebPush({
         title: row.title as string,
-        body: quoteLabel(row) ?? "Quote",
+        body: quoteLabel({
+          reply_amount: body.min,
+          quote_max: body.max,
+          reply_currency: body.currency,
+        }) ?? "Quote",
         href: `/chat/${row.id}`,
         tag: `services-quote:${row.id}`,
         kind: "message",

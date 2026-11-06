@@ -458,6 +458,27 @@ html[data-appearance="dark"] .pf-panel-soft-strong {
   background: color-mix(in srgb, var(--pf-orange-500) 24%, var(--pf-card));
 }
 
+@keyframes pf-order-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pf-order-in {
+  animation: pf-order-in 280ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-order-in {
+    animation: none;
+  }
+}
+
 :root[data-appearance="dark"] .pf-skill-on,
 :root[data-theme="dark"] .pf-skill-on {
   background: color-mix(in srgb, var(--pf-orange-500) 24%, var(--pf-card));

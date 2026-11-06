@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AGREED_REPLY, isAgreedReply, quoteLabel, type ServiceDelivery } from "@/lib/pros/delivery";
-import { QuoteForm, QuoteTag, type QuoteInput } from "@/components/pros/quote-form";
+import { AGREED_REPLY, compareDeliveries, isAgreedReply, quoteLabel, type ServiceDelivery } from "@/lib/pros/delivery";
+import { QuoteForm, type QuoteInput } from "@/components/pros/quote-form";
+import { OrderCard, type CustomerOrder, type CustomerOrderState } from "@/components/pros/order-card";
 import { downloadVisitIcs } from "@/lib/pros/visit-calendar";
 import { statusKey } from "@/lib/pros/i18n";
 import { readMyListingId } from "@/lib/pros/join";
@@ -22,6 +23,7 @@ export default function WorkerInboxPage() {
   const [nationalityReady, setNationalityReady] = useState(false);
   const [permitQuote, setPermitQuote] = useState<QuoteInput | null>(null);
   const [quoting, setQuoting] = useState<string | null>(null);
+  const [version, setVersion] = useState(0);
   const to = (path: string) => servicesPath(pathname, path);
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
 
@@ -49,7 +51,7 @@ export default function WorkerInboxPage() {
         setIncoming(rows);
       })
       .catch(() => setIncoming([]));
-  }, [actor, actorReady, pathname, router, start]);
+  }, [actor, actorReady, pathname, router, start, version]);
 
   const rows = useMemo(() => {
     if (!listingId) return [];
@@ -71,7 +73,14 @@ export default function WorkerInboxPage() {
     void fetch("/api/services/requests", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, action: "quote", min: quote.min, max: quote.max, currency: quote.currency }),
+        body: JSON.stringify({
+          id,
+          action: "quote",
+          min: quote.min,
+          max: quote.max,
+          currency: quote.currency,
+          note: quote.note,
+        }),
     }).then((res) => {
       setQuoting(null);
       if (!res.ok) return;
@@ -83,6 +92,7 @@ export default function WorkerInboxPage() {
                 reply_amount: quote.min,
                 quote_max: quote.max,
                 reply_currency: quote.currency,
+                quote_note: quote.note,
               }
             : item,
         ),
@@ -102,73 +112,61 @@ export default function WorkerInboxPage() {
   return (
     <div className="space-y-3">
       <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("staffOrders")}</h1>
-      {incoming.map((row) => {
-        const accepted = isAgreedReply(row.reply_message);
+      {incoming.slice().sort(compareDeliveries).map((row) => {
+        const cancelled = Boolean(row.cancelled_at);
+        const accepted = !cancelled && isAgreedReply(row.reply_message);
         const price = quoteLabel(row);
-        const photos = (row.photos ?? []).filter((src) => typeof src === "string" && src.length > 0);
+        const state: CustomerOrderState = cancelled ? "cancelled" : accepted ? "booked" : price ? "price" : "waiting";
+        const order: CustomerOrder = {
+          id: row.id,
+          state,
+          createdAt: row.created_at,
+          title: row.title,
+          description: row.description,
+          whenLabel: row.when_label,
+          area: null,
+          photos: (row.photos ?? []).filter((src) => typeof src === "string" && src.length > 0),
+          personName: "",
+          priceLabel: price,
+          quoteNote: row.quote_note ?? null,
+          cancelReason: row.cancel_reason ?? null,
+          repliedAt: row.replied_at,
+          acceptedAt: row.accepted_at ?? null,
+          chatHref: to(`/chat/${row.id}`),
+          reviewHref: to(`/chat/${row.id}`),
+        };
         return (
-          <article
-            key={row.id}
-            className={
-              accepted
-                ? "pf-order-fixed space-y-2 rounded-[20px] border border-pf-line p-4"
-                : "space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4"
-            }
-          >
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-pf-12 font-medium text-pf-slate-ink">
-                {accepted ? t("appointmentReady") : price ? t("quoteSent") : t("incomingTitle")}
-              </p>
-              {price ? <QuoteTag label={price} /> : null}
-            </div>
-            <p className="text-pf-18 font-medium text-pf-ink">{row.title}</p>
-            <p className="whitespace-pre-wrap text-pf-16 text-pf-text-secondary">{row.description}</p>
-            {photos.length > 0 ? (
-              <div className="flex gap-2 overflow-x-auto">
-                {photos.map((src) => (
-                  <img key={src} src={src} alt="" className="size-20 shrink-0 rounded-[14px] object-cover" />
-                ))}
-              </div>
-            ) : null}
-            {row.when_label ? <p className="text-pf-14 text-pf-text-secondary">{row.when_label}</p> : null}
-            <Link
-              href={to(`/chat/${row.id}`)}
-              className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink"
-            >
-              {t("openChat")}
-            </Link>
-            {accepted ? (
-              <button
-                type="button"
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-navy-600 px-4 text-pf-16 font-medium text-white"
-                onClick={() =>
-                  downloadVisitIcs({
-                    id: row.id,
-                    title: row.title,
-                    whenLabel: row.when_label,
-                    details: row.description,
-                    who: row.target_name,
-                    price: price ? t("calendarPriceLine", { amount: price }) : null,
-                  })
-                }
-              >
-                {t("addToCalendar")}
-              </button>
-            ) : price ? null : (
+          <div key={row.id} className="space-y-2">
+            <OrderCard
+              audience="staff"
+              order={order}
+              busy={quoting === row.id}
+              onQuote={() => setQuoting(row.id)}
+              onCalendar={() =>
+                downloadVisitIcs({
+                  id: row.id,
+                  title: row.title,
+                  whenLabel: row.when_label,
+                  details: row.description,
+                  who: row.target_name,
+                  price: price ? t("calendarPriceLine", { amount: price }) : null,
+                })
+              }
+            />
+            {quoting === row.id && state === "waiting" ? (
               <QuoteForm
                 busy={quoting === row.id}
                 submitLabel={t("sendQuote")}
                 onSubmit={(quote) => {
                   if (nationalityReady && needsWorkPermit(nationality)) {
                     setPermitQuote(quote);
-                    setQuoting(row.id);
                     return;
                   }
                   sendQuote(row.id, quote);
                 }}
               />
-            )}
-          </article>
+            ) : null}
+          </div>
         );
       })}
       {!listingId && incoming.length === 0 ? (

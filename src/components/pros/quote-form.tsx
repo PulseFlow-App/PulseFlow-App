@@ -7,6 +7,7 @@ export type QuoteInput = {
   min: number;
   max: number | null;
   currency: string;
+  note: string;
 };
 
 export function QuoteForm({
@@ -22,6 +23,7 @@ export function QuoteForm({
   const [min, setMin] = useState("");
   const [max, setMax] = useState("");
   const [currency, setCurrency] = useState("THB");
+  const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -36,7 +38,7 @@ export function QuoteForm({
           return;
         }
         setError(null);
-        onSubmit({ min: low, max: high, currency });
+        onSubmit({ min: low, max: high, currency, note: note.trim() });
       }}
     >
       <p className="text-pf-14 leading-relaxed text-pf-text-secondary">{t("quoteHint")}</p>
@@ -67,6 +69,15 @@ export function QuoteForm({
         <option value="THB">THB</option>
         <option value="USD">USD</option>
       </select>
+      <textarea
+        value={note}
+        onChange={(event) => setNote(event.target.value)}
+        placeholder={t("quoteNoteHint")}
+        aria-label={t("quoteNote")}
+        rows={3}
+        maxLength={500}
+        className="w-full resize-none rounded-[14px] border border-pf-line bg-pf-page px-3 py-2 text-pf-16 text-pf-ink outline-none"
+      />
       {error ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
       <button
         type="submit"

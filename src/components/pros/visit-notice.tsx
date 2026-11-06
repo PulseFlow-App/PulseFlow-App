@@ -54,7 +54,7 @@ export function VisitNotice() {
           if (cancel) return;
           const seen = readDismissed(actorId);
           const next = (payload.requests ?? []).find(
-            (item) => item.created_by === actorId && isAgreedReply(item.reply_message) && !seen.includes(item.id),
+            (item) => item.created_by === actorId && isAgreedReply(item.reply_message) && !item.cancelled_at && !seen.includes(item.id),
           );
           setRow(next ?? null);
         })

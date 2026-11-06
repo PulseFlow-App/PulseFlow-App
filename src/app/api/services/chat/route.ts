@@ -26,6 +26,11 @@ type RequestRow = {
   reply_amount?: number | null;
   quote_max?: number | null;
   reply_currency?: string | null;
+  quote_note?: string | null;
+  cancelled_at?: string | null;
+  cancel_reason?: string | null;
+  description?: string | null;
+  when_label?: string | null;
 };
 
 async function actor() {
@@ -40,14 +45,14 @@ async function loadRequest(id: string): Promise<RequestRow | null | "missing"> {
   const admin = createAdminClient();
   const withChat = await admin
     .from("service_requests")
-    .select("id, title, created_by, target_profile_id, target_name, reply_message, chat_open, reply_amount, quote_max, reply_currency")
+    .select("id, title, description, when_label, created_by, target_profile_id, target_name, reply_message, chat_open, reply_amount, quote_max, reply_currency, quote_note, cancelled_at, cancel_reason")
     .eq("id", id)
     .maybeSingle();
   if (!withChat.error) return (withChat.data as RequestRow | null) ?? null;
-  if (!/chat_open|quote_max/.test(withChat.error.message)) return "missing";
+  if (!/chat_open|quote_max|quote_note|cancelled_at|cancel_reason/.test(withChat.error.message)) return "missing";
   const plain = await admin
     .from("service_requests")
-    .select("id, title, created_by, target_profile_id, target_name, reply_message")
+    .select("id, title, description, when_label, created_by, target_profile_id, target_name, reply_message")
     .eq("id", id)
     .maybeSingle();
   if (plain.error) return "missing";
@@ -71,6 +76,11 @@ function threadMeta(row: RequestRow, userId: string, peerName: string) {
     quoteMin: row.reply_amount ?? null,
     quoteMax: row.quote_max ?? null,
     quoteCurrency: row.reply_currency ?? null,
+    quoteNote: row.quote_note ?? null,
+    cancelled: Boolean(row.cancelled_at),
+    cancelReason: row.cancel_reason ?? null,
+    description: row.description ?? "",
+    whenLabel: row.when_label ?? null,
   };
 }
 
