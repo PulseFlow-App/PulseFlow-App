@@ -97,6 +97,12 @@ export default function WorkerInboxPage() {
             <p className="text-pf-18 font-medium text-pf-ink">{row.title}</p>
             <p className="whitespace-pre-wrap text-pf-16 text-pf-text-secondary">{row.description}</p>
             {row.when_label ? <p className="text-pf-14 text-pf-text-secondary">{row.when_label}</p> : null}
+            <Link
+              href={to(`/chat/${row.id}`)}
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink"
+            >
+              {agreed ? t("chatTitle") : t("openChat")}
+            </Link>
             {agreed ? (
               <>
                 <p className="text-pf-14 font-medium text-pf-ink">{t("agreedComing")}</p>

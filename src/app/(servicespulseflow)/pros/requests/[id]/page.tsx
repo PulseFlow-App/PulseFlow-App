@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import Link from "next/link";
+import { useParams, usePathname } from "next/navigation";
 import { OriginalText, RequireUser } from "@/components/pros/parts";
 import { ServiceReviewForm } from "@/components/pros/service-review";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Input, Label } from "@/components/ui/input";
 import { assignRequestToTask } from "@/lib/pros/assign-task";
 import { AGREED_REPLY, isAgreedReply } from "@/lib/pros/delivery";
 import { preferredDateKey, preferredTimeKey, statusKey } from "@/lib/pros/i18n";
+import { servicesPath } from "@/lib/pros/paths";
 import { downloadVisitIcs } from "@/lib/pros/visit-calendar";
 import { nextKey, offerHasReply } from "@/lib/pros/matching";
 import type { ServiceDelivery } from "@/lib/pros/delivery";
@@ -20,6 +22,7 @@ import type { ProOffer, ProsStatus } from "@/lib/pros/types";
 
 export default function RequestDetailPage() {
   const params = useParams<{ id: string }>();
+  const pathname = usePathname();
   const { state, actor, t, chooseOffer, setRequestStatus, rememberTranslation, recordCost } = usePros();
   const { locale } = useI18n();
   const request = state.requests.find((row) => row.id === params.id);
@@ -50,10 +53,14 @@ export default function RequestDetailPage() {
   }
   const offers = state.offers.filter((row) => row.requestId === request.id);
   const remote = deliveries.filter((row) => row.request_id === request.id);
-  const replyFor = (profileId: string) => {
+  const deliveryFor = (profileId: string) => {
     const linked = state.profiles.find((row) => row.id === profileId)?.linkedProfileId;
     if (!linked) return null;
-    return remote.find((row) => row.target_profile_id === linked && row.reply_message) ?? null;
+    return remote.find((row) => row.target_profile_id === linked) ?? null;
+  };
+  const replyFor = (profileId: string) => {
+    const row = deliveryFor(profileId);
+    return row?.reply_message ? row : null;
   };
   const visible = offers.filter((offer) => offerHasReply(offer) || replyFor(offer.profileId));
   const mine = actor?.id === request.createdBy;
@@ -109,6 +116,14 @@ export default function RequestDetailPage() {
                 <p className="mt-1 text-pf-16 text-pf-text-secondary">
                   {pro.linkedProfileId ? t("notifiedInApp") : t("notOnApp")}
                 </p>
+                {deliveryFor(offer.profileId) ? (
+                  <Link
+                    href={servicesPath(pathname, `/chat/${deliveryFor(offer.profileId)!.id}`)}
+                    className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink"
+                  >
+                    {deliveryFor(offer.profileId)?.reply_message ? t("chatTitle") : t("openChat")}
+                  </Link>
+                ) : null}
               </div>
             );
           })}

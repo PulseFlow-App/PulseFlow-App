@@ -7,6 +7,7 @@ import { useAppearance } from "@/lib/appearance/provider";
 import { demoLogout } from "@/lib/demo/store";
 import { isDemoMode } from "@/lib/env";
 import { DirectoryListingCard } from "@/components/pros/directory-listing";
+import { ServicesPushToggle } from "@/components/pros/services-push";
 import { LinkOffer } from "@/components/account/link-offer";
 import { isHireAccount, isWorkAccount } from "@/lib/pros/intent";
 import { serviceInviteUrl } from "@/lib/pros/join";
@@ -93,7 +94,9 @@ export default function ServicesSettingsPage() {
         </div>
       </section>
 
-      {work ? null : <DirectoryListingCard />}
+      <ServicesPushToggle />
+
+      {work || actor.role === "owner" ? null : <DirectoryListingCard />}
       <LinkOffer app="services" variant="settings" />
 
       <section className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">

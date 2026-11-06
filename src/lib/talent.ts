@@ -22,9 +22,9 @@ export function canListInTalentSearch(role: UserRole) {
   return role === "cleaner" || role === "staff" || role === "manager";
 }
 
-/** Services settings can list an owner as well as field staff. Guests stay off the directory. */
+/** Field staff and managers can appear in the directory. Owners look for help, so they do not list themselves. */
 export function canListOnServices(role: UserRole) {
-  return canListInTalentSearch(role) || role === "owner";
+  return canListInTalentSearch(role);
 }
 
 export function normalizeTalentSkills(raw: string[] | null | undefined): TalentSkill[] {

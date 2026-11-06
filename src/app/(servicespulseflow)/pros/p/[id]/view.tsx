@@ -126,6 +126,7 @@ export function ProfileView({ id }: { id: string }) {
           {saved ? t("savedFavourite") : t("saveFavourite")}
         </button>
       ) : null}
+      {saved ? <p className="text-center text-pf-14 text-pf-text-secondary">{t("savedListHint")}</p> : null}
       <Link
         href={servicesPath(pathname, `/request?profile=${pro.id}&category=${pro.categoryIds[0] ?? ""}`)}
         className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white active:bg-pf-orange-700"

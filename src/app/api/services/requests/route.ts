@@ -112,6 +112,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Could not save the request." }, { status: 500 });
   }
 
+  try {
+    const { sendWebPushMany } = await import("@/lib/push/web-push");
+    await sendWebPushMany(
+      targets.map((row) => ({
+        title: body.title,
+        body: body.description.slice(0, 140),
+        href: "/inbox",
+        tag: `services:${body.requestId}:${row.profileId}`,
+        kind: "message" as const,
+        org_id: user.id,
+        audience_profile_ids: [row.profileId],
+      })),
+    );
+  } catch {
+    // The request is saved even when the phone alert cannot be sent.
+  }
+
   return NextResponse.json({ ok: true, sent: targets.length });
 }
 
@@ -150,6 +167,9 @@ export async function PATCH(request: Request) {
     })
     .eq("id", body.id);
   if (error) return NextResponse.json({ error: "Could not save the reply." }, { status: 500 });
+  if (body.agree) {
+    await admin.from("service_requests").update({ chat_open: true }).eq("id", body.id);
+  }
 
   return NextResponse.json({ ok: true });
 }

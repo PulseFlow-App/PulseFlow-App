@@ -93,13 +93,14 @@ function Frame({ children }: { children: React.ReactNode }) {
       : []),
     ["/", t("home"), "/pros", "home"],
     ["/find", t("find"), "/pros/find", "search"],
+    ["/saved", t("favourites"), "/pros/saved", "person"],
     ["/inbox", workAccount ? t("staffOrders") : t("messages"), "/pros/inbox", workAccount ? "check" : "chat"],
     ["/requests", t("requests"), "/pros/requests", "clipboard"],
   ];
   const visibleTabs = tabs.filter(([publicHref]) => {
     if (publicHref === "/company") return true;
     if (workAccount) return publicHref === "/" || publicHref === "/inbox";
-    if (searchAccount) return publicHref === "/" || publicHref === "/find" || publicHref === "/requests";
+    if (searchAccount) return publicHref === "/" || publicHref === "/find" || publicHref === "/saved" || publicHref === "/requests";
     return publicHref === "/";
   });
   return (
@@ -152,7 +153,7 @@ function Frame({ children }: { children: React.ReactNode }) {
           {searchAccount ? <VisitNotice /> : null}
           {children}
           {isHome || here.startsWith("/admin") ? null : (
-            <div className="mt-8 space-y-2 text-center">
+            <div className={cn("space-y-2 text-center", here === "/" ? "mt-4" : "mt-8")}>
               <p className="text-pf-12 text-pf-slate-ink">{t("terms")}</p>
               <p className="flex flex-wrap justify-center gap-4 text-pf-14">
                 <Link href={servicesPath(pathname, "/terms")} className="font-medium text-pf-text-secondary">

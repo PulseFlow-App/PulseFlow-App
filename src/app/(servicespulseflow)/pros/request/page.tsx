@@ -7,7 +7,7 @@ import { readPhoto } from "@/components/pros/parts";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { LOCALE_META } from "@/lib/i18n";
-import { PROS_LANGS, localizedName } from "@/lib/pros/catalog";
+import { localizedName } from "@/lib/pros/catalog";
 import { allCategories } from "@/lib/pros/matching";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
@@ -18,6 +18,11 @@ import { todayIsoDate } from "@/lib/villas/status-from-dates";
 
 const DRAFT_KEY = "pulseflow.services.requestDraft";
 const TIME_OPTIONS = ["morning", "afternoon", "evening", "any"] as const;
+const ORDER_LANGS = ["en", "th"] as const;
+
+function orderLanguage(code: string) {
+  return code === "th" ? "th" : "en";
+}
 
 type RequestDraft = {
   categoryId: string;
@@ -63,7 +68,7 @@ function RequestInner() {
   const [urgency, setUrgency] = useState<ProsUrgency>("flexible");
   const [preferredDate, setPreferredDate] = useState(todayIsoDate);
   const [preferredTime, setPreferredTime] = useState<(typeof TIME_OPTIONS)[number]>("morning");
-  const [language, setLanguage] = useState<string>(locale);
+  const [language, setLanguage] = useState<string>(orderLanguage(locale));
   const [photos, setPhotos] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const sent = useRef(false);
@@ -85,7 +90,7 @@ function RequestInner() {
         ? (draft.preferredTime as (typeof TIME_OPTIONS)[number])
         : "morning",
     );
-    setLanguage(draft.language);
+    setLanguage(orderLanguage(draft.language));
     setPhotos(draft.photos ?? []);
   }, []);
 
@@ -303,8 +308,8 @@ function RequestInner() {
         </div>
         <div>
           <Label>{t("yourLanguage")}</Label>
-          <Select value={language} onChange={(e) => setLanguage(e.target.value)}>
-            {PROS_LANGS.map((lang) => (
+          <Select value={language} onChange={(e) => setLanguage(orderLanguage(e.target.value))}>
+            {ORDER_LANGS.map((lang) => (
               <option key={lang} value={lang}>
                 {LOCALE_META[lang].native}
               </option>

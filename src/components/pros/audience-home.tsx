@@ -67,27 +67,24 @@ export function ServicesWelcome() {
     }
   }
 
-  const findClass = "mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white";
-  const becomeClass = "mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#F5F7FC] px-4 text-pf-16 font-medium text-pf-navy-900";
+  const findClass = "mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white";
+  const becomeClass = "mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#F5F7FC] px-4 text-pf-16 font-medium text-pf-navy-900";
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <h1 className="text-pf-36 font-extrabold tracking-[-0.03em] text-pf-ink">{t("welcomeTitle")}</h1>
-        <p className="max-w-[70ch] text-pf-16 text-pf-text-secondary">{t("welcomeSplit")}</p>
-      </div>
+    <div className="space-y-3">
+      <h1 className="text-pf-28 font-extrabold tracking-[-0.03em] text-pf-ink">{t("welcomeTitle")}</h1>
 
-      <section className="rounded-[28px] border border-pf-line bg-pf-card p-5">
-        <h2 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("findStaffTitle")}</h2>
-        <p className="mt-2 max-w-[70ch] text-pf-16 text-pf-text-secondary">{t("findStaffBody")}</p>
+      <section className="rounded-[28px] border border-pf-line bg-pf-card p-4">
+        <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{t("findStaffTitle")}</h2>
+        <p className="mt-1 max-w-[70ch] text-pf-14 leading-snug text-pf-text-secondary">{t("findStaffBody")}</p>
         <Link href={exploreHref} className={findClass}>
           {t("findStaffCta")}
         </Link>
       </section>
 
-      <section className="rounded-[28px] bg-pf-navy-900 p-5 text-pf-on-panel">
-        <h2 className="text-pf-28 font-bold tracking-[-0.02em]">{t("becomeStaffTitle")}</h2>
-        <p className="mt-2 max-w-[70ch] text-pf-16 text-pf-on-panel/80">{t("becomeStaffBody")}</p>
+      <section className="rounded-[28px] bg-pf-navy-900 p-4 text-pf-on-panel">
+        <h2 className="text-pf-22 font-bold tracking-[-0.02em]">{t("becomeStaffTitle")}</h2>
+        <p className="mt-1 max-w-[70ch] text-pf-14 leading-snug text-pf-on-panel/80">{t("becomeStaffBody")}</p>
         {account ? (
           <button type="button" className={becomeClass} disabled={busy != null} onClick={() => void choose("work")}>
             {t("becomeStaffCta")}

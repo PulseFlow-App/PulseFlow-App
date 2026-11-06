@@ -62,10 +62,12 @@ const MARKET_PREFIXES = [
   "/reply",
   "/claim",
   "/inbox",
+  "/chat",
   "/company",
   "/admin",
   "/start",
   "/settings",
+  "/saved",
   "/terms",
   "/privacy",
 ];

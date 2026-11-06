@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -30,8 +30,8 @@ import {
 import { usePros } from "@/lib/pros/store";
 import { categoryName, reviewAverage } from "@/lib/pros/matching";
 import type { ProProfile } from "@/lib/pros/types";
-import { fetchTranslation } from "@/lib/translate/client";
 import { useI18n } from "@/lib/i18n/provider";
+import { useLocalizedText } from "@/lib/translate/use-localized-content";
 
 const TRADE_ICONS = {
   wind: SolarWind,
@@ -200,28 +200,28 @@ export function OriginalText({
 }) {
   const { locale } = useI18n();
   const { t } = usePros();
-  const translated = translations[locale];
-  const showTranslate = originalLocale !== locale && text.trim().length > 0;
+  const saved = translations[locale];
+  const needs = !saved && originalLocale !== locale && text.trim().length > 0;
+  const { display } = useLocalizedText(needs ? text : "");
+  const shown = saved || (needs ? display || text : text);
+  const [originalOpen, setOriginalOpen] = useState(false);
+  const changed = shown.trim() !== text.trim();
+  useEffect(() => {
+    if (needs && changed && display && !translations[locale]) onSave(locale, display);
+  }, [changed, display, locale, needs, onSave, text, translations]);
   return (
     <div className="space-y-1">
-      <p className="whitespace-pre-wrap text-pf-16 text-pf-ink">{translated || text}</p>
-      {showTranslate ? (
-        <div className="flex flex-wrap gap-3 text-xs">
-          {translated ? <span className="text-pf-slate-ink">{t("originalKept")}</span> : null}
-          <button
-            type="button"
-            className="font-medium text-pf-text-secondary"
-            onClick={() => {
-              if (translated) return;
-              void fetchTranslation(text, locale).then((next) => {
-                if (next) onSave(locale, next);
-              });
-            }}
-          >
-            {translated ? text : t("translate")}
-          </button>
-        </div>
+      <p className="whitespace-pre-wrap text-pf-16 text-pf-ink">{shown}</p>
+      {changed ? (
+        <button
+          type="button"
+          className="min-h-11 text-pf-14 font-medium text-pf-text-secondary"
+          onClick={() => setOriginalOpen((open) => !open)}
+        >
+          {t("showOriginal")}
+        </button>
       ) : null}
+      {originalOpen ? <p className="whitespace-pre-wrap text-pf-14 text-pf-text-secondary">{text}</p> : null}
     </div>
   );
 }
