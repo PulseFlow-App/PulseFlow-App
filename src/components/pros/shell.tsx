@@ -17,6 +17,7 @@ import { isServicesLocale } from "@/lib/pros/paths";
 import { LOCALES, LOCALE_META } from "@/lib/i18n";
 import { LinkOffer } from "@/components/account/link-offer";
 import { AddToHomeScreenModal } from "@/components/pwa/add-to-home-screen-modal";
+import { OpenInAppModal } from "@/components/pwa/open-in-app-modal";
 import { BillingOffer } from "@/components/pros/billing-offer";
 import { SupportMail } from "@/components/pros/support-mail";
 import { VisitNotice } from "@/components/pros/visit-notice";
@@ -240,6 +241,7 @@ function Frame({ children }: { children: React.ReactNode }) {
           </ul>
         </nav>
       )}
+      <OpenInAppModal />
       <AddToHomeScreenModal />
     </div>
   );

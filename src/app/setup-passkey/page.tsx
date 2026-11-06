@@ -14,6 +14,7 @@ import {
   registerPasskey,
 } from "@/lib/auth/passkeys";
 import { useI18n } from "@/lib/i18n/provider";
+import { OpenInAppModal } from "@/components/pwa/open-in-app-modal";
 
 function deviceLabel() {
   if (typeof navigator === "undefined") return "This device";
@@ -60,6 +61,7 @@ export default function SetupPasskeyPage() {
 
   return (
     <div className="flex h-dvh items-center justify-center overflow-y-auto bg-sand px-4 py-10">
+      <OpenInAppModal />
       <div className="w-full max-w-md animate-rise">
         <div className="mb-6 text-center">
           <PulseMark className="mx-auto mb-3 size-12" />

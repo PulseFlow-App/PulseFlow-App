@@ -103,6 +103,7 @@ export function AddToHomeScreenModal() {
   useEffect(() => {
     setMounted(true);
     if (isStandaloneDisplay() || wasDismissed()) return;
+    if (new URLSearchParams(window.location.search).get("openApp") === "1") return;
     const timer = window.setTimeout(() => setOpen(true), 600);
     return () => window.clearTimeout(timer);
   }, []);

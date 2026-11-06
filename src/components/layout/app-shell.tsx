@@ -15,6 +15,7 @@ import { EducationProvider } from "@/lib/education/provider";
 import { EducationTour } from "@/components/education/education-tour";
 import { LinkOffer } from "@/components/account/link-offer";
 import { AddToHomeScreenModal } from "@/components/pwa/add-to-home-screen-modal";
+import { OpenInAppModal } from "@/components/pwa/open-in-app-modal";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -103,6 +104,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         <BottomNav />
         <ReviewOfferBanner />
         <EducationTour />
+        <OpenInAppModal />
         <AddToHomeScreenModal />
       </div>
     </div>

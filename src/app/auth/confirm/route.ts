@@ -35,5 +35,7 @@ export async function GET(request: Request) {
     await finishConfirmedSignup(createAdminClient(), user);
   }
 
-  return NextResponse.redirect(new URL(nextPath, url.origin));
+  const dest = new URL(nextPath, url.origin);
+  dest.searchParams.set("openApp", "1");
+  return NextResponse.redirect(dest);
 }
