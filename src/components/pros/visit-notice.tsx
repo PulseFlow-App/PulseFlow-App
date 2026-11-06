@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { isAgreedReply, type ServiceDelivery } from "@/lib/pros/delivery";
+import { isAgreedReply, quoteLabel, type ServiceDelivery } from "@/lib/pros/delivery";
 import { isHireAccount } from "@/lib/pros/intent";
 import { usePros } from "@/lib/pros/store";
 import { downloadVisitIcs } from "@/lib/pros/visit-calendar";
@@ -94,6 +94,7 @@ export function VisitNotice() {
             whenLabel: row.when_label,
             details: row.description,
             who: row.target_name,
+            price: quoteLabel(row) ? t("calendarPriceLine", { amount: quoteLabel(row)! }) : null,
           });
           close();
         }}
@@ -121,6 +122,7 @@ export function VisitCalendarSheet({
     whenLabel: string | null;
     details?: string | null;
     who?: string | null;
+    price?: string | null;
   } | null;
   onClose: () => void;
 }) {
@@ -145,6 +147,7 @@ export function VisitCalendarSheet({
               whenLabel: visit.whenLabel,
               details: visit.details,
               who: visit.who,
+              price: visit.price,
             });
             onClose();
           }}

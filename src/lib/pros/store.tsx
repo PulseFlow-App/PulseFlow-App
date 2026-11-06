@@ -429,6 +429,7 @@ export function ProsProvider({ children }: { children: ReactNode }) {
               title: request.title,
               description: request.description,
               whenLabel,
+              photos: request.photos,
               targets,
             }),
           });

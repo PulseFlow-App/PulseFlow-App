@@ -8,7 +8,7 @@ import { ServiceReviewForm } from "@/components/pros/service-review";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { assignRequestToTask } from "@/lib/pros/assign-task";
-import { AGREED_REPLY, isAgreedReply } from "@/lib/pros/delivery";
+import { AGREED_REPLY, isAgreedReply, quoteLabel } from "@/lib/pros/delivery";
 import { preferredDateKey, preferredTimeKey, statusKey } from "@/lib/pros/i18n";
 import { servicesPath } from "@/lib/pros/paths";
 import { downloadVisitIcs } from "@/lib/pros/visit-calendar";
@@ -137,6 +137,7 @@ export default function RequestDetailPage() {
             const agreed = offer.message === AGREED_REPLY || isAgreedReply(remoteReply?.reply_message);
             const message = agreed ? "" : offer.message || remoteReply?.reply_message || "";
             const whenLabel = [request.preferredDate, request.preferredTime].filter(Boolean).join(" · ") || remoteReply?.when_label || null;
+            const price = remoteReply ? quoteLabel(remoteReply) : null;
             if (!pro) return null;
             return (
               <article key={offer.id} className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-3">
@@ -154,6 +155,7 @@ export default function RequestDetailPage() {
                           whenLabel,
                           details: request.description,
                           who: pro.name,
+                          price: price ? t("calendarPriceLine", { amount: price }) : null,
                         })
                       }
                     >

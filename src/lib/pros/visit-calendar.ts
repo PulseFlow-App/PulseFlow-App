@@ -67,12 +67,14 @@ export function buildVisitIcs(input: {
   whenLabel: string | null;
   details?: string | null;
   who?: string | null;
+  /** Already translated, for example "Price: 1500–2000 THB". */
+  price?: string | null;
 }) {
   const slot = visitSlot(input.whenLabel);
   const end = plusHour(slot.date, slot.time);
   const summary = escapeIcs([input.title, input.who].filter(Boolean).join(" · "));
   const description = escapeIcs(
-    [input.details?.trim() || null, input.whenLabel?.trim() || null, input.who || null]
+    [input.price?.trim() || null, input.details?.trim() || null, input.whenLabel?.trim() || null, input.who || null]
       .filter(Boolean)
       .join("\n"),
   );
@@ -106,6 +108,7 @@ export function downloadVisitIcs(input: {
   whenLabel: string | null;
   details?: string | null;
   who?: string | null;
+  price?: string | null;
 }) {
   downloadIcs(`pulseflow-visit-${input.id.slice(0, 8)}.ics`, buildVisitIcs(input));
 }

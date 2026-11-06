@@ -449,6 +449,15 @@ html[data-appearance="dark"] .pf-panel-soft-strong {
   color: var(--pf-navy-900);
 }
 
+.pf-order-fixed {
+  background: var(--pf-peach-100);
+}
+
+:root[data-appearance="dark"] .pf-order-fixed,
+:root[data-theme="dark"] .pf-order-fixed {
+  background: color-mix(in srgb, var(--pf-orange-500) 24%, var(--pf-card));
+}
+
 :root[data-appearance="dark"] .pf-skill-on,
 :root[data-theme="dark"] .pf-skill-on {
   background: color-mix(in srgb, var(--pf-orange-500) 24%, var(--pf-card));
@@ -461,6 +470,10 @@ html[data-appearance="dark"] .pf-panel-soft-strong {
     background: color-mix(in srgb, var(--pf-orange-500) 24%, var(--pf-card));
     color: #f5f7fc;
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pf-orange-500) 55%, var(--pf-line));
+  }
+
+  :root:not([data-appearance="frost"]):not([data-theme="light"]) .pf-order-fixed {
+    background: color-mix(in srgb, var(--pf-orange-500) 24%, var(--pf-card));
   }
 }
 

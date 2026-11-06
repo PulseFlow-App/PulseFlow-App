@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAppearance } from "@/lib/appearance/provider";
@@ -41,7 +42,7 @@ function Chip({
 }
 
 export default function ServicesSettingsPage() {
-  const { actor, actorReady, plan, setPlan, t } = usePros();
+  const { actor, actorReady, plan, t } = usePros();
   const pathname = usePathname();
   const router = useRouter();
   const { appearance, setAppearance } = useAppearance();
@@ -157,23 +158,21 @@ export default function ServicesSettingsPage() {
             {plan.premium || plan.pro ? <span className="text-pf-14 font-medium text-pf-ink">{t("planOn")}</span> : null}
           </div>
           <p className="text-pf-16 leading-relaxed text-pf-text-secondary">
-            {discount ? t("planHalfBody") : t("premiumBody")}
+            {t("planTrialBody")}{" "}
+            <Link href={servicesPath(pathname, "/assistant")} className="font-medium text-pf-ink underline">
+              {t("readMore")}
+            </Link>
           </p>
-          <Button
+          <button
             type="button"
-            variant={plan.premium || plan.pro ? "ghost" : "primary"}
-            className="min-h-12 w-full"
-            onClick={() => {
-              const on = !(plan.premium || plan.pro);
-              setPlan({ premium: on, pro: on });
-            }}
+            disabled
+            className="inline-flex min-h-12 w-full cursor-not-allowed items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white opacity-60"
           >
-            {plan.premium || plan.pro ? t("turnOff") : t("turnOn")}
-          </Button>
+            {t("planUpgrade")}
+          </button>
+          <p className="text-pf-14 leading-relaxed text-pf-text-secondary">{t("planBillingLater")}</p>
         </section>
       ) : null}
-
-      {hire ? <p className="text-pf-12 leading-relaxed text-pf-slate-ink">{t("paymentNotCharged")}</p> : null}
 
       <button
         type="button"

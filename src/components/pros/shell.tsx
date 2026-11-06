@@ -150,7 +150,7 @@ function Frame({ children }: { children: React.ReactNode }) {
         <div className={cn("mx-auto w-full", isHome ? "max-w-lg" : "px-4 py-4", !isHome && (wide ? "max-w-3xl" : "max-w-lg"))}>
           {hideNav ? null : <LinkOffer app="services" />}
           {searchAccount ? <BillingOffer /> : null}
-          {searchAccount ? <VisitNotice /> : null}
+          {searchAccount && here === "/" ? <VisitNotice /> : null}
           {children}
           {isHome || here.startsWith("/admin") ? null : (
             <div className={cn("space-y-2 text-center", here === "/" ? "mt-4" : "mt-8")}>

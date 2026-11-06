@@ -23,6 +23,9 @@ type RequestRow = {
   target_name: string;
   reply_message: string | null;
   chat_open?: boolean | null;
+  reply_amount?: number | null;
+  quote_max?: number | null;
+  reply_currency?: string | null;
 };
 
 async function actor() {
@@ -37,11 +40,11 @@ async function loadRequest(id: string): Promise<RequestRow | null | "missing"> {
   const admin = createAdminClient();
   const withChat = await admin
     .from("service_requests")
-    .select("id, title, created_by, target_profile_id, target_name, reply_message, chat_open")
+    .select("id, title, created_by, target_profile_id, target_name, reply_message, chat_open, reply_amount, quote_max, reply_currency")
     .eq("id", id)
     .maybeSingle();
   if (!withChat.error) return (withChat.data as RequestRow | null) ?? null;
-  if (!/chat_open/.test(withChat.error.message)) return "missing";
+  if (!/chat_open|quote_max/.test(withChat.error.message)) return "missing";
   const plain = await admin
     .from("service_requests")
     .select("id, title, created_by, target_profile_id, target_name, reply_message")
@@ -56,7 +59,19 @@ function isParty(row: RequestRow, userId: string) {
 }
 
 function isOpen(row: RequestRow) {
-  return Boolean(row.chat_open || row.reply_message);
+  return Boolean(row.chat_open || row.reply_message || row.reply_amount != null);
+}
+
+function threadMeta(row: RequestRow, userId: string, peerName: string) {
+  return {
+    accepted: row.reply_message === "agreed",
+    staff: row.target_profile_id === userId,
+    title: row.title,
+    peerName,
+    quoteMin: row.reply_amount ?? null,
+    quoteMax: row.quote_max ?? null,
+    quoteCurrency: row.reply_currency ?? null,
+  };
 }
 
 export async function GET(request: Request) {
@@ -82,9 +97,7 @@ export async function GET(request: Request) {
   if (!isOpen(row)) {
     return NextResponse.json({
       open: false,
-      accepted: Boolean(row.reply_message),
-      title: row.title,
-      peerName,
+      ...threadMeta(row, user.id, peerName),
       messages: [],
     });
   }
@@ -98,18 +111,14 @@ export async function GET(request: Request) {
   if (error) {
     return NextResponse.json({
       open: true,
-      accepted: Boolean(row.reply_message),
-      title: row.title,
-      peerName,
+      ...threadMeta(row, user.id, peerName),
       messages: [],
       error: "Chat is not ready yet.",
     });
   }
   return NextResponse.json({
     open: true,
-    accepted: Boolean(row.reply_message),
-    title: row.title,
-    peerName,
+    ...threadMeta(row, user.id, peerName),
     messages: (data ?? []).map((item) => ({
       id: item.id as string,
       senderId: item.sender_id as string,

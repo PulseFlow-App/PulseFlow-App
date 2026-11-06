@@ -68,6 +68,7 @@ const MARKET_PREFIXES = [
   "/start",
   "/settings",
   "/saved",
+  "/assistant",
   "/terms",
   "/privacy",
 ];

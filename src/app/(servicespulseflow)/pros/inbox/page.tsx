@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { VisitCalendarSheet } from "@/components/pros/visit-notice";
-import { AGREED_REPLY, type ServiceDelivery } from "@/lib/pros/delivery";
+import { AGREED_REPLY, isAgreedReply, quoteLabel, type ServiceDelivery } from "@/lib/pros/delivery";
+import { QuoteForm, QuoteTag, type QuoteInput } from "@/components/pros/quote-form";
 import { downloadVisitIcs } from "@/lib/pros/visit-calendar";
 import { statusKey } from "@/lib/pros/i18n";
 import { readMyListingId } from "@/lib/pros/join";
@@ -19,11 +18,10 @@ export default function WorkerInboxPage() {
   const router = useRouter();
   const [listingId, setListingId] = useState<string | null>(null);
   const [incoming, setIncoming] = useState<ServiceDelivery[]>([]);
-  const [sent, setSent] = useState<Record<string, boolean>>({});
-  const [calendarFor, setCalendarFor] = useState<ServiceDelivery | null>(null);
   const [nationality, setNationality] = useState<string | null>(null);
   const [nationalityReady, setNationalityReady] = useState(false);
-  const [permitFor, setPermitFor] = useState<string | null>(null);
+  const [permitQuote, setPermitQuote] = useState<QuoteInput | null>(null);
+  const [quoting, setQuoting] = useState<string | null>(null);
   const to = (path: string) => servicesPath(pathname, path);
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
 
@@ -55,103 +53,121 @@ export default function WorkerInboxPage() {
 
   const rows = useMemo(() => {
     if (!listingId) return [];
+    const covered = new Set(incoming.map((row) => row.request_id));
     return state.offers
-      .filter((offer) => offer.profileId === listingId)
+      .filter((offer) => offer.profileId === listingId && !covered.has(offer.requestId))
       .map((offer) => {
         const request = state.requests.find((row) => row.id === offer.requestId);
         return { offer, request };
       })
       .filter((row) => row.request)
       .sort((a, b) => (b.offer.createdAt > a.offer.createdAt ? 1 : -1));
-  }, [listingId, state.offers, state.requests]);
+  }, [incoming, listingId, state.offers, state.requests]);
 
   if (!actor) return null;
 
-  const agree = (id: string) => {
-    const row = incoming.find((item) => item.id === id);
+  const sendQuote = (id: string, quote: QuoteInput) => {
+    setQuoting(id);
     void fetch("/api/services/requests", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, agree: true }),
+      body: JSON.stringify({ id, action: "quote", min: quote.min, max: quote.max, currency: quote.currency }),
     }).then((res) => {
-      if (!res.ok || !row) return;
-      setSent((current) => ({ ...current, [id]: true }));
+      setQuoting(null);
+      if (!res.ok) return;
       setIncoming((current) =>
-        current.map((item) => (item.id === id ? { ...item, reply_message: AGREED_REPLY } : item)),
+        current.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                reply_amount: quote.min,
+                quote_max: quote.max,
+                reply_currency: quote.currency,
+              }
+            : item,
+        ),
       );
-      setCalendarFor(row);
     });
   };
 
-  const firstWaitingId = incoming.find((row) => !row.reply_message && !sent[row.id])?.id;
+  const confirmThai = async () => {
+    await fetch("/api/services/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirmThai: true }),
+    }).catch(() => undefined);
+    setNationality("Thai");
+  };
 
   return (
     <div className="space-y-3">
       <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("staffOrders")}</h1>
       {incoming.map((row) => {
-        const agreed = Boolean(row.reply_message) || sent[row.id];
-        const onlyOne = row.id === firstWaitingId;
+        const accepted = isAgreedReply(row.reply_message);
+        const price = quoteLabel(row);
+        const photos = (row.photos ?? []).filter((src) => typeof src === "string" && src.length > 0);
         return (
-          <article key={row.id} className="space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4">
-            <p className="text-pf-12 font-medium text-pf-slate-ink">{t("incomingTitle")}</p>
+          <article
+            key={row.id}
+            className={
+              accepted
+                ? "pf-order-fixed space-y-2 rounded-[20px] border border-pf-line p-4"
+                : "space-y-2 rounded-[20px] border border-pf-line bg-pf-card p-4"
+            }
+          >
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-pf-12 font-medium text-pf-slate-ink">
+                {accepted ? t("appointmentReady") : price ? t("quoteSent") : t("incomingTitle")}
+              </p>
+              {price ? <QuoteTag label={price} /> : null}
+            </div>
             <p className="text-pf-18 font-medium text-pf-ink">{row.title}</p>
             <p className="whitespace-pre-wrap text-pf-16 text-pf-text-secondary">{row.description}</p>
+            {photos.length > 0 ? (
+              <div className="flex gap-2 overflow-x-auto">
+                {photos.map((src) => (
+                  <img key={src} src={src} alt="" className="size-20 shrink-0 rounded-[14px] object-cover" />
+                ))}
+              </div>
+            ) : null}
             {row.when_label ? <p className="text-pf-14 text-pf-text-secondary">{row.when_label}</p> : null}
             <Link
               href={to(`/chat/${row.id}`)}
               className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink"
             >
-              {agreed ? t("chatTitle") : t("openChat")}
+              {t("openChat")}
             </Link>
-            {agreed ? (
-              <>
-                <p className="text-pf-14 font-medium text-pf-ink">{t("agreedComing")}</p>
-                <button
-                  type="button"
-                  className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-navy-600 px-4 text-pf-16 font-medium text-white"
-                  onClick={() =>
-                    downloadVisitIcs({
-                      id: row.id,
-                      title: row.title,
-                      whenLabel: row.when_label,
-                      details: row.description,
-                      who: row.target_name,
-                    })
+            {accepted ? (
+              <button
+                type="button"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-navy-600 px-4 text-pf-16 font-medium text-white"
+                onClick={() =>
+                  downloadVisitIcs({
+                    id: row.id,
+                    title: row.title,
+                    whenLabel: row.when_label,
+                    details: row.description,
+                    who: row.target_name,
+                    price: price ? t("calendarPriceLine", { amount: price }) : null,
+                  })
+                }
+              >
+                {t("addToCalendar")}
+              </button>
+            ) : price ? null : (
+              <QuoteForm
+                busy={quoting === row.id}
+                submitLabel={t("sendQuote")}
+                onSubmit={(quote) => {
+                  if (nationalityReady && needsWorkPermit(nationality)) {
+                    setPermitQuote(quote);
+                    setQuoting(row.id);
+                    return;
                   }
-                >
-                  {t("addToCalendar")}
-                </button>
-              </>
-            ) : onlyOne ? (
-                <Button
-                  type="button"
-                  className="min-h-12 w-full"
-                  reflectGlobalBusy={false}
-                  onClick={() => {
-                    if (nationalityReady && needsWorkPermit(nationality)) {
-                      setPermitFor(row.id);
-                      return;
-                    }
-                    agree(row.id);
-                  }}
-                >
-                  {t("agree")}
-                </Button>
-              ) : (
-                <button
-                  type="button"
-                  className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-navy-600 px-4 text-pf-16 font-medium text-white"
-                  onClick={() => {
-                    if (nationalityReady && needsWorkPermit(nationality)) {
-                      setPermitFor(row.id);
-                      return;
-                    }
-                    agree(row.id);
-                  }}
-                >
-                  {t("agree")}
-                </button>
-              )}
+                  sendQuote(row.id, quote);
+                }}
+              />
+            )}
           </article>
         );
       })}
@@ -159,42 +175,38 @@ export default function WorkerInboxPage() {
         <p className="text-pf-14 text-pf-text-secondary">{t("noInbox")}</p>
       ) : null}
       {listingId && rows.length === 0 && incoming.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noInbox")}</p> : null}
-      {permitFor ? (
+      {permitQuote && quoting ? (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-pf-ink/40 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center">
           <div role="dialog" aria-modal="true" aria-labelledby="permit-title" className="w-full max-w-md rounded-[28px] bg-pf-card p-5">
             <h2 id="permit-title" className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">
               {t("permitTitle")}
             </h2>
             <p className="mt-2 text-pf-16 leading-relaxed text-pf-text-secondary">{t("permitBody")}</p>
-            <Button
+            <button
               type="button"
-              className="mt-4 min-h-12 w-full"
-              reflectGlobalBusy={false}
+              className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white"
               onClick={() => {
-                const id = permitFor;
-                setPermitFor(null);
-                agree(id);
+                const id = quoting;
+                const quote = permitQuote;
+                setPermitQuote(null);
+                void confirmThai().then(() => sendQuote(id, quote));
               }}
             >
               {t("permitContinue")}
-            </Button>
+            </button>
             <button
               type="button"
               className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink"
-              onClick={() => setPermitFor(null)}
+              onClick={() => {
+                setPermitQuote(null);
+                setQuoting(null);
+              }}
             >
               {t("permitNotNow")}
             </button>
           </div>
         </div>
       ) : null}
-      <VisitCalendarSheet visit={calendarFor ? {
-        id: calendarFor.id,
-        title: calendarFor.title,
-        whenLabel: calendarFor.when_label,
-        details: calendarFor.description,
-        who: calendarFor.target_name,
-      } : null} onClose={() => setCalendarFor(null)} />
       {rows.map(({ offer, request }) => (
         <article
           key={offer.id}
