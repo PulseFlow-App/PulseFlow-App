@@ -148,6 +148,11 @@ export default function RegisterPage() {
   const [lineId, setLineId] = useState("");
   const [sameWhatsapp, setSameWhatsapp] = useState(false);
   const [sameLine, setSameLine] = useState(false);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const sameWhatsappRef = useRef(false);
+  const sameLineRef = useRef(false);
+  sameWhatsappRef.current = sameWhatsapp;
+  sameLineRef.current = sameLine;
   const [orgName, setOrgName] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -811,14 +816,15 @@ export default function RegisterPage() {
                     <div>
                       <Label>{prosT(locale, "regPhone")}</Label>
                       <Input
+                        ref={phoneRef}
                         value={phone}
                         onChange={(e) => {
                           const next = e.target.value;
                           setPhone(next);
                           const formatted = formatThaiPhone(next);
                           if (!formatted) return;
-                          if (sameWhatsapp) setWhatsapp(formatted);
-                          if (sameLine) setLineId(formatted);
+                          if (sameWhatsappRef.current) setWhatsapp(formatted);
+                          if (sameLineRef.current) setLineId(formatted);
                         }}
                         autoComplete="tel"
                         placeholder={prosT(locale, "regPhone")}
@@ -843,9 +849,12 @@ export default function RegisterPage() {
                             checked={sameWhatsapp}
                             onChange={(e) => {
                               const on = e.target.checked;
+                              sameWhatsappRef.current = on;
                               setSameWhatsapp(on);
                               if (!on) return;
-                              const formatted = formatThaiPhone(phone);
+                              const raw = phoneRef.current?.value ?? phone;
+                              if (raw !== phone) setPhone(raw);
+                              const formatted = formatThaiPhone(raw);
                               if (formatted) setWhatsapp(formatted);
                             }}
                           />
@@ -869,9 +878,12 @@ export default function RegisterPage() {
                             checked={sameLine}
                             onChange={(e) => {
                               const on = e.target.checked;
+                              sameLineRef.current = on;
                               setSameLine(on);
                               if (!on) return;
-                              const formatted = formatThaiPhone(phone);
+                              const raw = phoneRef.current?.value ?? phone;
+                              if (raw !== phone) setPhone(raw);
+                              const formatted = formatThaiPhone(raw);
                               if (formatted) setLineId(formatted);
                             }}
                           />

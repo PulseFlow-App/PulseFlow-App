@@ -79,16 +79,24 @@ export function formatDisplayDate(
 
 const THAI_DIGITS = "๐๑๒๓๔๕๖๗๘๙";
 
-/** Thai number as +66 and national digits. Empty or unusable input returns null. */
-export function formatThaiPhone(raw: string): string | null {
-  const normalized = raw.replace(/[๐-๙]/g, (ch) => String(THAI_DIGITS.indexOf(ch)));
+/** Digits after the country code and a trunk 0. Empty input returns null. */
+function thaiNationalDigits(raw: string): string | null {
+  const normalized = raw
+    .replace(/[๐-๙]/g, (ch) => String(THAI_DIGITS.indexOf(ch)))
+    .replace(/[０-９]/g, (ch) => String(ch.charCodeAt(0) - 0xff10));
   let digits = normalized.replace(/\D/g, "");
   if (!digits) return null;
   if (digits.startsWith("00")) digits = digits.slice(2);
   // +66 081… is written with the trunk 0 after the country code.
   if (digits.startsWith("66")) digits = digits.slice(2);
   if (digits.startsWith("0")) digits = digits.slice(1);
-  if (digits.length < 8 || digits.length > 9) return null;
+  return digits || null;
+}
+
+/** Thai number as +66 and the digits from the phone field. */
+export function formatThaiPhone(raw: string): string | null {
+  const digits = thaiNationalDigits(raw);
+  if (!digits) return null;
   return `+66${digits}`;
 }
 
