@@ -13,7 +13,9 @@ import { serviceInviteUrl } from "@/lib/pros/join";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 import { SERVICES_CUSTOMER_EVENT, SERVICES_CUSTOMER_KEY } from "@/lib/pros/trial";
+import { SupportMail } from "@/components/pros/support-mail";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 
 function Chip({
@@ -44,6 +46,7 @@ export default function ServicesSettingsPage() {
   const pathname = usePathname();
   const router = useRouter();
   const { appearance, setAppearance } = useAppearance();
+  const { locale } = useI18n();
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
   const [invite, setInvite] = useState("");
   const [inviteLink, setInviteLink] = useState("");
@@ -187,6 +190,7 @@ export default function ServicesSettingsPage() {
       >
         {t("signOut")}
       </button>
+      <SupportMail locale={locale} />
     </div>
   );
 }

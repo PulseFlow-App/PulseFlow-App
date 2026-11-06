@@ -524,6 +524,7 @@ const COPY = {
   },
   termsLink: { en: "Terms", th: "ข้อกำหนด", ru: "Условия", he: "תנאים" },
   privacyLink: { en: "Privacy", th: "ความเป็นส่วนตัว", ru: "Конфиденциальность", he: "פרטיות" },
+  supportHint: { en: "Need help?", th: "ต้องการความช่วยเหลือ?", ru: "Нужна помощь?", he: "צריכים עזרה?" },
   legalNote: {
     en: "View our Terms and Privacy and accept them. Scroll to the end, then tick.",
     th: "อ่านข้อกำหนดและความเป็นส่วนตัว เลื่อนจนจบ แล้วติ๊กยอมรับ",

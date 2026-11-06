@@ -6,6 +6,7 @@ export type ProsExtraPack = Record<string, string>;
 export type ProsExtraLocales = Record<string, ProsExtraPack>;
 export const PROS_EXTRA_LOCALES: ProsExtraLocales = {
   fr: {
+    "supportHint": "Besoin d'aide ?",
     "staffOrders": "Demandes",
     "agree": "Accepter",
     "agreedComing": "La personne sait que vous arrivez.",
@@ -312,6 +313,7 @@ export const PROS_EXTRA_LOCALES: ProsExtraLocales = {
     "yourListing": "Votre annonce",
   },
   de: {
+    "supportHint": "Hilfe nötig?",
     "staffOrders": "Aufträge",
     "agree": "Zustimmen",
     "agreedComing": "Die Person weiß, dass Sie kommen.",
@@ -618,6 +620,7 @@ export const PROS_EXTRA_LOCALES: ProsExtraLocales = {
     "yourListing": "Ihr Mietangebot",
   },
   es: {
+    "supportHint": "¿Necesitas ayuda?",
     "staffOrders": "Pedidos",
     "agree": "Aceptar",
     "agreedComing": "Ya saben que vas.",
@@ -924,6 +927,7 @@ export const PROS_EXTRA_LOCALES: ProsExtraLocales = {
     "yourListing": "Tu anuncio",
   },
   it: {
+    "supportHint": "Serve aiuto?",
     "staffOrders": "Ordini",
     "agree": "Accetto",
     "agreedComing": "Sanno che stai arrivando.",
@@ -1231,6 +1235,7 @@ export const PROS_EXTRA_LOCALES: ProsExtraLocales = {
     "yourListing": "Il tuo annuncio",
   },
   tr: {
+    "supportHint": "Yardım mı lazım?",
     "back": "Geri",
     "staffOrders": "Siparişler",
     "agree": "Kabul ediyorum",
@@ -1286,6 +1291,7 @@ export const PROS_EXTRA_LOCALES: ProsExtraLocales = {
     "directory": "Dizin",
   },
   ar: {
+    "supportHint": "تحتاج مساعدة؟",
     "staffOrders": "الطلبات",
     "agree": "أوافق",
     "agreedComing": "يعرفون أنك في الطريق.",
@@ -1592,6 +1598,7 @@ export const PROS_EXTRA_LOCALES: ProsExtraLocales = {
     "yourListing": "إعلانك",
   },
   my: {
+    "supportHint": "အကူအညီ လိုပါသလား။",
     "staffOrders": "အော်ဒါများ",
     "agree": "သဘောတူသည်",
     "agreedComing": "သင်လာမည်ကို သူတို့ သိပြီးပါပြီ။",

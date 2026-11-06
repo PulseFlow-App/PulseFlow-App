@@ -17,6 +17,7 @@ import { LOCALES, LOCALE_META } from "@/lib/i18n";
 import { LinkOffer } from "@/components/account/link-offer";
 import { AddToHomeScreenModal } from "@/components/pwa/add-to-home-screen-modal";
 import { BillingOffer } from "@/components/pros/billing-offer";
+import { SupportMail } from "@/components/pros/support-mail";
 import { VisitNotice } from "@/components/pros/visit-notice";
 import { useI18n } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
@@ -115,20 +116,27 @@ function Frame({ children }: { children: React.ReactNode }) {
           <div className="min-w-0 flex-1" />
           <LanguageSwitcher variant="code" locales={workAccount ? STAFF_LOCALES : undefined} />
           <ThemeIconToggle className="size-11 shrink-0" />
-          <Link
-            href={actor ? (onAppPath ? "/pros/settings" : "/settings") : `${onAppPath ? "/pros/start" : "/start"}?mode=sign-in&next=${encodeURIComponent(pathname)}`}
-            aria-label={actor ? t("settings") : t("signIn")}
-            aria-current={here.startsWith("/settings") ? "page" : undefined}
-            className="inline-flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pf-navy-900 text-pf-16 font-medium text-[#F5F7FC]"
-          >
-            {actor?.logoUrl ? (
-              <img src={actor.logoUrl} alt="" className="size-full object-cover" />
-            ) : actor ? (
-              actor.name.slice(0, 1)
-            ) : (
-              <PfIcon name="person" tone="onNavy" className="size-6" />
-            )}
-          </Link>
+          {actor ? (
+            <Link
+              href={onAppPath ? "/pros/settings" : "/settings"}
+              aria-label={t("settings")}
+              aria-current={here.startsWith("/settings") ? "page" : undefined}
+              className="inline-flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pf-navy-900 text-pf-16 font-medium text-[#F5F7FC]"
+            >
+              {actor.logoUrl ? (
+                <img src={actor.logoUrl} alt="" className="size-full object-cover" />
+              ) : (
+                actor.name.slice(0, 1)
+              )}
+            </Link>
+          ) : (
+            <Link
+              href={`${onAppPath ? "/pros/start" : "/start"}?mode=sign-in&next=${encodeURIComponent(pathname)}`}
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink"
+            >
+              {t("signIn")}
+            </Link>
+          )}
         </div>
       </header>
       )}
@@ -154,6 +162,7 @@ function Frame({ children }: { children: React.ReactNode }) {
                   {t("privacyLink")}
                 </Link>
               </p>
+              <SupportMail locale={locale} />
               {!workAccount && (here === "/" || isServicesLocale(here.slice(1))) ? (
                 <nav aria-label={t("languages")} className="flex flex-wrap justify-center gap-x-3 gap-y-1">
                   {LOCALES.map((code) => (

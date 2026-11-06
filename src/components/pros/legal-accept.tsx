@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n/provider";
 import { prosT } from "@/lib/pros/i18n";
 import { LEGAL_SECTIONS, type LegalAudience } from "@/lib/pros/legal";
 import { prosLang } from "@/lib/pros/catalog";
+import { SupportMail } from "@/components/pros/support-mail";
 import { isMarketplaceHost, MARKETPLACE_ORIGIN } from "@/lib/pros/paths";
 
 export function LegalAccept({
@@ -102,6 +103,7 @@ export function LegalAccept({
           <span className="mt-0.5 block text-pf-12 leading-snug text-pf-slate-ink">{t("emailOptInHint")}</span>
         </span>
       </label>
+      <SupportMail locale={locale} />
     </div>
   );
 }
