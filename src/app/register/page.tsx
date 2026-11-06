@@ -235,9 +235,6 @@ export default function RegisterPage() {
     () => AREAS.filter((area) => area.level === "locality"),
     [],
   );
-  const thaiPhone = formatThaiPhone(phone);
-  const whatsappValue = sameWhatsapp && thaiPhone ? thaiPhone : whatsapp;
-  const lineValue = sameLine && thaiPhone ? thaiPhone : lineId;
   const showAppForm = ready && !onServices && !confirmTo && (position === "staff" || plan != null);
   const showServicesForm = ready && onServices && !confirmTo && track != null;
 
@@ -307,7 +304,7 @@ export default function RegisterPage() {
     }
     const termsAcceptedAt = new Date().toISOString();
     if (track === "maintenance") {
-      if (!whatsappValue.trim() && !lineValue.trim()) {
+      if (!whatsapp.trim() && !lineId.trim()) {
         setError(prosT(locale, "regContact"));
         return;
       }
@@ -377,8 +374,8 @@ export default function RegisterPage() {
             name: fullName,
             email,
             phone,
-            whatsapp: whatsappValue,
-            lineId: lineValue,
+            whatsapp,
+            lineId,
             description: "",
             availability,
             categoryIds,
@@ -454,8 +451,8 @@ export default function RegisterPage() {
         name: fullName,
         email,
         phone,
-        whatsapp: whatsappValue,
-        lineId: lineValue,
+        whatsapp,
+        lineId,
         description: "",
         availability,
         categoryIds,
@@ -815,7 +812,14 @@ export default function RegisterPage() {
                       <Label>{prosT(locale, "regPhone")}</Label>
                       <Input
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => {
+                          const next = e.target.value;
+                          setPhone(next);
+                          const formatted = formatThaiPhone(next);
+                          if (!formatted) return;
+                          if (sameWhatsapp) setWhatsapp(formatted);
+                          if (sameLine) setLineId(formatted);
+                        }}
                         autoComplete="tel"
                         placeholder={prosT(locale, "regPhone")}
                       />
@@ -825,21 +829,25 @@ export default function RegisterPage() {
                       <div>
                         <Label>{prosT(locale, "whatsapp")}</Label>
                         <Input
-                          value={whatsappValue}
+                          value={whatsapp}
                           onChange={(e) => {
                             setSameWhatsapp(false);
                             setWhatsapp(e.target.value);
                           }}
                           placeholder={prosT(locale, "whatsapp")}
-                          readOnly={sameWhatsapp && Boolean(thaiPhone)}
                         />
                         <label className="mt-1 flex min-h-11 items-center gap-2 text-sm text-ink">
                           <input
                             type="checkbox"
                             className="size-4"
-                            checked={sameWhatsapp && Boolean(thaiPhone)}
-                            disabled={!thaiPhone}
-                            onChange={(e) => setSameWhatsapp(e.target.checked)}
+                            checked={sameWhatsapp}
+                            onChange={(e) => {
+                              const on = e.target.checked;
+                              setSameWhatsapp(on);
+                              if (!on) return;
+                              const formatted = formatThaiPhone(phone);
+                              if (formatted) setWhatsapp(formatted);
+                            }}
                           />
                           <span>{prosT(locale, "useSameNumber")}</span>
                         </label>
@@ -847,21 +855,25 @@ export default function RegisterPage() {
                       <div>
                         <Label>{prosT(locale, "line")}</Label>
                         <Input
-                          value={lineValue}
+                          value={lineId}
                           onChange={(e) => {
                             setSameLine(false);
                             setLineId(e.target.value);
                           }}
                           placeholder={prosT(locale, "line")}
-                          readOnly={sameLine && Boolean(thaiPhone)}
                         />
                         <label className="mt-1 flex min-h-11 items-center gap-2 text-sm text-ink">
                           <input
                             type="checkbox"
                             className="size-4"
-                            checked={sameLine && Boolean(thaiPhone)}
-                            disabled={!thaiPhone}
-                            onChange={(e) => setSameLine(e.target.checked)}
+                            checked={sameLine}
+                            onChange={(e) => {
+                              const on = e.target.checked;
+                              setSameLine(on);
+                              if (!on) return;
+                              const formatted = formatThaiPhone(phone);
+                              if (formatted) setLineId(formatted);
+                            }}
                           />
                           <span>{prosT(locale, "useSameNumber")}</span>
                         </label>

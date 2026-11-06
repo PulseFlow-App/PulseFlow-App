@@ -77,15 +77,17 @@ export function formatDisplayDate(
   return format(d, ruSafe, { locale: getDateFnsLocale(loc) });
 }
 
+const THAI_DIGITS = "๐๑๒๓๔๕๖๗๘๙";
+
 /** Thai number as +66 and national digits. Empty or unusable input returns null. */
 export function formatThaiPhone(raw: string): string | null {
-  let digits = raw.replace(/\D/g, "");
+  const normalized = raw.replace(/[๐-๙]/g, (ch) => String(THAI_DIGITS.indexOf(ch)));
+  let digits = normalized.replace(/\D/g, "");
+  if (!digits) return null;
   if (digits.startsWith("00")) digits = digits.slice(2);
-  if (digits.startsWith("66") && (digits.length === 10 || digits.length === 11)) {
-    digits = digits.slice(2);
-  } else if (digits.startsWith("0") && (digits.length === 9 || digits.length === 10)) {
-    digits = digits.slice(1);
-  }
+  // +66 081… is written with the trunk 0 after the country code.
+  if (digits.startsWith("66")) digits = digits.slice(2);
+  if (digits.startsWith("0")) digits = digits.slice(1);
   if (digits.length < 8 || digits.length > 9) return null;
   return `+66${digits}`;
 }
