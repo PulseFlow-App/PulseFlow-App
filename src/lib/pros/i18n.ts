@@ -1371,6 +1371,28 @@ const COPY = {
   copyDetails: { en: "Copy details", th: "คัดลอกรายละเอียด", ru: "Копировать детали", he: "העתקת פרטים" },
   couldNotLoad: { en: "Could not load requests.", th: "โหลดคำขอไม่ได้", ru: "Не удалось загрузить заявки.", he: "לא ניתן לטעון בקשות." },
   retry: { en: "Try again", th: "ลองอีกครั้ง", ru: "Ещё раз", he: "נסו שוב" },
+  orderDetails: { en: "Order details", th: "รายละเอียดงาน", ru: "Детали заказа", he: "פרטי ההזמנה" },
+  pickArea: { en: "Choose an area", th: "เลือกพื้นที่", ru: "Выберите район", he: "בחרו אזור" },
+  shareLocation: { en: "Share location", th: "แชร์ตำแหน่ง", ru: "Поделиться локацией", he: "שיתוף מיקום" },
+  shareLocationHint: {
+    en: "Address, pin, or map link. The professional sees this only after you accept their price.",
+    th: "ที่อยู่ พิน หรือลิงก์แผนที่ ช่างจะเห็นเมื่อคุณรับราคาแล้วเท่านั้น",
+    ru: "Адрес, пин или ссылка на карту. Мастер увидит это только после согласия с ценой.",
+    he: "כתובת, סיכה או קישור למפה. המקצוען רואה זאת רק אחרי אישור המחיר.",
+  },
+  shareLocationPlaceholder: {
+    en: "House number, soi, or Google Maps link",
+    th: "บ้านเลขที่ ซอย หรือลิงก์ Google Maps",
+    ru: "Номер дома, сои или ссылка Google Maps",
+    he: "מספר בית, סוי או קישור ל-Google Maps",
+  },
+  needAreaAndLocation: {
+    en: "Add the area and the location to share.",
+    th: "ใส่พื้นที่และตำแหน่งที่จะแชร์",
+    ru: "Укажите район и локацию для передачи.",
+    he: "הוסיפו אזור ומיקום לשיתוף.",
+  },
+  locationShared: { en: "Location", th: "ตำแหน่ง", ru: "Локация", he: "מיקום" },
 } as const;
 
 export type ProsKey = keyof typeof COPY;

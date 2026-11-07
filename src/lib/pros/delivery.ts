@@ -106,6 +106,9 @@ export type ServiceDelivery = {
   title: string;
   description: string;
   when_label: string | null;
+  area_label?: string | null;
+  /** Exact location. Omitted for staff until the quote is accepted. */
+  share_location?: string | null;
   reply_message: string | null;
   reply_amount: number | null;
   reply_currency: string | null;

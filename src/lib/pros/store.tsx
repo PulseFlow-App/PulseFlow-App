@@ -46,6 +46,8 @@ type RequestInput = {
   description: string;
   photos: string[];
   areaId: string | null;
+  areaLabel: string | null;
+  shareLocation: string | null;
   urgency: ProsUrgency;
   preferredDate: string | null;
   preferredTime: string;
@@ -420,6 +422,8 @@ export function ProsProvider({ children }: { children: ReactNode }) {
           translations: {},
           photos: input.photos.slice(0, 3),
           areaId: input.areaId,
+          areaLabel: input.areaLabel?.trim() || null,
+          shareLocation: input.shareLocation?.trim() || null,
           urgency: input.urgency,
           preferredDate: input.preferredDate,
           preferredTime: input.preferredTime,
@@ -477,6 +481,8 @@ export function ProsProvider({ children }: { children: ReactNode }) {
               title: request.title,
               description: request.description,
               whenLabel,
+              areaLabel: request.areaLabel,
+              shareLocation: request.shareLocation,
               photos: request.photos,
               targets,
             }),

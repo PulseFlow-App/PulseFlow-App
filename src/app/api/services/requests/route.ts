@@ -14,6 +14,8 @@ const postSchema = z.object({
   title: z.string().trim().min(3).max(120),
   description: z.string().trim().min(12).max(2000),
   whenLabel: z.string().trim().max(160).optional(),
+  areaLabel: z.string().trim().min(1).max(120).optional(),
+  shareLocation: z.string().trim().min(1).max(500).optional(),
   photos: z.array(z.string().max(2_000_000)).max(3).optional(),
   targets: z
     .array(
@@ -57,14 +59,14 @@ export async function GET() {
 
   const admin = createAdminClient();
   const full =
-    "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, reply_message, reply_amount, reply_currency, quote_max, quote_note, photos, accepted_at, cancelled_at, cancelled_by, cancel_reason, created_at, replied_at";
+    "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, area_label, share_location, reply_message, reply_amount, reply_currency, quote_max, quote_note, photos, accepted_at, cancelled_at, cancelled_by, cancel_reason, created_at, replied_at";
   const { data, error } = await admin
     .from("service_requests")
     .select(full)
     .or(`created_by.eq.${user.id},target_profile_id.eq.${user.id}`)
     .order("created_at", { ascending: false })
     .limit(40);
-  if (error && /quote_max|quote_note|photos|accepted_at|cancelled_at|cancel_reason/.test(error.message)) {
+  if (error && /quote_max|quote_note|photos|accepted_at|cancelled_at|cancel_reason|area_label|share_location/.test(error.message)) {
     const fallback = await admin
       .from("service_requests")
       .select(
@@ -77,7 +79,15 @@ export async function GET() {
     return NextResponse.json({ requests: fallback.data ?? [] });
   }
   if (error) return NextResponse.json({ requests: [] });
-  return NextResponse.json({ requests: data ?? [] });
+  const rows = (data ?? []).map((row) => {
+    const staff = row.target_profile_id === user.id;
+    const booked = row.reply_message?.trim() === AGREED_REPLY || Boolean(row.accepted_at);
+    if (staff && !booked) {
+      return { ...row, share_location: null };
+    }
+    return row;
+  });
+  return NextResponse.json({ requests: rows });
 }
 
 export async function POST(request: Request) {
@@ -122,10 +132,18 @@ export async function POST(request: Request) {
     title: body.title,
     description: body.description,
     when_label: body.whenLabel || null,
+    area_label: body.areaLabel?.trim() || null,
+    share_location: body.shareLocation?.trim() || null,
   }));
-  const { error: insertError } = await admin
+  let { error: insertError } = await admin
     .from("service_requests")
     .upsert(rows, { onConflict: "request_id,target_profile_id", ignoreDuplicates: true });
+  if (insertError && /area_label|share_location/.test(insertError.message)) {
+    ({ error: insertError } = await admin.from("service_requests").upsert(
+      rows.map(({ area_label: _a, share_location: _s, ...row }) => row),
+      { onConflict: "request_id,target_profile_id", ignoreDuplicates: true },
+    ));
+  }
   if (insertError) {
     return NextResponse.json({ error: "Could not save the request." }, { status: 500 });
   }
@@ -344,7 +362,7 @@ export async function PATCH(request: Request) {
     const { sendWebPush } = await import("@/lib/push/web-push");
     await sendWebPush({
       title: row.title as string,
-      body: ["Appointment · นัดหมาย", quoteLabel(row)].filter(Boolean).join(" · "),
+      body: ["Appointment · location shared", quoteLabel(row)].filter(Boolean).join(" · "),
       href: "/inbox",
       tag: `services-accept:${row.id}`,
       kind: "appointment",

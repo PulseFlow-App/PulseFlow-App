@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { LOCALE_META } from "@/lib/i18n";
 import { localizedName } from "@/lib/pros/catalog";
-import { allCategories } from "@/lib/pros/matching";
+import { allAreas, allCategories, areaName } from "@/lib/pros/matching";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 import { useI18n } from "@/lib/i18n/provider";
@@ -29,6 +29,8 @@ type RequestDraft = {
   title: string;
   description: string;
   photos: string[];
+  areaId?: string | null;
+  shareLocation?: string;
   urgency: ProsUrgency;
   /** ISO date. Older drafts stored today/tomorrow/this_week/flexible in dateChoice. */
   preferredDate?: string;
@@ -65,12 +67,16 @@ function RequestInner() {
   const [categoryId, setCategoryId] = useState(params.get("category") ?? categories[0]?.id ?? "");
   const [title, setTitle] = useState(params.get("title") ?? "");
   const [description, setDescription] = useState(params.get("brief") ?? "");
+  const [areaId, setAreaId] = useState<string>(state.placeId ?? "");
+  const [shareLocation, setShareLocation] = useState("");
   const [urgency, setUrgency] = useState<ProsUrgency>("flexible");
   const [preferredDate, setPreferredDate] = useState(todayIsoDate);
   const [preferredTime, setPreferredTime] = useState<(typeof TIME_OPTIONS)[number]>("morning");
   const [language, setLanguage] = useState<string>(orderLanguage(locale));
   const [photos, setPhotos] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const places = allAreas(state).filter((area) => area.level === "locality" || area.level === "district");
+  const islands = places.filter((area) => area.level === "locality");
   const sent = useRef(false);
   const gate = actor
     ? orderAllowance(state.requests, state.reviews, actor.id, new Date(), plan.premium)
@@ -82,6 +88,8 @@ function RequestInner() {
     setCategoryId(draft.categoryId);
     setTitle(draft.title);
     setDescription(draft.description);
+    if (draft.areaId) setAreaId(draft.areaId);
+    setShareLocation(draft.shareLocation ?? "");
     setUrgency(draft.urgency);
     const stored = draft.preferredDate ?? draft.dateChoice ?? "";
     setPreferredDate(/^\d{4}-\d{2}-\d{2}/.test(stored) ? stored.slice(0, 10) : todayIsoDate());
@@ -93,6 +101,11 @@ function RequestInner() {
     setLanguage(orderLanguage(draft.language));
     setPhotos(draft.photos ?? []);
   }, []);
+
+  useEffect(() => {
+    if (areaId || !state.placeId) return;
+    setAreaId(state.placeId);
+  }, [areaId, state.placeId]);
 
   const fail = (code: string) => {
     sent.current = false;
@@ -122,13 +135,21 @@ function RequestInner() {
     if (params.get("resume") !== "1" || !actorReady || !actor || sent.current) return;
     const draft = readDraft();
     if (!draft?.pending) return;
+    const draftArea = draft.areaId || state.placeId;
+    if (!draftArea || !(draft.shareLocation ?? "").trim()) {
+      sent.current = false;
+      setError(t("needAreaAndLocation"));
+      return;
+    }
     sent.current = true;
     const result = createRequest({
       categoryId: draft.categoryId,
       title: draft.title,
       description: draft.description,
       photos: draft.photos ?? [],
-      areaId: state.placeId,
+      areaId: draftArea,
+      areaLabel: areaName(state, draftArea, locale) || null,
+      shareLocation: (draft.shareLocation ?? "").trim(),
       urgency: draft.urgency,
       preferredDate: /^\d{4}-\d{2}-\d{2}/.test(draft.preferredDate ?? "")
         ? draft.preferredDate!.slice(0, 10)
@@ -146,7 +167,7 @@ function RequestInner() {
     }
     sessionStorage.removeItem(DRAFT_KEY);
     router.replace(servicesPath(pathname, `/requests/${result.id}`));
-  }, [actor, actorReady, createRequest, params, pathname, router, state.placeId, t]);
+  }, [actor, actorReady, createRequest, locale, params, pathname, router, state, t]);
 
   return (
       <form
@@ -155,13 +176,19 @@ function RequestInner() {
           e.preventDefault();
           if (!actorReady || !actor) return;
           if (sent.current) return;
+          if (!areaId || !shareLocation.trim()) {
+            setError(t("needAreaAndLocation"));
+            return;
+          }
           sent.current = true;
           const result = createRequest({
             categoryId,
             title,
             description,
             photos,
-            areaId: state.placeId,
+            areaId,
+            areaLabel: areaName(state, areaId, locale) || null,
+            shareLocation: shareLocation.trim(),
             urgency,
             preferredDate,
             preferredTime,
@@ -221,6 +248,35 @@ function RequestInner() {
         <div>
           <Label>{t("description")}</Label>
           <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} required />
+        </div>
+        <div>
+          <Label htmlFor="request-area">{t("place")}</Label>
+          <Select id="request-area" value={areaId} required onChange={(e) => setAreaId(e.target.value)}>
+            <option value="">{t("pickArea")}</option>
+            {islands.map((island) => (
+              <optgroup key={island.id} label={areaName(state, island.id, locale)}>
+                <option value={island.id}>{areaName(state, island.id, locale)}</option>
+                {places
+                  .filter((area) => area.parentId === island.id)
+                  .map((area) => (
+                    <option key={area.id} value={area.id}>
+                      {areaName(state, area.id, locale)}
+                    </option>
+                  ))}
+              </optgroup>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="request-share-location">{t("shareLocation")}</Label>
+          <p className="mb-1 text-pf-12 text-pf-slate-ink">{t("shareLocationHint")}</p>
+          <Input
+            id="request-share-location"
+            value={shareLocation}
+            required
+            placeholder={t("shareLocationPlaceholder")}
+            onChange={(e) => setShareLocation(e.target.value)}
+          />
         </div>
         <div>
           <Label htmlFor="request-photos">{t("photos")}</Label>

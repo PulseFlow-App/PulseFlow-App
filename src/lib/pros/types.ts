@@ -62,6 +62,10 @@ export type ProRequest = {
   translations: Record<string, string>;
   photos: string[];
   areaId: string | null;
+  /** Display name for the area, saved with the server request. */
+  areaLabel?: string | null;
+  /** Exact pin/address. Shared with staff only after the customer accepts the quote. */
+  shareLocation?: string | null;
   urgency: ProsUrgency;
   /** today, tomorrow, this_week, or flexible. Older requests may store YYYY-MM-DD. */
   preferredDate?: string | null;

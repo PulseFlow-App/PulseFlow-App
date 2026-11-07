@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Calendar, Check, CloudSun, Info, Lock, MessageCircle, Moon, MoreHorizontal, Sun, X } from "lucide-react";
+import { Calendar, Check, CloudSun, Info, Lock, MapPin, MessageCircle, Moon, MoreHorizontal, Sun, X } from "lucide-react";
 import { OrderActions, cancelReasonText } from "@/components/pros/order-actions";
 import { selectionTick, successTick } from "@/components/pros/haptics";
 import { preferredTimeKey } from "@/lib/pros/i18n";
@@ -24,6 +24,8 @@ export type CustomerOrder = {
   description: string;
   whenLabel: string | null;
   area: string | null;
+  /** Exact pin/address. Present for staff only after the quote is accepted. */
+  shareLocation: string | null;
   photos: string[];
   personName: string;
   priceLabel: string | null;
@@ -170,7 +172,15 @@ export function OrderCard({
       >
         <button
           type="button"
-          className="block w-full text-left"
+          aria-label={t("orderDetails")}
+          className="absolute end-2 top-2 z-10 inline-flex size-11 items-center justify-center rounded-full text-pf-ink"
+          onClick={() => setSheet(true)}
+        >
+          <Info className="size-5" strokeWidth={2} aria-hidden />
+        </button>
+        <button
+          type="button"
+          className="block w-full pe-10 text-left"
           onClick={() => {
             if (swiped.current) {
               swiped.current = false;
@@ -216,7 +226,7 @@ export function OrderCard({
                       ? t("cardDone")
                       : t("cancelled")}
             </span>
-            <span className="text-pf-12 font-medium text-pf-text-secondary">{when}</span>
+            <span className="me-8 text-pf-12 font-medium text-pf-text-secondary">{when}</span>
           </div>
           <div className="mt-3 flex gap-3">
             <div className="flex size-14 shrink-0 flex-col items-center justify-center rounded-[14px] bg-pf-page text-pf-ink">
@@ -269,6 +279,12 @@ export function OrderCard({
           <p className="mt-2 flex items-center gap-1.5 text-pf-14 font-medium text-pf-text-secondary">
             <Lock className="size-3.5" strokeWidth={2} aria-hidden />
             {audience === "staff" ? t("staffAddressAfter") : t("addressAfter")}
+          </p>
+        ) : null}
+        {order.state === "booked" && order.shareLocation ? (
+          <p className="mt-2 flex items-start gap-1.5 text-pf-14 font-medium text-pf-ink">
+            <MapPin className="mt-0.5 size-3.5 shrink-0" strokeWidth={2} aria-hidden />
+            <span className="min-w-0 whitespace-pre-wrap break-words">{order.shareLocation}</span>
           </p>
         ) : null}
         {price && order.state !== "cancelled" ? (
@@ -383,7 +399,13 @@ export function OrderCard({
         ) : null}
       </article>
       {sheet ? (
-        <OrderSheet order={order} timeLabel={timeLabel} onClose={() => setSheet(false)} onOpenPhoto={setViewer} />
+        <OrderSheet
+          order={order}
+          audience={audience}
+          timeLabel={timeLabel}
+          onClose={() => setSheet(false)}
+          onOpenPhoto={setViewer}
+        />
       ) : null}
       {menu ? (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-pf-ink/40 p-3" onClick={() => setMenu(false)}>
@@ -395,7 +417,11 @@ export function OrderCard({
               type="button"
               className="flex min-h-11 w-full items-center px-3 text-left text-pf-16 text-pf-ink"
               onClick={() => {
-                void navigator.clipboard?.writeText([order.title, order.description, order.whenLabel].filter(Boolean).join("\n"));
+                void navigator.clipboard?.writeText(
+                  [order.title, order.description, order.whenLabel, order.area, order.shareLocation]
+                    .filter(Boolean)
+                    .join("\n"),
+                );
                 setMenu(false);
               }}
             >
@@ -449,11 +475,13 @@ function OrderMenuActions({
 
 function OrderSheet({
   order,
+  audience,
   timeLabel,
   onClose,
   onOpenPhoto,
 }: {
   order: CustomerOrder;
+  audience: "customer" | "staff";
   timeLabel: string | null;
   onClose: () => void;
   onOpenPhoto: (index: number) => void;
@@ -464,26 +492,62 @@ function OrderSheet({
     order.repliedAt ? { label: t("stepPrice"), at: order.repliedAt } : null,
     order.acceptedAt ? { label: t("cardBooked"), at: order.acceptedAt } : null,
   ].filter((item): item is { label: string; at: string } => item != null);
+  const showLocation = Boolean(order.shareLocation) && (audience === "customer" || order.state === "booked" || order.state === "done");
   return (
     <div className="fixed inset-0 z-[70] flex items-end bg-pf-ink/40" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
+        aria-labelledby="order-details-title"
         className="max-h-[92dvh] w-full overflow-y-auto rounded-t-[28px] bg-pf-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{order.title}</h2>
-        {timeLabel ? <p className="mt-1 text-pf-14 font-medium text-pf-text-secondary">{timeLabel}</p> : null}
+        <div className="flex items-start justify-between gap-3">
+          <h2 id="order-details-title" className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">
+            {order.title}
+          </h2>
+          <button type="button" aria-label={t("close")} className="inline-flex size-11 shrink-0 items-center justify-center text-pf-ink" onClick={onClose}>
+            <X className="size-5" strokeWidth={2} aria-hidden />
+          </button>
+        </div>
+        <p className="mt-1 text-pf-14 font-medium text-pf-text-secondary">
+          {[timeLabel, order.area].filter(Boolean).join(" · ")}
+        </p>
         {order.photos.length > 0 ? (
           <div className="mt-3 flex gap-2 overflow-x-auto">
             {order.photos.map((src, index) => (
-              <button key={src} type="button" className="size-20 shrink-0 overflow-hidden rounded-[14px]" onClick={() => onOpenPhoto(index)}>
+              <button key={`${src}-${index}`} type="button" className="size-20 shrink-0 overflow-hidden rounded-[14px]" onClick={() => onOpenPhoto(index)}>
                 <img src={src} alt="" className="size-full object-cover" />
               </button>
             ))}
           </div>
         ) : null}
         <p className="mt-3 whitespace-pre-wrap text-pf-16 text-pf-ink">{order.description}</p>
+        {order.quoteNote ? (
+          <div className="mt-3 rounded-[14px] border border-pf-line bg-pf-page p-3">
+            <p className="text-pf-12 font-medium text-pf-slate-ink">{t("quoteNote")}</p>
+            <p className="mt-1 whitespace-pre-wrap text-pf-14 text-pf-ink">{order.quoteNote}</p>
+          </div>
+        ) : null}
+        {order.priceLabel ? (
+          <p className="mt-3 text-pf-22 font-bold tabular-nums text-pf-ink">
+            {order.priceLabel.replace(/\s*THB\b/g, " ฿").replace("–", "-")}
+          </p>
+        ) : null}
+        {showLocation ? (
+          <div className="mt-3 rounded-[14px] border border-pf-line bg-pf-page p-3">
+            <p className="text-pf-12 font-medium text-pf-slate-ink">{t("locationShared")}</p>
+            <p className="mt-1 flex items-start gap-1.5 whitespace-pre-wrap text-pf-16 text-pf-ink">
+              <MapPin className="mt-1 size-4 shrink-0" strokeWidth={2} aria-hidden />
+              <span className="min-w-0 break-words">{order.shareLocation}</span>
+            </p>
+          </div>
+        ) : order.state === "waiting" || order.state === "price" ? (
+          <p className="mt-3 flex items-center gap-1.5 text-pf-14 font-medium text-pf-text-secondary">
+            <Lock className="size-3.5" strokeWidth={2} aria-hidden />
+            {audience === "staff" ? t("staffAddressAfter") : t("addressAfter")}
+          </p>
+        ) : null}
         <ol className="mt-4 space-y-2">
           {events.map((event) => (
             <li key={event.label} className="text-pf-14 text-pf-text-secondary">

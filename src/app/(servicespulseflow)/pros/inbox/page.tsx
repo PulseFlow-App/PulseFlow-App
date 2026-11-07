@@ -119,12 +119,14 @@ export default function WorkerInboxPage() {
         const state: CustomerOrderState = cancelled ? "cancelled" : accepted ? "booked" : price ? "price" : "waiting";
         const order: CustomerOrder = {
           id: row.id,
+          localRequestId: row.request_id,
           state,
           createdAt: row.created_at,
           title: row.title,
           description: row.description,
           whenLabel: row.when_label,
-          area: null,
+          area: row.area_label ?? null,
+          shareLocation: accepted ? row.share_location ?? null : null,
           photos: (row.photos ?? []).filter((src) => typeof src === "string" && src.length > 0),
           personName: "",
           priceLabel: price,
