@@ -10,7 +10,7 @@ import { isWorkAccount } from "@/lib/pros/intent";
 import { needsWorkPermit } from "@/lib/pros/permit";
 import { servicesPath } from "@/lib/pros/paths";
 import { readPhoto } from "@/components/pros/parts";
-import { updateServiceListing } from "@/lib/pros/join";
+import { SERVICE_PROFILE_KEY, updateServiceListing } from "@/lib/pros/join";
 import { usePros } from "@/lib/pros/store";
 import { prepareVillaPhotoFile } from "@/lib/villas/prepare-photo";
 import { TALENT_SKILLS, type TalentSkill } from "@/lib/talent";
@@ -69,6 +69,11 @@ export function DirectoryListingCard() {
         const row = payload?.eligible ? payload.profile ?? null : null;
         setListing(row);
         if (row) {
+          try {
+            localStorage.setItem(SERVICE_PROFILE_KEY, row.id);
+          } catch {
+            /* ignore quota */
+          }
           const parsed = splitAvailability(row.job_search_bio ?? "");
           setVisible(Boolean(row.job_search_visible));
           setPlace(row.job_search_location ?? "");
@@ -249,7 +254,12 @@ export function DirectoryListingCard() {
           type="checkbox"
           className="mt-1 size-4"
           checked={visible}
-          onChange={(event) => setVisible(event.target.checked)}
+          disabled={saving}
+          onChange={(event) => {
+            const next = event.target.checked;
+            setVisible(next);
+            save(next);
+          }}
         />
         <span className="text-pf-16 font-medium text-pf-ink">{t("regListMarketplace")}</span>
       </label>

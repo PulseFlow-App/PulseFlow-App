@@ -16,6 +16,8 @@ export type CustomerOrderState = "waiting" | "price" | "booked" | "done" | "canc
 
 export type CustomerOrder = {
   id: string;
+  /** Local draft id when the card is backed by a server delivery row. */
+  localRequestId?: string | null;
   state: CustomerOrderState;
   createdAt: string;
   title: string;
@@ -433,6 +435,7 @@ function OrderMenuActions({
   return (
     <OrderActions
       id={order.id}
+      localRequestId={order.localRequestId ?? order.id}
       title={order.title}
       description={order.description}
       whenLabel={order.whenLabel}

@@ -248,7 +248,13 @@ export async function PATCH(request: Request) {
         cancel_reason: reason,
       })
       .eq("id", body.id);
-    if (error) return NextResponse.json({ error: "Could not save the reply." }, { status: 500 });
+    if (error && /cancelled_at|cancelled_by|cancel_reason/.test(error.message)) {
+      // Migration 077 not applied yet: drop the row so a new order can be created.
+      const { error: delErr } = await admin.from("service_requests").delete().eq("id", body.id);
+      if (delErr) return NextResponse.json({ error: "Could not save the reply." }, { status: 500 });
+    } else if (error) {
+      return NextResponse.json({ error: "Could not save the reply." }, { status: 500 });
+    }
     await notifyOther(row, user.id, "Cancelled");
     return NextResponse.json({ ok: true });
   }

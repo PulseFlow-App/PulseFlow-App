@@ -194,15 +194,21 @@ export function ensureMyServiceListing(actor: { id: string; name: string }) {
   const state = readProsState() ?? createSeedState();
   const stored = localStorage.getItem(SERVICE_PROFILE_KEY);
   const found =
-    state.profiles.find((row) => row.id === stored) ??
+    state.profiles.find((row) => row.id === stored || row.id === actor.id) ??
     state.profiles.find((row) => row.linkedProfileId === actor.id);
   if (found) {
-    localStorage.setItem(SERVICE_PROFILE_KEY, found.id);
+    // One id across devices: the account id, so the phone mirror matches the server listing.
+    if (found.id !== actor.id) {
+      found.id = actor.id;
+      found.linkedProfileId = actor.id;
+      writeProsState(state);
+    }
+    localStorage.setItem(SERVICE_PROFILE_KEY, actor.id);
     return found;
   }
   const now = new Date().toISOString();
   const profile: ProProfile = {
-    id: crypto.randomUUID(),
+    id: actor.id,
     contactId: null,
     orgId: null,
     linkedProfileId: actor.id,

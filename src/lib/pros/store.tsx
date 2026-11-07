@@ -143,9 +143,20 @@ export function ProsProvider({ children }: { children: ReactNode }) {
   const remoteProfiles = useRef<ProProfile[]>([]);
 
   const withRemote = useCallback((base: ProsState) => {
-    const local = base.profiles.filter((row) => row.consentNote !== "Listed on Pulseflow Services.");
+    const remote = remoteProfiles.current;
+    const remoteIds = new Set(remote.map((row) => row.id));
+    const remotePeople = new Set(
+      remote.map((row) => row.linkedProfileId).filter((id): id is string => Boolean(id)),
+    );
+    // Keep device-only listings, but never shadow a server listing for the same person.
+    const local = base.profiles.filter((row) => {
+      if (row.consentNote === "Listed on Pulseflow Services.") return false;
+      if (remoteIds.has(row.id)) return false;
+      if (row.linkedProfileId && remotePeople.has(row.linkedProfileId)) return false;
+      return true;
+    });
     const ids = new Set(local.map((row) => row.id));
-    const extra = remoteProfiles.current.filter((row) => !ids.has(row.id));
+    const extra = remote.filter((row) => !ids.has(row.id));
     return { ...base, profiles: [...extra, ...local] };
   }, []);
 
@@ -181,6 +192,43 @@ export function ProsProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("pros-refresh", pull);
     };
   }, [ready, withRemote]);
+
+  // Drop unfinished phone-only drafts once the server has nothing open for them,
+  // so a stuck local job cannot block the next order.
+  useEffect(() => {
+    if (!ready || !actor || actor.id.startsWith("local") || actor.role === "guest") return;
+    let cancel = false;
+    void fetch("/api/services/requests", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : { requests: [] }))
+      .then(
+        (payload: {
+          requests?: Array<{ request_id: string; created_by: string; cancelled_at?: string | null }>;
+        }) => {
+          if (cancel) return;
+          const live = new Set(
+            (payload.requests ?? [])
+              .filter((row) => row.created_by === actor.id && !row.cancelled_at)
+              .map((row) => row.request_id),
+          );
+          setState((prev) => {
+            let changed = false;
+            const requests = prev.requests.map((row) => {
+              if (row.createdBy !== actor.id) return row;
+              if (row.status === "completed" || row.status === "cancelled") return row;
+              if (live.has(row.id)) return row;
+              changed = true;
+              return { ...row, status: "cancelled" as const };
+            });
+            if (!changed) return prev;
+            return withRemote({ ...prev, requests });
+          });
+        },
+      )
+      .catch(() => undefined);
+    return () => {
+      cancel = true;
+    };
+  }, [ready, actor, withRemote]);
 
   useEffect(() => {
     if (!ready) return;

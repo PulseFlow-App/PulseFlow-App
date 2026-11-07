@@ -87,8 +87,8 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const skills = body.skills == null ? null : normalizeTalentSkills(body.skills);
-  const tags = body.tags == null ? null : normalizeWorkTags(body.tags);
+  const skills = body.skills === undefined ? undefined : normalizeTalentSkills(body.skills);
+  const tags = body.tags === undefined ? undefined : normalizeWorkTags(body.tags);
   const bio = body.bio?.trim() || null;
   const location = normalizeLocationLabel(body.location);
   const country = normalizeCountryLabel(body.country);
@@ -96,11 +96,14 @@ export async function PATCH(request: Request) {
   if (body.visible && !location && !country) {
     return NextResponse.json({ error: "Add the town or island before showing your profile." }, { status: 400 });
   }
+  if (body.visible && skills !== undefined && skills.length === 0) {
+    return NextResponse.json({ error: "Pick at least one skill before showing your profile." }, { status: 400 });
+  }
 
   const patch: Record<string, unknown> = {
     job_search_visible: body.visible,
-    ...(skills ? { job_search_skills: skills } : {}),
-    ...(tags ? { job_search_tags: tags } : {}),
+    ...(skills !== undefined ? { job_search_skills: skills } : {}),
+    ...(tags !== undefined ? { job_search_tags: tags } : {}),
     job_search_bio: bio,
     job_search_location: location,
     job_search_country: country,

@@ -56,9 +56,18 @@ export function JobSearchSettingsCard() {
     setLogo(profile.logo_url ?? null);
     setSkills(profile.job_search_skills ?? []);
     const storedBio = profile.job_search_bio ?? "";
-    setBio(storedBio.replace(/\n\nAvailable:[\s\S]*$/, ""));
-    const fromBio = storedBio.match(/\n\nAvailable: ([\s\S]*)$/);
-    if (fromBio?.[1]) setAvailability(fromBio[1].trim());
+    const marked = storedBio.match(/\n\nAvailable: ([\s\S]*)$/);
+    const only = storedBio.match(/^Available: ([\s\S]*)$/);
+    if (marked?.index != null) {
+      setBio(storedBio.slice(0, marked.index).trim());
+      setAvailability(marked[1].trim());
+    } else if (only) {
+      setBio("");
+      setAvailability(only[1].trim());
+    } else {
+      setBio(storedBio);
+      setAvailability("");
+    }
     setLocation(
       findTalentPlace(profile.job_search_location)?.canonical ??
         profile.job_search_location ??
@@ -71,14 +80,17 @@ export function JobSearchSettingsCard() {
     );
     setLat(profile.job_search_lat ?? null);
     setLng(profile.job_search_lng ?? null);
-    const storedId = localStorage.getItem(SERVICE_PROFILE_KEY);
-    const listing = readProsState()?.profiles.find((row) => row.id === storedId);
+    try {
+      localStorage.setItem(SERVICE_PROFILE_KEY, profile.id);
+    } catch {
+      /* ignore quota */
+    }
+    const listing = readProsState()?.profiles.find(
+      (row) => row.id === profile.id || row.linkedProfileId === profile.id,
+    );
     if (listing) {
-      const when = listing.description.match(/\n\nAvailable: ([\s\S]*)$/);
-      setAvailability(when?.[1]?.trim() ?? "");
       setWhatsapp(listing.whatsapp ?? "");
       setLineId(listing.lineId ?? "");
-      if (listing.visibility === "public") setVisible(true);
     }
   }, [
     profile?.id,

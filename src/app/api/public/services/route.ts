@@ -23,11 +23,18 @@ function areaIdsFor(location: string) {
   if (!text.trim()) return [];
   return AREAS.filter((area) => {
     if (area.level === "country" || area.level === "region") return false;
-    const name = area.names.en.toLowerCase();
-    if (text.includes(name)) return true;
-    const short = name.replace(/^koh /, "");
+    const names = Object.values(area.names).map((name) => name.toLowerCase());
+    if (names.some((name) => text.includes(name) || name.includes(text))) return true;
+    const english = area.names.en.toLowerCase();
+    const short = english.replace(/^koh /, "");
     return short.length > 3 && text.includes(short);
   }).map((area) => area.id);
+}
+
+function listingLanguages(location: string, nationality: string | null) {
+  const text = `${location} ${nationality ?? ""}`.toLowerCase();
+  if (/thai|thailand|phangan|samui|tao|พะงัน|สมุย|ไทย/.test(text)) return ["en", "th"];
+  return ["en"];
 }
 
 /** People who already listed on Pulseflow Services. No phone or email. */
@@ -38,7 +45,7 @@ export async function GET() {
 
   const admin = createAdminClient();
   const columns =
-    "id, full_name, job_search_bio, job_search_skills, job_search_tags, job_search_location, job_search_country, job_search_updated_at";
+    "id, full_name, phone, nationality, job_search_bio, job_search_skills, job_search_tags, job_search_location, job_search_country, job_search_updated_at";
   const withLogo = await admin
     .from("profiles")
     .select(`${columns}, logo_url`)
@@ -60,6 +67,8 @@ export async function GET() {
   const data = result.data as Array<{
     id: string;
     full_name: string;
+    phone: string | null;
+    nationality: string | null;
     job_search_bio: string | null;
     job_search_skills: string[] | null;
     job_search_tags: string[] | null;
@@ -80,6 +89,7 @@ export async function GET() {
     ];
     const location = [row.job_search_location, row.job_search_country].filter(Boolean).join(", ");
     const areaIds = areaIdsFor(location);
+    const phone = typeof row.phone === "string" && row.phone.trim() ? row.phone.trim() : null;
     return {
       id: row.id,
       contactId: null,
@@ -94,8 +104,8 @@ export async function GET() {
       photos: [],
       categoryIds: categoryIds.length ? categoryIds : [CATEGORIES.find((c) => c.slug === "other")!.id],
       areaIds,
-      languages: ["en"],
-      phone: null,
+      languages: listingLanguages(location, row.nationality),
+      phone,
       lineId: null,
       whatsapp: null,
       visibility: "public",

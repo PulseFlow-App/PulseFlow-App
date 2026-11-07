@@ -51,9 +51,20 @@ export function categoryName(state: ProsState, id: string | null, locale: string
 
 function covers(areas: AreaRef[], selected: string | null, coverage: string[]) {
   if (!selected) return true;
+  // A public listing with no mapped place should still appear in the directory.
+  if (!coverage.length) return true;
   if (coverage.includes(selected)) return true;
-  const children = new Set(areas.filter((a) => a.parentId === selected).map((a) => a.id));
-  if (coverage.some((id) => children.has(id))) return true;
+  // Pro covers a place inside the filter (Thailand → Koh Phangan).
+  for (const id of coverage) {
+    let cursor = areas.find((a) => a.id === id) ?? null;
+    const seen = new Set<string>();
+    while (cursor && !seen.has(cursor.id)) {
+      seen.add(cursor.id);
+      if (cursor.id === selected || cursor.parentId === selected) return true;
+      cursor = cursor.parentId ? areas.find((a) => a.id === cursor!.parentId) ?? null : null;
+    }
+  }
+  // Filter is inside the pro's coverage (Haad Rin → Koh Phangan).
   let cursor = areas.find((a) => a.id === selected) ?? null;
   const seen = new Set<string>();
   while (cursor && !seen.has(cursor.id)) {

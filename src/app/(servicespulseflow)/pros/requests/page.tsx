@@ -134,6 +134,7 @@ export default function RequestsPage() {
       const price = quoteLabel(row);
       return {
         id: row.id,
+        localRequestId: row.request_id,
         state: customerState(row, local, reviewed),
         createdAt: row.created_at,
         title: row.title,

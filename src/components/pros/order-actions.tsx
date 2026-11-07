@@ -38,6 +38,7 @@ export function cancelReasonText(
 
 export function OrderActions({
   id,
+  localRequestId,
   title,
   description,
   whenLabel,
@@ -48,6 +49,8 @@ export function OrderActions({
   onCancelClosed,
 }: {
   id: string;
+  /** Local marketplace draft id when it differs from the server delivery id. */
+  localRequestId?: string | null;
   title: string;
   description: string;
   whenLabel: string | null;
@@ -116,6 +119,7 @@ export function OrderActions({
         <CancelJobModal
           open
           id={id}
+          localRequestId={localRequestId}
           onClose={() => {
             setCancelOpen(false);
             onCancelClosed?.();
@@ -249,15 +253,17 @@ function EditJobModal({
 function CancelJobModal({
   open,
   id,
+  localRequestId,
   onClose,
   onSaved,
 }: {
   open: boolean;
   id: string;
+  localRequestId?: string | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const { t } = usePros();
+  const { t, setRequestStatus, state } = usePros();
   const [reason, setReason] = useState<CancelReason | null>(null);
   const [detail, setDetail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -280,6 +286,8 @@ function CancelJobModal({
     setBusy(true);
     setError(null);
     try {
+      const draftId = localRequestId || id;
+      const localOnly = state.requests.some((row) => row.id === draftId);
       const res = await fetch("/api/services/requests", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -290,10 +298,12 @@ function CancelJobModal({
           ...(detail.trim() ? { detail: detail.trim() } : {}),
         }),
       });
-      if (!res.ok) {
+      // Local-only drafts have no server row; still clear them so a new order can start.
+      if (!res.ok && !(localOnly && (res.status === 404 || res.status === 400))) {
         setError(t("couldNotSave"));
         return;
       }
+      if (localOnly || localRequestId) setRequestStatus(draftId, "cancelled");
       onSaved();
     } finally {
       setBusy(false);
