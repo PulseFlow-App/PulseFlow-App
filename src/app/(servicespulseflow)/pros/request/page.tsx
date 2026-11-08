@@ -14,6 +14,7 @@ import { usePros } from "@/lib/pros/store";
 import { useI18n } from "@/lib/i18n/provider";
 import type { ProsUrgency } from "@/lib/pros/types";
 import { orderAllowance, SERVICES_PAYMENTS_ENABLED } from "@/lib/pros/trial";
+import { prepareVillaPhotoFile } from "@/lib/villas/prepare-photo";
 import { todayIsoDate } from "@/lib/villas/status-from-dates";
 
 const DRAFT_KEY = "pulseflow.services.requestDraft";
@@ -305,14 +306,17 @@ function RequestInner() {
               const file = e.target.files?.[0];
               e.target.value = "";
               if (!file || photos.length >= 3) return;
-              void readPhoto(file).then((url) => {
-                if (!url) {
-                  setError(t("photoTooBig"));
-                  return;
-                }
-                setError(null);
-                setPhotos((prev) => [...prev, url].slice(0, 3));
-              });
+              void prepareVillaPhotoFile(file, 1600)
+                .then((prepared) => readPhoto(prepared))
+                .then((url) => {
+                  if (!url) {
+                    setError(t("photoTooBig"));
+                    return;
+                  }
+                  setError(null);
+                  setPhotos((prev) => [...prev, url].slice(0, 3));
+                })
+                .catch(() => setError(t("photoTooBig")));
             }}
           />
           {photos.length > 0 ? (

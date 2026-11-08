@@ -7,6 +7,7 @@ import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { selectionTick } from "@/components/pros/haptics";
 import { PfIcon, type PfIconName } from "@/components/pros/pf-icons";
 import { readPhoto } from "@/components/pros/parts";
+import { prepareVillaPhotoFile } from "@/lib/villas/prepare-photo";
 import { PlacePicker } from "@/components/pros/place-picker";
 import { LOCALE_META, type Locale } from "@/lib/i18n";
 import { localizedName } from "@/lib/pros/catalog";
@@ -341,14 +342,17 @@ function HomeComposer() {
             event.target.value = "";
             if (!file) return;
             selectionTick();
-            void readPhoto(file).then((data) => {
-              if (!data) {
-                setError(t("photoTooBig"));
-                return;
-              }
-              setPhoto(data);
-              setError(null);
-            });
+            void prepareVillaPhotoFile(file, 1600)
+              .then((prepared) => readPhoto(prepared))
+              .then((data) => {
+                if (!data) {
+                  setError(t("photoTooBig"));
+                  return;
+                }
+                setPhoto(data);
+                setError(null);
+              })
+              .catch(() => setError(t("photoTooBig")));
           }}
         />
         <RoundTool label={t("addPhoto")} pressed={Boolean(photo)} onClick={() => fileRef.current?.click()}>

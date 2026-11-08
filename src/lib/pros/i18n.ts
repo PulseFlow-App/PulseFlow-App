@@ -950,7 +950,12 @@ const COPY = {
   listingOpen: { en: "Open in the directory", th: "เปิดในสารบบ", ru: "Открыть в каталоге", he: "פתוח במדריך" },
   listingHidden: { en: "Hidden", th: "ซ่อน", ru: "Скрыто", he: "מוסתר" },
   saveListing: { en: "Save listing", th: "บันทึกโปรไฟล์", ru: "Сохранить карточку", he: "שמירת הכרטיס" },
-  photoTooBig: { en: "Use a photo under 1.4 MB.", th: "ใช้รูปที่เล็กกว่า 1.4 MB", ru: "Фото меньше 1.4 МБ.", he: "תמונה מתחת ל-1.4 MB." },
+  photoTooBig: {
+    en: "Could not use that photo. Try another one from your camera roll.",
+    th: "ใช้รูปนี้ไม่ได้ ลองเลือกรูปอื่นจากเครื่อง",
+    ru: "Это фото не подошло. Выберите другое из галереи.",
+    he: "לא ניתן להשתמש בתמונה. נסו תמונה אחרת מהגלריה.",
+  },
   theme: { en: "Theme", th: "ธีม", ru: "Тема", he: "ערכת נושא" },
   themeFrost: { en: "Light", th: "สว่าง", ru: "Светлая", he: "בהיר" },
   themeDark: { en: "Dark", th: "มืด", ru: "Тёмная", he: "כהה" },

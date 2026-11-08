@@ -16,7 +16,7 @@ const postSchema = z.object({
   whenLabel: z.string().trim().max(160).optional(),
   areaLabel: z.string().trim().min(1).max(120).optional(),
   shareLocation: z.string().trim().min(1).max(500).optional(),
-  photos: z.array(z.string().max(2_000_000)).max(3).optional(),
+  photos: z.array(z.string().max(8_000_000)).max(3).optional(),
   targets: z
     .array(
       z.object({
@@ -58,30 +58,31 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const admin = createAdminClient();
-  const full =
-    "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, area_label, share_location, reply_message, reply_amount, reply_currency, quote_max, quote_note, photos, accepted_at, cancelled_at, cancelled_by, cancel_reason, created_at, replied_at";
-  const { data, error } = await admin
-    .from("service_requests")
-    .select(full)
-    .or(`created_by.eq.${user.id},target_profile_id.eq.${user.id}`)
-    .order("created_at", { ascending: false })
-    .limit(40);
-  if (error && /quote_max|quote_note|photos|accepted_at|cancelled_at|cancel_reason|area_label|share_location/.test(error.message)) {
-    const fallback = await admin
+  const scope = `created_by.eq.${user.id},target_profile_id.eq.${user.id}`;
+  // Prefer the richest select. If a newer column is missing, keep photos in the next attempt.
+  const selects = [
+    "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, area_label, share_location, reply_message, reply_amount, reply_currency, quote_max, quote_note, photos, accepted_at, cancelled_at, cancelled_by, cancel_reason, created_at, replied_at",
+    "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, reply_message, reply_amount, reply_currency, quote_max, quote_note, photos, accepted_at, created_at, replied_at",
+    "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, reply_message, reply_amount, reply_currency, photos, created_at, replied_at",
+    "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, reply_message, reply_amount, reply_currency, created_at, replied_at",
+  ];
+  let data: Record<string, unknown>[] | null = null;
+  for (const columns of selects) {
+    const result = await admin
       .from("service_requests")
-      .select(
-        "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, reply_message, reply_amount, reply_currency, created_at, replied_at",
-      )
-      .or(`created_by.eq.${user.id},target_profile_id.eq.${user.id}`)
+      .select(columns)
+      .or(scope)
       .order("created_at", { ascending: false })
       .limit(40);
-    if (fallback.error) return NextResponse.json({ requests: [] });
-    return NextResponse.json({ requests: fallback.data ?? [] });
+    if (!result.error) {
+      data = (result.data as unknown as Record<string, unknown>[] | null) ?? [];
+      break;
+    }
   }
-  if (error) return NextResponse.json({ requests: [] });
-  const rows = (data ?? []).map((row) => {
+  if (!data) return NextResponse.json({ requests: [] });
+  const rows = data.map((row) => {
     const staff = row.target_profile_id === user.id;
-    const booked = row.reply_message?.trim() === AGREED_REPLY || Boolean(row.accepted_at);
+    const booked = String(row.reply_message ?? "").trim() === AGREED_REPLY || Boolean(row.accepted_at);
     if (staff && !booked) {
       return { ...row, share_location: null };
     }

@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { compareDeliveries, isAgreedReply, type ServiceDelivery } from "@/lib/pros/delivery";
+import { usePathname, useRouter } from "next/navigation";
+import { OrderCard, type CustomerOrder } from "@/components/pros/order-card";
+import { compareDeliveries, isAgreedReply, quoteLabel, type ServiceDelivery } from "@/lib/pros/delivery";
 import { appOriginForHost, servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 import { useI18n } from "@/lib/i18n/provider";
+import { downloadVisitIcs } from "@/lib/pros/visit-calendar";
 
 type Listing = {
   job_search_visible: boolean;
@@ -28,11 +29,6 @@ function dayLabel(iso: string, locale: string) {
     day: "numeric",
     month: "short",
   });
-}
-
-function money(amount: number | null, currency: string | null) {
-  if (amount == null) return "";
-  return currency ? `${amount} ${currency}` : String(amount);
 }
 
 function hasServicesAccount(actor: { id: string; role: string } | null) {
@@ -101,11 +97,38 @@ export function ServicesWelcome() {
   );
 }
 
+function deliveryCard(row: ServiceDelivery, to: (path: string) => string): CustomerOrder {
+  const cancelled = Boolean(row.cancelled_at);
+  const accepted = !cancelled && isAgreedReply(row.reply_message);
+  const price = quoteLabel(row);
+  return {
+    id: row.id,
+    localRequestId: row.request_id,
+    state: cancelled ? "cancelled" : accepted ? "booked" : price ? "price" : "waiting",
+    createdAt: row.created_at,
+    title: row.title,
+    description: row.description,
+    whenLabel: row.when_label,
+    area: row.area_label ?? null,
+    shareLocation: accepted ? row.share_location ?? null : null,
+    photos: (row.photos ?? []).filter((src): src is string => typeof src === "string" && src.length > 0),
+    personName: "",
+    priceLabel: price,
+    quoteNote: row.quote_note ?? null,
+    cancelReason: row.cancel_reason ?? null,
+    repliedAt: row.replied_at,
+    acceptedAt: row.accepted_at ?? null,
+    chatHref: to(`/chat/${row.id}`),
+    reviewHref: to("/inbox"),
+  };
+}
+
 /** Home for maintenance accounts. A work dashboard, with no search. */
 export function WorkHome() {
   const { actor, t } = usePros();
   const { locale } = useI18n();
   const pathname = usePathname();
+  const router = useRouter();
   const [requests, setRequests] = useState<ServiceDelivery[] | null>(null);
   const [tasks, setTasks] = useState<CompanyTask[]>([]);
   const [needsProfile, setNeedsProfile] = useState(false);
@@ -191,15 +214,25 @@ export function WorkHome() {
           <p className="text-pf-14 text-pf-text-secondary">{t("workDashConfirmedEmpty")}</p>
         ) : null}
         {confirmed.map((row) => {
-          const price = money(row.reply_amount, row.reply_currency);
+          const order = deliveryCard(row, to);
+          const price = quoteLabel(row);
           return (
-            <Link key={row.id} href={to("/inbox")} className="pf-order-fixed block rounded-[20px] border border-pf-line p-4">
-              <p className="text-pf-12 font-medium text-pf-ink">{t("appointmentReady")}</p>
-              <p className="mt-1 text-pf-18 font-medium text-pf-ink">{row.title}</p>
-              {row.when_label || price ? (
-                <p className="mt-1 text-pf-14 text-pf-text-secondary">{[row.when_label, price].filter(Boolean).join(" · ")}</p>
-              ) : null}
-            </Link>
+            <OrderCard
+              key={row.id}
+              audience="staff"
+              order={order}
+              onQuote={() => router.push(to("/inbox"))}
+              onCalendar={() =>
+                downloadVisitIcs({
+                  id: row.id,
+                  title: row.title,
+                  whenLabel: row.when_label,
+                  details: row.description,
+                  who: row.target_name,
+                  price: price ? t("calendarPriceLine", { amount: price }) : null,
+                })
+              }
+            />
           );
         })}
       </section>
@@ -209,15 +242,17 @@ export function WorkHome() {
         {requests != null && open.length === 0 ? (
           <p className="text-pf-14 text-pf-text-secondary">{t("workDashActiveEmpty")}</p>
         ) : null}
-        {open.map((row) => (
-          <Link key={row.id} href={to("/inbox")} className="block rounded-[20px] border border-pf-line bg-pf-card p-4">
-            <p className="text-pf-12 font-medium text-pf-slate-ink">
-              {row.reply_amount != null ? t("quoteSent") : t("workDashNeedsReply")}
-            </p>
-            <p className="mt-1 text-pf-18 font-medium text-pf-ink">{row.title}</p>
-            {row.when_label ? <p className="mt-1 text-pf-14 text-pf-text-secondary">{row.when_label}</p> : null}
-          </Link>
-        ))}
+        {open.map((row) => {
+          const order = deliveryCard(row, to);
+          return (
+            <OrderCard
+              key={row.id}
+              audience="staff"
+              order={order}
+              onQuote={() => router.push(to("/inbox"))}
+            />
+          );
+        })}
       </section>
 
       {tasks.length ? (

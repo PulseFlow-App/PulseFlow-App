@@ -226,13 +226,16 @@ export function OriginalText({
   );
 }
 
+/** Read an image as a data URL. Prefer prepareVillaPhotoFile first for phone camera files. */
 export async function readPhoto(file: File) {
-  if (!file.type.startsWith("image/") || file.size > 1_400_000) return null;
+  if (!file.type.startsWith("image/") && file.type !== "") return null;
+  // Phone camera files are often 3–12 MB before resize.
+  if (file.size > 16_000_000) return null;
   const data = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(file);
   });
-  return data.length > 1_800_000 ? null : data;
+  return data.length > 8_000_000 ? null : data;
 }
