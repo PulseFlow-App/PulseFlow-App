@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { OriginalText, ServicesAccountGate } from "@/components/pros/parts";
+import { OriginalText, ServicesAccountGate, StarRating } from "@/components/pros/parts";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
-import { areaName, categoryName, jobsFor, reviewAverage } from "@/lib/pros/matching";
+import { areaName, categoryName, jobsFor, reviewAverage, reviewCount, reviewsForProfile } from "@/lib/pros/matching";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 import { useI18n } from "@/lib/i18n/provider";
@@ -25,7 +25,8 @@ export function ProfileView({ id }: { id: string }) {
     return <p className="text-pf-16 text-pf-text-secondary">{t("privateProfile")}</p>;
   }
   const trades = pro.categoryIds.map((cat) => categoryName(state, cat, locale)).filter(Boolean);
-  const rating = reviewAverage(state.reviews, pro.id);
+  const rating = reviewAverage(state.reviews, pro.id, pro.linkedProfileId);
+  const count = reviewCount(state.reviews, pro.id, pro.linkedProfileId);
   if (!actor) {
     return (
       <div className="space-y-4">
@@ -43,7 +44,7 @@ export function ProfileView({ id }: { id: string }) {
   }
   const saved = Boolean(actor && (state.favourites[actor.id] ?? []).includes(pro.id));
   const jobs = jobsFor(state.jobs, pro.id);
-  const reviews = state.reviews.filter((row) => row.profileId === pro.id);
+  const reviews = reviewsForProfile(state.reviews, pro.id, pro.linkedProfileId);
   const checks = [
     pro.checks.email ? t("emailVerified") : null,
     pro.checks.phone ? t("phoneVerified") : null,
@@ -100,14 +101,27 @@ export function ProfileView({ id }: { id: string }) {
         </div>
       ) : null}
       <section className="space-y-3 rounded-[20px] border border-pf-line bg-pf-card p-4">
-        <div className="flex items-baseline justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-pf-12 font-medium text-pf-slate-ink">{t("reviewsTitle")}</h2>
-          {rating != null ? <p className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">{rating.toFixed(1)}</p> : null}
+          {rating != null ? (
+            <div className="flex items-center gap-2">
+              <StarRating value={rating} size="md" />
+              <p className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">
+                {t("ratingOutOf", { score: rating.toFixed(1) })}
+              </p>
+              <p className="text-pf-14 text-pf-text-secondary">
+                {count === 1 ? t("reviewCountOne") : t("reviewCount", { count })}
+              </p>
+            </div>
+          ) : null}
         </div>
         {reviews.length === 0 ? <p className="text-pf-16 text-pf-text-secondary">{t("noReviews")}</p> : null}
         {reviews.map((review) => (
           <article key={review.id} className="border-t border-pf-line pt-3">
-            <p className="text-pf-14 font-medium text-pf-ink">{review.stars}</p>
+            <div className="mb-1 flex items-center gap-2">
+              <StarRating value={review.stars} />
+              <p className="text-pf-14 font-medium text-pf-ink">{t("ratingOutOf", { score: review.stars })}</p>
+            </div>
             <OriginalText
               text={review.comment}
               locale={review.originalLocale}

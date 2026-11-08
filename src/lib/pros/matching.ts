@@ -115,10 +115,19 @@ export function filterPros(
   });
 }
 
-export function reviewAverage(reviews: ProReview[], profileId: string) {
-  const rows = reviews.filter((r) => r.profileId === profileId);
+export function reviewsForProfile(reviews: ProReview[], profileId: string, linkedProfileId?: string | null) {
+  const ids = new Set([profileId, linkedProfileId].filter((id): id is string => Boolean(id)));
+  return reviews.filter((row) => ids.has(row.profileId));
+}
+
+export function reviewAverage(reviews: ProReview[], profileId: string, linkedProfileId?: string | null) {
+  const rows = reviewsForProfile(reviews, profileId, linkedProfileId);
   if (!rows.length) return null;
   return rows.reduce((sum, row) => sum + row.stars, 0) / rows.length;
+}
+
+export function reviewCount(reviews: ProReview[], profileId: string, linkedProfileId?: string | null) {
+  return reviewsForProfile(reviews, profileId, linkedProfileId).length;
 }
 
 export function sortOrganic(pros: ProProfile[], reviews: ProReview[]) {

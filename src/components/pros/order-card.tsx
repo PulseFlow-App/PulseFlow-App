@@ -64,10 +64,12 @@ function whenDisplay(
   if (!parsed.legacyTime) return null;
   if (isClockTime(parsed.legacyTime)) return formatClock(parsed.legacyTime);
   const key = preferredTimeKey(parsed.legacyTime);
-  if (!key) return parsed.legacyTime;
   if (key === "anyTime") return t("anyTime");
-  const label = t(key);
-  return label.split(",")[0].replace(/\s+\d.*/, "").trim();
+  if (key === "morning" || key === "afternoon" || key === "evening") {
+    const label = t(key);
+    return label.split(",")[0].replace(/\s+\d.*/, "").trim();
+  }
+  return parsed.legacyTime;
 }
 
 function windowsDisplay(whenLabel: string | null) {
@@ -149,6 +151,7 @@ export function OrderCard({
   onAccept,
   onQuote,
   onAskMore,
+  onJobDone,
   onCalendar,
   onChanged,
   busy,
@@ -159,6 +162,7 @@ export function OrderCard({
   onAccept?: () => void;
   onQuote?: () => void;
   onAskMore?: () => void;
+  onJobDone?: () => void;
   onCalendar?: () => void;
   onChanged?: () => void;
   busy?: boolean;
@@ -184,7 +188,10 @@ export function OrderCard({
   const price = order.priceLabel?.replace(/\s*THB\b/g, " ฿").replace("–", "-").trim() ?? null;
   const stepIndex = order.state === "price" ? 1 : order.state === "booked" ? 2 : order.state === "done" ? 3 : 0;
   const showSteps = order.state !== "cancelled";
-  const steps = [t("statusRequested"), t("stepPrice"), t("cardBooked"), t("cardDone")] as const;
+  const steps =
+    audience === "staff"
+      ? ([t("statusRequested"), t("stepQuoted"), t("cardBooked"), t("cardDone")] as const)
+      : ([t("statusRequested"), t("stepPrice"), t("cardBooked"), t("cardDone")] as const);
   const quiet = order.state === "cancelled";
 
   useEffect(() => {
@@ -338,24 +345,41 @@ export function OrderCard({
         ) : null}
         {showSteps ? (
           <div className="mt-3" aria-label={steps[stepIndex]}>
-            <ol className="flex items-center">
+            <ol className="flex items-start">
               {steps.map((label, index) => (
-                <li key={label} className="flex min-w-0 flex-1 items-center">
-                  <span
+                <li key={label} className="flex min-w-0 flex-1 flex-col items-stretch">
+                  <div className="flex w-full items-center">
+                    <span
+                      className={cn("h-px flex-1", index === 0 ? "bg-transparent" : index <= stepIndex ? "bg-pf-navy-600" : "bg-pf-line")}
+                      aria-hidden
+                    />
+                    <span
+                      className={cn(
+                        "flex size-4 shrink-0 items-center justify-center rounded-full",
+                        index <= stepIndex ? "bg-pf-navy-600 text-white" : "bg-pf-line",
+                      )}
+                    >
+                      {index < stepIndex ? <Check className="size-3" strokeWidth={3} aria-hidden /> : null}
+                    </span>
+                    <span
+                      className={cn(
+                        "h-px flex-1",
+                        index === steps.length - 1 ? "bg-transparent" : index < stepIndex ? "bg-pf-navy-600" : "bg-pf-line",
+                      )}
+                      aria-hidden
+                    />
+                  </div>
+                  <p
                     className={cn(
-                      "flex size-4 shrink-0 items-center justify-center rounded-full",
-                      index <= stepIndex ? "bg-pf-navy-600 text-white" : "bg-pf-line",
+                      "mt-1 px-0.5 text-center text-[10px] leading-tight",
+                      index === stepIndex ? "font-medium text-pf-ink" : "text-pf-text-secondary",
                     )}
                   >
-                    {index < stepIndex ? <Check className="size-3" strokeWidth={3} aria-hidden /> : null}
-                  </span>
-                  {index < steps.length - 1 ? (
-                    <span className={cn("mx-1 h-px flex-1", index < stepIndex ? "bg-pf-navy-600" : "bg-pf-line")} />
-                  ) : null}
+                    {label}
+                  </p>
                 </li>
               ))}
             </ol>
-            <p className="mt-1 text-[11px] font-medium text-pf-ink">{steps[stepIndex]}</p>
           </div>
         ) : null}
         {order.state === "cancelled" && order.cancelReason ? (
@@ -419,6 +443,18 @@ export function OrderCard({
                 }}
               >
                 {t("askMorePros")}
+              </button>
+            ) : audience !== "staff" && order.state === "booked" && onJobDone ? (
+              <button
+                type="button"
+                disabled={busy}
+                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white disabled:opacity-60"
+                onClick={() => {
+                  successTick();
+                  onJobDone();
+                }}
+              >
+                {t("jobDone")}
               </button>
             ) : audience !== "staff" && order.state === "done" ? (
               <Link href={order.reviewHref} className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-ink">

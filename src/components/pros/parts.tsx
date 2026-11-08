@@ -28,7 +28,8 @@ import {
   SolarWind,
 } from "@/components/icons/solar";
 import { usePros } from "@/lib/pros/store";
-import { categoryName, reviewAverage } from "@/lib/pros/matching";
+import { Star } from "lucide-react";
+import { categoryName, reviewAverage, reviewCount } from "@/lib/pros/matching";
 import type { ProProfile } from "@/lib/pros/types";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLocalizedText } from "@/lib/translate/use-localized-content";
@@ -132,6 +133,30 @@ export function ServicesAccountGate({ next }: { next: string }) {
   );
 }
 
+export function StarRating({
+  value,
+  size = "sm",
+  className,
+}: {
+  value: number;
+  size?: "sm" | "md";
+  className?: string;
+}) {
+  const score = Math.max(0, Math.min(5, value));
+  const icon = size === "md" ? "size-4" : "size-3.5";
+  return (
+    <span className={cn("inline-flex items-center gap-0.5", className)} aria-hidden>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star
+          key={n}
+          className={cn(icon, n <= Math.round(score) ? "fill-pf-orange-500 text-pf-orange-500" : "text-pf-line")}
+          strokeWidth={2}
+        />
+      ))}
+    </span>
+  );
+}
+
 export function ProCard({
   pro,
   compact = false,
@@ -145,7 +170,8 @@ export function ProCard({
   const { state, actor, t } = usePros();
   const { locale } = useI18n();
   const pathname = usePathname();
-  const rating = reviewAverage(state.reviews, pro.id);
+  const rating = reviewAverage(state.reviews, pro.id, pro.linkedProfileId);
+  const count = reviewCount(state.reviews, pro.id, pro.linkedProfileId);
   const trade = categoryName(state, pro.categoryIds[0] ?? null, locale);
   const onAppPath = pathname === "/pros" || pathname.startsWith("/pros/");
   const profilePath = onAppPath ? `/pros/p/${pro.id}` : `/p/${pro.id}`;
@@ -178,8 +204,17 @@ export function ProCard({
           <span className="block truncate text-pf-14 text-pf-text-secondary">
             {[trade || t("position"), ...(pro.tags ?? []).slice(0, 3)].filter(Boolean).join(" · ")}
           </span>
-          <span className="mt-1 block text-pf-12 text-pf-slate-ink">
-            {rating == null ? t("noReviews") : rating.toFixed(1)}
+          <span className="mt-1 flex items-center gap-1.5 text-pf-12 text-pf-slate-ink">
+            {rating == null ? (
+              t("noReviews")
+            ) : (
+              <>
+                <StarRating value={rating} />
+                <span className="font-medium text-pf-ink">{t("ratingOutOf", { score: rating.toFixed(1) })}</span>
+                <span>·</span>
+                <span>{count === 1 ? t("reviewCountOne") : t("reviewCount", { count })}</span>
+              </>
+            )}
           </span>
         </span>
       </span>

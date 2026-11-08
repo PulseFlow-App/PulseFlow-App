@@ -12,6 +12,7 @@ import {
   type CustomerOrder,
   type CustomerOrderState,
 } from "@/components/pros/order-card";
+import { ServiceReviewModal } from "@/components/pros/service-review";
 import { compareDeliveries, isAgreedReply, quoteLabel, type ServiceDelivery } from "@/lib/pros/delivery";
 import { areaName } from "@/lib/pros/matching";
 import { servicesPath } from "@/lib/pros/paths";
@@ -55,7 +56,7 @@ function dayHeading(date: Date | null, locale: string, todayLabel: string, tomor
 }
 
 export default function RequestsPage() {
-  const { state, actor, actorReady, t, inviteMorePros } = usePros();
+  const { state, actor, actorReady, t, inviteMorePros, completeJob } = usePros();
   const { locale } = useI18n();
   const pathname = usePathname();
   const [remote, setRemote] = useState<ServiceDelivery[] | null>(null);
@@ -144,6 +145,25 @@ export default function RequestsPage() {
       setBusy(null);
     }
   };
+
+  const markJobDone = (card: CustomerOrder) => {
+    const requestId = card.localRequestId ?? card.id;
+    const delivery = (remote ?? []).find((row) => row.id === card.id || row.request_id === requestId);
+    const listing = delivery
+      ? state.profiles.find((row) => row.linkedProfileId === delivery.target_profile_id)
+      : state.profiles.find((row) => row.name === card.personName);
+    const result = completeJob(requestId, listing?.id ?? null);
+    if (!result.ok) setFlash(t("couldNotLoad"));
+  };
+
+  const pendingReviewId =
+    actor &&
+    state.requests.find(
+      (row) =>
+        row.createdBy === actor.id &&
+        row.status === "completed" &&
+        !state.reviews.some((review) => review.requestId === row.id),
+    )?.id;
 
   const reviewedIds = new Set(state.reviews.map((review) => review.requestId).filter((id): id is string => Boolean(id)));
   const mine = (remote ?? []).filter((row) => row.created_by === actor?.id).sort(compareDeliveries);
@@ -332,6 +352,7 @@ export default function RequestsPage() {
                   ? () => void askMore(card)
                   : undefined
               }
+              onJobDone={card.state === "booked" ? () => markJobDone(card) : undefined}
               onCalendar={() => saveCalendar(card)}
               onChanged={() => setVersion((current) => current + 1)}
             />
@@ -339,6 +360,7 @@ export default function RequestsPage() {
         </section>
       ))}
       {actor && !empty ? <PaymentNote /> : null}
+      {pendingReviewId ? <ServiceReviewModal requestId={pendingReviewId} /> : null}
     </div>
   );
 }

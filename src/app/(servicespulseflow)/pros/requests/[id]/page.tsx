@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { OriginalText, RequireUser } from "@/components/pros/parts";
-import { ServiceReviewForm } from "@/components/pros/service-review";
+import { ServiceReviewModal } from "@/components/pros/service-review";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { assignRequestToTask } from "@/lib/pros/assign-task";
@@ -23,7 +23,7 @@ import type { ProOffer, ProsStatus } from "@/lib/pros/types";
 export default function RequestDetailPage() {
   const params = useParams<{ id: string }>();
   const pathname = usePathname();
-  const { state, actor, t, chooseOffer, setRequestStatus, rememberTranslation, recordCost } = usePros();
+  const { state, actor, t, chooseOffer, setRequestStatus, completeJob, rememberTranslation, recordCost } = usePros();
   const { locale } = useI18n();
   const request = state.requests.find((row) => row.id === params.id);
   const [assigned, setAssigned] = useState(false);
@@ -243,24 +243,23 @@ export default function RequestDetailPage() {
         ) : null}
         {mine && request.status !== "cancelled" && request.status !== "completed" ? (
           <div className="flex flex-col gap-2">
-            {request.status === "chosen" ? (
-              <Button type="button" variant="ghost" reflectGlobalBusy={false} onClick={advance("scheduled")}>
-                {t("markScheduled")}
-              </Button>
-            ) : null}
-            {request.status === "scheduled" ? (
-              <Button type="button" variant="ghost" reflectGlobalBusy={false} onClick={advance("in_progress")}>
-                {t("markProgress")}
-              </Button>
-            ) : null}
-            {request.status === "in_progress" ? (
-              <Button type="button" variant="ghost" reflectGlobalBusy={false} onClick={advance("awaiting_approval")}>
-                {t("markApproval")}
-              </Button>
-            ) : null}
-            {request.status === "awaiting_approval" ? (
-              <Button type="button" reflectGlobalBusy={false} onClick={advance("completed")}>
-                {t("approveWork")}
+            {request.status === "chosen" ||
+            request.status === "scheduled" ||
+            request.status === "in_progress" ||
+            request.status === "awaiting_approval" ||
+            remote.some((row) => isAgreedReply(row.reply_message)) ? (
+              <Button
+                type="button"
+                reflectGlobalBusy={false}
+                onClick={() => {
+                  const booked = remote.find((row) => isAgreedReply(row.reply_message));
+                  const listing = booked
+                    ? state.profiles.find((row) => row.linkedProfileId === booked.target_profile_id)
+                    : null;
+                  completeJob(request.id, listing?.id ?? request.chosenProfileId);
+                }}
+              >
+                {t("jobDone")}
               </Button>
             ) : null}
             <Button type="button" variant="danger" reflectGlobalBusy={false} onClick={advance("cancelled")}>
@@ -268,9 +267,7 @@ export default function RequestDetailPage() {
             </Button>
           </div>
         ) : null}
-        {mine && request.status === "completed" && !reviewed ? (
-          <ServiceReviewForm requestId={request.id} />
-        ) : null}
+        {mine && request.status === "completed" && !reviewed ? <ServiceReviewModal requestId={request.id} /> : null}
       </div>
     </RequireUser>
   );

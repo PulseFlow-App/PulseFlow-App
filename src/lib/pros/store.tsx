@@ -35,6 +35,7 @@ import type {
   ProOffer,
   ProProfile,
   ProRequest,
+  ProReview,
   ProsActor,
   ProsState,
   ProsUrgency,
@@ -84,12 +85,14 @@ type Api = {
   }) => StoreResult;
   chooseOffer: (offerId: string) => void;
   setRequestStatus: (id: string, status: ProRequest["status"]) => void;
+  /** Creator marks the job finished; opens the required review path. */
+  completeJob: (requestId: string, chosenProfileId?: string | null) => StoreResult;
   saveProfile: (input: ProProfile, consent: boolean) => StoreResult;
   deleteProfile: (id: string) => void;
   setProfileStatus: (id: string, status: ProProfile["status"]) => void;
   setCheck: (id: string, check: keyof ProProfile["checks"], on: boolean) => void;
   claim: (token: string) => boolean;
-  addReview: (input: { requestId: string; answers: ServiceAnswers }) => StoreResult;
+  addReview: (input: { requestId: string; answers: ServiceAnswers }) => Promise<StoreResult>;
   report: (target: "profile" | "review", targetId: string, reason: string) => void;
   rememberTranslation: (kind: "request" | "offer" | "profile" | "review", id: string, locale: string, text: string) => void;
   addCategory: (name: string) => void;
@@ -145,6 +148,7 @@ export function ProsProvider({ children }: { children: ReactNode }) {
   const [actor, setActor] = useState<ProsActor | null>(null);
   const [actorReady, setActorReady] = useState(false);
   const remoteProfiles = useRef<ProProfile[]>([]);
+  const remoteReviews = useRef<ProReview[]>([]);
 
   const withRemote = useCallback((base: ProsState) => {
     const remote = remoteProfiles.current;
@@ -161,7 +165,14 @@ export function ProsProvider({ children }: { children: ReactNode }) {
     });
     const ids = new Set(local.map((row) => row.id));
     const extra = remote.filter((row) => !ids.has(row.id));
-    return { ...base, profiles: [...extra, ...local] };
+    const serverReviews = remoteReviews.current;
+    const serverKeys = new Set(
+      serverReviews.flatMap((row) => [row.id, row.requestId].filter((id): id is string => Boolean(id))),
+    );
+    const localReviews = base.reviews.filter(
+      (row) => !serverKeys.has(row.id) && !(row.requestId && serverKeys.has(row.requestId)),
+    );
+    return { ...base, profiles: [...extra, ...local], reviews: [...serverReviews, ...localReviews] };
   }, []);
 
   useEffect(() => {
@@ -180,11 +191,38 @@ export function ProsProvider({ children }: { children: ReactNode }) {
     if (!ready) return;
     let cancel = false;
     const pull = () => {
-      void fetch("/api/public/services")
-        .then((res) => (res.ok ? res.json() : null))
-        .then((payload: { profiles?: ProProfile[] } | null) => {
-          if (cancel || !payload) return;
-          remoteProfiles.current = payload.profiles ?? [];
+      void Promise.all([
+        fetch("/api/public/services").then((res) => (res.ok ? res.json() : null)),
+        fetch("/api/services/reviews", { cache: "no-store" }).then((res) => (res.ok ? res.json() : null)),
+      ])
+        .then(([services, reviewPayload]: [{ profiles?: ProProfile[] } | null, { reviews?: Array<{
+          id: string;
+          requestId: string;
+          profileId: string;
+          authorId: string;
+          stars: number;
+          comment: string;
+          answers?: Record<string, string> | null;
+          originalLocale: string;
+          createdAt: string;
+        }> } | null]) => {
+          if (cancel) return;
+          if (services) remoteProfiles.current = services.profiles ?? [];
+          if (reviewPayload) {
+            remoteReviews.current = (reviewPayload.reviews ?? []).map((row) => ({
+              id: row.id,
+              profileId: row.profileId,
+              requestId: row.requestId,
+              taskId: null,
+              authorId: row.authorId,
+              stars: row.stars,
+              comment: row.comment,
+              answers: row.answers ?? null,
+              originalLocale: row.originalLocale,
+              translations: {},
+              createdAt: row.createdAt,
+            }));
+          }
           setState((prev) => withRemote(prev));
         })
         .catch(() => undefined);
@@ -663,6 +701,58 @@ export function ProsProvider({ children }: { children: ReactNode }) {
           };
         });
       },
+      completeJob: (requestId, chosenProfileId) => {
+        if (!actor) return { ok: false, error: "auth" };
+        const request = state.requests.find((row) => row.id === requestId);
+        if (!request || request.createdBy !== actor.id || request.status === "cancelled") {
+          return { ok: false, error: "missing" };
+        }
+        if (request.status === "completed") return { ok: true, id: requestId };
+        const accepted = state.offers.find((row) => row.requestId === requestId && row.status === "accepted");
+        const profileId =
+          chosenProfileId ||
+          request.chosenProfileId ||
+          accepted?.profileId ||
+          state.offers.find((row) => row.requestId === requestId && row.amount != null)?.profileId ||
+          null;
+        if (!profileId) return { ok: false, error: "missing" };
+        const now = new Date().toISOString();
+        persist((prev) => {
+          const exists = prev.jobs.some((job) => job.requestId === requestId);
+          return {
+            ...prev,
+            offers: prev.offers.map((row) =>
+              row.requestId !== requestId
+                ? row
+                : {
+                    ...row,
+                    status: row.profileId === profileId ? "accepted" : row.status === "pending" ? "declined" : row.status,
+                  },
+            ),
+            requests: prev.requests.map((row) =>
+              row.id === requestId ? { ...row, status: "completed" as const, chosenProfileId: profileId } : row,
+            ),
+            jobs: exists
+              ? prev.jobs
+              : [
+                  ...prev.jobs,
+                  {
+                    id: crypto.randomUUID(),
+                    profileId,
+                    requestId,
+                    taskId: request.taskId,
+                    categoryId: request.categoryId,
+                    completedAt: now,
+                  },
+                ],
+            events: [
+              { id: crypto.randomUUID(), name: "job_verified", actorId: actor.id, ref: requestId, at: now },
+              ...prev.events,
+            ],
+          };
+        });
+        return { ok: true, id: requestId };
+      },
       saveProfile: (input, consent) => {
         if (!actor) return { ok: false, error: "auth" };
         const existing = state.profiles.find((row) => row.id === input.id);
@@ -721,24 +811,29 @@ export function ProsProvider({ children }: { children: ReactNode }) {
         }));
         return true;
       },
-      addReview: ({ requestId, answers }) => {
+      addReview: async ({ requestId, answers }) => {
         if (!actor) return { ok: false, error: "auth" };
         const request = state.requests.find((row) => row.id === requestId);
         if (!request || request.status !== "completed" || request.createdBy !== actor.id || !request.chosenProfileId) {
           return { ok: false, error: "missing" };
         }
         if (state.reviews.some((row) => row.requestId === requestId)) return { ok: true };
+        const listing = state.profiles.find((row) => row.id === request.chosenProfileId);
+        const targetProfileId = listing?.linkedProfileId || request.chosenProfileId;
+        const stars = starsFromAnswers(answers);
+        const comment = answersToComment(answers);
+        const localId = crypto.randomUUID();
         persist((prev) => ({
           ...prev,
           reviews: [
             {
-              id: crypto.randomUUID(),
-              profileId: request.chosenProfileId!,
+              id: localId,
+              profileId: targetProfileId,
               requestId,
               taskId: request.taskId,
               authorId: actor.id,
-              stars: starsFromAnswers(answers),
-              comment: answersToComment(answers),
+              stars,
+              comment,
               answers,
               originalLocale: locale,
               translations: {},
@@ -747,6 +842,25 @@ export function ProsProvider({ children }: { children: ReactNode }) {
             ...prev.reviews,
           ],
         }));
+        if (!actor.id.startsWith("local") && targetProfileId) {
+          try {
+            const res = await fetch("/api/services/reviews", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                requestId,
+                targetProfileId,
+                stars,
+                comment,
+                answers,
+                locale,
+              }),
+            });
+            if (res.ok) window.dispatchEvent(new Event("pros-refresh"));
+          } catch {
+            // Local review still counts for trial unlock on this device.
+          }
+        }
         return { ok: true };
       },
       report: (target, targetId, reason) => {
