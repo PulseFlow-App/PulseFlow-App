@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Calendar, Check, CloudSun, Info, Lock, MapPin, MessageCircle, Moon, MoreHorizontal, Sun, X } from "lucide-react";
+import { Calendar, Check, CloudSun, Info, Lock, MapPin, MessageCircle, Moon, MoreHorizontal, Pencil, Sun, X } from "lucide-react";
 import { OrderActions, cancelReasonText } from "@/components/pros/order-actions";
 import { selectionTick, successTick } from "@/components/pros/haptics";
 import { preferredTimeKey } from "@/lib/pros/i18n";
 import { usePros } from "@/lib/pros/store";
 import { useI18n } from "@/lib/i18n/provider";
+import { intervalsLabel, parseWhenLabel } from "@/lib/pros/when-label";
 import { cn } from "@/lib/utils";
 
 const ADDED_KEY = "pulseflow.services.calendarAdded.v1";
@@ -23,6 +24,8 @@ export type CustomerOrder = {
   title: string;
   description: string;
   whenLabel: string | null;
+  /** Precise visit time proposed with the quote (HH:mm). */
+  visitTime?: string | null;
   area: string | null;
   /** Exact pin/address. Present for staff only after the quote is accepted. */
   shareLocation: string | null;
@@ -37,12 +40,40 @@ export type CustomerOrder = {
   reviewHref: string;
 };
 
-function shortTime(label: string) {
+function firstName(name: string) {
+  return name.trim().split(/\s+/)[0] || name;
+}
+
+function isClockTime(value: string) {
+  return /^\d{1,2}:\d{2}/.test(value.trim());
+}
+
+function formatClock(value: string) {
+  const [hour, minute] = value.trim().split(":");
+  return `${String(Number(hour)).padStart(2, "0")}:${minute.slice(0, 2)}`;
+}
+
+function whenDisplay(
+  whenLabel: string | null,
+  visitTime: string | null | undefined,
+  t: (key: "morning" | "afternoon" | "evening" | "anyTime") => string,
+) {
+  const parsed = parseWhenLabel(whenLabel);
+  if (visitTime && isClockTime(visitTime)) return formatClock(visitTime);
+  if (parsed.intervals.length) return intervalsLabel(parsed.intervals);
+  if (!parsed.legacyTime) return null;
+  if (isClockTime(parsed.legacyTime)) return formatClock(parsed.legacyTime);
+  const key = preferredTimeKey(parsed.legacyTime);
+  if (!key) return parsed.legacyTime;
+  if (key === "anyTime") return t("anyTime");
+  const label = t(key);
   return label.split(",")[0].replace(/\s+\d.*/, "").trim();
 }
 
-function firstName(name: string) {
-  return name.trim().split(/\s+/)[0] || name;
+function windowsDisplay(whenLabel: string | null) {
+  const parsed = parseWhenLabel(whenLabel);
+  if (parsed.intervals.length) return intervalsLabel(parsed.intervals);
+  return null;
 }
 
 function readAdded(): string[] {
@@ -72,18 +103,19 @@ function relativeTime(iso: string, locale: string) {
   return rtf.format(Math.round(hours / 24), "day");
 }
 
-function visitDate(whenLabel: string | null, now = new Date()) {
+function visitDate(whenLabel: string | null, visitTime?: string | null, now = new Date()) {
+  const parsed = parseWhenLabel(whenLabel);
   let date: Date | null = null;
-  let time: string | null = null;
-  for (const part of (whenLabel ?? "").split("·").map((item) => item.trim()).filter(Boolean)) {
-    const token = part.toLowerCase();
-    if (/^\d{4}-\d{2}-\d{2}/.test(part)) {
-      const [year, month, day] = part.slice(0, 10).split("-").map(Number);
-      date = new Date(year, month - 1, day);
-    } else if (token === "today") date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    else if (token === "tomorrow") date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    else if (token === "morning" || token === "afternoon" || token === "evening" || token === "any") time = token;
+  if (parsed.date) {
+    const [year, month, day] = parsed.date.split("-").map(Number);
+    date = new Date(year, month - 1, day);
   }
+  const time =
+    visitTime && isClockTime(visitTime)
+      ? formatClock(visitTime)
+      : parsed.intervals[0]
+        ? parsed.intervals[0].start
+        : parsed.legacyTime;
   return { date, time };
 }
 
@@ -102,8 +134,13 @@ export function orderDayKey(whenLabel: string | null) {
 
 function TimeIcon({ time }: { time: string | null }) {
   const className = "size-3.5 shrink-0";
-  if (time === "evening") return <Moon className={className} strokeWidth={2} aria-hidden />;
-  if (time === "afternoon") return <CloudSun className={className} strokeWidth={2} aria-hidden />;
+  let bucket = time;
+  if (time && isClockTime(time)) {
+    const hour = Number(time.split(":")[0]);
+    bucket = hour >= 17 ? "evening" : hour >= 12 ? "afternoon" : "morning";
+  }
+  if (bucket === "evening") return <Moon className={className} strokeWidth={2} aria-hidden />;
+  if (bucket === "afternoon") return <CloudSun className={className} strokeWidth={2} aria-hidden />;
   return <Sun className={className} strokeWidth={2} aria-hidden />;
 }
 
@@ -111,7 +148,9 @@ export function OrderCard({
   order,
   onAccept,
   onQuote,
+  onAskMore,
   onCalendar,
+  onChanged,
   busy,
   hideQuoteAction = false,
   audience = "customer",
@@ -119,7 +158,9 @@ export function OrderCard({
   order: CustomerOrder;
   onAccept?: () => void;
   onQuote?: () => void;
+  onAskMore?: () => void;
   onCalendar?: () => void;
+  onChanged?: () => void;
   busy?: boolean;
   hideQuoteAction?: boolean;
   audience?: "customer" | "staff";
@@ -129,16 +170,17 @@ export function OrderCard({
   const [sheet, setSheet] = useState(false);
   const [menu, setMenu] = useState(false);
   const [askCancel, setAskCancel] = useState(false);
+  const [askEdit, setAskEdit] = useState(false);
   const swiped = useRef(false);
   const [viewer, setViewer] = useState<number | null>(null);
   const [added, setAdded] = useState(false);
   const [when, setWhen] = useState("");
   const [drag, setDrag] = useState(0);
   const [press, setPress] = useState(false);
-  const visit = visitDate(order.whenLabel);
+  const visit = visitDate(order.whenLabel, order.visitTime);
   const shownDate = visit.date ?? (Number.isNaN(new Date(order.createdAt).getTime()) ? null : new Date(order.createdAt));
-  const timeKey = preferredTimeKey(visit.time);
-  const timeLabel = timeKey ? t(timeKey) : null;
+  const timeLabel = whenDisplay(order.whenLabel, order.state === "waiting" ? null : order.visitTime, t);
+  const canEdit = audience === "customer" && order.state !== "cancelled" && order.state !== "done";
   const price = order.priceLabel?.replace(/\s*THB\b/g, " ฿").replace("–", "-").trim() ?? null;
   const stepIndex = order.state === "price" ? 1 : order.state === "booked" ? 2 : order.state === "done" ? 3 : 0;
   const showSteps = order.state !== "cancelled";
@@ -241,7 +283,7 @@ export function OrderCard({
                 {timeLabel ? (
                   <span className="inline-flex items-center gap-1">
                     <TimeIcon time={visit.time} />
-                    {shortTime(timeLabel)}
+                    {timeLabel}
                   </span>
                 ) : null}
                 {order.area ? (
@@ -270,7 +312,7 @@ export function OrderCard({
             <div className="min-w-0 flex-1">
               <p className="text-pf-12 font-medium text-white/80">{t("cardBooked")}</p>
               <p className="text-pf-16 font-medium tabular-nums">
-                {[part("weekday"), part("day"), part("month"), timeLabel ? shortTime(timeLabel) : null].filter(Boolean).join(" ")}
+                {[part("weekday"), part("day"), part("month"), timeLabel].filter(Boolean).join(" ")}
               </p>
             </div>
             {added ? (
@@ -338,16 +380,45 @@ export function OrderCard({
             ) : audience === "staff" && order.state === "waiting" && hideQuoteAction ? (
               <span className="flex-1" />
             ) : audience !== "staff" && order.state === "price" ? (
+              <>
+                <button
+                  type="button"
+                  disabled={busy}
+                  className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white disabled:opacity-60"
+                  onClick={() => {
+                    successTick();
+                    onAccept?.();
+                  }}
+                >
+                  {order.visitTime && price
+                    ? t("acceptPriceAt", { price, time: formatClock(order.visitTime) })
+                    : t("acceptPrice")}
+                </button>
+                {onAskMore ? (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    className="inline-flex min-h-11 items-center justify-center rounded-full border border-pf-line bg-pf-card px-3 text-pf-14 font-medium text-pf-ink disabled:opacity-60"
+                    onClick={() => {
+                      selectionTick();
+                      onAskMore();
+                    }}
+                  >
+                    {t("askMorePros")}
+                  </button>
+                ) : null}
+              </>
+            ) : audience !== "staff" && order.state === "waiting" && onAskMore ? (
               <button
                 type="button"
                 disabled={busy}
-                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white disabled:opacity-60"
+                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink disabled:opacity-60"
                 onClick={() => {
-                  successTick();
-                  onAccept?.();
+                  selectionTick();
+                  onAskMore();
                 }}
               >
-                {t("acceptPrice")}
+                {t("askMorePros")}
               </button>
             ) : audience !== "staff" && order.state === "done" ? (
               <Link href={order.reviewHref} className="inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-ink">
@@ -383,6 +454,11 @@ export function OrderCard({
           weekday={part("weekday")}
           day={part("day")}
           month={part("month")}
+          canEdit={canEdit}
+          onEdit={() => {
+            setSheet(false);
+            setAskEdit(true);
+          }}
           onClose={() => setSheet(false)}
           onOpenPhoto={setViewer}
         />
@@ -407,11 +483,32 @@ export function OrderCard({
             >
               {t("copyDetails")}
             </button>
-            <OrderMenuActions order={order} chrome="menu" askCancel={askCancel} onDone={() => setMenu(false)} onCancelClosed={() => setAskCancel(false)} />
+            <OrderMenuActions
+              order={order}
+              chrome="menu"
+              canEdit={canEdit}
+              askCancel={askCancel}
+              askEdit={askEdit}
+              onDone={() => {
+                setMenu(false);
+                onChanged?.();
+              }}
+              onCancelClosed={() => setAskCancel(false)}
+              onEditClosed={() => setAskEdit(false)}
+            />
           </div>
         </div>
       ) : (
-        <OrderMenuActions order={order} chrome="none" askCancel={askCancel} onDone={() => undefined} onCancelClosed={() => setAskCancel(false)} />
+        <OrderMenuActions
+          order={order}
+          chrome="none"
+          canEdit={canEdit}
+          askCancel={askCancel}
+          askEdit={askEdit}
+          onDone={() => onChanged?.()}
+          onCancelClosed={() => setAskCancel(false)}
+          onEditClosed={() => setAskEdit(false)}
+        />
       )}
       {viewer != null ? <PhotoViewer photos={order.photos} index={viewer} onClose={() => setViewer(null)} /> : null}
     </div>
@@ -427,15 +524,21 @@ function StatusMark({ state }: { state: CustomerOrderState }) {
 function OrderMenuActions({
   order,
   chrome,
+  canEdit,
   askCancel,
+  askEdit,
   onDone,
   onCancelClosed,
+  onEditClosed,
 }: {
   order: CustomerOrder;
   chrome: "menu" | "none";
+  canEdit: boolean;
   askCancel: boolean;
+  askEdit: boolean;
   onDone: () => void;
   onCancelClosed: () => void;
+  onEditClosed: () => void;
 }) {
   if (order.state === "cancelled" || order.state === "done") return null;
   return (
@@ -445,9 +548,14 @@ function OrderMenuActions({
       title={order.title}
       description={order.description}
       whenLabel={order.whenLabel}
+      area={order.area}
+      shareLocation={order.shareLocation}
       chrome={chrome}
+      allowEdit={canEdit}
       openCancel={askCancel}
+      openEdit={canEdit && askEdit}
       onCancelClosed={onCancelClosed}
+      onEditClosed={onEditClosed}
       onChanged={onDone}
     />
   );
@@ -460,6 +568,8 @@ function OrderSheet({
   weekday,
   day,
   month,
+  canEdit,
+  onEdit,
   onClose,
   onOpenPhoto,
 }: {
@@ -469,6 +579,8 @@ function OrderSheet({
   weekday: string;
   day: string;
   month: string;
+  canEdit: boolean;
+  onEdit: () => void;
   onClose: () => void;
   onOpenPhoto: (index: number) => void;
 }) {
@@ -480,6 +592,7 @@ function OrderSheet({
     order.acceptedAt ? { label: t("cardBooked"), at: order.acceptedAt } : null,
   ].filter((item): item is { label: string; at: string } => item != null);
   const showLocation = Boolean(order.shareLocation) && (audience === "customer" || order.state === "booked" || order.state === "done");
+  const windowsLabel = windowsDisplay(order.whenLabel);
   const price = order.priceLabel?.replace(/\s*THB\b/g, " ฿").replace("–", "-").trim() ?? null;
   const formatAt = (iso: string) => {
     const date = new Date(iso);
@@ -500,9 +613,16 @@ function OrderSheet({
           <h2 id="order-details-title" className="min-w-0 truncate text-pf-18 font-bold tracking-[-0.02em] text-pf-ink">
             {t("orderDetails")}
           </h2>
-          <button type="button" aria-label={t("close")} className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-pf-ink" onClick={onClose}>
-            <X className="size-5" strokeWidth={2} aria-hidden />
-          </button>
+          <div className="flex shrink-0 items-center">
+            {canEdit ? (
+              <button type="button" aria-label={t("editJob")} className="inline-flex size-11 items-center justify-center rounded-full text-pf-ink" onClick={onEdit}>
+                <Pencil className="size-5" strokeWidth={2} aria-hidden />
+              </button>
+            ) : null}
+            <button type="button" aria-label={t("close")} className="inline-flex size-11 items-center justify-center rounded-full text-pf-ink" onClick={onClose}>
+              <X className="size-5" strokeWidth={2} aria-hidden />
+            </button>
+          </div>
         </div>
 
         {order.photos.length > 0 ? (
@@ -546,11 +666,19 @@ function OrderSheet({
                   {[weekday, month].filter(Boolean).join(" ")}
                 </span>
               </div>
-              {timeLabel ? (
-                <p className="mt-2 inline-flex items-center gap-1 text-pf-14 font-medium text-pf-text-secondary">
-                  <TimeIcon time={visitDate(order.whenLabel).time} />
-                  {shortTime(timeLabel)}
+              {order.visitTime ? (
+                <p className="mt-2 inline-flex items-center gap-1 text-pf-14 font-medium text-pf-ink">
+                  <TimeIcon time={order.visitTime} />
+                  {formatClock(order.visitTime)}
                 </p>
+              ) : timeLabel ? (
+                <p className="mt-2 inline-flex items-center gap-1 text-pf-14 font-medium text-pf-text-secondary">
+                  <TimeIcon time={visitDate(order.whenLabel, order.visitTime).time} />
+                  {timeLabel}
+                </p>
+              ) : null}
+              {windowsLabel && order.visitTime ? (
+                <p className="mt-1 text-pf-12 font-medium text-pf-slate-ink">{windowsLabel}</p>
               ) : null}
             </section>
             <section className="rounded-[20px] border border-pf-line bg-pf-card p-4 shadow-[var(--pf-shadow-1)]">
@@ -677,6 +805,35 @@ export function OrderCardSkeleton() {
           <div className="h-4 w-3/4 rounded bg-pf-page" />
           <div className="h-3 w-1/2 rounded bg-pf-page" />
         </div>
+      </div>
+    </div>
+  );
+}
+
+export function ProsListLoading({ count = 2 }: { count?: number }) {
+  const { t } = usePros();
+  return (
+    <div className="space-y-3" role="status" aria-live="polite" aria-busy="true">
+      <p className="text-pf-14 font-medium text-pf-text-secondary">{t("loading")}</p>
+      {Array.from({ length: count }, (_, index) => (
+        <OrderCardSkeleton key={index} />
+      ))}
+    </div>
+  );
+}
+
+export function ChatLoading() {
+  const { t } = usePros();
+  return (
+    <div className="space-y-3" role="status" aria-live="polite" aria-busy="true">
+      <p className="text-pf-14 font-medium text-pf-text-secondary">{t("loading")}</p>
+      <div className="animate-pulse space-y-3">
+        <div className="h-8 w-2/3 rounded-[14px] bg-pf-page" />
+        <div className="h-4 w-1/3 rounded bg-pf-page" />
+        <div className="ms-auto h-16 w-[70%] rounded-[20px] bg-pf-page" />
+        <div className="h-16 w-[75%] rounded-[20px] bg-pf-page" />
+        <div className="ms-auto h-12 w-[55%] rounded-[20px] bg-pf-page" />
+        <div className="h-28 rounded-[20px] border border-pf-line bg-pf-card" />
       </div>
     </div>
   );

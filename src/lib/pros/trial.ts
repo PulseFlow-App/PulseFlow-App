@@ -2,7 +2,7 @@ import type { ProRequest, ProReview } from "@/lib/pros/types";
 
 /** After the 3 free orders, the free plan is one order each calendar month. */
 export const FREE_ORDERS_PER_MONTH = 1;
-/** The first orders. The next one opens only after the review on the finished job. */
+/** The first free starter orders. Several may stay open at once. */
 export const TRIAL_ORDERS = 3;
 export const SERVICES_PLAN_USD = 5;
 /** The assistant is included in the 5 USD plan. */
@@ -176,9 +176,10 @@ export function canUseAssistant(
 }
 
 /**
- * The first 3 orders are free. Each next one waits until the previous job is finished and reviewed.
+ * The first 3 orders are free. Several open orders at once are allowed.
  * After those 3 are reviewed, the next free order opens the following month, then one each calendar month.
- * Premium allows an order before that, and more than one in a month. It does not skip the review.
+ * Premium allows an order before that, and more than one in a month.
+ * When every job is finished, a missing review still blocks the next free slot.
  */
 export function orderAllowance(
   requests: ProRequest[],
@@ -186,7 +187,7 @@ export function orderAllowance(
   actorId: string,
   now = new Date(),
   premium = false,
-): { ok: true; via: OrderVia } | { ok: false; error: "review" | "finish" | "plan" | "nextMonth" } {
+): { ok: true; via: OrderVia } | { ok: false; error: "review" | "plan" | "nextMonth" } {
   const mine = myOrders(requests, actorId);
   const blocked = orderBlock(requests, reviews, actorId);
   if (mine.length < TRIAL_ORDERS) {
@@ -207,14 +208,15 @@ export function orderAllowance(
   return { ok: false, error: "plan" };
 }
 
-/** The next order is offered only after every open one is finished and reviewed. */
+/** Open jobs do not block new ones. Reviews are required only when nothing is still open. */
 export function orderBlock(
   requests: ProRequest[],
   reviews: ProReview[],
   actorId: string,
-): "finish" | "review" | null {
+): "review" | null {
   const mine = requests.filter((row) => row.createdBy === actorId && row.status !== "cancelled");
-  if (mine.some((row) => row.status !== "completed")) return "finish";
+  const open = mine.some((row) => row.status !== "completed");
+  if (open) return null;
   if (mine.some((row) => !reviews.some((review) => review.requestId === row.id))) return "review";
   return null;
 }

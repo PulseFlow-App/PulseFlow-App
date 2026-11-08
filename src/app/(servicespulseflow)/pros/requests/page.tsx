@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { ServicesAccountGate } from "@/components/pros/parts";
 import {
   OrderCard,
-  OrderCardSkeleton,
   PaymentNote,
+  ProsListLoading,
   RequestsEmpty,
   orderVisitDate,
   type CustomerOrder,
@@ -55,12 +55,13 @@ function dayHeading(date: Date | null, locale: string, todayLabel: string, tomor
 }
 
 export default function RequestsPage() {
-  const { state, actor, actorReady, t } = usePros();
+  const { state, actor, actorReady, t, inviteMorePros } = usePros();
   const { locale } = useI18n();
   const pathname = usePathname();
   const [remote, setRemote] = useState<ServiceDelivery[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const [segment, setSegment] = useState<"active" | "done">("active");
   const [compact, setCompact] = useState(false);
@@ -110,6 +111,7 @@ export default function RequestsPage() {
 
   const accept = async (id: string) => {
     setBusy(id);
+    setFlash(null);
     try {
       const res = await fetch("/api/services/requests", {
         method: "PATCH",
@@ -117,6 +119,27 @@ export default function RequestsPage() {
         body: JSON.stringify({ id, action: "accept" }),
       });
       if (res.ok) setVersion((current) => current + 1);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const askMore = async (card: CustomerOrder) => {
+    const requestId = card.localRequestId ?? card.id;
+    setBusy(card.id);
+    setFlash(null);
+    try {
+      const result = await inviteMorePros(requestId);
+      if (!result.ok) {
+        setFlash(t("couldNotLoad"));
+        return;
+      }
+      setFlash(
+        result.added
+          ? t("askMoreProsDone", { count: result.added })
+          : t("askMoreProsNone"),
+      );
+      if (result.added) setVersion((current) => current + 1);
     } finally {
       setBusy(null);
     }
@@ -140,6 +163,7 @@ export default function RequestsPage() {
         title: row.title,
         description: row.description,
         whenLabel: row.when_label,
+        visitTime: row.visit_time ?? null,
         area: row.area_label || (local ? areaName(state, local.areaId, locale) || null : null),
         shareLocation: row.share_location ?? local?.shareLocation ?? null,
         photos: row.photos ?? [],
@@ -178,7 +202,11 @@ export default function RequestsPage() {
     }),
   ];
 
-  const visible = cards.filter((card) => (segment === "done" ? card.state === "done" : card.state !== "done"));
+  const visible = cards.filter((card) =>
+    segment === "done"
+      ? card.state === "done" || card.state === "cancelled"
+      : card.state !== "done" && card.state !== "cancelled",
+  );
   const needs = segment === "active" ? visible.filter((card) => card.state === "price") : [];
   const rest = visible.filter((card) => card.state !== "price" || segment === "done");
   const groups = new Map<string, { label: string; sort: number; cards: CustomerOrder[] }>();
@@ -202,6 +230,7 @@ export default function RequestsPage() {
       id: card.id,
       title: card.title,
       whenLabel: card.whenLabel,
+      visitTime: card.visitTime,
       details: card.description,
       who: card.personName,
       price: card.priceLabel ? t("calendarPriceLine", { amount: card.priceLabel }) : null,
@@ -243,12 +272,7 @@ export default function RequestsPage() {
           <ServicesAccountGate next={pathname} />
         </>
       ) : null}
-      {loading ? (
-        <>
-          <OrderCardSkeleton />
-          <OrderCardSkeleton />
-        </>
-      ) : null}
+      {loading ? <ProsListLoading /> : null}
       {failed && cards.length === 0 ? (
         <div className="rounded-[20px] border border-pf-line bg-pf-card px-4 py-6 text-center">
           <p className="text-pf-16 text-pf-ink">{t("couldNotLoad")}</p>
@@ -266,6 +290,11 @@ export default function RequestsPage() {
         </div>
       ) : null}
       {empty ? <RequestsEmpty href={servicesPath(pathname, "/find")} /> : null}
+      {flash ? (
+        <p className="rounded-[14px] border border-pf-line bg-pf-card px-4 py-3 text-pf-14 text-pf-ink" role="status">
+          {flash}
+        </p>
+      ) : null}
       {needs.length > 0 ? (
         <section className="space-y-3">
           <h2 className="sticky top-[92px] z-[1] bg-pf-page/95 py-1 text-pf-14 font-medium text-pf-text-secondary backdrop-blur-xl">
@@ -280,7 +309,9 @@ export default function RequestsPage() {
               order={card}
               busy={busy === card.id}
               onAccept={() => void accept(card.id)}
+              onAskMore={() => void askMore(card)}
               onCalendar={() => saveCalendar(card)}
+              onChanged={() => setVersion((current) => current + 1)}
             />
           ))}
         </section>
@@ -296,7 +327,13 @@ export default function RequestsPage() {
               order={card}
               busy={busy === card.id}
               onAccept={() => void accept(card.id)}
+              onAskMore={
+                card.state === "waiting" || card.state === "price"
+                  ? () => void askMore(card)
+                  : undefined
+              }
               onCalendar={() => saveCalendar(card)}
+              onChanged={() => setVersion((current) => current + 1)}
             />
           ))}
         </section>

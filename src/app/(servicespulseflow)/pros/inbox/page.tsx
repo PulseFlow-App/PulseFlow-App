@@ -5,7 +5,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AGREED_REPLY, compareDeliveries, isAgreedReply, quoteLabel, type ServiceDelivery } from "@/lib/pros/delivery";
 import { QuoteForm, type QuoteInput } from "@/components/pros/quote-form";
-import { OrderCard, type CustomerOrder, type CustomerOrderState } from "@/components/pros/order-card";
+import { OrderCard, ProsListLoading, type CustomerOrder, type CustomerOrderState } from "@/components/pros/order-card";
 import { downloadVisitIcs } from "@/lib/pros/visit-calendar";
 import { statusKey } from "@/lib/pros/i18n";
 import { readMyListingId } from "@/lib/pros/join";
@@ -19,7 +19,7 @@ function WorkerInboxPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [listingId, setListingId] = useState<string | null>(null);
-  const [incoming, setIncoming] = useState<ServiceDelivery[]>([]);
+  const [incoming, setIncoming] = useState<ServiceDelivery[] | null>(null);
   const [nationality, setNationality] = useState<string | null>(null);
   const [nationalityReady, setNationalityReady] = useState(false);
   const [permitQuote, setPermitQuote] = useState<QuoteInput | null>(null);
@@ -47,7 +47,7 @@ function WorkerInboxPage() {
       first?.focus({ preventScroll: true });
     }, 50);
     return () => window.clearTimeout(timer);
-  }, [quoteOpen, quoteFocus, incoming.length]);
+  }, [quoteOpen, quoteFocus, incoming]);
 
   useEffect(() => {
     if (!actorReady) return;
@@ -76,7 +76,7 @@ function WorkerInboxPage() {
   }, [actor, actorReady, pathname, router, start, version]);
 
   const rows = useMemo(() => {
-    if (!listingId) return [];
+    if (!listingId || !incoming) return [];
     const covered = new Set(incoming.map((row) => row.request_id));
     return state.offers
       .filter((offer) => offer.profileId === listingId && !covered.has(offer.requestId))
@@ -87,6 +87,8 @@ function WorkerInboxPage() {
       .filter((row) => row.request)
       .sort((a, b) => (b.offer.createdAt > a.offer.createdAt ? 1 : -1));
   }, [incoming, listingId, state.offers, state.requests]);
+
+  const loading = incoming === null;
 
   if (!actor) return null;
 
@@ -102,6 +104,7 @@ function WorkerInboxPage() {
         max: quote.max,
         currency: quote.currency,
         note: quote.note,
+        visitTime: quote.visitTime,
       }),
     })
       .then((res) => {
@@ -112,7 +115,7 @@ function WorkerInboxPage() {
         const query = next.toString();
         router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
         setIncoming((current) =>
-          current.map((item) =>
+          (current ?? []).map((item) =>
             item.id === id
               ? {
                   ...item,
@@ -120,6 +123,7 @@ function WorkerInboxPage() {
                   quote_max: quote.max,
                   reply_currency: quote.currency,
                   quote_note: quote.note,
+                  visit_time: quote.visitTime,
                 }
               : item,
           ),
@@ -150,7 +154,8 @@ function WorkerInboxPage() {
   return (
     <div className="space-y-3">
       <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("staffOrders")}</h1>
-      {incoming.slice().sort(compareDeliveries).map((row) => {
+      {loading ? <ProsListLoading /> : null}
+      {(incoming ?? []).slice().sort(compareDeliveries).map((row) => {
         const cancelled = Boolean(row.cancelled_at);
         const accepted = !cancelled && isAgreedReply(row.reply_message);
         const price = quoteLabel(row);
@@ -163,6 +168,7 @@ function WorkerInboxPage() {
           title: row.title,
           description: row.description,
           whenLabel: row.when_label,
+          visitTime: row.visit_time ?? null,
           area: row.area_label ?? null,
           shareLocation: accepted ? row.share_location ?? null : null,
           photos: (row.photos ?? []).filter((src) => typeof src === "string" && src.length > 0),
@@ -188,6 +194,7 @@ function WorkerInboxPage() {
                   id: row.id,
                   title: row.title,
                   whenLabel: row.when_label,
+                  visitTime: row.visit_time,
                   details: row.description,
                   who: row.target_name,
                   price: price ? t("calendarPriceLine", { amount: price }) : null,
@@ -235,10 +242,12 @@ function WorkerInboxPage() {
           </div>
         );
       })}
-      {!listingId && incoming.length === 0 ? (
+      {!loading && !listingId && (incoming?.length ?? 0) === 0 ? (
         <p className="text-pf-14 text-pf-text-secondary">{t("noInbox")}</p>
       ) : null}
-      {listingId && rows.length === 0 && incoming.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noInbox")}</p> : null}
+      {!loading && listingId && rows.length === 0 && (incoming?.length ?? 0) === 0 ? (
+        <p className="text-pf-14 text-pf-text-secondary">{t("noInbox")}</p>
+      ) : null}
       {permitQuote && quoteOpen ? (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-pf-ink/40 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center">
           <div role="dialog" aria-modal="true" aria-labelledby="permit-title" className="w-full max-w-md rounded-[28px] bg-pf-card p-5">

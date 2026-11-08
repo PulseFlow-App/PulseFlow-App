@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { OrderCard, type CustomerOrder } from "@/components/pros/order-card";
+import { OrderCard, ProsListLoading, type CustomerOrder } from "@/components/pros/order-card";
 import { compareDeliveries, isAgreedReply, quoteLabel, type ServiceDelivery } from "@/lib/pros/delivery";
 import { appOriginForHost, servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
@@ -109,6 +109,7 @@ function deliveryCard(row: ServiceDelivery, to: (path: string) => string): Custo
     title: row.title,
     description: row.description,
     whenLabel: row.when_label,
+    visitTime: row.visit_time ?? null,
     area: row.area_label ?? null,
     shareLocation: accepted ? row.share_location ?? null : null,
     photos: (row.photos ?? []).filter((src): src is string => typeof src === "string" && src.length > 0),
@@ -185,7 +186,8 @@ export function WorkHome() {
   return (
     <div className="space-y-4">
       <h1 className="text-pf-28 font-bold tracking-[-0.02em] text-pf-ink">{t("workHomeTitle")}</h1>
-      {requests == null ? null : (
+      {requests == null ? <ProsListLoading /> : null}
+      {requests != null ? (
         <section className="rounded-[28px] bg-pf-navy-900 p-5 text-pf-on-panel">
           <div className="grid grid-cols-2 gap-3">
             <a href="#work-confirmed" className="block min-h-11">
@@ -206,7 +208,7 @@ export function WorkHome() {
             <p className="mt-4 text-pf-16 text-pf-on-panel/80">{t("workHomeQuiet")}</p>
           )}
         </section>
-      )}
+      ) : null}
 
       <section id="work-confirmed" className="space-y-2">
         <h2 className="text-pf-18 font-medium text-pf-ink">{t("workDashConfirmed")}</h2>
@@ -227,6 +229,7 @@ export function WorkHome() {
                   id: row.id,
                   title: row.title,
                   whenLabel: row.when_label,
+                  visitTime: row.visit_time,
                   details: row.description,
                   who: row.target_name,
                   price: price ? t("calendarPriceLine", { amount: price }) : null,

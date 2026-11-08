@@ -58,7 +58,7 @@ type RequestInput = {
   invitedProfileId: string | null;
 };
 
-type StoreResult = { ok: true; id?: string } | { ok: false; error: "auth" | "short" | "rate" | "duplicate" | "consent" | "missing" | "review" | "finish" | "plan" | "nextMonth" };
+type StoreResult = { ok: true; id?: string } | { ok: false; error: "auth" | "short" | "rate" | "duplicate" | "consent" | "missing" | "review" | "plan" | "nextMonth" };
 
 type Api = {
   ready: boolean;
@@ -72,6 +72,8 @@ type Api = {
   t: (key: ProsKey, params?: Record<string, string | number>) => string;
   setPlace: (id: string | null) => void;
   createRequest: (input: RequestInput) => StoreResult & { matches?: ProOffer[] };
+  /** Send an open job to more public pros in the same trade who are not already asked. */
+  inviteMorePros: (requestId: string) => Promise<StoreResult & { added?: number }>;
   reply: (input: {
     token: string;
     action: "quote" | "decline" | "time" | "agree";
@@ -489,6 +491,72 @@ export function ProsProvider({ children }: { children: ReactNode }) {
           });
         }
         return { ok: true, id: request.id, matches: offers };
+      },
+      inviteMorePros: async (requestId) => {
+        if (!actor) return { ok: false, error: "auth" };
+        const request = state.requests.find((row) => row.id === requestId && row.createdBy === actor.id);
+        if (!request || request.status === "cancelled" || request.status === "completed") {
+          return { ok: false, error: "missing" };
+        }
+        const already = new Set(
+          state.offers.filter((offer) => offer.requestId === requestId).map((offer) => offer.profileId),
+        );
+        try {
+          const res = await fetch("/api/services/requests", { cache: "no-store" });
+          if (res.ok) {
+            const body = (await res.json()) as {
+              requests?: { request_id: string; target_profile_id: string }[];
+            };
+            for (const row of body.requests ?? []) {
+              if (row.request_id === requestId) already.add(row.target_profile_id);
+            }
+          }
+        } catch {
+          // Local offers still guide who is already asked.
+        }
+        const matches = matchPros(state, request).filter(
+          (pro) => pro.linkedProfileId && !already.has(pro.id) && !already.has(pro.linkedProfileId),
+        );
+        if (!matches.length) return { ok: true, added: 0 };
+        const offers: ProOffer[] = matches.map((pro) => ({
+          id: crypto.randomUUID(),
+          requestId: request.id,
+          profileId: pro.id,
+          token: crypto.randomUUID(),
+          amount: null,
+          currency: null,
+          message: "",
+          originalLocale: locale,
+          translations: {},
+          proposedTime: null,
+          status: "pending",
+          createdAt: new Date().toISOString(),
+        }));
+        persist((prev) => ({
+          ...prev,
+          offers: [...offers, ...prev.offers],
+        }));
+        const targets = matches.map((pro) => ({
+          profileId: pro.linkedProfileId as string,
+          name: pro.name,
+        }));
+        const whenLabel = [request.preferredDate, request.preferredTime].filter(Boolean).join(" · ");
+        const posted = await fetch("/api/services/requests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            requestId: request.id,
+            title: request.title,
+            description: request.description,
+            whenLabel,
+            areaLabel: request.areaLabel,
+            shareLocation: request.shareLocation,
+            photos: request.photos,
+            targets,
+          }),
+        });
+        if (!posted.ok) return { ok: false, error: "missing" };
+        return { ok: true, added: targets.length };
       },
       reply: (input) => {
         const offer = state.offers.find((row) => row.token === input.token);

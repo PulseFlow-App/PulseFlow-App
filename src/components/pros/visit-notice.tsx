@@ -48,6 +48,7 @@ function toOrder(row: ServiceDelivery, to: (path: string) => string): CustomerOr
     title: row.title,
     description: row.description,
     whenLabel: row.when_label,
+    visitTime: row.visit_time ?? null,
     area: row.area_label ?? null,
     shareLocation: row.share_location ?? null,
     photos: (row.photos ?? []).filter((src): src is string => typeof src === "string" && src.length > 0),
@@ -133,6 +134,7 @@ export function VisitNotice() {
             id: row.id,
             title: row.title,
             whenLabel: row.when_label,
+            visitTime: row.visit_time,
             details: row.description,
             who: row.target_name,
             price: price ? t("calendarPriceLine", { amount: price }) : null,
@@ -159,6 +161,7 @@ export function VisitCalendarSheet({
     id: string;
     title: string;
     whenLabel: string | null;
+    visitTime?: string | null;
     details?: string | null;
     who?: string | null;
     price?: string | null;
@@ -184,6 +187,7 @@ export function VisitCalendarSheet({
               id: visit.id,
               title: visit.title,
               whenLabel: visit.whenLabel,
+              visitTime: visit.visitTime,
               details: visit.details,
               who: visit.who,
               price: visit.price,

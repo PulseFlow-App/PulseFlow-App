@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { readPhoto } from "@/components/pros/parts";
 import { quoteLabel } from "@/lib/pros/delivery";
 import { OrderActions, cancelReasonText } from "@/components/pros/order-actions";
+import { ChatLoading } from "@/components/pros/order-card";
 import { needsWorkPermit } from "@/lib/pros/permit";
 import { QuoteModal, QuoteTag, type QuoteInput } from "@/components/pros/quote-form";
 import { servicesPath } from "@/lib/pros/paths";
@@ -39,6 +40,9 @@ type ChatPayload = {
   cancelReason?: string | null;
   description?: string;
   whenLabel?: string | null;
+  visitTime?: string | null;
+  areaLabel?: string | null;
+  shareLocation?: string | null;
   messages: ChatMessage[];
   error?: string;
 };
@@ -82,6 +86,7 @@ export default function ServiceChatPage() {
   const { dir } = useI18n();
   const [payload, setPayload] = useState<ChatPayload | null>(null);
   const [missing, setMissing] = useState(false);
+  const [ready, setReady] = useState(false);
   const [text, setText] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -94,21 +99,33 @@ export default function ServiceChatPage() {
   const back = servicesPath(pathname, actor?.role === "staff" || actor?.role === "cleaner" ? "/inbox" : "/requests");
 
   const load = useCallback(async () => {
-    const res = await fetch(`/api/services/chat?id=${encodeURIComponent(params.id)}`, { cache: "no-store" });
-    if (res.status === 404) {
-      setMissing(true);
-      return;
+    try {
+      const res = await fetch(`/api/services/chat?id=${encodeURIComponent(params.id)}`, { cache: "no-store" });
+      if (res.status === 404) {
+        setMissing(true);
+        setPayload(null);
+        return;
+      }
+      const body = (await res.json()) as ChatPayload;
+      if (!res.ok && !body.title) {
+        setError(body.error ?? t("couldNotLoad"));
+        return;
+      }
+      setMissing(false);
+      setPayload(body);
+      if (body.error) setError(body.error);
+      else setError(null);
+    } catch {
+      setError(t("couldNotLoad"));
+    } finally {
+      setReady(true);
     }
-    const body = (await res.json()) as ChatPayload;
-    if (!res.ok && !body.title) {
-      setError(body.error ?? t("chatEmpty"));
-      return;
-    }
-    setPayload(body);
-    if (body.error) setError(body.error);
   }, [params.id, t]);
 
   useEffect(() => {
+    setReady(false);
+    setMissing(false);
+    setPayload(null);
     void load();
   }, [load]);
 
@@ -186,6 +203,7 @@ export default function ServiceChatPage() {
           max: quote.max,
           currency: quote.currency,
           note: quote.note,
+          visitTime: quote.visitTime,
         }),
       });
       if (!res.ok) {
@@ -251,7 +269,11 @@ export default function ServiceChatPage() {
         <ArrowLeft className={cn("size-4", dir === "rtl" && "rotate-180")} strokeWidth={2} aria-hidden />
         {t("back")}
       </Link>
-      {missing ? <p className="text-pf-16 text-pf-text-secondary">{t("emptyRequests")}</p> : null}
+      {!ready && !missing ? <ChatLoading /> : null}
+      {ready && missing ? <p className="text-pf-16 text-pf-text-secondary">{t("emptyRequests")}</p> : null}
+      {ready && !missing && error && !payload ? (
+        <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p>
+      ) : null}
       {payload ? (
         <>
           <div className="flex items-start justify-between gap-3">
@@ -286,6 +308,9 @@ export default function ServiceChatPage() {
             title={payload.title}
             description={payload.description ?? ""}
             whenLabel={payload.whenLabel ?? null}
+            area={payload.areaLabel ?? null}
+            shareLocation={payload.shareLocation ?? null}
+            allowEdit={!payload.staff}
             cancelled={payload.cancelled}
             onChanged={() => void load()}
           />
@@ -296,7 +321,12 @@ export default function ServiceChatPage() {
               disabled={busy}
               onClick={() => void acceptQuote()}
             >
-              {t("confirmQuote")}
+              {payload.visitTime
+                ? t("acceptPriceAt", {
+                    price: price.replace(/\s*THB\b/g, " ฿"),
+                    time: payload.visitTime,
+                  })
+                : t("confirmQuote")}
             </button>
           ) : null}
           {payload.open ? (

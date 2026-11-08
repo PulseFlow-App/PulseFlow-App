@@ -31,6 +31,9 @@ type RequestRow = {
   cancel_reason?: string | null;
   description?: string | null;
   when_label?: string | null;
+  visit_time?: string | null;
+  area_label?: string | null;
+  share_location?: string | null;
 };
 
 async function actor() {
@@ -43,20 +46,24 @@ async function actor() {
 
 async function loadRequest(id: string): Promise<RequestRow | null | "missing"> {
   const admin = createAdminClient();
-  const withChat = await admin
-    .from("service_requests")
-    .select("id, title, description, when_label, created_by, target_profile_id, target_name, reply_message, chat_open, reply_amount, quote_max, reply_currency, quote_note, cancelled_at, cancel_reason")
-    .eq("id", id)
-    .maybeSingle();
-  if (!withChat.error) return (withChat.data as RequestRow | null) ?? null;
-  if (!/chat_open|quote_max|quote_note|cancelled_at|cancel_reason/.test(withChat.error.message)) return "missing";
-  const plain = await admin
-    .from("service_requests")
-    .select("id, title, description, when_label, created_by, target_profile_id, target_name, reply_message")
-    .eq("id", id)
-    .maybeSingle();
-  if (plain.error) return "missing";
-  return (plain.data as RequestRow | null) ?? null;
+  const selects = [
+    "id, title, description, when_label, visit_time, area_label, share_location, created_by, target_profile_id, target_name, reply_message, chat_open, reply_amount, quote_max, reply_currency, quote_note, cancelled_at, cancel_reason",
+    "id, title, description, when_label, area_label, share_location, created_by, target_profile_id, target_name, reply_message, chat_open, reply_amount, quote_max, reply_currency, quote_note, cancelled_at, cancel_reason",
+    "id, title, description, when_label, area_label, share_location, created_by, target_profile_id, target_name, reply_message, chat_open, reply_amount, quote_max, reply_currency, quote_note",
+    "id, title, description, when_label, created_by, target_profile_id, target_name, reply_message, reply_amount, quote_max, reply_currency",
+    "id, title, description, when_label, created_by, target_profile_id, target_name, reply_message, reply_amount, reply_currency",
+    "id, title, description, when_label, created_by, target_profile_id, target_name, reply_message",
+  ];
+  let lastError: { message: string } | null = null;
+  for (const columns of selects) {
+    const result = await admin.from("service_requests").select(columns).eq("id", id).maybeSingle();
+    if (!result.error) return (result.data as RequestRow | null) ?? null;
+    lastError = result.error;
+    if (!/chat_open|quote_max|quote_note|cancelled_at|cancel_reason|reply_amount|reply_currency|area_label|share_location|visit_time/.test(result.error.message)) {
+      return "missing";
+    }
+  }
+  return lastError ? "missing" : null;
 }
 
 function isParty(row: RequestRow, userId: string) {
@@ -68,9 +75,11 @@ function isOpen(row: RequestRow) {
 }
 
 function threadMeta(row: RequestRow, userId: string, peerName: string) {
+  const staff = row.target_profile_id === userId;
+  const accepted = row.reply_message === "agreed";
   return {
-    accepted: row.reply_message === "agreed",
-    staff: row.target_profile_id === userId,
+    accepted,
+    staff,
     title: row.title,
     peerName,
     quoteMin: row.reply_amount ?? null,
@@ -81,6 +90,10 @@ function threadMeta(row: RequestRow, userId: string, peerName: string) {
     cancelReason: row.cancel_reason ?? null,
     description: row.description ?? "",
     whenLabel: row.when_label ?? null,
+    visitTime: row.visit_time ?? null,
+    areaLabel: row.area_label ?? null,
+    // Exact pin stays hidden from staff until the quote is accepted.
+    shareLocation: !staff || accepted ? row.share_location ?? null : null,
   };
 }
 

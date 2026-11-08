@@ -2,12 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { usePros } from "@/lib/pros/store";
+import { isClockTime, normalizeClock } from "@/lib/pros/when-label";
 
 export type QuoteInput = {
   min: number;
   max: number | null;
   currency: string;
   note: string;
+  visitTime: string;
 };
 
 function parseAmount(raw: string) {
@@ -30,6 +32,7 @@ export function QuoteForm({
   const [max, setMax] = useState("");
   const [currency, setCurrency] = useState("THB");
   const [note, setNote] = useState("");
+  const [visitTime, setVisitTime] = useState("10:00");
   const [error, setError] = useState<string | null>(null);
 
   const ready = useMemo(() => {
@@ -37,8 +40,9 @@ export function QuoteForm({
     const high = max.trim() ? parseAmount(max) : null;
     if (!Number.isFinite(low) || low < 0) return false;
     if (high != null && (!Number.isFinite(high) || high < low)) return false;
+    if (!isClockTime(visitTime)) return false;
     return true;
-  }, [min, max]);
+  }, [min, max, visitTime]);
 
   return (
     <form
@@ -52,8 +56,18 @@ export function QuoteForm({
           setError(t("quoteNeedPrice"));
           return;
         }
+        if (!isClockTime(visitTime)) {
+          setError(t("needVisitTime"));
+          return;
+        }
         setError(null);
-        onSubmit({ min: low, max: high, currency, note: note.trim() });
+        onSubmit({
+          min: low,
+          max: high,
+          currency,
+          note: note.trim(),
+          visitTime: normalizeClock(visitTime),
+        });
       }}
     >
       <p className="text-pf-14 leading-relaxed text-pf-text-secondary">{t("quoteHint")}</p>
@@ -90,6 +104,25 @@ export function QuoteForm({
         <option value="THB">THB</option>
         <option value="USD">USD</option>
       </select>
+      <div>
+        <label htmlFor="quote-visit-time" className="mb-1 block text-pf-12 font-medium text-pf-slate-ink">
+          {t("visitTime")}
+        </label>
+        <p className="mb-1 text-pf-12 text-pf-slate-ink">{t("visitTimeHint")}</p>
+        <input
+          id="quote-visit-time"
+          type="time"
+          value={visitTime}
+          step={900}
+          required
+          onChange={(event) => {
+            setVisitTime(event.target.value || "10:00");
+            if (error) setError(null);
+          }}
+          aria-label={t("visitTime")}
+          className="min-h-11 w-full rounded-[14px] border border-pf-line bg-pf-page px-3 text-pf-16 text-pf-ink outline-none"
+        />
+      </div>
       <textarea
         value={note}
         onChange={(event) => setNote(event.target.value)}

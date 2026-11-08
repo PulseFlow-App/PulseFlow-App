@@ -26,7 +26,11 @@ function escapeIcs(value: string) {
 }
 
 /** Preferred date and time, as stored on a request, become one phone-calendar slot. */
-export function visitSlot(whenLabel: string | null | undefined, now = new Date()) {
+export function visitSlot(
+  whenLabel: string | null | undefined,
+  now = new Date(),
+  visitTime?: string | null,
+) {
   const parts = (whenLabel ?? "")
     .split("·")
     .map((part) => part.trim())
@@ -40,10 +44,17 @@ export function visitSlot(whenLabel: string | null | undefined, now = new Date()
     else if (token === "tomorrow") date = isoDay(addDays(now, 1));
     else if (token === "this_week" || token === "this week" || token === "flexible") date = isoDay(addDays(now, 1));
     else if (TIMES[token]) time = TIMES[token];
-    else if (/^\d{1,2}:\d{2}/.test(part)) {
+    else if (/^\d{1,2}:\d{2}$/.test(part)) {
       const [hour, minute] = part.split(":");
       time = `${pad2(Number(hour))}:${minute.slice(0, 2)}`;
+    } else if (/^\d{1,2}:\d{2}\s*[-–—]\s*\d{1,2}:\d{2}/.test(part) && !time) {
+      const [hour, minute] = part.split(/[-–—]/)[0].trim().split(":");
+      time = `${pad2(Number(hour))}:${minute.slice(0, 2)}`;
     }
+  }
+  if (visitTime && /^\d{1,2}:\d{2}$/.test(visitTime.trim())) {
+    const [hour, minute] = visitTime.trim().split(":");
+    time = `${pad2(Number(hour))}:${minute.slice(0, 2)}`;
   }
   return { date: date ?? isoDay(addDays(now, 1)), time: time ?? "09:00" };
 }
@@ -65,12 +76,13 @@ export function buildVisitIcs(input: {
   id: string;
   title: string;
   whenLabel: string | null;
+  visitTime?: string | null;
   details?: string | null;
   who?: string | null;
   /** Already translated, for example "Price: 1500–2000 THB". */
   price?: string | null;
 }) {
-  const slot = visitSlot(input.whenLabel);
+  const slot = visitSlot(input.whenLabel, new Date(), input.visitTime);
   const end = plusHour(slot.date, slot.time);
   const summary = escapeIcs([input.title, input.who].filter(Boolean).join(" · "));
   const description = escapeIcs(
@@ -106,6 +118,7 @@ export function downloadVisitIcs(input: {
   id: string;
   title: string;
   whenLabel: string | null;
+  visitTime?: string | null;
   details?: string | null;
   who?: string | null;
   price?: string | null;

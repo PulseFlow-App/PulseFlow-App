@@ -85,16 +85,23 @@ export function splitCancelReason(raw: string | null | undefined) {
   };
 }
 
+function quoteAmount(value: number | string | null | undefined) {
+  if (value == null || value === "") return null;
+  const amount = typeof value === "number" ? value : Number(String(value).replace(/,/g, "").trim());
+  return Number.isFinite(amount) ? amount : null;
+}
+
 export function quoteLabel(row: {
-  reply_amount?: number | null;
-  quote_max?: number | null;
+  reply_amount?: number | string | null;
+  quote_max?: number | string | null;
   reply_currency?: string | null;
 }) {
-  if (row.reply_amount == null) return null;
+  const min = quoteAmount(row.reply_amount);
+  if (min == null) return null;
   const currency = row.reply_currency?.trim() || "THB";
-  const max = row.quote_max;
-  if (max != null && max !== row.reply_amount) return `${row.reply_amount}–${max} ${currency}`;
-  return `${row.reply_amount} ${currency}`;
+  const max = quoteAmount(row.quote_max);
+  if (max != null && max !== min) return `${min}-${max} ${currency}`;
+  return `${min} ${currency}`;
 }
 
 export type ServiceDelivery = {
@@ -106,6 +113,8 @@ export type ServiceDelivery = {
   title: string;
   description: string;
   when_label: string | null;
+  /** Precise visit time (HH:mm) proposed with the quote. */
+  visit_time?: string | null;
   area_label?: string | null;
   /** Exact location. Omitted for staff until the quote is accepted. */
   share_location?: string | null;

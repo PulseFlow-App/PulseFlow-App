@@ -133,8 +133,9 @@ export function sortOrganic(pros: ProProfile[], reviews: ProReview[]) {
 }
 
 export function matchPros(state: ProsState, request: Pick<ProRequest, "categoryId" | "areaId" | "language" | "orgId">) {
+  // Open marketplace jobs go to every public listing in the trade and area.
   return filterPros(state, {
-    mode: "team",
+    mode: "public",
     orgId: request.orgId,
     placeId: request.areaId,
     categoryId: request.categoryId,

@@ -13,7 +13,7 @@ const postSchema = z.object({
   requestId: z.string().uuid(),
   title: z.string().trim().min(3).max(120),
   description: z.string().trim().min(12).max(2000),
-  whenLabel: z.string().trim().max(160).optional(),
+  whenLabel: z.string().trim().max(280).optional(),
   areaLabel: z.string().trim().min(1).max(120).optional(),
   shareLocation: z.string().trim().min(1).max(500).optional(),
   photos: z.array(z.string().max(8_000_000)).max(3).optional(),
@@ -39,7 +39,14 @@ const patchSchema = z.object({
   detail: z.string().trim().max(280).optional(),
   title: z.string().trim().min(3).max(120).optional(),
   description: z.string().trim().min(12).max(2000).optional(),
-  whenLabel: z.string().trim().max(160).optional(),
+  whenLabel: z.string().trim().max(280).optional(),
+  areaLabel: z.string().trim().min(1).max(120).optional(),
+  shareLocation: z.string().trim().min(1).max(500).optional(),
+  visitTime: z
+    .string()
+    .trim()
+    .regex(/^\d{1,2}:\d{2}$/)
+    .optional(),
 });
 
 async function actor() {
@@ -61,6 +68,7 @@ export async function GET() {
   const scope = `created_by.eq.${user.id},target_profile_id.eq.${user.id}`;
   // Prefer the richest select. If a newer column is missing, keep photos in the next attempt.
   const selects = [
+    "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, visit_time, area_label, share_location, reply_message, reply_amount, reply_currency, quote_max, quote_note, photos, accepted_at, cancelled_at, cancelled_by, cancel_reason, created_at, replied_at",
     "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, area_label, share_location, reply_message, reply_amount, reply_currency, quote_max, quote_note, photos, accepted_at, cancelled_at, cancelled_by, cancel_reason, created_at, replied_at",
     "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, reply_message, reply_amount, reply_currency, quote_max, quote_note, photos, accepted_at, created_at, replied_at",
     "id, request_id, created_by, target_profile_id, target_name, title, description, when_label, reply_message, reply_amount, reply_currency, photos, created_at, replied_at",
@@ -279,21 +287,43 @@ export async function PATCH(request: Request) {
   }
 
   if (body.action === "edit") {
+    if (!customer) return NextResponse.json({ error: "Not found." }, { status: 404 });
     if (!body.title || !body.description || !body.whenLabel) {
       return NextResponse.json({ error: "Add the work and a date." }, { status: 400 });
     }
-    const patch = {
+    if (!body.areaLabel || !body.shareLocation) {
+      return NextResponse.json({ error: "Add an area and location." }, { status: 400 });
+    }
+    const patch: Record<string, string> = {
       title: body.title,
       description: body.description,
       when_label: body.whenLabel,
+      area_label: body.areaLabel,
+      share_location: body.shareLocation,
     };
-    let { error } = await admin
-      .from("service_requests")
-      .update(patch)
-      .eq("request_id", row.request_id)
-      .is("cancelled_at", null);
-    if (error && /cancelled_at/.test(error.message)) {
-      ({ error } = await admin.from("service_requests").update(patch).eq("request_id", row.request_id));
+    const attempts = [
+      patch,
+      {
+        title: patch.title,
+        description: patch.description,
+        when_label: patch.when_label,
+        area_label: patch.area_label,
+      },
+      {
+        title: patch.title,
+        description: patch.description,
+        when_label: patch.when_label,
+      },
+    ];
+    let error: { message: string } | null = null;
+    for (const next of attempts) {
+      let result = await admin.from("service_requests").update(next).eq("request_id", row.request_id).is("cancelled_at", null);
+      if (result.error && /cancelled_at/.test(result.error.message)) {
+        result = await admin.from("service_requests").update(next).eq("request_id", row.request_id);
+      }
+      error = result.error;
+      if (!error) break;
+      if (!/area_label|share_location/.test(error.message)) break;
     }
     if (error) return NextResponse.json({ error: "Could not save the reply." }, { status: 500 });
     await notifyOther(row, user.id, body.whenLabel);
@@ -306,35 +336,69 @@ export async function PATCH(request: Request) {
     if (!staff) return NextResponse.json({ error: "Not found." }, { status: 404 });
     if (body.min == null) return NextResponse.json({ error: "Add a price." }, { status: 400 });
     if (body.max != null && body.max < body.min) return NextResponse.json({ error: "Add a price." }, { status: 400 });
-    const patch = {
+    if (!body.visitTime) return NextResponse.json({ error: "Pick a visit time." }, { status: 400 });
+    const visitTime = body.visitTime.includes(":")
+      ? `${String(Number(body.visitTime.split(":")[0])).padStart(2, "0")}:${body.visitTime.split(":")[1].slice(0, 2)}`
+      : body.visitTime;
+    const base = {
       reply_amount: body.min,
       reply_currency: body.currency?.trim() || "THB",
       replied_at: new Date().toISOString(),
-      quote_max: body.max ?? null,
-      quote_note: body.note?.trim() || null,
-      chat_open: true,
     };
-    let { error } = await admin.from("service_requests").update(patch).eq("id", body.id);
-    if (error && /quote_max|quote_note|chat_open/.test(error.message)) {
-      ({ error } = await admin
-        .from("service_requests")
-        .update({
-          reply_amount: patch.reply_amount,
-          reply_currency: patch.reply_currency,
-          replied_at: patch.replied_at,
-        })
-        .eq("id", body.id));
+    // Keep quote_max and visit_time whenever the columns exist.
+    const quotePatches: Record<string, unknown>[] = [
+      {
+        ...base,
+        quote_max: body.max ?? null,
+        quote_note: body.note?.trim() || null,
+        visit_time: visitTime,
+        chat_open: true,
+      },
+      {
+        ...base,
+        quote_max: body.max ?? null,
+        quote_note: body.note?.trim() || null,
+        visit_time: visitTime,
+      },
+      {
+        ...base,
+        quote_max: body.max ?? null,
+        visit_time: visitTime,
+        chat_open: true,
+      },
+      { ...base, quote_max: body.max ?? null, visit_time: visitTime },
+      {
+        ...base,
+        quote_max: body.max ?? null,
+        quote_note: body.note?.trim() || null,
+        chat_open: true,
+      },
+      {
+        ...base,
+        quote_max: body.max ?? null,
+        quote_note: body.note?.trim() || null,
+      },
+      { ...base, quote_max: body.max ?? null },
+      { ...base, chat_open: true },
+      base,
+    ];
+    let error: { message: string } | null = null;
+    for (const patch of quotePatches) {
+      const result = await admin.from("service_requests").update(patch).eq("id", body.id);
+      error = result.error;
+      if (!error) break;
     }
     if (error) return NextResponse.json({ error: "Could not save the quote." }, { status: 500 });
     try {
       const { sendWebPush } = await import("@/lib/push/web-push");
+      const price = quoteLabel({
+        reply_amount: body.min,
+        quote_max: body.max,
+        reply_currency: body.currency,
+      });
       await sendWebPush({
         title: row.title as string,
-        body: quoteLabel({
-          reply_amount: body.min,
-          quote_max: body.max,
-          reply_currency: body.currency,
-        }) ?? "Quote",
+        body: [price, visitTime].filter(Boolean).join(" · ") || "Quote",
         href: `/chat/${row.id}`,
         tag: `services-quote:${row.id}`,
         kind: "message",
@@ -359,6 +423,27 @@ export async function PATCH(request: Request) {
     ({ error } = await admin.from("service_requests").update({ reply_message: AGREED_REPLY }).eq("id", body.id));
   }
   if (error) return NextResponse.json({ error: "Could not save the reply." }, { status: 500 });
+
+  // First accepted quote wins: drop the other open asks for the same job.
+  const siblingCancel = {
+    cancelled_at: new Date().toISOString(),
+    cancelled_by: user.id,
+    cancel_reason: "other\nAnother professional was booked for this job.",
+  };
+  let sibling = await admin
+    .from("service_requests")
+    .update(siblingCancel)
+    .eq("request_id", row.request_id)
+    .neq("id", body.id)
+    .is("cancelled_at", null);
+  if (sibling.error && /cancelled_at|cancelled_by|cancel_reason/.test(sibling.error.message)) {
+    sibling = await admin
+      .from("service_requests")
+      .delete()
+      .eq("request_id", row.request_id)
+      .neq("id", body.id);
+  }
+
   try {
     const { sendWebPush } = await import("@/lib/push/web-push");
     await sendWebPush({

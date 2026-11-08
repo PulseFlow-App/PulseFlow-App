@@ -1,20 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CANCEL_REASONS, splitCancelReason, type CancelReason } from "@/lib/pros/delivery";
+import { allAreas, areaName } from "@/lib/pros/matching";
 import { usePros } from "@/lib/pros/store";
+import { useI18n } from "@/lib/i18n/provider";
+import {
+  buildWhenLabel,
+  intervalValid,
+  parseWhenLabel,
+  type TimeInterval,
+} from "@/lib/pros/when-label";
 
-const TIMES = ["morning", "afternoon", "evening", "any"] as const;
-
-function splitWhen(label: string | null) {
-  let date = "";
-  let time: (typeof TIMES)[number] = "morning";
-  for (const part of (label ?? "").split("·").map((item) => item.trim()).filter(Boolean)) {
-    if (/^\d{4}-\d{2}-\d{2}/.test(part)) date = part.slice(0, 10);
-    else if ((TIMES as readonly string[]).includes(part.toLowerCase())) time = part.toLowerCase() as (typeof TIMES)[number];
-  }
-  return { date, time };
-}
+const ISLAND_SLUGS = ["th-phangan", "th-samui", "th-tao"] as const;
+const DEFAULT_INTERVAL: TimeInterval = { start: "09:00", end: "12:00" };
 
 export function cancelReasonText(
   raw: string | null | undefined,
@@ -42,11 +41,16 @@ export function OrderActions({
   title,
   description,
   whenLabel,
+  area = null,
+  shareLocation = null,
   cancelled,
   onChanged,
   chrome = "buttons",
+  allowEdit = true,
   openCancel = false,
+  openEdit = false,
   onCancelClosed,
+  onEditClosed,
 }: {
   id: string;
   /** Local marketplace draft id when it differs from the server delivery id. */
@@ -54,12 +58,17 @@ export function OrderActions({
   title: string;
   description: string;
   whenLabel: string | null;
+  area?: string | null;
+  shareLocation?: string | null;
   cancelled?: boolean;
   onChanged: () => void;
   /** buttons keeps the inbox row. menu is text rows. none only opens the dialogs. */
   chrome?: "buttons" | "menu" | "none";
+  allowEdit?: boolean;
   openCancel?: boolean;
+  openEdit?: boolean;
   onCancelClosed?: () => void;
+  onEditClosed?: () => void;
 }) {
   const { t } = usePros();
   const [editOpen, setEditOpen] = useState(false);
@@ -67,18 +76,23 @@ export function OrderActions({
   useEffect(() => {
     if (openCancel) setCancelOpen(true);
   }, [openCancel]);
+  useEffect(() => {
+    if (openEdit && allowEdit) setEditOpen(true);
+  }, [allowEdit, openEdit]);
   if (cancelled) return null;
   return (
     <>
       {chrome === "buttons" ? (
         <div className="flex gap-2">
-          <button
-            type="button"
-            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-pf-line bg-pf-card px-3 text-pf-14 font-medium text-pf-ink"
-            onClick={() => setEditOpen(true)}
-          >
-            {t("editJob")}
-          </button>
+          {allowEdit ? (
+            <button
+              type="button"
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-pf-line bg-pf-card px-3 text-pf-14 font-medium text-pf-ink"
+              onClick={() => setEditOpen(true)}
+            >
+              {t("editJob")}
+            </button>
+          ) : null}
           <button
             type="button"
             className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-pf-danger-ink bg-pf-card px-3 text-pf-14 font-medium text-pf-danger-ink"
@@ -89,9 +103,11 @@ export function OrderActions({
         </div>
       ) : chrome === "menu" ? (
         <>
-          <button type="button" className="flex min-h-11 w-full items-center px-3 text-left text-pf-16 text-pf-ink" onClick={() => setEditOpen(true)}>
-            {t("editJob")}
-          </button>
+          {allowEdit ? (
+            <button type="button" className="flex min-h-11 w-full items-center px-3 text-left text-pf-16 text-pf-ink" onClick={() => setEditOpen(true)}>
+              {t("editJob")}
+            </button>
+          ) : null}
           <button
             type="button"
             className="flex min-h-11 w-full items-center px-3 text-left text-pf-16 text-pf-danger-ink"
@@ -108,9 +124,15 @@ export function OrderActions({
           title={title}
           description={description}
           whenLabel={whenLabel}
-          onClose={() => setEditOpen(false)}
+          area={area}
+          shareLocation={shareLocation}
+          onClose={() => {
+            setEditOpen(false);
+            onEditClosed?.();
+          }}
           onSaved={() => {
             setEditOpen(false);
+            onEditClosed?.();
             onChanged();
           }}
         />
@@ -135,12 +157,14 @@ export function OrderActions({
   );
 }
 
-function EditJobModal({
+export function EditJobModal({
   open,
   id,
   title,
   description,
   whenLabel,
+  area = null,
+  shareLocation = null,
   onClose,
   onSaved,
 }: {
@@ -149,22 +173,66 @@ function EditJobModal({
   title: string;
   description: string;
   whenLabel: string | null;
+  area?: string | null;
+  shareLocation?: string | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const { t } = usePros();
-  const initial = splitWhen(whenLabel);
+  const { t, state } = usePros();
+  const { locale } = useI18n();
+  const places = useMemo(
+    () => allAreas(state).filter((row) => row.level === "locality" || row.level === "district"),
+    [state],
+  );
+  const islands = places.filter(
+    (row) => row.level === "locality" && ISLAND_SLUGS.includes(row.slug as (typeof ISLAND_SLUGS)[number]),
+  );
+
+  const initial = parseWhenLabel(whenLabel);
+  const matched = useMemo(() => matchAreaSelection(places, area, state, locale), [area, locale, places, state]);
+
   const [taskTitle, setTaskTitle] = useState(title);
   const [task, setTask] = useState(description);
   const [date, setDate] = useState(initial.date);
-  const [time, setTime] = useState<(typeof TIMES)[number]>(initial.time);
+  const [intervals, setIntervals] = useState<TimeInterval[]>(
+    initial.intervals.length
+      ? initial.intervals
+      : initial.legacyTime && /^\d{2}:\d{2}$/.test(initial.legacyTime)
+        ? [{ start: initial.legacyTime, end: "17:00" }]
+        : [{ ...DEFAULT_INTERVAL }],
+  );
+  const [islandId, setIslandId] = useState(matched.islandId);
+  const [areaId, setAreaId] = useState(matched.areaId);
+  const [location, setLocation] = useState(shareLocation ?? "");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const districts = places.filter((row) => row.parentId === islandId && row.level === "district");
   if (!open) return null;
 
+  const areaLabel = (() => {
+    if (!areaId) return null;
+    const selected = places.find((row) => row.id === areaId);
+    if (!selected) return null;
+    if (selected.parentId) {
+      const island = areaName(state, selected.parentId, locale);
+      const district = areaName(state, selected.id, locale);
+      return island && district ? `${island} · ${district}` : district || island || null;
+    }
+    return areaName(state, selected.id, locale) || null;
+  })();
+
   const save = async () => {
+    const windows = intervals.filter(intervalValid);
     if (taskTitle.trim().length < 3 || task.trim().length < 12 || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       setError(t("editNeedDetail"));
+      return;
+    }
+    if (!windows.length) {
+      setError(t("needWindows"));
+      return;
+    }
+    if (!areaId || !location.trim()) {
+      setError(t("needAreaAndLocation"));
       return;
     }
     setBusy(true);
@@ -178,7 +246,9 @@ function EditJobModal({
           action: "edit",
           title: taskTitle.trim(),
           description: task.trim(),
-          whenLabel: `${date} · ${time}`,
+          whenLabel: buildWhenLabel(date, windows),
+          areaLabel,
+          shareLocation: location.trim(),
         }),
       });
       if (!res.ok) {
@@ -192,8 +262,13 @@ function EditJobModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-pf-ink/40 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center">
-      <div role="dialog" aria-modal="true" aria-labelledby="edit-job-title" className="w-full max-w-md space-y-3 rounded-[28px] bg-pf-card p-5">
+    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-pf-ink/40 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-job-title"
+        className="max-h-[92dvh] w-full max-w-md space-y-3 overflow-y-auto rounded-[28px] bg-pf-card p-5"
+      >
         <h2 id="edit-job-title" className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">
           {t("editJobTitle")}
         </h2>
@@ -217,18 +292,116 @@ function EditJobModal({
           aria-label={t("preferredDate")}
           className="min-h-11 w-full rounded-[14px] border border-pf-line bg-pf-page px-3 text-pf-16 text-pf-ink outline-none"
         />
-        <select
-          value={time}
-          onChange={(event) => setTime(event.target.value as (typeof TIMES)[number])}
-          aria-label={t("preferredTime")}
-          className="min-h-11 w-full rounded-[14px] border border-pf-line bg-pf-page px-3 text-pf-16 text-pf-ink outline-none"
-        >
-          {TIMES.map((item) => (
-            <option key={item} value={item}>
-              {t(item === "any" ? "anyTime" : item)}
-            </option>
-          ))}
-        </select>
+        <div>
+          <p className="mb-1 text-pf-12 font-medium text-pf-slate-ink">{t("preferredWindows")}</p>
+          <p className="mb-2 text-pf-12 text-pf-slate-ink">{t("preferredWindowsHint")}</p>
+          <div className="space-y-2">
+            {intervals.map((interval, index) => (
+              <div key={`edit-window-${index}`} className="rounded-[14px] border border-pf-line bg-pf-page p-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="time"
+                    value={interval.start}
+                    step={900}
+                    aria-label={t("windowFrom")}
+                    className="min-h-11 w-full rounded-[14px] border border-pf-line bg-pf-card px-3 text-pf-16 text-pf-ink outline-none"
+                    onChange={(event) => {
+                      const start = event.target.value || "09:00";
+                      setIntervals((current) => current.map((row, item) => (item === index ? { ...row, start } : row)));
+                    }}
+                  />
+                  <input
+                    type="time"
+                    value={interval.end}
+                    step={900}
+                    aria-label={t("windowTo")}
+                    className="min-h-11 w-full rounded-[14px] border border-pf-line bg-pf-card px-3 text-pf-16 text-pf-ink outline-none"
+                    onChange={(event) => {
+                      const end = event.target.value || "12:00";
+                      setIntervals((current) => current.map((row, item) => (item === index ? { ...row, end } : row)));
+                    }}
+                  />
+                </div>
+                {intervals.length > 1 ? (
+                  <button
+                    type="button"
+                    className="mt-2 inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-text-secondary"
+                    onClick={() => setIntervals((current) => current.filter((_, item) => item !== index))}
+                  >
+                    {t("removeInterval")}
+                  </button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-page px-4 text-pf-14 font-medium text-pf-ink"
+            onClick={() => setIntervals((current) => [...current, { start: "14:00", end: "17:00" }])}
+          >
+            {t("addInterval")}
+          </button>
+        </div>
+        <div>
+          <p className="mb-1 text-pf-12 font-medium text-pf-slate-ink">{t("pickIsland")}</p>
+          <div className="grid grid-cols-1 gap-2">
+            {islands.map((island) => {
+              const selected = islandId === island.id;
+              return (
+                <button
+                  key={island.id}
+                  type="button"
+                  className={
+                    selected
+                      ? "inline-flex min-h-11 items-center justify-center rounded-full bg-pf-navy-600 px-3 text-pf-14 font-medium text-white"
+                      : "inline-flex min-h-11 items-center justify-center rounded-full border border-pf-line bg-pf-page px-3 text-pf-14 font-medium text-pf-ink"
+                  }
+                  onClick={() => {
+                    setIslandId(island.id);
+                    setAreaId("");
+                  }}
+                >
+                  {areaName(state, island.id, locale)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {islandId ? (
+          <div>
+            <p className="mb-1 text-pf-12 font-medium text-pf-slate-ink">{t("pickArea")}</p>
+            <div className="flex flex-wrap gap-2">
+              {districts.map((row) => {
+                const selected = areaId === row.id;
+                return (
+                  <button
+                    key={row.id}
+                    type="button"
+                    className={
+                      selected
+                        ? "inline-flex min-h-11 items-center justify-center rounded-full bg-pf-navy-600 px-3 text-pf-14 font-medium text-white"
+                        : "inline-flex min-h-11 items-center justify-center rounded-full border border-pf-line bg-pf-page px-3 text-pf-14 font-medium text-pf-ink"
+                    }
+                    onClick={() => setAreaId(row.id)}
+                  >
+                    {areaName(state, row.id, locale)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+        <div>
+          <p className="mb-1 text-pf-12 font-medium text-pf-slate-ink">{t("shareLocation")}</p>
+          <p className="mb-1 text-pf-12 text-pf-slate-ink">{t("shareLocationHint")}</p>
+          <input
+            value={location}
+            onChange={(event) => setLocation(event.target.value)}
+            placeholder={t("shareLocationPlaceholder")}
+            aria-label={t("shareLocation")}
+            className="min-h-11 w-full rounded-[14px] border border-pf-line bg-pf-page px-3 text-pf-16 text-pf-ink outline-none"
+          />
+        </div>
         {error ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
         <button
           type="button"
@@ -248,6 +421,27 @@ function EditJobModal({
       </div>
     </div>
   );
+}
+
+function matchAreaSelection(
+  places: ReturnType<typeof allAreas>,
+  area: string | null | undefined,
+  state: Parameters<typeof areaName>[0],
+  locale: string,
+) {
+  if (!area) return { islandId: "", areaId: "" };
+  for (const row of places) {
+    const name = areaName(state, row.id, locale);
+    const parent = row.parentId ? areaName(state, row.parentId, locale) : "";
+    if (area === name || (parent && area === `${parent} · ${name}`) || (parent && area.endsWith(` · ${name}`))) {
+      if (row.level === "district") return { islandId: row.parentId ?? "", areaId: row.id };
+      if (row.level === "locality") return { islandId: row.id, areaId: "" };
+    }
+  }
+  const island = places.find(
+    (row) => row.level === "locality" && areaName(state, row.id, locale) && area.startsWith(areaName(state, row.id, locale)),
+  );
+  return { islandId: island?.id ?? "", areaId: "" };
 }
 
 function CancelJobModal({

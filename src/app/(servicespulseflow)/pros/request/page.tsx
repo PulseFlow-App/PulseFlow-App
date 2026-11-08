@@ -16,10 +16,26 @@ import type { ProsUrgency } from "@/lib/pros/types";
 import { orderAllowance, SERVICES_PAYMENTS_ENABLED } from "@/lib/pros/trial";
 import { prepareVillaPhotoFile } from "@/lib/villas/prepare-photo";
 import { todayIsoDate } from "@/lib/villas/status-from-dates";
+import {
+  intervalsLabel,
+  intervalValid,
+  parseWhenLabel,
+  type TimeInterval,
+} from "@/lib/pros/when-label";
 
 const DRAFT_KEY = "pulseflow.services.requestDraft";
-const TIME_OPTIONS = ["morning", "afternoon", "evening", "any"] as const;
 const ORDER_LANGS = ["en", "th"] as const;
+const ISLAND_SLUGS = ["th-phangan", "th-samui", "th-tao"] as const;
+const DEFAULT_INTERVAL: TimeInterval = { start: "09:00", end: "12:00" };
+
+function draftIntervals(preferredTime: string): TimeInterval[] {
+  const parsed = parseWhenLabel(`1970-01-01 · ${preferredTime}`);
+  if (parsed.intervals.length) return parsed.intervals;
+  if (parsed.legacyTime && /^\d{2}:\d{2}$/.test(parsed.legacyTime)) {
+    return [{ start: parsed.legacyTime, end: "17:00" }];
+  }
+  return [{ ...DEFAULT_INTERVAL }];
+}
 
 function orderLanguage(code: string) {
   return code === "th" ? "th" : "en";
@@ -68,17 +84,32 @@ function RequestInner() {
   const [categoryId, setCategoryId] = useState(params.get("category") ?? categories[0]?.id ?? "");
   const [title, setTitle] = useState(params.get("title") ?? "");
   const [description, setDescription] = useState(params.get("brief") ?? "");
-  const [areaId, setAreaId] = useState<string>(state.placeId ?? "");
+  const [islandId, setIslandId] = useState<string>("");
+  const [areaId, setAreaId] = useState<string>("");
   const [shareLocation, setShareLocation] = useState("");
   const [urgency, setUrgency] = useState<ProsUrgency>("flexible");
   const [preferredDate, setPreferredDate] = useState(todayIsoDate);
-  const [preferredTime, setPreferredTime] = useState<(typeof TIME_OPTIONS)[number]>("morning");
+  const [intervals, setIntervals] = useState<TimeInterval[]>([{ ...DEFAULT_INTERVAL }]);
   const [language, setLanguage] = useState<string>(orderLanguage(locale));
   const [photos, setPhotos] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const places = allAreas(state).filter((area) => area.level === "locality" || area.level === "district");
-  const islands = places.filter((area) => area.level === "locality");
+  const islands = places.filter(
+    (area) => area.level === "locality" && ISLAND_SLUGS.includes(area.slug as (typeof ISLAND_SLUGS)[number]),
+  );
+  const districts = places.filter((area) => area.parentId === islandId && area.level === "district");
   const sent = useRef(false);
+
+  function resolveAreaLabel(selectedAreaId: string) {
+    const selected = places.find((area) => area.id === selectedAreaId);
+    if (!selected) return areaName(state, selectedAreaId, locale) || null;
+    if (selected.level === "district" && selected.parentId) {
+      const island = areaName(state, selected.parentId, locale);
+      const district = areaName(state, selected.id, locale);
+      return island && district ? `${island} · ${district}` : district || island || null;
+    }
+    return areaName(state, selected.id, locale) || null;
+  }
   const gate = actor
     ? orderAllowance(state.requests, state.reviews, actor.id, new Date(), plan.premium)
     : null;
@@ -89,24 +120,39 @@ function RequestInner() {
     setCategoryId(draft.categoryId);
     setTitle(draft.title);
     setDescription(draft.description);
-    if (draft.areaId) setAreaId(draft.areaId);
+    if (draft.areaId) {
+      const selected = places.find((area) => area.id === draft.areaId);
+      if (selected?.level === "district" && selected.parentId) {
+        setIslandId(selected.parentId);
+        setAreaId(selected.id);
+      } else if (selected?.level === "locality") {
+        setIslandId(selected.id);
+        setAreaId("");
+      } else {
+        setAreaId(draft.areaId);
+      }
+    }
     setShareLocation(draft.shareLocation ?? "");
     setUrgency(draft.urgency);
     const stored = draft.preferredDate ?? draft.dateChoice ?? "";
     setPreferredDate(/^\d{4}-\d{2}-\d{2}/.test(stored) ? stored.slice(0, 10) : todayIsoDate());
-    setPreferredTime(
-      TIME_OPTIONS.includes(draft.preferredTime as (typeof TIME_OPTIONS)[number])
-        ? (draft.preferredTime as (typeof TIME_OPTIONS)[number])
-        : "morning",
-    );
+    setIntervals(draftIntervals(draft.preferredTime));
     setLanguage(orderLanguage(draft.language));
     setPhotos(draft.photos ?? []);
+    // places is derived from catalog seed; safe for first mount only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (areaId || !state.placeId) return;
-    setAreaId(state.placeId);
-  }, [areaId, state.placeId]);
+    if (islandId || !state.placeId) return;
+    const selected = places.find((area) => area.id === state.placeId);
+    if (selected?.level === "district" && selected.parentId) {
+      setIslandId(selected.parentId);
+      setAreaId(selected.id);
+    } else if (selected?.level === "locality") {
+      setIslandId(selected.id);
+    }
+  }, [islandId, places, state.placeId]);
 
   const fail = (code: string) => {
     sent.current = false;
@@ -118,12 +164,10 @@ function RequestInner() {
           ? t("duplicate")
           : code === "review"
             ? t("reviewRequired")
-            : code === "finish"
-              ? t("finishOrderFirst")
-              : code === "plan"
-                ? t("planRequired")
-                : code === "nextMonth"
-                  ? t("nextMonthOrder")
+            : code === "plan"
+              ? t("planRequired")
+              : code === "nextMonth"
+                ? t("nextMonthOrder")
                 : code === "missing"
                   ? t("notAvailable")
                   : code === "auth"
@@ -137,9 +181,15 @@ function RequestInner() {
     const draft = readDraft();
     if (!draft?.pending) return;
     const draftArea = draft.areaId || state.placeId;
+    const windows = draftIntervals(draft.preferredTime).filter(intervalValid);
     if (!draftArea || !(draft.shareLocation ?? "").trim()) {
       sent.current = false;
       setError(t("needAreaAndLocation"));
+      return;
+    }
+    if (!windows.length) {
+      sent.current = false;
+      setError(t("needWindows"));
       return;
     }
     sent.current = true;
@@ -149,13 +199,13 @@ function RequestInner() {
       description: draft.description,
       photos: draft.photos ?? [],
       areaId: draftArea,
-      areaLabel: areaName(state, draftArea, locale) || null,
+      areaLabel: resolveAreaLabel(draftArea),
       shareLocation: (draft.shareLocation ?? "").trim(),
       urgency: draft.urgency,
       preferredDate: /^\d{4}-\d{2}-\d{2}/.test(draft.preferredDate ?? "")
         ? draft.preferredDate!.slice(0, 10)
         : todayIsoDate(),
-      preferredTime: draft.preferredTime,
+      preferredTime: intervalsLabel(windows),
       language: draft.language,
       taskId: draft.taskId,
       orgId: draft.orgId ?? actor.orgId,
@@ -177,8 +227,13 @@ function RequestInner() {
           e.preventDefault();
           if (!actorReady || !actor) return;
           if (sent.current) return;
-          if (!areaId || !shareLocation.trim()) {
+          if (!islandId || !areaId || !shareLocation.trim()) {
             setError(t("needAreaAndLocation"));
+            return;
+          }
+          const windows = intervals.filter(intervalValid);
+          if (!windows.length) {
+            setError(t("needWindows"));
             return;
           }
           sent.current = true;
@@ -188,11 +243,11 @@ function RequestInner() {
             description,
             photos,
             areaId,
-            areaLabel: areaName(state, areaId, locale) || null,
+            areaLabel: resolveAreaLabel(areaId),
             shareLocation: shareLocation.trim(),
             urgency,
             preferredDate,
-            preferredTime,
+            preferredTime: intervalsLabel(windows),
             language,
             taskId: params.get("taskId"),
             orgId: params.get("orgId") ?? actor.orgId,
@@ -220,9 +275,7 @@ function RequestInner() {
               ? t("planRequired")
               : gate.error === "nextMonth"
                 ? t("nextMonthOrder")
-                : gate.error === "review"
-                  ? t("reviewRequired")
-                  : t("finishOrderFirst")}
+                : t("reviewRequired")}
           </p>
         ) : null}
         {gate && !gate.ok && (gate.error === "plan" || gate.error === "nextMonth") ? (
@@ -251,23 +304,58 @@ function RequestInner() {
           <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} required />
         </div>
         <div>
-          <Label htmlFor="request-area">{t("place")}</Label>
-          <Select id="request-area" value={areaId} required onChange={(e) => setAreaId(e.target.value)}>
-            <option value="">{t("pickArea")}</option>
-            {islands.map((island) => (
-              <optgroup key={island.id} label={areaName(state, island.id, locale)}>
-                <option value={island.id}>{areaName(state, island.id, locale)}</option>
-                {places
-                  .filter((area) => area.parentId === island.id)
-                  .map((area) => (
-                    <option key={area.id} value={area.id}>
-                      {areaName(state, area.id, locale)}
-                    </option>
-                  ))}
-              </optgroup>
-            ))}
-          </Select>
+          <Label>{t("pickIsland")}</Label>
+          <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {islands.map((island) => {
+              const selected = islandId === island.id;
+              return (
+                <button
+                  key={island.id}
+                  type="button"
+                  className={
+                    selected
+                      ? "inline-flex min-h-11 items-center justify-center rounded-full bg-pf-navy-600 px-3 text-pf-14 font-medium text-white"
+                      : "inline-flex min-h-11 items-center justify-center rounded-full border border-pf-line bg-pf-card px-3 text-pf-14 font-medium text-pf-ink"
+                  }
+                  onClick={() => {
+                    setIslandId(island.id);
+                    setAreaId("");
+                    setError(null);
+                  }}
+                >
+                  {areaName(state, island.id, locale)}
+                </button>
+              );
+            })}
+          </div>
         </div>
+        {islandId ? (
+          <div>
+            <Label>{t("pickArea")}</Label>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {districts.map((area) => {
+                const selected = areaId === area.id;
+                return (
+                  <button
+                    key={area.id}
+                    type="button"
+                    className={
+                      selected
+                        ? "inline-flex min-h-11 items-center justify-center rounded-full bg-pf-navy-600 px-3 text-pf-14 font-medium text-white"
+                        : "inline-flex min-h-11 items-center justify-center rounded-full border border-pf-line bg-pf-card px-3 text-pf-14 font-medium text-pf-ink"
+                    }
+                    onClick={() => {
+                      setAreaId(area.id);
+                      setError(null);
+                    }}
+                  >
+                    {areaName(state, area.id, locale)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
         <div>
           <Label htmlFor="request-share-location">{t("shareLocation")}</Label>
           <p className="mb-1 text-pf-12 text-pf-slate-ink">{t("shareLocationHint")}</p>
@@ -357,14 +445,60 @@ function RequestInner() {
           />
         </div>
         <div>
-          <Label>{t("preferredTime")}</Label>
-          <Select value={preferredTime} onChange={(e) => setPreferredTime(e.target.value as (typeof TIME_OPTIONS)[number])}>
-            {TIME_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {t(option === "any" ? "anyTime" : option)}
-              </option>
+          <Label>{t("preferredWindows")}</Label>
+          <p className="mb-2 text-pf-12 text-pf-slate-ink">{t("preferredWindowsHint")}</p>
+          <div className="space-y-2">
+            {intervals.map((interval, index) => (
+              <div key={`window-${index}`} className="rounded-[14px] border border-pf-line bg-pf-page p-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor={`request-window-from-${index}`}>{t("windowFrom")}</Label>
+                    <Input
+                      id={`request-window-from-${index}`}
+                      type="time"
+                      value={interval.start}
+                      step={900}
+                      required
+                      onChange={(e) => {
+                        const start = e.target.value || "09:00";
+                        setIntervals((current) => current.map((row, item) => (item === index ? { ...row, start } : row)));
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`request-window-to-${index}`}>{t("windowTo")}</Label>
+                    <Input
+                      id={`request-window-to-${index}`}
+                      type="time"
+                      value={interval.end}
+                      step={900}
+                      required
+                      onChange={(e) => {
+                        const end = e.target.value || "12:00";
+                        setIntervals((current) => current.map((row, item) => (item === index ? { ...row, end } : row)));
+                      }}
+                    />
+                  </div>
+                </div>
+                {intervals.length > 1 ? (
+                  <button
+                    type="button"
+                    className="mt-2 inline-flex min-h-11 items-center text-pf-14 font-medium text-pf-text-secondary"
+                    onClick={() => setIntervals((current) => current.filter((_, item) => item !== index))}
+                  >
+                    {t("removeInterval")}
+                  </button>
+                ) : null}
+              </div>
             ))}
-          </Select>
+          </div>
+          <button
+            type="button"
+            className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-14 font-medium text-pf-ink"
+            onClick={() => setIntervals((current) => [...current, { start: "14:00", end: "17:00" }])}
+          >
+            {t("addInterval")}
+          </button>
         </div>
         <div>
           <Label>{t("yourLanguage")}</Label>

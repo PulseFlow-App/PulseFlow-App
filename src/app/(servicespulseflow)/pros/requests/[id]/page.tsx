@@ -164,13 +164,11 @@ export default function RequestDetailPage() {
                   </>
                 ) : null}
                 {offer.status === "declined" ? <p className="text-pf-14 text-pf-text-secondary">{t("decline")}</p> : null}
-                {agreed ? null : offer.amount != null ? (
+                {agreed ? null : price ? (
+                  <p className="text-pf-16 text-pf-ink">{price.replace(/\s*THB\b/g, " ฿")}</p>
+                ) : offer.amount != null ? (
                   <p className="text-pf-16 text-pf-ink">
                     {offer.amount} {offer.currency ?? ""}
-                  </p>
-                ) : remoteReply?.reply_amount != null ? (
-                  <p className="text-pf-16 text-pf-ink">
-                    {remoteReply.reply_amount} {remoteReply.reply_currency ?? ""}
                   </p>
                 ) : null}
                 {offer.proposedTime ? <p className="text-pf-16 text-pf-ink">{offer.proposedTime}</p> : null}
