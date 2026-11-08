@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { isAgreedReply, quoteLabel, type ServiceDelivery } from "@/lib/pros/delivery";
+import { OrderCard, type CustomerOrder } from "@/components/pros/order-card";
+import { selectionTick } from "@/components/pros/haptics";
+import { compareDeliveries, isAgreedReply, quoteLabel, type ServiceDelivery } from "@/lib/pros/delivery";
 import { isHireAccount } from "@/lib/pros/intent";
+import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 import { downloadVisitIcs } from "@/lib/pros/visit-calendar";
 
@@ -34,11 +38,37 @@ function dismiss(actorId: string, id: string) {
   localStorage.setItem(DISMISS_KEY, JSON.stringify(map));
 }
 
-/** Hire accounts see that the person they asked has agreed and is coming. */
+function toOrder(row: ServiceDelivery, to: (path: string) => string): CustomerOrder {
+  const price = quoteLabel(row);
+  return {
+    id: row.id,
+    localRequestId: row.request_id,
+    state: "booked",
+    createdAt: row.created_at,
+    title: row.title,
+    description: row.description,
+    whenLabel: row.when_label,
+    area: row.area_label ?? null,
+    shareLocation: row.share_location ?? null,
+    photos: (row.photos ?? []).filter((src): src is string => typeof src === "string" && src.length > 0),
+    personName: row.target_name,
+    priceLabel: price,
+    quoteNote: row.quote_note ?? null,
+    cancelReason: null,
+    repliedAt: row.replied_at,
+    acceptedAt: row.accepted_at ?? null,
+    chatHref: to(`/chat/${row.id}`),
+    reviewHref: to(`/requests/${row.request_id}`),
+  };
+}
+
+/** Hire accounts see the soonest booked visit, as the same order card used elsewhere. */
 export function VisitNotice() {
   const { actor, t } = usePros();
+  const pathname = usePathname();
   const hire = isHireAccount(actor);
   const [row, setRow] = useState<ServiceDelivery | null>(null);
+  const to = (path: string) => servicesPath(pathname, path);
 
   useEffect(() => {
     if (!hire || !actor || actor.id.startsWith("local")) {
@@ -53,10 +83,17 @@ export function VisitNotice() {
         .then((payload: { requests?: ServiceDelivery[] }) => {
           if (cancel) return;
           const seen = readDismissed(actorId);
-          const next = (payload.requests ?? []).find(
-            (item) => item.created_by === actorId && isAgreedReply(item.reply_message) && !item.cancelled_at && !seen.includes(item.id),
-          );
-          setRow(next ?? null);
+          const next =
+            (payload.requests ?? [])
+              .filter(
+                (item) =>
+                  item.created_by === actorId &&
+                  isAgreedReply(item.reply_message) &&
+                  !item.cancelled_at &&
+                  !seen.includes(item.id),
+              )
+              .sort(compareDeliveries)[0] ?? null;
+          setRow(next);
         })
         .catch(() => {
           if (!cancel) setRow(null);
@@ -79,31 +116,33 @@ export function VisitNotice() {
     setRow(null);
   };
 
+  const price = quoteLabel(row);
+  const order = toOrder(row, to);
+
   return (
-    <section className="mb-4 rounded-[20px] border border-pf-line bg-pf-card p-4">
-      <h2 className="text-pf-18 font-medium text-pf-ink">{t("staffComing", { name: row.target_name })}</h2>
-      {row.when_label ? <p className="mt-1 text-pf-14 text-pf-text-secondary">{row.when_label}</p> : null}
-      <p className="mt-2 text-pf-16 text-pf-text-secondary">{t("staffComingBody")}</p>
-      <button
-        type="button"
-        className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-navy-600 px-4 text-pf-16 font-medium text-white"
-        onClick={() => {
+    <section className="mb-4 space-y-2">
+      <p className="px-0.5 text-pf-14 font-medium text-pf-text-secondary">
+        {t("staffComing", { name: row.target_name.trim().split(/\s+/)[0] || row.target_name })}
+      </p>
+      <OrderCard
+        audience="customer"
+        order={order}
+        onCalendar={() => {
+          selectionTick();
           downloadVisitIcs({
             id: row.id,
             title: row.title,
             whenLabel: row.when_label,
             details: row.description,
             who: row.target_name,
-            price: quoteLabel(row) ? t("calendarPriceLine", { amount: quoteLabel(row)! }) : null,
+            price: price ? t("calendarPriceLine", { amount: price }) : null,
           });
           close();
         }}
-      >
-        {t("addToCalendar")}
-      </button>
+      />
       <button
         type="button"
-        className="mt-2 inline-flex min-h-11 w-full items-center justify-center text-pf-14 font-medium text-pf-text-secondary"
+        className="inline-flex min-h-11 w-full items-center justify-center text-pf-14 font-medium text-pf-text-secondary"
         onClick={close}
       >
         {t("calendarLater")}

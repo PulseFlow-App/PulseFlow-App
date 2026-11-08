@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { usePros } from "@/lib/pros/store";
 
 export type QuoteInput = {
@@ -9,6 +9,12 @@ export type QuoteInput = {
   currency: string;
   note: string;
 };
+
+function parseAmount(raw: string) {
+  const cleaned = raw.replace(/,/g, "").trim();
+  if (!cleaned) return Number.NaN;
+  return Number(cleaned);
+}
 
 export function QuoteForm({
   busy,
@@ -26,13 +32,22 @@ export function QuoteForm({
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const ready = useMemo(() => {
+    const low = parseAmount(min);
+    const high = max.trim() ? parseAmount(max) : null;
+    if (!Number.isFinite(low) || low < 0) return false;
+    if (high != null && (!Number.isFinite(high) || high < low)) return false;
+    return true;
+  }, [min, max]);
+
   return (
     <form
       className="space-y-2"
       onSubmit={(event) => {
         event.preventDefault();
-        const low = Number(min);
-        const high = max.trim() ? Number(max) : null;
+        if (busy) return;
+        const low = parseAmount(min);
+        const high = max.trim() ? parseAmount(max) : null;
         if (!Number.isFinite(low) || low < 0 || (high != null && (!Number.isFinite(high) || high < low))) {
           setError(t("quoteNeedPrice"));
           return;
@@ -46,7 +61,10 @@ export function QuoteForm({
         <input
           inputMode="decimal"
           value={min}
-          onChange={(event) => setMin(event.target.value)}
+          onChange={(event) => {
+            setMin(event.target.value);
+            if (error) setError(null);
+          }}
           placeholder={t("quoteFrom")}
           aria-label={t("quoteFrom")}
           className="min-h-11 rounded-[14px] border border-pf-line bg-pf-page px-3 text-pf-16 text-pf-ink outline-none"
@@ -54,7 +72,10 @@ export function QuoteForm({
         <input
           inputMode="decimal"
           value={max}
-          onChange={(event) => setMax(event.target.value)}
+          onChange={(event) => {
+            setMax(event.target.value);
+            if (error) setError(null);
+          }}
           placeholder={t("quoteTo")}
           aria-label={t("quoteTo")}
           className="min-h-11 rounded-[14px] border border-pf-line bg-pf-page px-3 text-pf-16 text-pf-ink outline-none"
@@ -81,8 +102,8 @@ export function QuoteForm({
       {error ? <p className="text-pf-14 font-medium text-pf-danger-ink">{error}</p> : null}
       <button
         type="submit"
-        disabled={busy}
-        className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-navy-600 px-4 text-pf-16 font-medium text-white disabled:opacity-60"
+        disabled={Boolean(busy) || !ready}
+        className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white disabled:opacity-60"
       >
         {submitLabel}
       </button>

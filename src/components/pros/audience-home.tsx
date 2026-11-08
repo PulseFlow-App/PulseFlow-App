@@ -221,7 +221,7 @@ export function WorkHome() {
               key={row.id}
               audience="staff"
               order={order}
-              onQuote={() => router.push(to("/inbox"))}
+              onQuote={() => router.push(`${to("/inbox")}?quote=${encodeURIComponent(row.id)}`)}
               onCalendar={() =>
                 downloadVisitIcs({
                   id: row.id,
@@ -249,7 +249,7 @@ export function WorkHome() {
               key={row.id}
               audience="staff"
               order={order}
-              onQuote={() => router.push(to("/inbox"))}
+              onQuote={() => router.push(`${to("/inbox")}?quote=${encodeURIComponent(row.id)}`)}
             />
           );
         })}

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AGREED_REPLY, compareDeliveries, isAgreedReply, quoteLabel, type ServiceDelivery } from "@/lib/pros/delivery";
 import { QuoteForm, type QuoteInput } from "@/components/pros/quote-form";
 import { OrderCard, type CustomerOrder, type CustomerOrderState } from "@/components/pros/order-card";
@@ -13,19 +13,41 @@ import { needsWorkPermit } from "@/lib/pros/permit";
 import { servicesPath } from "@/lib/pros/paths";
 import { usePros } from "@/lib/pros/store";
 
-export default function WorkerInboxPage() {
+function WorkerInboxPage() {
   const { state, actor, actorReady, t } = usePros();
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [listingId, setListingId] = useState<string | null>(null);
   const [incoming, setIncoming] = useState<ServiceDelivery[]>([]);
   const [nationality, setNationality] = useState<string | null>(null);
   const [nationalityReady, setNationalityReady] = useState(false);
   const [permitQuote, setPermitQuote] = useState<QuoteInput | null>(null);
-  const [quoting, setQuoting] = useState<string | null>(null);
+  const [quoteOpen, setQuoteOpen] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [quoteFocus, setQuoteFocus] = useState(0);
   const [version, setVersion] = useState(0);
+  const quoteFormRef = useRef<HTMLDivElement | null>(null);
   const to = (path: string) => servicesPath(pathname, path);
   const start = pathname.startsWith("/pros") ? "/pros/start" : "/start";
+
+  const quoteParam = searchParams.get("quote");
+  useEffect(() => {
+    if (!quoteParam) return;
+    setBusyId(null);
+    setQuoteOpen(quoteParam);
+    setQuoteFocus((tick) => tick + 1);
+  }, [quoteParam]);
+
+  useEffect(() => {
+    if (!quoteOpen) return;
+    const timer = window.setTimeout(() => {
+      quoteFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const first = quoteFormRef.current?.querySelector<HTMLInputElement>("input");
+      first?.focus({ preventScroll: true });
+    }, 50);
+    return () => window.clearTimeout(timer);
+  }, [quoteOpen, quoteFocus, incoming.length]);
 
   useEffect(() => {
     if (!actorReady) return;
@@ -69,35 +91,51 @@ export default function WorkerInboxPage() {
   if (!actor) return null;
 
   const sendQuote = (id: string, quote: QuoteInput) => {
-    setQuoting(id);
+    setBusyId(id);
     void fetch("/api/services/requests", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id,
-          action: "quote",
-          min: quote.min,
-          max: quote.max,
-          currency: quote.currency,
-          note: quote.note,
-        }),
-    }).then((res) => {
-      setQuoting(null);
-      if (!res.ok) return;
-      setIncoming((current) =>
-        current.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                reply_amount: quote.min,
-                quote_max: quote.max,
-                reply_currency: quote.currency,
-                quote_note: quote.note,
-              }
-            : item,
-        ),
-      );
-    });
+      body: JSON.stringify({
+        id,
+        action: "quote",
+        min: quote.min,
+        max: quote.max,
+        currency: quote.currency,
+        note: quote.note,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) return;
+        setQuoteOpen(null);
+        const next = new URLSearchParams(searchParams.toString());
+        next.delete("quote");
+        const query = next.toString();
+        router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+        setIncoming((current) =>
+          current.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  reply_amount: quote.min,
+                  quote_max: quote.max,
+                  reply_currency: quote.currency,
+                  quote_note: quote.note,
+                }
+              : item,
+          ),
+        );
+      })
+      .catch(() => undefined)
+      .finally(() => setBusyId(null));
+  };
+
+  const openQuote = (id: string) => {
+    setBusyId(null);
+    setQuoteOpen(id);
+    setQuoteFocus((tick) => tick + 1);
+    const next = new URLSearchParams(searchParams.toString());
+    next.set("quote", id);
+    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
   };
 
   const confirmThai = async () => {
@@ -142,8 +180,9 @@ export default function WorkerInboxPage() {
             <OrderCard
               audience="staff"
               order={order}
-              busy={quoting === row.id}
-              onQuote={() => setQuoting(row.id)}
+              busy={busyId === row.id}
+              hideQuoteAction={quoteOpen === row.id}
+              onQuote={() => openQuote(row.id)}
               onCalendar={() =>
                 downloadVisitIcs({
                   id: row.id,
@@ -155,18 +194,43 @@ export default function WorkerInboxPage() {
                 })
               }
             />
-            {quoting === row.id && state === "waiting" ? (
-              <QuoteForm
-                busy={quoting === row.id}
-                submitLabel={t("sendQuote")}
-                onSubmit={(quote) => {
-                  if (nationalityReady && needsWorkPermit(nationality)) {
-                    setPermitQuote(quote);
-                    return;
-                  }
-                  sendQuote(row.id, quote);
-                }}
-              />
+            {quoteOpen === row.id && state === "waiting" ? (
+              <div
+                ref={quoteFormRef}
+                id={`quote-${row.id}`}
+                className="rounded-[20px] border border-pf-line bg-pf-card p-4 shadow-[var(--pf-shadow-2)]"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-pf-18 font-bold tracking-[-0.02em] text-pf-ink">{t("provideQuote")}</p>
+                  <button
+                    type="button"
+                    className="inline-flex min-h-11 items-center px-2 text-pf-14 font-medium text-pf-text-secondary"
+                    onClick={() => {
+                      setQuoteOpen(null);
+                      const next = new URLSearchParams(searchParams.toString());
+                      next.delete("quote");
+                      const query = next.toString();
+                      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+                    }}
+                  >
+                    {t("close")}
+                  </button>
+                </div>
+                <div className="mt-3">
+                  <QuoteForm
+                    key={row.id}
+                    busy={busyId === row.id}
+                    submitLabel={t("sendQuote")}
+                    onSubmit={(quote) => {
+                      if (nationalityReady && needsWorkPermit(nationality)) {
+                        setPermitQuote(quote);
+                        return;
+                      }
+                      sendQuote(row.id, quote);
+                    }}
+                  />
+                </div>
+              </div>
             ) : null}
           </div>
         );
@@ -175,7 +239,7 @@ export default function WorkerInboxPage() {
         <p className="text-pf-14 text-pf-text-secondary">{t("noInbox")}</p>
       ) : null}
       {listingId && rows.length === 0 && incoming.length === 0 ? <p className="text-pf-14 text-pf-text-secondary">{t("noInbox")}</p> : null}
-      {permitQuote && quoting ? (
+      {permitQuote && quoteOpen ? (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-pf-ink/40 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center">
           <div role="dialog" aria-modal="true" aria-labelledby="permit-title" className="w-full max-w-md rounded-[28px] bg-pf-card p-5">
             <h2 id="permit-title" className="text-pf-22 font-bold tracking-[-0.02em] text-pf-ink">
@@ -186,7 +250,7 @@ export default function WorkerInboxPage() {
               type="button"
               className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-pf-orange-500 px-4 text-pf-16 font-medium text-white"
               onClick={() => {
-                const id = quoting;
+                const id = quoteOpen;
                 const quote = permitQuote;
                 setPermitQuote(null);
                 void confirmThai().then(() => sendQuote(id, quote));
@@ -199,7 +263,7 @@ export default function WorkerInboxPage() {
               className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-pf-line bg-pf-card px-4 text-pf-16 font-medium text-pf-ink"
               onClick={() => {
                 setPermitQuote(null);
-                setQuoting(null);
+                setQuoteOpen(null);
               }}
             >
               {t("permitNotNow")}
@@ -247,5 +311,13 @@ export default function WorkerInboxPage() {
         </article>
       ))}
     </div>
+  );
+}
+
+export default function InboxPage() {
+  return (
+    <Suspense>
+      <WorkerInboxPage />
+    </Suspense>
   );
 }
